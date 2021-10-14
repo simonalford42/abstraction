@@ -1,4 +1,5 @@
 import random
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -113,6 +114,7 @@ class Eq2Net(nn.Module):
     def forward(self, traj):
         """
         traj: list of (s_i, a_i) where a[-1] is None
+        s_i is a vector, a_i is an int
         """
 
         # tabulated results
@@ -208,7 +210,7 @@ def generate_data(scale, seq_len, n):
 
 
 class TrajData(Dataset):
-    def __init__(self, trajs):
+    def __init__(self, trajs, max_coord=None):
         """
         trajs: list of trajectories a la generate_grid_traj()
 
@@ -229,15 +231,30 @@ class TrajData(Dataset):
         # list of (x, y, x_goal, y_goal)
         # list of moves (int)
         self.coords, self.moves = zip(*self.points)
-        self.max_coord = max(max(c) for c in self.coords)
+        self.max_coord = max_coord
+        if max_coord is None:
+            self.max_coord = max(max(c) for c in self.coords)
 
         # list of list of (state_embed, move)
         self.traj_embeds = [self.embed_points(p)
                             for p in self.points_lists]
+        # list of list of state_embed
+        self.traj_states = [[s for (s, m) in traj_embed]
+                            for traj_embed in self.traj_embeds]
+        # list of list of moves
+        self.traj_moves = [[m for (s, m) in traj_embed]
+                           for traj_embed in self.traj_embeds]
 
-        # list of state_embed
-        self.state_embeds = [state_embed for embeds in self.traj_embeds
-                             for state_embed, move in embeds]
+        # list of state_embeds
+        self.state_embeds = [s for traj_embed in self.traj_embeds
+                             for s, m in traj_embed]
+        # list of moves
+        self.moves = [m for traj_embed in self.traj_embeds
+                      for s, m in traj_embed]
+
+        # each trajectory as a batch of state_embeds
+        self.traj_batches = [torch.stack([s for (s, m) in traj_embed])
+                             for traj_embed in self.traj_embeds]
 
     def make_points(traj):
         trace = exec_traj(traj)
@@ -331,20 +348,28 @@ def model_error(dataloader, model):
     return total_wrong / n
 
 
-def traj_prob(traj, policy_net):
+def eval_policy_net(data, n_trajs, net):
+    net.eval()
+    with torch.no_grad():
+        for i in range(n_trajs):
+            traj = data.trajs[i]
+            print(f"traj: {traj}")
+            batch = data.traj_batches[i]
+            probs = F.softmax(net(batch), dim=1)
+            probs = [round(p[0].item(), 2) for p in probs]
+            print(probs)
+
+
+def traj_prob(batch, actions, policy_net):
     """
-    traj: list of ['U','U','R','R']
-    out: probability of sequence
+    state_embeds: list of state_embeds
+    out: probability of each step
     """
     policy_net.eval()
     with torch.no_grad():
-        # convert traj into list of ((x, y, x_goal, y_goal), move)
-        points = TrajData.make_points(traj)
-        points = torch.stack([torch.cat([torch.tensor([c]) for c in p[0]]) for p in points])
-        # print(f"points: {points}")
-        logits = policy_net(points)
-        actions = [0 if m == 'R' else 1 for m in traj]
-        probs = torch.tensor([l[a] for a, l in zip(actions, logits)])
+        probs = F.softmax(policy_net(batch), dim=1)
+        probs = torch.tensor([p[a] for a, p in zip(actions, probs)])
+        return torch.prod(probs)
 
     return torch.prod(probs)
 
@@ -358,17 +383,15 @@ def train_abstractions(data: TrajData, abstract_net, target_policy_net, epochs):
     train_errors = []
     abstract_net.train()
 
-    traj_probs = [traj_prob(t, target_policy_net) for t in data.trajs]
-
-    # list of (state_embed, action)
-    trajs = [data.convert_traj(t) for t in trajs]
+    traj_probs = [traj_prob(b, m, target_policy_net)
+                  for b, m in zip(data.traj_batches, data.traj_moves)]
 
     for epoch in range(epochs):
         train_loss = 0
-
-        for traj, target_p in zip(trajs, traj_probs):
+        start = time.time()
+        for traj_embed, target_p in zip(data.traj_embeds, traj_probs):
             optimizer.zero_grad()
-            p = abstract_net(traj)
+            p = abstract_net(traj_embed)
             loss = criterion(p, target_p)
             train_loss += loss
             loss.backward()
@@ -378,23 +401,10 @@ def train_abstractions(data: TrajData, abstract_net, target_policy_net, epochs):
 
         print(f"epoch: {epoch}\t"
               + f"train loss: {loss}\t"
-              + f"train error: {train_error}\t")
+              # + f"train error: {train_error}\t"
+              + f"({time.time() - start:.0f}s)")
         train_losses.append(train_loss)
         train_errors.append(train_error)
-
-
-def eval_policy_net(data, n_trajs, net):
-    net.eval()
-    with torch.no_grad():
-        for traj in data.trajs[:n_trajs]:
-            print(f"traj: {traj}")
-            data2 = TrajData([traj])
-            dataloader2 = DataLoader(data2, batch_size=1, shuffle=False)
-            probs = []
-            for examples, labels in dataloader2:
-                preds = F.softmax(net(examples))
-                probs.append(round(preds[0, 0].item(), 2))
-            print(probs)
 
 
 def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
@@ -402,27 +412,29 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
     with torch.no_grad():
         for i in range(n_trajs):
             traj = data.trajs[i]
-            traj_embed = [state for state, move in data.traj_embeds[i]]
+            traj_embed = data.traj_embeds[i]
             print('\t' + ''.join(traj))
             for abstract_action in range(n_abstractions):
-                print(f"abstract_action: {abstract_action}")
-                for start in range(len(traj_embed)):
-                    print(f"start: {start}")
-                    for end in range(start + 1, len(traj_embed)):
+                # for start in range(len(traj_embed)):
+                for start in range(5):
+                    # for end in range(start + 1, len(traj_embed)):
+                    for end in range(start + 1, start + 5):
                         prob = abstract_net.eq1_net(traj_embed[start:end],
                                                     abstract_action)
-                        print(f"{prob:.3f}" + '-' * (end - start))
+                        print(f"{abstract_action} {prob:.2f}\t" 
+                              + ('-' * max(0, start -1))
+                              + traj[start:end]
+                              + ('-' * max(0, len(traj) - end)))
 
 
 if __name__ == '__main__':
     scale = 3
-    seq_len = 10
+    seq_len = 5
     trajs = generate_data(scale, seq_len, n=100)
     data = TrajData(trajs)
     policy_net = PolicyNet(max_coord=data.max_coord)
-    train_policy_net(data, policy_net, epochs=10)
-    eval_policy_net(data, n_trajs=2, policy_net=policy_net)
-    assert False
+    train_policy_net(data, policy_net, epochs=100)
+    eval_policy_net(data, n_trajs=5, net=policy_net)
 
     n_abstractions = 2
     state_dim = policy_net.state_dim
@@ -430,4 +442,5 @@ if __name__ == '__main__':
     # abstract_net.forward_debug([1, 2, 3, 4, 5])
 
     train_abstractions(data, abstract_net, policy_net, epochs=20)
-    eval_abstractions(data, ['U', 'U', 'U', 'R', 'R', 'R', 'U', 'U', 'U'], abstract_net)
+    eval_abstractions(data, n_trajs=5, abstract_net=abstract_net,
+                      n_abstractions=2)
