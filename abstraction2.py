@@ -426,8 +426,33 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
                               + traj[start:end]
                               + ('-' * max(0, len(traj) - end)))
 
+def test_batched_eq_nets():
+    random.seed(1)
+    torch.manual_seed(1)
 
-if __name__ == '__main__':
+    scale = 3
+    seq_len = 5
+    trajs = generate_data(scale, seq_len, n=5)
+    data = TrajData(trajs)
+    policy_net = PolicyNet(max_coord=data.max_coord)
+    train_policy_net(data, policy_net, epochs=100)
+    eval_policy_net(data, n_trajs=5, net=policy_net)
+    assert False
+
+    n_abstractions = 2
+    state_dim = policy_net.state_dim
+    abstract_net = Eq2Net(n_abstractions, state_dim, n_micro_actions=2)
+    # abstract_net.forward_debug([1, 2, 3, 4, 5])
+
+    train_abstractions(data, abstract_net, policy_net, epochs=20)
+    eval_abstractions(data, n_trajs=5, abstract_net=abstract_net,
+                      n_abstractions=2)
+
+
+def main():
+    random.seed(1)
+    torch.manual_seed(1)
+
     scale = 3
     seq_len = 5
     trajs = generate_data(scale, seq_len, n=100)
@@ -444,3 +469,7 @@ if __name__ == '__main__':
     train_abstractions(data, abstract_net, policy_net, epochs=20)
     eval_abstractions(data, n_trajs=5, abstract_net=abstract_net,
                       n_abstractions=2)
+
+if __name__ == '__main__':
+    test_batched_eq_nets()
+
