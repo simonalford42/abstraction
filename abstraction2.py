@@ -68,10 +68,15 @@ class Eq1Net(nn.Module):
                                              state_dim,
                                              n_micro_actions)
 
+    # def forward(self, states, actions, abstract_actions):
+    #     return self.forward_batched(states, actions, abstract_actions)
     def forward(self, traj, abstract_action):
+        return self.forward_unbatched(traj, abstract_action)
+
+    def forward_unbatched(self, traj, abstract_action):
         """
         traj: vector of (state, action) tuples.
-        (last state's action isn't used, could be None.)
+        (last state's action isn't used, could be -1 marking end of seq.)
         state is vector of dim state_dim
         action is an int
         abstract_action: int of abstract action
@@ -148,11 +153,17 @@ class Eq2Net(nn.Module):
         return sum(self.eq1_net(states, actions, i)
                    for i in range(self.n_abstractions))
 
+    # def forward(self, states, actions):
+        # return self.forward_batched(states, actions)
     def forward(self, traj):
+        return self.forward_unbatched(traj)
+
+    def forward_unbatched(self, traj):
         """
-        traj: list of (s_i, a_i) where a[-1] is None
+        traj: list of (s_i, a_i) where a[-1] is -1
         s_i is a vector, a_i is an int
         """
+        assert traj[-1][1] == -1
 
         # tabulated results
         p_table = [0] * (len(traj) + 1)
@@ -274,7 +285,12 @@ class TrajData(Dataset):
         trajs: list of trajectories a la generate_grid_traj()
 
         generates ((x, y, x_goal, y_goal), move) data points from the trajs, and
-        makes a dataset of them
+        makes a dataset of them.
+
+        Note: for trajectories in sequence form, we include the final state
+        reached as a tuple (state, None) i.e. no action/move for that tuple.
+        These are not included as singleton data points for policy net
+        training.
 
         0 = right = 'R'
         1 = up = 'U'
@@ -285,7 +301,8 @@ class TrajData(Dataset):
         # list of list of ((x, y, x_goal, y_goal), move) tuples
         self.points_lists = [TrajData.make_points(t) for t in trajs]
         # list of ((x, y, x_goal, y_goal), move) tuples
-        self.points = [p for points in self.points_lists for p in points]
+        self.points = [p for points in self.points_lists
+                       for p in points if p[1] != -1]
 
         # list of (x, y, x_goal, y_goal)
         # list of moves (int)
@@ -304,12 +321,9 @@ class TrajData(Dataset):
         self.traj_moves = [[m for (s, m) in traj_embed]
                            for traj_embed in self.traj_embeds]
 
-        # list of state_embeds
+        # list of state_embeds. warning: contains
         self.state_embeds = [s for traj_embed in self.traj_embeds
-                             for s, m in traj_embed]
-        # list of moves
-        self.moves = [m for traj_embed in self.traj_embeds
-                      for s, m in traj_embed]
+                             for s, m in traj_embed if m != -1]
 
         # each trajectory as a batch of state_embeds
         self.traj_batches = [torch.stack([s for (s, m) in traj_embed])
@@ -321,8 +335,11 @@ class TrajData(Dataset):
         goal = trace[-1]
 
         # list of ((x, y, x_goal, y_goal), move) tuples
-        points = [(((*point, *goal), torch.tensor(0 if move == 'R' else 1)))
+        points = [((*point, *goal),
+                   torch.tensor(0 if move == 'R' else 1))
                   for point, move in zip(trace[:-1], traj)]
+        # needed so we can probe probability of stopping at the end!
+        points.append(((*goal, *goal), torch.tensor(-1)))
         return points
 
     def embed_state(self, s):
@@ -480,6 +497,9 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
                     for end in range(start + 1, start + 5):
                         prob = abstract_net.eq1_net(traj_embed[start:end],
                                                     abstract_action)
+                        # states_embed = data.state_embeds[i]
+                        # actions = data.moves[i]
+                        # prob = abstract_net.eq1_net(torch.
                         print(f"{abstract_action} {prob:.2f}\t"
                               + ('-' * max(0, start - 1))
                               + traj[start:end]
@@ -503,7 +523,7 @@ def test_batched_eq_nets():
     abstract_net = Eq2Net(n_abstractions, state_dim, n_micro_actions=2)
     # abstract_net.forward_debug([1, 2, 3, 4, 5])
 
-    # train_abstractions(data, abstract_net, policy_net, epochs=1)
+    train_abstractions(data, abstract_net, policy_net, epochs=1)
     eval_abstractions(data, n_trajs=2, abstract_net=abstract_net,
                       n_abstractions=2)
 
