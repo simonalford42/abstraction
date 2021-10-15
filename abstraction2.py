@@ -492,16 +492,16 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
             print('\t' + ''.join(traj))
             for abstract_action in range(n_abstractions):
                 # for start in range(len(traj_embed)):
-                for start in range(5):
+                for start in range(4):
                     # for end in range(start + 1, len(traj_embed)):
-                    for end in range(start + 1, start + 5):
+                    for end in range(start + 1, start + 4):
                         prob = abstract_net.eq1_net(traj_embed[start:end],
                                                     abstract_action)
                         # states_embed = data.state_embeds[i]
                         # actions = data.moves[i]
                         # prob = abstract_net.eq1_net(torch.
                         print(f"{abstract_action} {prob:.2f}\t"
-                              + ('-' * max(0, start - 1))
+                              + ('-' * start)
                               + traj[start:end]
                               + ('-' * max(0, len(traj) - end)))
 
@@ -512,7 +512,7 @@ def test_batched_eq_nets():
 
     scale = 3
     seq_len = 5
-    trajs = generate_data(scale, seq_len, n=5)
+    trajs = generate_data(scale, seq_len, n=100)
     data = TrajData(trajs)
     policy_net = PolicyNet(max_coord=data.max_coord)
     train_policy_net(data, policy_net, epochs=100)
