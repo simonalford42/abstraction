@@ -82,11 +82,42 @@ class Eq1Net(nn.Module):
         for state, action in traj[:-1]:
             action_logits, prob_stop = self.controller.prob(abstract_action, state)
             prob_action = action_logits[action]
-            prob_stop = prob_stop
             p = p * prob_action * (1 - prob_stop)
 
         final_state = traj[-1][0]
         _, prob_stop = self.controller.prob(abstract_action, final_state)
+        p *= prob_stop
+
+        return p
+
+    def forward_batched(self, states, actions, abstract_actions):
+        """
+        states: (B, n + 1) tensor of state sequences
+        actions: (B, n) tensor of actions
+        abstract_actions: (B, ) ints
+        """
+        B = len(abstract_actions)
+        n = actions.shape[1]
+        assertEqual(states.shape(B, n + 1))
+        assertEqual(actions.shape(B, n))
+
+        trans_states = states.transpose(0, 1)
+        trans_actions = states.transpose(0, 1)
+        p = torch.ones(B)
+        # each iter is a batch of state/action at step i
+        # ignore final state
+        for states, actions in zip(trans_states[:-1], trans_actions):
+            action_logits, prob_stop = self.controller(abstract_actions,
+                                                       states)
+            # get prob of chosen action for each item in batch
+            # see https://numpy.org/doc/stable/reference/arrays.indexing.html#purely-integer-array-indexing
+            prob_action = action_logits[range(B), actions]
+            assertEqual(prob_action.shape, (B, ))
+            assertEqual(prob_stop.shape, (B, ))
+            p = p * prob_action * (1 - prob_stop)
+
+        final_states = trans_states[-1]
+        _, prob_stop = self.controller(abstract_actions, final_states)
         p *= prob_stop
 
         return p
@@ -111,6 +142,12 @@ class Eq2Net(nn.Module):
         return sum(self.eq1_net(traj, i)
                    for i in range(self.n_abstractions))
 
+    def f_batched(self, states, actions):
+        # we could super-batch this by parallelizing over abstract action
+        # could check directly with unbatched as it gets summed
+        return sum(self.eq1_net(states, actions, i)
+                   for i in range(self.n_abstractions))
+
     def forward(self, traj):
         """
         traj: list of (s_i, a_i) where a[-1] is None
@@ -128,6 +165,28 @@ class Eq2Net(nn.Module):
             p_table[a] = p
 
         # assert p_table[-2] == self.f(traj[-1:]) / self.n_abstractions
+
+        return p_table[0]
+
+    def forward_batched(self, states, actions):
+        """
+        states: (B, n + 1)
+        actions: (B, n)
+        returns: (B, ) probabilities
+        """
+        B, n = actions.shape
+        assertEqual(states.shape, (B, n + 1))
+
+        p_table = [torch.zeros(B) for _ in range(n + 1)]
+        p_table[-1] = torch.ones(B)
+
+        for a in range(n, -1, -1):
+            p = sum(self.f_batched(states[a: b + 1], actions[a: b])
+                    * p_table[b + 1]
+                    for b in range(a, len(states)))
+            assertEqual(p.shape, (B, ))
+            p /= self.n_abstractions
+            p_table[a] = p
 
         return p_table[0]
 
@@ -421,10 +480,11 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
                     for end in range(start + 1, start + 5):
                         prob = abstract_net.eq1_net(traj_embed[start:end],
                                                     abstract_action)
-                        print(f"{abstract_action} {prob:.2f}\t" 
-                              + ('-' * max(0, start -1))
+                        print(f"{abstract_action} {prob:.2f}\t"
+                              + ('-' * max(0, start - 1))
                               + traj[start:end]
                               + ('-' * max(0, len(traj) - end)))
+
 
 def test_batched_eq_nets():
     random.seed(1)
@@ -437,15 +497,14 @@ def test_batched_eq_nets():
     policy_net = PolicyNet(max_coord=data.max_coord)
     train_policy_net(data, policy_net, epochs=100)
     eval_policy_net(data, n_trajs=5, net=policy_net)
-    assert False
 
     n_abstractions = 2
     state_dim = policy_net.state_dim
     abstract_net = Eq2Net(n_abstractions, state_dim, n_micro_actions=2)
     # abstract_net.forward_debug([1, 2, 3, 4, 5])
 
-    train_abstractions(data, abstract_net, policy_net, epochs=20)
-    eval_abstractions(data, n_trajs=5, abstract_net=abstract_net,
+    # train_abstractions(data, abstract_net, policy_net, epochs=1)
+    eval_abstractions(data, n_trajs=2, abstract_net=abstract_net,
                       n_abstractions=2)
 
 
@@ -470,6 +529,6 @@ def main():
     eval_abstractions(data, n_trajs=5, abstract_net=abstract_net,
                       n_abstractions=2)
 
+
 if __name__ == '__main__':
     test_batched_eq_nets()
-
