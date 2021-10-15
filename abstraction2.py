@@ -83,10 +83,10 @@ class Eq1Net(nn.Module):
                                              state_dim,
                                              n_micro_actions)
 
-    # def forward(self, states, actions, abstract_actions):
-    #     return self.forward_batched(states, actions, abstract_actions)
-    def forward(self, traj, abstract_action):
-        return self.forward_unbatched(traj, abstract_action)
+    def forward(self, states, actions, abstract_action):
+        return self.forward_batched(states, actions, abstract_action)
+    # def forward(self, traj, abstract_action):
+    #     return self.forward_unbatched(traj, abstract_action)
 
     def forward_unbatched(self, traj, abstract_action):
         """
@@ -110,17 +110,15 @@ class Eq1Net(nn.Module):
 
         return p
 
-    def forward_batched(self, states, actions, abstract_actions):
+    def forward_batched(self, states, actions, abstract_action):
         """
         states: (B, state_dim, n + 1) tensor of state sequences
         actions: (B, n) tensor of actions
-        abstract_actions: (B, ) tensor
+        abstract_action: int
         """
-        B = len(abstract_actions)
-        n = actions.shape[1]
+        (B, n) = actions.shape
         assertEqual(states.shape, (B, self.state_dim, n + 1))
-        assertEqual(actions.shape, (B, n))
-        assertEqual(abstract_actions.shape, (B, ))
+        abstract_actions = torch.full((B, ), abstract_action)
 
         trans_states = states.reshape(n + 1, B, self.state_dim)
         trans_actions = actions.reshape(n, B)
@@ -167,6 +165,10 @@ class Eq2Net(nn.Module):
                    for i in range(self.n_abstractions))
 
     def f_batched(self, states, actions):
+        """
+        states: (B, state_dim, n + 1)
+        actions: (B, n)
+        """
         # we could super-batch this by parallelizing over abstract action
         # could check directly with unbatched as it gets summed
         return sum(self.eq1_net(states, actions, i)
@@ -174,7 +176,6 @@ class Eq2Net(nn.Module):
 
     def forward(self, states, actions):
         return self.forward_batched(states, actions)
-
     # def forward(self, traj):
     #     return self.forward_unbatched(traj)
 
@@ -201,20 +202,20 @@ class Eq2Net(nn.Module):
 
     def forward_batched(self, states, actions):
         """
-        states: (B, n + 1)
+        states: (B, state_dim, n + 1)
         actions: (B, n)
         returns: (B, ) probabilities
         """
         B, n = actions.shape
-        assertEqual(states.shape, (B, n + 1))
+        assertEqual(states.shape, (B, self.state_dim, n + 1))
 
-        p_table = [torch.zeros(B) for _ in range(n + 1)]
+        p_table = [torch.zeros(B) for _ in range(n + 2)]
         p_table[-1] = torch.ones(B)
 
         for a in range(n, -1, -1):
-            p = sum(self.f_batched(states[a: b + 1], actions[a: b])
+            p = sum(self.f_batched(states[:, :, a:b + 1], actions[:, a:b])
                     * p_table[b + 1]
-                    for b in range(a, len(states)))
+                    for b in range(a, n + 1))
             assertEqual(p.shape, (B, ))
             p /= self.n_abstractions
             p_table[a] = p
@@ -315,6 +316,7 @@ class TrajData(Dataset):
         0 = right = 'R'
         1 = up = 'U'
         """
+        super().__init__()
         # list of ['U','U','R','R',...]
         self.trajs = trajs
 
@@ -335,13 +337,15 @@ class TrajData(Dataset):
         self.state_dim = 4 * (self.max_coord + 1)
 
         # list of list of (state_embed, move)
+        # includes (goal, -1) at end
         self.traj_embeds = [self.embed_points(p)
                             for p in self.points_lists]
         # list of list of state_embed
         self.traj_states = [[s for (s, m) in traj_embed]
                             for traj_embed in self.traj_embeds]
         # list of tensor of moves
-        self.traj_moves = [torch.tensor([m for (s, m) in traj_embed])
+        # does not include -1 at end
+        self.traj_moves = [torch.tensor([m for (s, m) in traj_embed[:-1]])
                            for traj_embed in self.traj_embeds]
 
         # list of state_embeds.
@@ -393,6 +397,25 @@ class TrajData(Dataset):
     def __getitem__(self, idx):
         return (self.state_embeds[idx],
                 self.moves[idx])
+
+
+class TrajData2(Dataset):
+    def __init__(self, traj_data: TrajData, probs):
+        super().__init__()
+        self.traj_data = traj_data
+        self.probs = probs
+
+    def __len__(self):
+        return len(self.traj_data.trajs)
+
+    def __getitem__(self, idx):
+        """
+        (state_embeds: [state_dim, n+1],
+         actions: [n]), prob
+        """
+        return ((self.traj_data.traj_batches[idx].transpose(0, 1),
+                 self.traj_data.traj_moves[idx]),
+                self.probs[idx])
 
 
 def train_policy_net(data, net, epochs):
@@ -492,6 +515,45 @@ def train_abstractions(data: TrajData, abstract_net, target_policy_net, epochs):
             optimizer.zero_grad()
             p = abstract_net(traj_embed)
             loss = criterion(p, target_p)
+            print(f"loss: {loss}")
+            train_loss += loss
+            loss.backward()
+            optimizer.step()
+
+        train_error = 0  # TODO
+
+        print(f"epoch: {epoch}\t"
+              + f"train loss: {loss}\t"
+              # + f"train error: {train_error}\t"
+              + f"({time.time() - start:.0f}s)")
+        train_losses.append(train_loss)
+        train_errors.append(train_error)
+
+
+def train_abstractions_batched(
+        data: TrajData, abstract_net,
+        target_policy_net, epochs):
+    print(f"abstract net has {num_params(abstract_net)} parameters")
+    criterion = torch.nn.MSELoss(reduction='sum')
+    optimizer = torch.optim.Adam(abstract_net.parameters(), lr=0.001)
+
+    train_losses = []
+    train_errors = []
+    abstract_net.train()
+
+    traj_probs = [traj_prob(b, m, target_policy_net)
+                  for b, m in zip(data.traj_batches, data.traj_moves)]
+    data2 = TrajData2(data, traj_probs)
+    dataloader = DataLoader(data2, batch_size=1, shuffle=False)
+
+    for epoch in range(epochs):
+        train_loss = 0
+        start = time.time()
+        for (states, actions), target_probs in dataloader:
+            optimizer.zero_grad()
+            probs = abstract_net(states, actions)
+            loss = criterion(probs, target_probs)
+            print(f"loss: {loss}")
             train_loss += loss
             loss.backward()
             optimizer.step()
@@ -518,20 +580,20 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
                 for start in range(4):
                     # for end in range(start + 1, len(traj_embed)):
                     for end in range(start + 1, start + 4):
-                        prob = abstract_net.eq1_net(traj_embed[start:end + 1],
-                                                    abstract_action)
-                        # states_embed = torch.stack(
-                        #     data.traj_states[i][start:end + 1]).transpose(0, 1)
-                        # assertEqual(states_embed.shape,
-                        #             (data.state_dim, end - start + 1))
-                        # actions = data.traj_moves[i][start:end]
-                        # assertEqual(actions.shape, (end - start, ))
-                        # prob = abstract_net.eq1_net(
-                        #     states_embed.unsqueeze(0),
-                        #     actions.unsqueeze(0),
-                        #     torch.tensor([abstract_action]))
-                        # assertEqual(prob.shape, (1,))
-                        # prob = prob[0]
+                        # prob = abstract_net.eq1_net(traj_embed[start:end + 1],
+                        #                             abstract_action)
+                        states_embed = torch.stack(
+                            data.traj_states[i][start:end + 1]).transpose(0, 1)
+                        assertEqual(states_embed.shape,
+                                    (data.state_dim, end - start + 1))
+                        actions = data.traj_moves[i][start:end]
+                        assertEqual(actions.shape, (end - start, ))
+                        prob = abstract_net.eq1_net(
+                            states_embed.unsqueeze(0),
+                            actions.unsqueeze(0),
+                            abstract_action)
+                        assertEqual(prob.shape, (1,))
+                        prob = prob[0]
 
                         print(f"{abstract_action} {prob:.2f}\t"
                               + ('-' * start)
@@ -557,6 +619,7 @@ def test_batched_eq_nets():
     # abstract_net.forward_debug([1, 2, 3, 4, 5])
 
     # train_abstractions(data, abstract_net, policy_net, epochs=1)
+    train_abstractions_batched(data, abstract_net, policy_net, epochs=1)
     eval_abstractions(data, n_trajs=1, abstract_net=abstract_net,
                       n_abstractions=2)
 
