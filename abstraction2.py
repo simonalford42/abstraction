@@ -19,8 +19,12 @@ class AbstractController(nn.Module):
         self.n_micro_actions = n_micro_actions
         self.net = FC(input_dim=n_abstractions + state_dim,
                       output_dim=n_micro_actions + 1,
-                      num_hidden=2,
-                      hidden_dim=16)
+                      num_hidden=0)
+
+        # self.net = FC(input_dim=n_abstractions + state_dim,
+        #               output_dim=n_micro_actions + 1,
+        #               num_hidden=2,
+        #               hidden_dim=16)
 
     def forward(self, x):
         """
@@ -530,18 +534,18 @@ def train_abstractions(data: TrajData, abstract_net, target_policy_net, epochs):
         train_losses.append(train_loss)
         train_errors.append(train_error)
 
-    torch.save(model.state_dict(), 'abstract_net.pt')
+    torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
 
 def train_abstractions_batched(
         data: TrajData, abstract_net,
-        target_policy_net, epochs):
+        target_policy_net, epochs,
+        lr=0.001):
     print(f"abstract net has {num_params(abstract_net)} parameters")
     criterion = torch.nn.MSELoss(reduction='sum')
-    optimizer = torch.optim.Adam(abstract_net.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(abstract_net.parameters(), lr=lr)
 
     train_losses = []
-    train_errors = []
     abstract_net.train()
 
     traj_probs = [traj_prob(b, m, target_policy_net)
@@ -560,16 +564,14 @@ def train_abstractions_batched(
             loss.backward()
             optimizer.step()
 
-        train_error = 0  # TODO
-
         print(f"epoch: {epoch}\t"
               + f"train loss: {loss}\t"
-              # + f"train error: {train_error}\t"
               + f"({time.time() - start:.0f}s)")
         train_losses.append(train_loss)
-        train_errors.append(train_error)
 
-    torch.save(abstract_net.state_dict(), 'abstract_net.pt')
+    lr_str = str(lr)
+    lr_str = lr_str.replace('.', '-')
+    torch.save(abstract_net.state_dict(), f'abstract_net_lr{lr_str}.pt')
 
 
 def eval_abstractions(data, n_trajs, abstract_net):
@@ -617,22 +619,6 @@ def eval_abstractions(data, n_trajs, abstract_net):
                 prev_probs = probs
 
 
-def sample_trajectory(start, goal, abstract_controller, data: TrajData):
-    """
-    start: (x, y)
-    goal: (x, y)
-    returns:
-        traj: ['U','U','R','R', ...]
-        abstract_trace: [1, 1, 2, 2, 3, 4, 4, 4] 
-            if trajectory has n abstract actions in sequence, then l[i] tells
-            which of the n abstract actions led to micro step at i.
-            so monotonically increasing
-    """
-    state_embed = data.embed_state((*start, *goal))
-
-
-
-
 def test_batched_eq_nets():
     random.seed(1)
     torch.manual_seed(1)
@@ -664,14 +650,14 @@ def main():
     trajs = generate_data(scale, seq_len, n=1000)
     data = TrajData(trajs)
     policy_net = PolicyNet(max_coord=data.max_coord)
-    train_policy_net(data, policy_net, epochs=10)
+    train_policy_net(data, policy_net, epochs=20)
     eval_policy_net(data, n_trajs=5, net=policy_net)
 
     n_abstractions = 2
     state_dim = policy_net.state_dim
     abstract_net = Eq2Net(n_abstractions, state_dim, n_micro_actions=2)
-    abstract_net.load_state_dict(torch.load('abstract_net.pt'))
-    # train_abstractions_batched(data, abstract_net, policy_net, epochs=10)
+    # abstract_net.load_state_dict(torch.load('abstract_net.pt'))
+    train_abstractions_batched(data, abstract_net, policy_net, epochs=20)
     eval_abstractions(data, n_trajs=5, abstract_net=abstract_net)
 
 
