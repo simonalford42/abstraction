@@ -83,10 +83,10 @@ class Eq1Net(nn.Module):
                                              state_dim,
                                              n_micro_actions)
 
-    def forward(self, states, actions, abstract_actions):
-        return self.forward_batched(states, actions, abstract_actions)
-    # def forward(self, traj, abstract_action):
-    #     return self.forward_unbatched(traj, abstract_action)
+    # def forward(self, states, actions, abstract_actions):
+    #     return self.forward_batched(states, actions, abstract_actions)
+    def forward(self, traj, abstract_action):
+        return self.forward_unbatched(traj, abstract_action)
 
     def forward_unbatched(self, traj, abstract_action):
         """
@@ -518,20 +518,20 @@ def eval_abstractions(data, n_trajs, abstract_net, n_abstractions):
                 for start in range(4):
                     # for end in range(start + 1, len(traj_embed)):
                     for end in range(start + 1, start + 4):
-                        # prob = abstract_net.eq1_net(traj_embed[start:end + 1],
-                        #                             abstract_action)
-                        states_embed = torch.stack(
-                            data.traj_states[i][start:end + 1]).transpose(0, 1)
-                        assertEqual(states_embed.shape,
-                                    (data.state_dim, end - start + 1))
-                        actions = data.traj_moves[i][start:end]
-                        assertEqual(actions.shape, (end - start, ))
-                        prob = abstract_net.eq1_net(
-                            states_embed.unsqueeze(0),
-                            actions.unsqueeze(0),
-                            torch.tensor([abstract_action]))
-                        assertEqual(prob.shape, (1,))
-                        prob = prob[0]
+                        prob = abstract_net.eq1_net(traj_embed[start:end + 1],
+                                                    abstract_action)
+                        # states_embed = torch.stack(
+                        #     data.traj_states[i][start:end + 1]).transpose(0, 1)
+                        # assertEqual(states_embed.shape,
+                        #             (data.state_dim, end - start + 1))
+                        # actions = data.traj_moves[i][start:end]
+                        # assertEqual(actions.shape, (end - start, ))
+                        # prob = abstract_net.eq1_net(
+                        #     states_embed.unsqueeze(0),
+                        #     actions.unsqueeze(0),
+                        #     torch.tensor([abstract_action]))
+                        # assertEqual(prob.shape, (1,))
+                        # prob = prob[0]
 
                         print(f"{abstract_action} {prob:.2f}\t"
                               + ('-' * start)
