@@ -8,10 +8,6 @@ from utils import assertEqual, num_params, FC
 
 
 class AbstractController(nn.Module):
-    """
-    Input: [abstract_action_embed | state_embed]
-    Output: [micro_action_logits | stop_prob]
-    """
     def __init__(self, n_abstractions, state_dim, n_micro_actions):
         super().__init__()
         self.n_abstractions = n_abstractions
@@ -20,11 +16,9 @@ class AbstractController(nn.Module):
         self.net = FC(input_dim=n_abstractions + state_dim,
                       output_dim=n_micro_actions + 1,
                       num_hidden=0)
+                      # num_hidden=2,
+                      # hidden_dim=16)
 
-        # self.net = FC(input_dim=n_abstractions + state_dim,
-        #               output_dim=n_micro_actions + 1,
-        #               num_hidden=2,
-        #               hidden_dim=16)
 
     def forward(self, x):
         """
@@ -87,10 +81,38 @@ class Eq1Net(nn.Module):
                                              state_dim,
                                              n_micro_actions)
 
-    def forward(self, states, actions, abstract_action):
-        return self.forward_batched(states, actions, abstract_action)
-    # def forward(self, traj, abstract_action):
-    #     return self.forward_unbatched(traj, abstract_action)
+    # def forward(self, states, actions, abstract_action):
+    #     return self.forward_batched(states, actions, abstract_action)
+    def forward(self, traj, abstract_action):
+        return self.forward_unbatched(traj, abstract_action)
+
+    def forward_unbatched2(self, traj, abstract_action):
+        """
+        traj: vector of (state, action) tuples.
+        (last state's action isn't used, could be -1 marking end of seq.)
+        state is vector of dim state_dim
+        action is an int
+        abstract_action: int of abstract action
+
+        returns: (logits, stop_prob):
+            - logits: tensor of (N, n_micro_actions) of logits at each step
+            - stop_prob: prob of stopping to be used later.
+        """
+        N = len(traj) - 1
+        logits = []
+        p = torch.tensor(1.)
+
+        for state, action in traj[:-1]:
+            action_logits, prob_stop = self.controller.prob(abstract_action, state)
+            logits.append(action_logits * p)
+            prob_action = action_logits[action]
+            p = p * prob_action * (1 - prob_stop)
+
+        final_state = traj[-1][0]
+        _, prob_stop = self.controller.prob(abstract_action, final_state)
+
+        return logits, prob_stop
+
 
     def forward_unbatched(self, traj, abstract_action):
         """
@@ -167,6 +189,10 @@ class Eq2Net(nn.Module):
     def f(self, traj):
         return sum(self.eq1_net(traj, i)
                    for i in range(self.n_abstractions))
+
+    def f2(self, traj):
+        return sum(self.eq1_net.forward_unbatched2(traj, i)
+                   for i in range(self.n_abstraction))
 
     def f_batched(self, states, actions):
         """
@@ -657,8 +683,12 @@ def main():
     state_dim = policy_net.state_dim
     abstract_net = Eq2Net(n_abstractions, state_dim, n_micro_actions=2)
     # abstract_net.load_state_dict(torch.load('abstract_net.pt'))
-    train_abstractions_batched(data, abstract_net, policy_net, epochs=20)
+    train_abstractions_batched(data, abstract_net, policy_net, epochs=50)
     eval_abstractions(data, n_trajs=5, abstract_net=abstract_net)
+
+
+def pseudocode_train(traj):
+        
 
 
 if __name__ == '__main__':
