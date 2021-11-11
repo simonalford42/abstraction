@@ -150,7 +150,7 @@ class Eq2Net(nn.Module):
         HMM calculation, identical to Smith et al. 2018.
         """
         T = len(actions)
-        assert state_embeds.shape == (T + 1, self.s)
+        assertEqual(state_embeds.shape, (T + 1, self.s))
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps = self.controller(state_embeds)
 
@@ -166,11 +166,6 @@ class Eq2Net(nn.Module):
                                      torch.tensor(0.), atol=1E-5), \
                        f'Not quite zero: {torch.logsumexp(macro_dist, dim=0)}'
 
-            # (b, )
-            action_lps = action_logps[i, :, action]
-            # in prob space, this is a sum of probs weighted by macro-dist
-            logp = torch.logsumexp(action_lps + macro_dist, dim=0)
-            total_logp += logp
             # markov transition, mirroring policy over options from Smith
             stop_lps = stop_logps[i, :, 1]  # (b, )
             one_minus_stop_lps = stop_logps[i, :, 0]  # (b, )
@@ -186,6 +181,12 @@ class Eq2Net(nn.Module):
             macro_dist = macro_dist + one_minus_stop_lps
             # add new mass
             macro_dist = torch.logaddexp(macro_dist, new_mass)
+
+            # (b, )
+            action_lps = action_logps[i, :, action]
+            # in prob space, this is a sum of probs weighted by macro-dist
+            logp = torch.logsumexp(action_lps + macro_dist, dim=0)
+            total_logp += logp
 
         # all macro options need to stop at the very end.
         final_stop_lps = stop_logps[-1, :, 0]
@@ -358,9 +359,9 @@ class TrajData(Dataset):
                 self.moves[idx])
 
 
-def train_abstractions(data: TrajData, net, epochs):
+def train_abstractions(data, net, epochs, lr=1E-3):
     print(f"net has {num_params(net)} parameters")
-    optimizer = torch.optim.Adam(net.parameters(), lr=1E-2)
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 
     train_losses = []
     net.train()
@@ -541,13 +542,13 @@ def main():
 
     n_abstractions = 2
     model = 'HMM'
-    # model = 'HMM'
     # model = 'DP'
+    # model = 'micro'
 
     net = Eq2Net(n_abstractions, data.state_dim, n_micro_actions=2,
                  abstract_penalty=0, model=model)
     # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    train_abstractions(data, net, epochs=50)
+    train_abstractions(data, net, epochs=150)
     utils.save_model(net, f'models/model_9-10_{model}.pt')
 
     eval_data = TrajData(generate_data(scale, seq_len, n=10),
