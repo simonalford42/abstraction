@@ -169,6 +169,7 @@ class MuZeroNet(nn.Module):
         # forget optimization for now
         state_batch = torch.unsqueeze(state_batch, 1)
         assert state_batch.shape == (B, 1, 28, 28)
+        # abstract representation
         state_batch = self.cnn(state_batch)
         assert state_batch.shape == (B, self.abstract_dim)
 

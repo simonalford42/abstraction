@@ -195,10 +195,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    # data = ArrowData(generate_arrow_data(n=10, seq_len=3, scale=3), scale=3)
-    # for i in range(2):
-    #     print(data.trajs[i])
-    #     print(data.traj_moves[i])
-    #     print(data.traj_batches[i])
-    #     print(data.traj_coord_dicts[i])
+    # main()
+    scale = 5
+    data = ArrowData(generate_arrow_data(n=10, seq_len=5, scale=scale), scale=scale)
+    for i in range(10):
+        print(data.trajs[i])
+        # print(data.traj_moves[i])
+        # print(data.traj_batches[i])
+        # print(data.traj_coord_dicts[i])

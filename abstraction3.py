@@ -33,8 +33,8 @@ class AbstractController(nn.Module):
         outputs:
            (T, b, n) tensor of logps
            (T, b, 2) tensor of stop logits
-               interpretation: [T, b, 0] is "keep going" (stop=False) (1 - beta)
-                               [T, b, 1] is stop logp
+               interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
+                               (T, b, 1) is stop logp
            (T, b) tensor of start logits
         so intermediate out (T, num_abstractions * (n + 2))
         """
@@ -143,7 +143,7 @@ class Eq2Net(nn.Module):
     def forward_HMM(self, state_embeds, actions):
         """
         state_embeds: (T+1, s) tensor
-        actions: (T, ) tensor of ints
+        actions: (T,) tensor of ints
 
         outputs: logp of sequence
 
@@ -156,7 +156,7 @@ class Eq2Net(nn.Module):
 
         total_logp = 0.
         # log-softmaxed to one.
-        macro_dist = start_logps[0]  # (b, )
+        macro_dist = start_logps[0]  # [b]
         for i, action in enumerate(actions):
             # invariant: prob dist should sum to 1
             # I was getting error of ~1E-7 which got triggered by default value
@@ -167,10 +167,10 @@ class Eq2Net(nn.Module):
                        f'Not quite zero: {torch.logsumexp(macro_dist, dim=0)}'
 
             # markov transition, mirroring policy over options from Smith
-            stop_lps = stop_logps[i, :, 1]  # (b, )
-            one_minus_stop_lps = stop_logps[i, :, 0]  # (b, )
+            stop_lps = stop_logps[i, :, 1]  # (b,)
+            one_minus_stop_lps = stop_logps[i, :, 0]  # (b,)
 
-            start_lps = start_logps[i]  # (b, )
+            start_lps = start_logps[i]  # (b,)
             # how much probability mass exits each option
             macro_stops = macro_dist + stop_lps
             total_rearrange = torch.logsumexp(macro_stops, dim=0)
@@ -182,7 +182,7 @@ class Eq2Net(nn.Module):
             # add new mass
             macro_dist = torch.logaddexp(macro_dist, new_mass)
 
-            # (b, )
+            # (b,)
             action_lps = action_logps[i, :, action]
             # in prob space, this is a sum of probs weighted by macro-dist
             logp = torch.logsumexp(action_lps + macro_dist, dim=0)
