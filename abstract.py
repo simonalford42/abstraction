@@ -34,6 +34,7 @@ class AbstractPolicyNet(nn.Module):
                interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
                                (T, b, 1) is stop logp
            (T, b) tensor of start logps
+           (T, b, t, t) tensor of causal consistency penalties
         """
         T = s_i.shape[0]
 
@@ -41,16 +42,37 @@ class AbstractPolicyNet(nn.Module):
         action_logps = self.micro_net(s_i).reshape(T, self.b, self.a)
         stop_logps = self.stop_net(s_i).reshape(T, self.b, 2)
         start_logps = self.start_net(t_i)  # (T, b)
+        causal_penalty = self.calc_causal_penalty(t_i)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
 
-        return t_i, action_logps, stop_logps, start_logps
+        return t_i, action_logps, stop_logps, start_logps, causal_penalty
+
+    def calc_causal_penalty(self, t_i):
+        T = t_i.shape[0]
+        # calculate transition for each t_i + b pair
+        t_i2 = t_i.repeat_interleave(self.b, dim=0)  # (T*b, t)
+        assertEqual(t_i2.shape, (T*self.b, self.t))
+        b_onehots = F.one_hot(torch.arange(self.b)).repeat(T, 1)  # (T*b, b)
+        assertEqual(b_onehots.shape, (T*self.b, self.b))
+        # b is "less significant', changes in 'inner loop'
+        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*b, t + b)
+        assertEqual(t_i2.shape, (T*self.b, self.t + self.b))
+        # (T * b, t + b) -> (T * b, t)
+        t_i2 = self.alpha_net(t_i2)
+        t_i2 = t_i2.reshape(T, 1, self.b, self.t)
+        t_i3 = t_i.reshape(1, T, 1, self.t)
+        penalty = (t_i2 - t_i3)**2
+        assertEqual(penalty.shape, (T, T, self.b, self.t))
+        penalty = penalty.sum(dim=-1)  # (T, T, self.b)
+        return penalty
 
 
 class Eq2Net(nn.Module):
-    def __init__(self, abstract_policy_net, abstract_penalty=0.5, model='HMM'):
+    def __init__(self, abstract_policy_net, abstract_penalty=0.5,
+                 causal_ratio=1.):
         """
         model:
             DP: dynamic programming model
@@ -66,20 +88,9 @@ class Eq2Net(nn.Module):
 
         # logp penalty for longer sequences
         self.abstract_penalty = abstract_penalty
-        assert model in ['DP', 'HMM', 'micro']
-        self.model = model
+        self.causal_ratio = causal_ratio
 
     def forward(self, s_i, actions):
-        if self.model == 'DP':
-            return self.forward_DP(s_i, actions)
-        elif self.model == 'HMM':
-            return self.forward_HMM(s_i, actions)
-        elif self.model == 'micro':
-            return self.forward_micro(s_i, actions)
-        else:
-            assert False
-
-    def forward_HMM(self, s_i, actions):
         """
         s_i: (T+1, s) tensor
         actions: (T,) tensor of ints
@@ -90,11 +101,11 @@ class Eq2Net(nn.Module):
         """
         T = len(actions)
         assertEqual(s_i.shape, (T + 1, self.s))
-        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b)
-        t_i, action_logps, stop_logps, start_logps = self.abstract_policy_net(s_i)
+        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
+        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net(s_i)
 
         total_logp = 0.
-        # (n_steps_so_far, b) dist over options keeps track of when option started.
+        # (i+1, b) dist over options keeps track of when option started.
         option_step_dist = start_logps[0].unsqueeze(0)
         for i, action in enumerate(actions):
             # invariant: prob dist should sum to 1
@@ -114,7 +125,7 @@ class Eq2Net(nn.Module):
                 start_lps = start_logps[i]  # (b,)
 
                 # prob mass for options exiting which started at step i; broadcast
-                option_step_stops = option_step_dist + stop_lps  # (T, b)
+                option_step_stops = option_step_dist + stop_lps  # (i+1, b)
                 total_rearrange = torch.logsumexp(option_step_stops, dim=(0, 1))
                 total_rearrange = total_rearrange - self.abstract_penalty
                 # distribute new mass among new options. broadcast
@@ -126,6 +137,12 @@ class Eq2Net(nn.Module):
                 option_step_dist = torch.cat((option_step_dist,
                                              new_mass.unsqueeze(0)))
 
+                # causal consistency penalty
+                causal_pens = causal_penalties[:i+1, i, :]  # (i+1, b)
+                assertEqual(causal_pens.shape, (i+1, self.b))
+                causal_penalty = torch.logsumexp(option_step_dist + causal_pens, dim=(0, 1))
+                total_logp = total_logp - self.causal_ratio * causal_penalty
+
             action_lps = action_logps[i, :, action]  # (b,)
             # in prob space, this is a sum of probs weighted by macro-dist
             logp = torch.logsumexp(action_lps + option_step_dist, dim=(0, 1))
@@ -136,22 +153,6 @@ class Eq2Net(nn.Module):
         total_logp += torch.logsumexp(final_stop_lps + option_step_dist, dim=(0, 1))
 
         return total_logp
-
-    def forward_micro(self, s_i, actions):
-        """
-        s_i: (T+1, state_dim) tensor
-        actions: (T, ) tensor of ints
-
-        outputs: logp of sequence
-        """
-        T = len(actions)
-        assert s_i.shape == (T + 1, self.s)
-        # (T+1, b, n), (T+1, b, 2), (T+1, b)
-        action_logps, stop_logps, start_logps = self.controller(s_i)
-
-        step_logps = torch.stack([action_logps[i, 0, actions[i]]
-                                 for i in range(len(actions))])
-        return step_logps.sum(axis=0)
 
 
 def train_abstractions(data, net, epochs, lr=1E-3):
@@ -213,10 +214,6 @@ def sample_trajectories(net, data):
     3. after stopping, sample new option.
     4. repeat until done.
     """
-    if net.model == 'micro':
-        sample_micro_trajectories(net, data)
-        return
-
     for i in range(len(data.trajs)):
         points = data.points_lists[i]
         (x, y, x_goal, y_goal) = points[0][0]
@@ -231,19 +228,20 @@ def sample_trajectories(net, data):
                 break
             state_embed = data.embed_state((x, y, x_goal, y_goal))
             state_batch = torch.unsqueeze(state_embed, 0)
-            action_logps, stop_logps, start_logps = net.controller(state_batch)
+            # only use action_logps, stop_logps, and start_logps
+            t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
             if option is None:
-                option = Categorical(logps=start_logps).sample()
+                option = Categorical(logits=start_logps).sample()
             else:
                 # possibly stop previous option!
-                stop = Categorical(logps=stop_logps[0, option, :]).sample()
+                stop = Categorical(logits=stop_logps[0, option, :]).sample()
                 if stop:  # zero means keep going!
-                    option = Categorical(logps=start_logps[0]).sample()
+                    option = Categorical(logits=start_logps[0]).sample()
                     options.append(current_option)
                     current_option = ''
 
             current_option += str(option.item())
-            action = Categorical(logps=action_logps[0, option, :]).sample()
+            action = Categorical(logits=action_logps[0, option, :]).sample()
             # print(f"action: {action}")
             x, y = up_right.TrajData.execute((x, y), action)
             move = 'R' if action == 0 else 'U'
@@ -253,75 +251,6 @@ def sample_trajectories(net, data):
         print(f'({0, 0}) to ({x, y}) via {moves_taken}')
         print(f"options: {'/'.join(options)}")
         print('-'*10)
-
-
-def logsumexp(tensor, dim=-1, mask=None):
-    """taken from https://github.com/pytorch/pytorch/issues/32097"""
-    if mask is None:
-        mask = torch.ones_like(tensor)
-    else:
-        assert mask.shape == tensor.shape, 'The factors tensor should have the same shape as the original'
-    a = torch.cat([torch.max(tensor, dim, keepdim=True) for _ in range(tensor.shape[dim])], dim)
-    return a + torch.sum((tensor - a).exp()*mask, dim).log()
-
-
-def logaddexp(tensor, other, mask=None):
-    if mask is None:
-        mask = torch.tensor([1, 1])
-    else:
-        assert mask.shape == (2, ), 'invalid mask provided'
-
-    a = torch.max(tensor, other)
-    # clamp to get rid of nans
-    # https://github.com/pytorch/pytorch/issues/1620
-    # calculation from https://en.wikipedia.org/wiki/Log_probability#Addition_in_log_space
-    return a + ((tensor - a).exp()*mask[0] + (other - a).exp()*mask[1]).clamp(min=1E-8).log()
-
-
-def logsubexp(tensor, other):
-    return logaddexp(tensor, other, mask=torch.tensor([1, -1]))
-
-
-def log_practice():
-    a = torch.tensor([0.5, 0.5])
-    b = torch.tensor([0.1, 0.9])
-
-    c = torch.tensor([0.75, 0.25])
-    a2, b2, c2 = map(torch.log, (a, b, c))
-
-    # print( (a + b).log())
-    # print( logaddexp(a2, b2))
-    # print( (a - b).log())
-    # print( logaddexp(a2, b2, torch.tensor([1., -1.])))
-
-    macro_stops = a * b
-    print(f"macro_stops: {macro_stops}")
-    still_there = a - macro_stops
-    print(f"still_there: {still_there}")
-    total_new = sum(macro_stops)
-    print(f"total_new: {total_new}")
-    redist = total_new * c
-    print(f"redist: {redist}")
-    new_macro = still_there + redist
-    print(f"new_macro: {new_macro}")
-
-    assert torch.isclose(torch.logsumexp(a2, dim=0), torch.tensor(0.))
-    macro_stops2 = a2 + b2
-    print(f"macro_stops2: {macro_stops2}")
-    print(torch.isclose(macro_stops2, torch.log(macro_stops)))
-    still_there2 = logsubexp(a2, macro_stops2)
-    print(f"still_there2: {still_there2}")
-    print(torch.isclose(still_there2, torch.log(still_there)))
-    total_new2 = torch.logsumexp(still_there2, dim=0)
-    print(torch.isclose(total_new2, torch.log(total_new)))
-    redist2 = total_new2 + c2
-    print(torch.isclose(redist2, torch.log(redist)))
-    new_macro2 = torch.logaddexp(still_there2, redist2)
-    print(torch.isclose(new_macro2, torch.log(new_macro)))
-    print(torch.logsumexp(new_macro2, dim=0))
-    print(new_macro2.exp())
-    print(torch.isclose(torch.sum(new_macro2.exp()), torch.tensor(1.)))
-    print(torch.isclose(torch.logsumexp(new_macro2, dim=0), torch.tensor(0.)))
 
 
 def main():
@@ -343,10 +272,11 @@ def main():
         start_net=FC(t, b, hidden_dim=64, num_hidden=1),
         alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
     net = Eq2Net(abstract_policy_net,
-                 abstract_penalty=0)
+                 abstract_penalty=0,
+                 causal_ratio=1.0)
 
     # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    train_abstractions(data, net, epochs=150)
+    train_abstractions(data, net, epochs=50)
     # utils.save_model(net, f'models/model_9-17.pt')
 
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
