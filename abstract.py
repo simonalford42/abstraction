@@ -23,6 +23,8 @@ class AbstractPolicyNet(nn.Module):
         self.stop_net = stop_net  # s -> 2b of (stop, 1 - stop) aka beta.
         self.start_net = start_net  # t -> b  aka P(b | t)
         self.alpha_net = alpha_net  # (t + b) -> t abstract transition
+        self.stop_net_stop_ix = 0  # index zero means stop, index 1 means go
+        self.stop_net_continue_ix = 1  # index zero means stop, index 1 means go
 
     def forward(self, s_i):
         """
@@ -120,12 +122,12 @@ class Eq2Net(nn.Module):
             # starts is where its first move happens
             # => skip transition for the first step
             if i > 0:
-                stop_lps = stop_logps[i, :, 1]  # (b,)
-                one_minus_stop_lps = stop_logps[i, :, 0]  # (b,)
+                stop_lps = stop_logps[i, :, self.abstract_policy_net.stop_net_stop_ix]  # (b,)
+                one_minus_stop_lps = stop_logps[i, :, self.abstract_policy_net.stop_net_continue_ix]  # (b,)
                 start_lps = start_logps[i]  # (b,)
 
                 # prob mass for options exiting which started at step i; broadcast
-                option_step_stops = option_step_dist + stop_lps  # (i+1, b)
+                option_step_stops = option_step_dist + stop_lps.reshape(1, self.b)  # (i+1, b)
                 total_rearrange = torch.logsumexp(option_step_stops, dim=(0, 1))
                 total_rearrange = total_rearrange - self.abstract_penalty
                 # distribute new mass among new options. broadcast
@@ -143,14 +145,16 @@ class Eq2Net(nn.Module):
                 causal_penalty = torch.logsumexp(option_step_dist + causal_pens, dim=(0, 1))
                 total_logp = total_logp - self.causal_ratio * causal_penalty
 
+
             action_lps = action_logps[i, :, action]  # (b,)
             # in prob space, this is a sum of probs weighted by macro-dist
             logp = torch.logsumexp(action_lps + option_step_dist, dim=(0, 1))
             total_logp += logp
 
         # all macro options need to stop at the very end.
-        final_stop_lps = stop_logps[-1, :, 0]
-        total_logp += torch.logsumexp(final_stop_lps + option_step_dist, dim=(0, 1))
+        final_stop_lps = stop_logps[-1, :, self.abstract_policy_net.stop_net_stop_ix]  # (b,)
+        # broadcast
+        total_logp += torch.logsumexp(final_stop_lps.reshape(1, self.b) + option_step_dist, dim=(0, 1))
 
         return total_logp
 
@@ -183,27 +187,53 @@ def train_abstractions(data, net, epochs, lr=1E-3):
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
 
-def sample_micro_trajectories(net, data):
-    for i in range(len(data.trajs)):
-        points = data.points_lists[i]
-        (x, y, x_goal, y_goal) = points[0][0]
-        moves = ''.join(data.trajs[i])
-        print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
-        moves_taken = ''
-        for j in range(data.seq_len):
-            if max(x, y) == data.max_coord:
-                break
-            state_embed = data.embed_state((x, y, x_goal, y_goal))
-            state_batch = torch.unsqueeze(state_embed, 0)
-            action_logps, _, _ = net.controller(state_batch)
-            action = torch.argmax(action_logps[:, 0, :])
-            # print(f"action: {action}")
-            x, y = up_right.TrajData.execute((x, y), action)
-            move = 'R' if action == 0 else 'U'
-            moves_taken += move
-            # print(f'now at ({x, y})')
-        print(f'({0, 0}) to ({x, y}) via {moves_taken}')
-        print('-'*10)
+# def sample_trajectories2(net, data):
+#     """
+#     1. tau(s_0) = t_0
+#     2. sample b given t_0.
+#     3. execute b until you stop, generating some s_i, a_i stuff.
+#     4. run alpha(t_0, b) = t_1.
+#     5. repeat steps 2–4 until you generate enough s_i, a_i to get to end.
+#     """
+#     for i in range(len(data.trajs)):
+#         points = data.points_lists[i]
+#         (x, y, x_goal, y_goal) = points[0][0]
+#         moves = ''.join(data.trajs[i])
+#         print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
+#         moves_taken = ''
+#         options = []
+#         current_option = ''
+#         option = None
+
+#         for j in range(data.seq_len):
+#             if max(x, y) == data.max_coord:
+#                 break
+#             state_embed = data.embed_state((x, y, x_goal, y_goal))
+#             state_batch = torch.unsqueeze(state_embed, 0)
+#             # only use action_logps, stop_logps, and start_logps
+#             t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
+#             if option is None:
+#                 option = Categorical(logits=start_logps).sample()
+#             else:
+#                 # possibly stop previous option!
+#                 stop = Categorical(logits=stop_logps[0, option, :]).sample()
+#                 if stop == net.abstract_policy_net.stop_net_stop_ix:
+#                     option = Categorical(logits=start_logps[0]).sample()
+#                     options.append(current_option)
+#                     current_option = ''
+
+#             current_option += str(option.item())
+#             action = Categorical(logits=action_logps[0, option, :]).sample()
+#             # print(f"action: {action}")
+#             x, y = up_right.TrajData.execute((x, y), action)
+#             move = 'R' if action == 0 else 'U'
+#             moves_taken += move
+#             # print(f'now at ({x, y})')
+
+#         options.append(current_option)
+#         print(f'({0, 0}) to ({x, y}) via {moves_taken}')
+#         print(f"options: {'/'.join(options)}")
+#         print('-'*10)
 
 
 def sample_trajectories(net, data):
@@ -235,7 +265,7 @@ def sample_trajectories(net, data):
             else:
                 # possibly stop previous option!
                 stop = Categorical(logits=stop_logps[0, option, :]).sample()
-                if stop:  # zero means keep going!
+                if stop == net.abstract_policy_net.stop_net_stop_ix:
                     option = Categorical(logits=start_logps[0]).sample()
                     options.append(current_option)
                     current_option = ''
