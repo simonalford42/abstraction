@@ -52,21 +52,46 @@ class AbstractPolicyNet(nn.Module):
 
         return t_i, action_logps, stop_logps, start_logps, consistency_penalty
 
+    def new_option_logps(self, t):
+        """
+        Input: an abstract state of shape (t,)
+        Output: (b,) logp of different actions.
+        """
+        return self.start_net(t.unsqueeze(0)).reshape(self.b)
+
+    def alpha_transition(self, t, b):
+        """
+        Calculate a single abstract transition. Useful for test-time.
+        """
+        return self.alpha_transitions(t.unsqueeze(0), torch.tensor([b])).reshape(self.t)
+
+    def alpha_transitions(self, t_i, bs):
+        """
+        input: t_i: (T, t) batch of abstract states.
+               bs: 1D tensor of actions to try
+        returns: (T, |bs|, self.t) batch of new abstract states for each
+            option applied.
+        """
+        T = t_i.shape[0]
+        nb = bs.shape[0]
+        # calculate transition for each t_i + b pair
+        t_i2 = t_i.repeat_interleave(nb, dim=0)  # (T*nb, t)
+        assertEqual(t_i2.shape, (T*nb, self.t))
+        b_onehots = F.one_hot(bs, num_classes=self.b).repeat(T, 1)  # (T*nb, b)
+        assertEqual(b_onehots.shape, (T*nb, self.b))
+        # b is "less significant', changes in 'inner loop'
+        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
+        assertEqual(t_i2.shape, (T*nb, self.t + self.b))
+        # (T * nb, t + b) -> (T * nb, t)
+        t_i2 = self.alpha_net(t_i2)
+        return t_i2.reshape(T, nb, self.t)
+
     def calc_consistency_penalty(self, t_i):
         T = t_i.shape[0]
-        # calculate transition for each t_i + b pair
-        t_i2 = t_i.repeat_interleave(self.b, dim=0)  # (T*b, t)
-        assertEqual(t_i2.shape, (T*self.b, self.t))
-        b_onehots = F.one_hot(torch.arange(self.b)).repeat(T, 1)  # (T*b, b)
-        assertEqual(b_onehots.shape, (T*self.b, self.b))
-        # b is "less significant', changes in 'inner loop'
-        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*b, t + b)
-        assertEqual(t_i2.shape, (T*self.b, self.t + self.b))
-        # (T * b, t + b) -> (T * b, t)
-        t_i2 = self.alpha_net(t_i2)
-        t_i2 = t_i2.reshape(T, 1, self.b, self.t)
-        t_i3 = t_i.reshape(1, T, 1, self.t)
-        penalty = (t_i2 - t_i3)**2
+        alpha_trans = self.alpha_transitions(t_i, torch.arange(self.b))
+        alpha_trans = alpha_trans.reshape(T, 1, self.b, self.t)
+        t_i2 = t_i.reshape(1, T, 1, self.t)
+        penalty = (t_i2 - alpha_trans)**2
         assertEqual(penalty.shape, (T, T, self.b, self.t))
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
@@ -188,53 +213,61 @@ def train_abstractions(data, net, epochs, lr=1E-3):
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
 
-# def sample_trajectories2(net, data):
-#     """
-#     1. tau(s_0) = t_0
-#     2. sample b given t_0.
-#     3. execute b until you stop, generating some s_i, a_i stuff.
-#     4. run alpha(t_0, b) = t_1.
-#     5. repeat steps 2–4 until you generate enough s_i, a_i to get to end.
-#     """
-#     for i in range(len(data.trajs)):
-#         points = data.points_lists[i]
-#         (x, y, x_goal, y_goal) = points[0][0]
-#         moves = ''.join(data.trajs[i])
-#         print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
-#         moves_taken = ''
-#         options = []
-#         current_option = ''
-#         option = None
+def sample_trajectories2(net, data):
+    """
+    1. tau(s_0) = t_0
+    2. sample b given t_0.
+    3. execute b until you stop, generating some s_i, a_i stuff.
+    4. run alpha(t_0, b) = t_1.
+    5. repeat steps 2–4 until you generate enough s_i, a_i to get to end.
 
-#         for j in range(data.seq_len):
-#             if max(x, y) == data.max_coord:
-#                 break
-#             state_embed = data.embed_state((x, y, x_goal, y_goal))
-#             state_batch = torch.unsqueeze(state_embed, 0)
-#             # only use action_logps, stop_logps, and start_logps
-#             t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
-#             if option is None:
-#                 option = Categorical(logits=start_logps).sample()
-#             else:
-#                 # possibly stop previous option!
-#                 stop = Categorical(logits=stop_logps[0, option, :]).sample()
-#                 if stop == net.abstract_policy_net.stop_net_stop_ix:
-#                     option = Categorical(logits=start_logps[0]).sample()
-#                     options.append(current_option)
-#                     current_option = ''
+    This is the same as the other sample_trajectories, except to generate a new
+    option, you look at alpha(t_0, b), instead of tau(s_i).
+    """
+    for i in range(len(data.trajs)):
+        points = data.points_lists[i]
+        (x, y, x_goal, y_goal) = points[0][0]
+        moves = ''.join(data.trajs[i])
+        print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
+        moves_taken = ''
+        options = []
+        current_option_path = ''
+        start_t_of_current_option = None
+        option = None
 
-#             current_option += str(option.item())
-#             action = Categorical(logits=action_logps[0, option, :]).sample()
-#             # print(f"action: {action}")
-#             x, y = up_right.TrajData.execute((x, y), action)
-#             move = 'R' if action == 0 else 'U'
-#             moves_taken += move
-#             # print(f'now at ({x, y})')
+        for j in range(data.seq_len):
+            if max(x, y) == data.max_coord:
+                break
+            state_embed = data.embed_state((x, y, x_goal, y_goal))
+            state_batch = torch.unsqueeze(state_embed, 0)
+            # only use action_logps, stop_logps, and start_logps
+            t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
+            if option is None:
+                option = Categorical(logits=start_logps).sample()
+                start_t_of_current_option = t_i[0]
+            else:
+                # possibly stop previous option!
+                stop = Categorical(logits=stop_logps[0, option, :]).sample()
+                if stop == net.abstract_policy_net.stop_net_stop_ix:
+                    new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
+                    start_logps = net.abstract_policy_net.new_option_logps(new_t_i)
+                    option = Categorical(logits=start_logps).sample()
+                    options.append(current_option_path)
+                    current_option_path = ''
+                    start_t_of_current_option = new_t_i
 
-#         options.append(current_option)
-#         print(f'({0, 0}) to ({x, y}) via {moves_taken}')
-#         print(f"options: {'/'.join(options)}")
-#         print('-'*10)
+            current_option_path += str(option.item())
+            action = Categorical(logits=action_logps[0, option, :]).sample()
+            # print(f"action: {action}")
+            x, y = up_right.TrajData.execute((x, y), action)
+            move = 'R' if action == 0 else 'U'
+            moves_taken += move
+            # print(f'now at ({x, y})')
+
+        options.append(current_option_path)
+        print(f'({0, 0}) to ({x, y}) via {moves_taken}')
+        print(f"options: {'/'.join(options)}")
+        print('-'*10)
 
 
 def sample_trajectories(net, data):
@@ -313,6 +346,8 @@ def main():
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
                                   max_coord=data.max_coord)
     sample_trajectories(net, eval_data)
+    print('sample trajectories 2')
+    sample_trajectories2(net, eval_data)
 
 
 if __name__ == '__main__':
