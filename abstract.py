@@ -44,15 +44,15 @@ class AbstractPolicyNet(nn.Module):
         action_logps = self.micro_net(s_i).reshape(T, self.b, self.a)
         stop_logps = self.stop_net(s_i).reshape(T, self.b, 2)
         start_logps = self.start_net(t_i)  # (T, b)
-        causal_penalty = self.calc_causal_penalty(t_i)
+        consistency_penalty = self.calc_consistency_penalty(t_i)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
 
-        return t_i, action_logps, stop_logps, start_logps, causal_penalty
+        return t_i, action_logps, stop_logps, start_logps, consistency_penalty
 
-    def calc_causal_penalty(self, t_i):
+    def calc_consistency_penalty(self, t_i):
         T = t_i.shape[0]
         # calculate transition for each t_i + b pair
         t_i2 = t_i.repeat_interleave(self.b, dim=0)  # (T*b, t)
@@ -74,7 +74,7 @@ class AbstractPolicyNet(nn.Module):
 
 class Eq2Net(nn.Module):
     def __init__(self, abstract_policy_net, abstract_penalty=0.5,
-                 causal_ratio=1.):
+                 consistency_ratio=1.):
         """
         model:
             DP: dynamic programming model
@@ -90,7 +90,7 @@ class Eq2Net(nn.Module):
 
         # logp penalty for longer sequences
         self.abstract_penalty = abstract_penalty
-        self.causal_ratio = causal_ratio
+        self.consistency_ratio = consistency_ratio
 
     def forward(self, s_i, actions):
         """
@@ -99,14 +99,15 @@ class Eq2Net(nn.Module):
 
         outputs: logp of sequence
 
-        HMM calculation, identical to Smith et al. 2018.
+        HMM calculation, building off Smith et al. 2018.
         """
         T = len(actions)
         assertEqual(s_i.shape, (T + 1, self.s))
         # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net(s_i)
+        t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
 
         total_logp = 0.
+        total_consistency_penalty = 0.
         # (i+1, b) dist over options keeps track of when option started.
         option_step_dist = start_logps[0].unsqueeze(0)
         for i, action in enumerate(actions):
@@ -140,11 +141,10 @@ class Eq2Net(nn.Module):
                                              new_mass.unsqueeze(0)))
 
                 # causal consistency penalty
-                causal_pens = causal_penalties[:i+1, i, :]  # (i+1, b)
-                assertEqual(causal_pens.shape, (i+1, self.b))
-                causal_penalty = torch.logsumexp(option_step_dist + causal_pens, dim=(0, 1))
-                total_logp = total_logp - self.causal_ratio * causal_penalty
-
+                consistency_pens = consistency_penalties[:i+1, i, :]  # (i+1, b)
+                assertEqual(consistency_pens.shape, (i+1, self.b))
+                consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
+                total_consistency_penalty += consistency_penalty
 
             action_lps = action_logps[i, :, action]  # (b,)
             # in prob space, this is a sum of probs weighted by macro-dist
@@ -156,7 +156,9 @@ class Eq2Net(nn.Module):
         # broadcast
         total_logp += torch.logsumexp(final_stop_lps.reshape(1, self.b) + option_step_dist, dim=(0, 1))
 
-        return total_logp
+        # maximize logp, minimize causal inconsistency
+        loss = -total_logp + self.consistency_ratio * total_consistency_penalty
+        return loss
 
 
 def train_abstractions(data, net, epochs, lr=1E-3):
@@ -171,8 +173,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
         start = time.time()
         for s_i, actions in zip(data.traj_batches, data.traj_moves):
             optimizer.zero_grad()
-            logp = net(s_i, actions)
-            loss = -logp
+            loss = net(s_i, actions)
             # print(f"loss: {loss}")
             train_loss += loss
             # print(f"train_loss: {train_loss}")
@@ -302,11 +303,11 @@ def main():
         start_net=FC(t, b, hidden_dim=64, num_hidden=1),
         alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
     net = Eq2Net(abstract_policy_net,
-                 abstract_penalty=0,
-                 causal_ratio=1.0)
+                 abstract_penalty=.00185,
+                 consistency_ratio=1.0)
 
     # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    train_abstractions(data, net, epochs=50)
+    train_abstractions(data, net, epochs=25)
     # utils.save_model(net, f'models/model_9-17.pt')
 
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
