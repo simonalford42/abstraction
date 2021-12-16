@@ -1,10 +1,11 @@
+from collections import Counter
 import random
 import einops
 import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# from torch.utils.data import Dataset  # , DataLoader
+from torch.utils.data import DataLoader
 import utils
 from utils import assertEqual, num_params
 from modules import FC, AllConv, RelationalDRLNet
@@ -216,7 +217,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
-def train_supervised(data, net, device, epochs, lr=1E-4, save_every=None):
+def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None):
     print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
@@ -227,20 +228,19 @@ def train_supervised(data, net, device, epochs, lr=1E-4, save_every=None):
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
-        for s_i, actions in zip(data.states, data.moves):
-            s_i = s_i.to(device)
+        for states, actions in dataloader:
+            states = states.to(device)
             actions = actions.to(device)
-            for s, a in zip(s_i, actions):
-                optimizer.zero_grad()
-                pred = net(einops.rearrange(s, 'c h w -> 1 c h w'))
-                loss = criterion(pred, torch.tensor([a]))
-                train_loss += loss
-                loss.backward()
-                optimizer.step()
+            optimizer.zero_grad()
+            pred = net(states)
+            loss = criterion(pred, actions)
+            train_loss += loss
+            loss.backward()
+            optimizer.step()
 
         print(f"epoch: {epoch}\t"
               + f"train loss: {loss}\t"
-              + f"({time.time() - start:.0f}s)")
+              + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_model(net, f'models/model_12-15.pt')
         train_losses.append(train_loss)
@@ -344,16 +344,19 @@ def boxworld_train():
 def boxworld_sv_train(device):
     print('generating trajectories')
     env = boxworld.make_env()
-    trajs = boxworld.generate_boxworld_data(n=10, env=env)
-    data = boxworld.BoxWorldData(trajs)
+    trajs = boxworld.generate_boxworld_data(n=1000, env=env)
+    data = boxworld.BoxWorldDataset(trajs)
+    dataloader = DataLoader(data, batch_size=64, shuffle=True)
     print('trajectories generated')
 
     net = RelationalDRLNet(input_channels=3).to(device)
 
-    data = boxworld.BoxWorldData(trajs)
     # utils.load_model(net, f'models/model_12-2__20.pt')
-    train_supervised(data, net, device=device, epochs=100)
-    # utils.save_model(net, f'models/model_12-2.pt')
+    for i in range(100):
+        print(f'round {i}')
+        train_supervised(dataloader, net, device=device, epochs=50)
+        boxworld.eval_model(net, env, n=50)
+        utils.save_model(net, f'models/sv_model_12-16-{i}.pt')
 
 
 def main():
@@ -364,6 +367,7 @@ def main():
     data = up_right.TrajData(trajs)
 
     s = data.state_dim
+    # yapf: ignore
     abstract_policy_net = AbstractPolicyNet(
         a := 2, b := 2, t := 10,
         tau_net=FC(s, t, hidden_dim=64, num_hidden=1),

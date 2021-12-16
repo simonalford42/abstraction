@@ -1,3 +1,4 @@
+import einops
 import gym
 import numpy as np
 from gym import envs
@@ -169,6 +170,32 @@ def exec(moves, env):
     return obs, done
 
 
+def eval_model(net, env, n=100):
+    def obs_to_net(obs):
+        assertEqual(obs.shape, (14, 14, 3))
+        obs = torch.tensor(obs)
+        obs = einops.rearrange(obs, 'h w c -> 1 c h w')
+        return obs
+
+    print(f'Evaluating model on {n} episodes')
+    solved = 0
+    for i in range(n):
+        states, moves = generate_traj(env)
+        obs = states[0]
+        done = False
+        for t in range(2 * len(moves)):
+            obs = obs_to_net(obs)
+            out = net(obs)[0]
+            a = torch.distributions.Categorical(logits=out).sample()
+            obs, rew, done, info = env.step(a)
+            if done:
+                break
+        if done:
+            solved += 1
+    print(f'Solved {solved}/{n} episodes')
+    return solved
+            
+
 def test_solving():
     env = make_env()
     obs = env.reset()
@@ -179,7 +206,7 @@ def test_solving():
         try:
             option = shortest_path(color_obs, goal)
         except NoPathError:
-            # unsolvable, so who care
+            # unsolvable, so who cares
             return
         # print(option)
         obs, done = exec(path_to_moves(option), env)
@@ -222,13 +249,32 @@ def generate_boxworld_data(n, env=None):
     return [generate_traj(env) for i in range(n)]
 
 
+class BoxWorldDataset(Dataset):
+    def __init__(self, data):
+        """
+        data: list of (states, moves) tuples
+        """
+        self.data = data
+        self.state_shape = data[0][0][0].shape  # should be (14, 14, 3)
+        assertEqual(self.state_shape, (14, 14, 3))
+
+        # ignore last state
+        self.states = [torch.tensor(s).reshape(3, 14, 14) for states, _ in self.data for s in states[:-1]]
+        self.moves = [torch.tensor(m) for _, moves in self.data for m in moves]
+
+    def __len__(self):
+        return len(self.states)
+
+    def __getitem__(self, i):
+        return self.states[i], self.moves[i]
+
+
 class BoxWorldData():
     def __init__(self, data):
         """
         data: list of (states, moves) tuples
         """
         self.data = data
-        self.tensor_data = []
         self.state_shape = data[0][0][0].shape  # should be (14, 14, 3)
         assertEqual(self.state_shape, (14, 14, 3))
 
