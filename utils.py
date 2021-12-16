@@ -4,6 +4,14 @@ from typing import List, Any
 import os
 
 
+def get_torch_device():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        print('Training on ' + torch.cuda.get_device_name(device))
+    else:
+        print('Training on CPU')
+
+
 def assertEqual(a, b):
     assert a == b, f'a != b: a:{a}, b:{b}'
 
