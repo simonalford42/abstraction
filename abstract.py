@@ -216,7 +216,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
-def train_supervised(data, net, epochs, lr=1E-4, save_every=None):
+def train_supervised(data, net, device, epochs, lr=1E-4, save_every=None):
     print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
@@ -228,6 +228,8 @@ def train_supervised(data, net, epochs, lr=1E-4, save_every=None):
         train_loss = 0
         start = time.time()
         for s_i, actions in zip(data.states, data.moves):
+            s_i = s_i.to(device)
+            actions = actions.to(device)
             for s, a in zip(s_i, actions):
                 optimizer.zero_grad()
                 pred = net(einops.rearrange(s, 'c h w -> 1 c h w'))
@@ -339,18 +341,18 @@ def boxworld_train():
     # utils.save_model(net, f'models/model_12-2.pt')
     boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
 
-def boxworld_sv_train():
+def boxworld_sv_train(device):
     print('generating trajectories')
     env = boxworld.make_env()
     trajs = boxworld.generate_boxworld_data(n=10, env=env)
     data = boxworld.BoxWorldData(trajs)
     print('trajectories generated')
 
-    net = RelationalDRLNet(input_channels=3)
+    net = RelationalDRLNet(input_channels=3).to(device)
 
     data = boxworld.BoxWorldData(trajs)
     # utils.load_model(net, f'models/model_12-2__20.pt')
-    train_supervised(data, net, epochs=100)
+    train_supervised(data, net, device=device, epochs=100)
     # utils.save_model(net, f'models/model_12-2.pt')
 
 
@@ -382,10 +384,11 @@ def main():
 
 
 if __name__ == '__main__':
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     random.seed(1)
     torch.manual_seed(1)
 
 
     # boxworld_train()
-    boxworld_sv_train()
+    boxworld_sv_train(device)
     # main()
