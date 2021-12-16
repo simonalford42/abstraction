@@ -1,22 +1,25 @@
 import random
+import einops
 import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 # from torch.utils.data import Dataset  # , DataLoader
-# import utils
-from utils import assertEqual, num_params, FC
+import utils
+from utils import assertEqual, num_params
+from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
+import boxworld
 import up_right
 
 
 class AbstractPolicyNet(nn.Module):
-    def __init__(self, a, b, s, t, tau_net, micro_net, stop_net, start_net,
+    def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
                  alpha_net):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
-        self.s = s  # state dim
+        # self.s = s  # state dim; not actually used actually
         self.t = t  # abstract state dim
         self.tau_net = tau_net  # s -> t
         self.micro_net = micro_net  # s -> (b, a)  = P(a | b, s)
@@ -30,7 +33,7 @@ class AbstractPolicyNet(nn.Module):
         """
         input: (T, s) tensor of states
         outputs:
-           (T, t) tensor of abstract states
+           (T, t) tensor of abstract states t_i
            (T, b, n) tensor of action logps
            (T, b, 2) tensor of stop logps
                interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
@@ -43,7 +46,7 @@ class AbstractPolicyNet(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         action_logps = self.micro_net(s_i).reshape(T, self.b, self.a)
         stop_logps = self.stop_net(s_i).reshape(T, self.b, 2)
-        start_logps = self.start_net(t_i)  # (T, b)
+        start_logps = self.start_net(t_i)  # (T, b) P(b | t)
         consistency_penalty = self.calc_consistency_penalty(t_i)
 
         action_logps = F.log_softmax(action_logps, dim=2)
@@ -110,7 +113,6 @@ class Eq2Net(nn.Module):
         self.abstract_policy_net = abstract_policy_net
         self.a = abstract_policy_net.a
         self.b = abstract_policy_net.b
-        self.s = abstract_policy_net.s
         self.t = abstract_policy_net.t
 
         # logp penalty for longer sequences
@@ -127,7 +129,7 @@ class Eq2Net(nn.Module):
         HMM calculation, building off Smith et al. 2018.
         """
         T = len(actions)
-        assertEqual(s_i.shape, (T + 1, self.s))
+        assertEqual(s_i.shape[0], T + 1)
         # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
         t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
 
@@ -196,7 +198,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
-        for s_i, actions in zip(data.traj_batches, data.traj_moves):
+        for s_i, actions in zip(data.states, data.moves):
             optimizer.zero_grad()
             loss = net(s_i, actions)
             # print(f"loss: {loss}")
@@ -208,24 +210,55 @@ def train_abstractions(data, net, epochs, lr=1E-3):
         print(f"epoch: {epoch}\t"
               + f"train loss: {loss}\t"
               + f"({time.time() - start:.0f}s)")
+        if epoch % 10 == 0:
+            utils.save_model(net, f'models/model_12-2.pt')
+        train_losses.append(train_loss)
+
+    # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
+
+def train_supervised(data, net, epochs, lr=1E-4, save_every=None):
+    print(f"net has {num_params(net)} parameters")
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+    criterion = nn.CrossEntropyLoss()
+
+    train_losses = []
+    net.train()
+
+    for epoch in range(epochs):
+        train_loss = 0
+        start = time.time()
+        for s_i, actions in zip(data.states, data.moves):
+            for s, a in zip(s_i, actions):
+                optimizer.zero_grad()
+                pred = net(einops.rearrange(s, 'c h w -> 1 c h w'))
+                loss = criterion(pred, torch.tensor([a]))
+                train_loss += loss
+                loss.backward()
+                optimizer.step()
+
+        print(f"epoch: {epoch}\t"
+              + f"train loss: {loss}\t"
+              + f"({time.time() - start:.0f}s)")
+        if save_every and epoch % save_every == 0:
+            utils.save_model(net, f'models/model_12-15.pt')
         train_losses.append(train_loss)
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
 
-def sample_trajectories2(net, data):
+def sample_trajectories(net, data, full_abstract=False):
     """
-    1. tau(s_0) = t_0
-    2. sample b given t_0.
-    3. execute b until you stop, generating some s_i, a_i stuff.
-    4. run alpha(t_0, b) = t_1.
-    5. repeat steps 2–4 until you generate enough s_i, a_i to get to end.
+    To sample with options:
+    1. sample option from start state.
+    2. choose actions according to option policy until stop.
+    3. after stopping, sample new option.
+    4. repeat until done.
 
-    This is the same as the other sample_trajectories, except to generate a new
-    option, you look at alpha(t_0, b), instead of tau(s_i).
+    if full_abstract=True, then we will execute alpha(t_0, b) to get new t_i to
+    sample new option from. Otherwise, will get t_i from tau(s_i).
     """
     for i in range(len(data.trajs)):
-        points = data.points_lists[i]
+        points = data.points[i]
         (x, y, x_goal, y_goal) = points[0][0]
         moves = ''.join(data.trajs[i])
         print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
@@ -234,7 +267,6 @@ def sample_trajectories2(net, data):
         current_option_path = ''
         start_t_of_current_option = None
         option = None
-
         for j in range(data.seq_len):
             if max(x, y) == data.max_coord:
                 break
@@ -249,9 +281,13 @@ def sample_trajectories2(net, data):
                 # possibly stop previous option!
                 stop = Categorical(logits=stop_logps[0, option, :]).sample()
                 if stop == net.abstract_policy_net.stop_net_stop_ix:
-                    new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
-                    start_logps = net.abstract_policy_net.new_option_logps(new_t_i)
-                    option = Categorical(logits=start_logps).sample()
+                    if full_abstract:
+                        new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
+                        logits = net.abstract_policy_net.new_option_logps(new_t_i)
+                    else:
+                        logits = start_logps[0]
+
+                    option = Categorical(logits=logits).sample()
                     options.append(current_option_path)
                     current_option_path = ''
                     start_t_of_current_option = new_t_i
@@ -263,94 +299,93 @@ def sample_trajectories2(net, data):
             move = 'R' if action == 0 else 'U'
             moves_taken += move
             # print(f'now at ({x, y})')
-
         options.append(current_option_path)
         print(f'({0, 0}) to ({x, y}) via {moves_taken}')
         print(f"options: {'/'.join(options)}")
         print('-'*10)
 
 
-def sample_trajectories(net, data):
-    """
-    To sample with options:
-    1. sample option from start state.
-    2. choose actions according to option policy until stop.
-    3. after stopping, sample new option.
-    4. repeat until done.
-    """
-    for i in range(len(data.trajs)):
-        points = data.points_lists[i]
-        (x, y, x_goal, y_goal) = points[0][0]
-        moves = ''.join(data.trajs[i])
-        print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
-        moves_taken = ''
-        options = []
-        current_option = ''
-        option = None
-        for j in range(data.seq_len):
-            if max(x, y) == data.max_coord:
-                break
-            state_embed = data.embed_state((x, y, x_goal, y_goal))
-            state_batch = torch.unsqueeze(state_embed, 0)
-            # only use action_logps, stop_logps, and start_logps
-            t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
-            if option is None:
-                option = Categorical(logits=start_logps).sample()
-            else:
-                # possibly stop previous option!
-                stop = Categorical(logits=stop_logps[0, option, :]).sample()
-                if stop == net.abstract_policy_net.stop_net_stop_ix:
-                    option = Categorical(logits=start_logps[0]).sample()
-                    options.append(current_option)
-                    current_option = ''
+def boxworld_train():
+    print('generating trajectories')
 
-            current_option += str(option.item())
-            action = Categorical(logits=action_logps[0, option, :]).sample()
-            # print(f"action: {action}")
-            x, y = up_right.TrajData.execute((x, y), action)
-            move = 'R' if action == 0 else 'U'
-            moves_taken += move
-            # print(f'now at ({x, y})')
-        options.append(current_option)
-        print(f'({0, 0}) to ({x, y}) via {moves_taken}')
-        print(f"options: {'/'.join(options)}")
-        print('-'*10)
+    env = boxworld.make_env()
+    trajs = boxworld.generate_boxworld_data(n=10, env=env)
+    print('trajectories generated')
+    data = boxworld.BoxworldData(trajs)
+
+    a = 4
+    b = 5
+    t = 10
+    tau_net = AllConv(output_dim=t, input_filters=3)
+    micro_net = AllConv(output_dim=b*a, input_filters=3)
+    stop_net = AllConv(output_dim=b*2, input_filters=3)
+    start_net = FC(t, b, hidden_dim=128, num_hidden=2)
+    alpha_net = FC(t + b, t, hidden_dim=64, num_hidden=1)
+
+    abstract_policy_net = AbstractPolicyNet(
+        a, b, t,
+        tau_net,
+        micro_net,
+        stop_net,
+        start_net,
+        alpha_net)
+
+    net = Eq2Net(abstract_policy_net,
+                 abstract_penalty=0.001,
+                 consistency_ratio=1.0)
+
+    utils.load_model(net, f'models/model_12-2__20.pt')
+    train_abstractions(data, net, epochs=1)
+    # utils.save_model(net, f'models/model_12-2.pt')
+    boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
+
+def boxworld_sv_train():
+    print('generating trajectories')
+    env = boxworld.make_env()
+    trajs = boxworld.generate_boxworld_data(n=10, env=env)
+    data = boxworld.BoxWorldData(trajs)
+    print('trajectories generated')
+
+    net = RelationalDRLNet(input_channels=3)
+
+    data = boxworld.BoxWorldData(trajs)
+    # utils.load_model(net, f'models/model_12-2__20.pt')
+    train_supervised(data, net, epochs=100)
+    # utils.save_model(net, f'models/model_12-2.pt')
 
 
 def main():
-    random.seed(1)
-    torch.manual_seed(1)
-
     scale = 3
     seq_len = 5
     trajs = up_right.generate_data(scale, seq_len, n=100)
 
     data = up_right.TrajData(trajs)
-    print(f"Number of trajectories: {len(data.traj_batches)}")
 
+    s = data.state_dim
     abstract_policy_net = AbstractPolicyNet(
-        a := 2, b := 2, s := data.state_dim, t := 10,
+        a := 2, b := 2, t := 10,
         tau_net=FC(s, t, hidden_dim=64, num_hidden=1),
         micro_net=FC(s, b*a, hidden_dim=64, num_hidden=1),
         stop_net=FC(s, b*2, hidden_dim=64, num_hidden=1),
         start_net=FC(t, b, hidden_dim=64, num_hidden=1),
         alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
     net = Eq2Net(abstract_policy_net,
-                 abstract_penalty=.00185,
+                 abstract_penalty=0.0001,
                  consistency_ratio=1.0)
 
     # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    train_abstractions(data, net, epochs=25)
+    train_abstractions(data, net, epochs=100)
     # utils.save_model(net, f'models/model_9-17.pt')
-
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
                                   max_coord=data.max_coord)
-    sample_trajectories(net, eval_data)
-    print('sample trajectories 2')
-    sample_trajectories2(net, eval_data)
+    sample_trajectories(net, eval_data, full_abstract=True)
 
 
 if __name__ == '__main__':
-    # log_practice()
-    # torch.autograd.set_detect_anomaly(True)
-    main()
+    random.seed(1)
+    torch.manual_seed(1)
+
+
+    # boxworld_train()
+    boxworld_sv_train()
+    # main()

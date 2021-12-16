@@ -52,9 +52,9 @@ class ArrowData(Dataset):
 
         self.state_dim = 5  # <>^.*
 
-        self.traj_batches = [torch.stack([self.embed(p) for p in traj])
+        self.states = [torch.stack([self.embed(p) for p in traj])
                              for traj in self.trajs]
-        self.traj_moves = [self.moves_for(t) for t in self.trajs]
+        self.moves = [self.moves_for(t) for t in self.trajs]
         self.traj_coord_dicts = [self.coord_dict(traj) for traj in self.trajs]
 
     def coord_dict(self, traj):

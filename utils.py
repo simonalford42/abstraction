@@ -13,38 +13,6 @@ def num_params(model):
                 for p in list(model.parameters())])
 
 
-class FC(nn.Module):
-    def __init__(self,
-                 input_dim,
-                 output_dim,
-                 num_hidden=1,
-                 hidden_dim=512,
-                 batch_norm=False):
-        super().__init__()
-        layers: List[Any]
-        if num_hidden == 0:
-            layers = [nn.Linear(input_dim, output_dim)]
-        else:
-            layers = [nn.Linear(input_dim, hidden_dim), nn.ReLU()]
-            if batch_norm:
-                layers.append(nn.BatchNorm1d(hidden_dim))
-
-            for i in range(num_hidden - 1):
-                layers += [nn.Linear(hidden_dim, hidden_dim), nn.ReLU()]
-                if batch_norm:
-                    layers.append(nn.BatchNorm1d(hidden_dim))
-
-            layers.append(nn.Linear(hidden_dim, output_dim))
-            # print(f"layers: {layers}")
-
-            # layers = [Print(l) for l in layers]
-
-        self.net = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.net(x)
-
-
 class Print(nn.Module):
     def __init__(self, layer):
         super().__init__()
