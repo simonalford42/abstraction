@@ -1,4 +1,5 @@
 from collections import Counter
+import argparse
 import random
 import einops
 import time
@@ -341,22 +342,23 @@ def boxworld_train():
     # utils.save_model(net, f'models/model_12-2.pt')
     boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
 
-def boxworld_sv_train(device):
+def boxworld_sv_train(device, n=1000):
     print('generating trajectories')
     env = boxworld.make_env()
-    trajs = boxworld.generate_boxworld_data(n=1000, env=env)
+    trajs = boxworld.generate_boxworld_data(n=n, env=env)
     data = boxworld.BoxWorldDataset(trajs)
     dataloader = DataLoader(data, batch_size=64, shuffle=True)
     print('trajectories generated')
 
-    net = RelationalDRLNet(input_channels=3).to(device)
+    # net = RelationalDRLNet(input_channels=3).to(device)
+    net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
 
     # utils.load_model(net, f'models/model_12-2__20.pt')
     for i in range(100):
         print(f'round {i}')
-        train_supervised(dataloader, net, device=device, epochs=50)
+        train_supervised(dataloader, net, device=device, epochs=10)
         boxworld.eval_model(net, env, n=50)
-        utils.save_model(net, f'models/sv_model_12-16-{i}.pt')
+        # utils.save_model(net, f'models/sv_model_12-16-{i}.pt')
 
 
 def main():
@@ -395,5 +397,5 @@ if __name__ == '__main__':
 
 
     # boxworld_train()
-    boxworld_sv_train(device)
+    boxworld_sv_train(device, n=5000)
     # main()

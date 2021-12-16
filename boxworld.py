@@ -183,7 +183,7 @@ def eval_model(net, env, n=100):
         states, moves = generate_traj(env)
         obs = states[0]
         done = False
-        for t in range(2 * len(moves)):
+        for t in range(10 * len(moves)):
             obs = obs_to_net(obs)
             out = net(obs)[0]
             a = torch.distributions.Categorical(logits=out).sample()
@@ -392,7 +392,7 @@ def sample_trajectories(net, n, env, max_steps, full_abstract=False, render=True
 
 if __name__ == '__main__':
     env = make_env()
-    trajs = generate_boxworld_data(n=100)
+    trajs = generate_boxworld_data(n=1000)
     data = BoxWorldData(trajs)
 
     states, moves = generate_traj(env)

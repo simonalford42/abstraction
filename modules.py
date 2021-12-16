@@ -14,10 +14,12 @@ class RelationalDRLNet(nn.Module):
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
         
+        # exra dims for positional encoding
+        self.pre_attn_linear = nn.Linear(24 + 2, self.d)
+
         # shared weights, so just one network
         self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads)
                                                
-        self.pre_attn_linear = nn.Linear(24 + 2, self.d)
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.d),
@@ -26,6 +28,7 @@ class RelationalDRLNet(nn.Module):
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU())
+
         self.policy_proj = nn.Linear(self.d, 4)
 
 
@@ -44,7 +47,7 @@ class RelationalDRLNet(nn.Module):
 
         for _ in range(self.num_attn_blocks):
             x = x + self.attn_block(x, x, x)[0]
-            x = F.layer_norm(x, (self.d, ))
+            x = F.layer_norm(x, (self.d,))
 
         x = einops.reduce(x, 'n l d -> n d', 'max')
 
