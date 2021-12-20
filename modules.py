@@ -1,4 +1,5 @@
 from typing import List, Any
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -6,20 +7,20 @@ import einops
 from utils import assertEqual
 
 class RelationalDRLNet(nn.Module):
-    def __init__(self, input_channels, d=64, attn_blocks=2, num_heads=2):
+    def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
         super().__init__()
         self.input_channels = input_channels
         self.d = 64
         self.num_attn_blocks=2
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
-        
-        # exra dims for positional encoding
+
+        # 2 exra dims for positional encoding
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
 
         # shared weights, so just one network
         self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads)
-                                               
+
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.d),
@@ -34,20 +35,22 @@ class RelationalDRLNet(nn.Module):
 
     def forward(self, x):
         # input: (N, C, H, W)
-        input_shape = x.shape
-        assertEqual(input_shape[1], self.input_channels)
+        (N, C, H, W) = x.shape
+        assertEqual(C, self.input_channels)
         x = self.conv1(x)
         x = self.conv2(x)
         x = F.relu(x)
-        assertEqual(x.shape[-2:], input_shape[-2:])
+        assertEqual(x.shape[-2:], (H, W))
 
         x = RelationalDRLNet.add_positions(x)
-        x = einops.rearrange(x, 'b c h w -> b (h w) c')
+        x = einops.rearrange(x, 'n c h w -> n (h w) c')
         x = self.pre_attn_linear(x)
+        assertEqual(x.shape, (N, H*W, self.d))
 
         for _ in range(self.num_attn_blocks):
-            x = x + self.attn_block(x, x, x)[0]
+            x = x + self.attn_block(x, x, x)[0]  # attn block returns tuple (out, attn_weights)
             x = F.layer_norm(x, (self.d,))
+            assertEqual(x.shape, (N, H*W, self.d))
 
         x = einops.reduce(x, 'n l d -> n d', 'max')
 
@@ -58,20 +61,21 @@ class RelationalDRLNet(nn.Module):
     def add_positions(inp):
         # input shape: (N, C, H, W)
         # output: (N, C+2, H, W)
-        N, C, W, H = inp.shape
+        N, C, H, W = inp.shape
         # ranges between -1 and 1
-        y_map = -1 + torch.arange(0, W + 0.01, H / (W - 1))/(W/2)
-        x_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
+        y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
+        x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
         assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
         assertEqual((x_map[0], y_map[0]), (-1., -1.,))
         assertEqual(y_map.shape[0], H)
         assertEqual(x_map.shape[0], W)
         x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
         y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
+        # wonder if there could be a good way to do with einops
         inp = torch.cat((inp, x_map, y_map), dim=1)
         assertEqual(inp.shape, (N, C+2, H, W))
         return inp
-        
+
 
 class ResBlock(nn.Module):
     def __init__(self, conv1_filters, conv2_filters):
@@ -120,6 +124,9 @@ class FC(nn.Module):
                  hidden_dim=512,
                  batch_norm=False):
         super().__init__()
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+
         layers: List[Any]
         if num_hidden == 0:
             layers = [nn.Linear(input_dim, output_dim)]
@@ -195,4 +202,18 @@ class AllConv(nn.Module):
             x = F.avg_pool2d(x, kernel_size=x.size()[2:])
 
         x = x.squeeze(3).squeeze(2)
+        return x
+
+
+class ImageFC(nn.Module):
+    def __init__(self, inp_shape, fc_net: FC):
+        super().__init__()
+        self.fc_net = fc_net
+        self.first_layer = nn.Linear(in_features=np.prod(inp_shape), out_features=fc_net.input_dim)
+
+    def forward(self, x):
+        x = einops.rearrange(x, 'n c h w -> n (c h w)')
+        x = self.first_layer(x)
+        x = F.relu(x)
+        x = self.fc_net(x)
         return x

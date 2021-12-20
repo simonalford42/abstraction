@@ -1,3 +1,6 @@
 [submodule "Relational_DRL"]
 	path = Relational_DRL
 	url = ./Relational_DRL
+[submodule "pycolab"]
+	path = pycolab
+	url = ./pycolab

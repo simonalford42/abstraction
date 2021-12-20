@@ -1,5 +1,7 @@
 from collections import Counter
+from matplotlib import pyplot as plt
 import argparse
+# import psutil
 import random
 import einops
 import time
@@ -9,7 +11,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import utils
 from utils import assertEqual, num_params
-from modules import FC, AllConv, RelationalDRLNet
+from modules import FC, AllConv, ImageFC, RelationalDRLNet
 from torch.distributions import Categorical
 import boxworld
 import up_right
@@ -218,7 +220,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
-def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None):
+def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None, print_every=1):
     print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
@@ -227,21 +229,32 @@ def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_
     net.train()
 
     for epoch in range(epochs):
+        # print(psutil.Process().memory_info().rss / (1024 * 1024))
         train_loss = 0
         start = time.time()
+        correct = 0
+        total = 0
         for states, actions in dataloader:
+            # for s, a in zip(states, actions):
+            #     print(a, boxworld.BoxWorldData.action_to_move(a))
+            #     plt.imshow(einops.rearrange(s.long(), 'c h w -> h w c'))
+            #     plt.show()
+            optimizer.zero_grad()
             states = states.to(device)
             actions = actions.to(device)
-            optimizer.zero_grad()
             pred = net(states)
+            pred2 = torch.argmax(pred, dim=1)
+            correct += sum(pred2 == actions)
+            total += len(actions)
             loss = criterion(pred, actions)
             train_loss += loss
             loss.backward()
             optimizer.step()
-
-        print(f"epoch: {epoch}\t"
-              + f"train loss: {loss}\t"
-              + f"({time.time() - start:.1f}s)")
+        if print_every and epoch % print_every == 0:
+            print(f"epoch: {epoch}\t"
+                + f"train loss: {loss}\t"
+                + f"acc: {correct / total:.3f}\t"
+                + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_model(net, f'models/model_12-15.pt')
         train_losses.append(train_loss)
@@ -343,22 +356,24 @@ def boxworld_train():
     boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
 
 def boxworld_sv_train(device, n=1000):
-    print('generating trajectories')
     env = boxworld.make_env()
-    trajs = boxworld.generate_boxworld_data(n=n, env=env)
+    # trajs = boxworld.generate_boxworld_data(n=n, env=env, first_only=False)
+    trajs = boxworld.generate_simple_boxworld_data(complexity=2)
     data = boxworld.BoxWorldDataset(trajs)
-    dataloader = DataLoader(data, batch_size=64, shuffle=True)
-    print('trajectories generated')
+    print(f'{len(data)} examples')
+    dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-    # net = RelationalDRLNet(input_channels=3).to(device)
+    net = RelationalDRLNet(input_channels=3).to(device)
+    # net = ImageFC(inp_shape=(14, 14, 3), fc_net=FC(64, 4, num_hidden=0))
     net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
 
-    # utils.load_model(net, f'models/model_12-2__20.pt')
-    for i in range(100):
-        print(f'round {i}')
-        train_supervised(dataloader, net, device=device, epochs=10)
-        boxworld.eval_model(net, env, n=50)
-        # utils.save_model(net, f'models/sv_model_12-16-{i}.pt')
+    # utils.load_model(net, f'models/sv_model_12-20-21.pt')
+    # boxworld.eval_model(net, env, first_step=False, n=20, T=50, render=True)
+    for i in range(10000):
+        print(f'Round {i}')
+        train_supervised(dataloader, net, device=device, epochs=1000, print_every=10)
+        # boxworld.eval_model(net, env, first_step=False, n=100, T=100)
+        # utils.save_model(net, f'models/sv_model_12-20_{i}.pt')
 
 
 def main():
@@ -397,5 +412,5 @@ if __name__ == '__main__':
 
 
     # boxworld_train()
-    boxworld_sv_train(device, n=5000)
+    boxworld_sv_train(device, n=50)
     # main()

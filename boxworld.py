@@ -1,3 +1,6 @@
+from collections import Counter
+import random
+from typing import Tuple
 import einops
 import gym
 import numpy as np
@@ -9,7 +12,6 @@ from utils import assertEqual
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from torch.distributions import Categorical
-
 
 def make_env():
     env_name = 'BoxRandWorld'
@@ -57,6 +59,10 @@ RGB_TO_COLOR = {v: k for k, v in COLORS.items()}
 
 def to_color_obs(obs):
     return np.array([[RGB_TO_COLOR[tuple(obs[y, x])] for x in range(len(obs[y]))] for y in range(len(obs))])
+
+
+def from_color_obs(color_obs):
+    return np.array([[COLORS[color_obs[y, x]] for x in range(len(color_obs[y]))] for y in range(len(color_obs))]).astype(np.float32)
 
 
 def get_domino_position(obs, p):
@@ -170,7 +176,7 @@ def exec(moves, env):
     return obs, done
 
 
-def eval_model(net, env, n=100):
+def eval_model(net, env, n=100, T=100, render=False):
     def obs_to_net(obs):
         assertEqual(obs.shape, (14, 14, 3))
         obs = torch.tensor(obs)
@@ -179,11 +185,22 @@ def eval_model(net, env, n=100):
 
     print(f'Evaluating model on {n} episodes')
     solved = 0
+    path_colors = ['B','M','Y','G','R','W']
+    path_dists = []
     for i in range(n):
-        states, moves = generate_traj(env)
-        obs = states[0]
+        obs = env.reset()
         done = False
-        for t in range(10 * len(moves)):
+        path_dist = 0
+        for t in range(T):
+            if render:
+                env.render()
+                s = input()
+            top_left_corner = obs[0][0]
+            color = RGB_TO_COLOR[tuple(top_left_corner)]
+            if color == path_colors[path_dist+1]:
+                path_dist += 1
+            else:
+                assertEqual(color, path_colors[path_dist])
             obs = obs_to_net(obs)
             out = net(obs)[0]
             a = torch.distributions.Categorical(logits=out).sample()
@@ -192,9 +209,10 @@ def eval_model(net, env, n=100):
                 break
         if done:
             solved += 1
-    print(f'Solved {solved}/{n} episodes')
+        path_dists.append(path_dist)
+    print(f'Solved {solved}/{n} episodes; {Counter(path_dists)} are path dists')
     return solved
-            
+
 
 def test_solving():
     env = make_env()
@@ -213,7 +231,7 @@ def test_solving():
     assert done, 'uh oh'
 
 
-def generate_traj(env=None):
+def generate_traj(env=None) -> Tuple[list, list]:
     if env is None:
         env = make_env()
     # [states], [moves]
@@ -243,14 +261,143 @@ def generate_traj(env=None):
     return states, moves
 
 
-def generate_boxworld_data(n, env=None):
+def generate_boxworld_data(n, env=None, first_only=False) -> list[Tuple[list, list]]:
+    print('generating trajectories')
     if env is None:
         env = make_env()
-    return [generate_traj(env) for i in range(n)]
+    data = [generate_traj(env) for i in range(n)]
+
+    if first_only:
+        # just keep first example from each
+        data = [(states[0:2], moves[0:1]) for states, moves in data]
+
+    print('trajectories generated')
+    return data
+
+
+def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list]]:
+    env = make_env()
+    obs = env.reset()
+    H, W = obs.shape[0:2]
+
+    def empty_color_obs():
+        color_obs = to_color_obs(obs)
+        color_obs[color_obs != 'B'] = 'GR'
+        return color_obs
+
+    # complexity=0: move from a to b, always start at the middle, one spot away
+    if complexity == 0:
+        for action in range(4):
+            color_obs = empty_color_obs()
+            middle_y, middle_x = H // 2, W //2
+            color_obs[middle_y, middle_x] = 'DG'
+            data = []
+            direction = ['U', 'D', 'L', 'R'][action]
+            delta_y, delta_x = [(-1, 0), (1, 0), (0, -1), (0, 1)][action]
+            color_obs[middle_y + delta_y, middle_x + delta_x] = 'Y'
+            obs = from_color_obs(color_obs)
+            # plt.imshow(obs.astype(int))
+            # plt.show()
+            data.append(([obs, None], [action]))
+            if len(data) == n:
+                return data
+
+        return data
+    # complexity=1: move from a to b, always start at middle, always going to certain locations
+    if complexity == 1:
+        for action in range(4):
+            for d in range(1, 6):
+                color_obs = empty_color_obs()
+                H, W = color_obs.shape
+                middle_y, middle_x = H // 2, W //2
+                color_obs[middle_y, middle_x] = 'DG'
+                data = []
+                direction = ['U', 'D', 'L', 'R'][action]
+                delta_y, delta_x = [(-d, 0), (d, 0), (0, -d), (0, d)][action]
+                color_obs[middle_y + delta_y, middle_x + delta_x] = 'Y'
+                obs = from_color_obs(color_obs)
+                # plt.imshow(obs.astype(int))
+                # plt.show()
+                data.append(([obs, None], [action]))
+                if len(data) == n:
+                    return data
+
+        return data
+
+    def in_bounds(y, x):
+        return (0 <= y < 14 and 0 <= x < 14)
+
+    # complexity=2: move from a to b, can start anywhere.
+    if complexity == 2:
+        data = []
+        for start_y in range(2, 13):
+            for start_x in range(2, 13):
+                for action in range(4):
+                    for d in range(14):
+                        color_obs = empty_color_obs()
+                        color_obs[start_y, start_x] = 'DG'
+                        direction = ['U', 'D', 'L', 'R'][action]
+                        delta_y, delta_x = [(-d, 0), (d, 0), (0, -d), (0, d)][action]
+                        target_y, target_x = start_y + delta_y, start_x + delta_x
+                        if in_bounds(target_y, target_x) and color_obs[target_y, target_x] == 'GR':
+                            color_obs[target_y, target_x] = 'Y'
+                            obs = from_color_obs(color_obs)
+                            # print(direction)
+                            # plt.imshow(obs.astype(int))
+                            # plt.show()
+                            data.append(([obs, None], [action]))
+                            if len(data) == n:
+                                return data
+        return data
+
+    # complexity=3: move from a to b, multiple directions allowed in path
+    if complexity == 3:
+        data = []
+        for start_y in range(2, 13):
+            for start_x in range(2, 13):
+                for action in range(4):
+                    for d in range(14):
+                        color_obs = empty_color_obs()
+                        color_obs[start_y, start_x] = 'DG'
+                        direction = ['U', 'D', 'L', 'R'][action]
+                        delta_y, delta_x = [(-d, 0), (d, 0), (0, -d), (0, d)][action]
+                        target_y, target_x = start_y + delta_y, start_x + delta_x
+                        if in_bounds(target_y, target_x) and color_obs[target_y, target_x] == 'GR':
+                            color_obs[target_y, target_x] = 'Y'
+                            obs = from_color_obs(color_obs)
+                            print(direction)
+                            plt.imshow(obs.astype(int))
+                            plt.show()
+                            data.append(([obs, None], [action]))
+
+        for action in range(4):
+            for d in range(1, 6):
+                color_obs = empty_color_obs()
+                H, W = color_obs.shape
+                middle_y, middle_x = H // 2, W //2
+                color_obs[middle_y, middle_x] = 'DG'
+                data = []
+                direction = ['U', 'D', 'L', 'R'][action]
+                delta_y, delta_x = [(-d, 0), (d, 0), (0, -d), (0, d)][action]
+                color_obs[middle_y + delta_y, middle_x + delta_x] = 'Y'
+                obs = from_color_obs(color_obs)
+                plt.imshow(obs.astype(int))
+                plt.show()
+                data.append(([obs, None], [action]))
+
+        return data
+
+
+    # complexity=4: move from a to b, anywhere, any direction.
+
+    # complexity=5: move from a to b, multiple boxes, go towards color in top right
+
+    # complexity=6: full boxworld game.
+
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, data):
+    def __init__(self, data: list[Tuple[list, list]]):
         """
         data: list of (states, moves) tuples
         """
@@ -259,7 +406,8 @@ class BoxWorldDataset(Dataset):
         assertEqual(self.state_shape, (14, 14, 3))
 
         # ignore last state
-        self.states = [torch.tensor(s).reshape(3, 14, 14) for states, _ in self.data for s in states[:-1]]
+        self.states = [einops.rearrange(torch.tensor(s), 'h w c -> c h w')
+                       for states, _ in self.data for s in states[:-1]]
         self.moves = [torch.tensor(m) for _, moves in self.data for m in moves]
 
     def __len__(self):
@@ -391,9 +539,11 @@ def sample_trajectories(net, n, env, max_steps, full_abstract=False, render=True
 
 
 if __name__ == '__main__':
-    env = make_env()
-    trajs = generate_boxworld_data(n=1000)
-    data = BoxWorldData(trajs)
+    generate_simple_boxworld_data(n=1, complexity=2)
 
-    states, moves = generate_traj(env)
-    render_sequence(states)
+    # env = make_env()
+    # trajs = generate_boxworld_data(n=100, first_only=True)
+    # data = BoxWorldData(trajs)
+
+    # states, moves = generate_traj(env)
+    # render_sequence(states)
