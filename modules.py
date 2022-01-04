@@ -7,8 +7,9 @@ import einops
 from utils import assertEqual
 
 class RelationalDRLNet(nn.Module):
-    def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
+    def __init__(self, device, input_channels=3, d=64, attn_blocks=2, num_heads=2):
         super().__init__()
+        self.device = device
         self.input_channels = input_channels
         self.d = 64
         self.num_attn_blocks=2
@@ -42,7 +43,7 @@ class RelationalDRLNet(nn.Module):
         x = F.relu(x)
         assertEqual(x.shape[-2:], (H, W))
 
-        x = RelationalDRLNet.add_positions(x)
+        x = self.add_positions(x)
         x = einops.rearrange(x, 'n c h w -> n (h w) c')
         x = self.pre_attn_linear(x)
         assertEqual(x.shape, (N, H*W, self.d))
@@ -58,13 +59,14 @@ class RelationalDRLNet(nn.Module):
         x = self.policy_proj(x)
         return x
 
-    def add_positions(inp):
+    def add_positions(self, inp):
         # input shape: (N, C, H, W)
         # output: (N, C+2, H, W)
         N, C, H, W = inp.shape
         # ranges between -1 and 1
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
+        y_map, x_map = y_map.to(self.device), x_map.to(self.device)
         assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
         assertEqual((x_map[0], y_map[0]), (-1., -1.,))
         assertEqual(y_map.shape[0], H)

@@ -361,8 +361,8 @@ def boxworld_sv_train(device, n=1000):
 
     drlnet = True
     if drlnet:
-        net = RelationalDRLNet(input_channels=3).to(device)
-        utils.load_model(net, f'models/sv_model_1-4_DRL.pt')
+        net = RelationalDRLNet(device, input_channels=3).to(device)
+        # utils.load_model(net, f'models/sv_model_1-4_DRL.pt')
         # utils.load_mlflow_model()
     else:
         net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
@@ -430,5 +430,5 @@ if __name__ == '__main__':
 
 
     # boxworld_train()
-    boxworld_sv_train(device, n=5000)
+    boxworld_sv_train(device, n=500)
     # main()
