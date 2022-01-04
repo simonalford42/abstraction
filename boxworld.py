@@ -176,7 +176,7 @@ def exec(moves, env):
     return obs, done
 
 
-def eval_model(net, env, n=100, T=100, render=False):
+def eval_model(net, env, n=100, T=100, render=False, argmax=False):
     def obs_to_net(obs):
         assertEqual(obs.shape, (14, 14, 3))
         obs = torch.tensor(obs)
@@ -203,7 +203,10 @@ def eval_model(net, env, n=100, T=100, render=False):
                 assertEqual(color, path_colors[path_dist])
             obs = obs_to_net(obs)
             out = net(obs)[0]
-            a = torch.distributions.Categorical(logits=out).sample()
+            if argmax:
+                a = torch.argmax(out)
+            else:
+                a = torch.distributions.Categorical(logits=out).sample()
             obs, rew, done, info = env.step(a)
             if done:
                 break
@@ -231,7 +234,7 @@ def test_solving():
     assert done, 'uh oh'
 
 
-def generate_traj(env=None) -> Tuple[list, list]:
+def generate_traj(env=None, path_len=-1) -> Tuple[list, list]:
     if env is None:
         env = make_env()
     # [states], [moves]
@@ -242,7 +245,7 @@ def generate_traj(env=None) -> Tuple[list, list]:
     states = [obs]
     moves = []
 
-    for goal in goals:
+    for i, goal in enumerate(goals):
         color_obs = to_color_obs(obs)
         try:
             option = shortest_path(color_obs, goal)
@@ -256,16 +259,19 @@ def generate_traj(env=None) -> Tuple[list, list]:
             obs, _, done, _ = env.step(a)
             states.append(obs)
             moves.append(a)
+        if i == path_len:
+            return states, moves
+
     assert done, 'uh oh'
 
     return states, moves
 
 
-def generate_boxworld_data(n, env=None, first_only=False) -> list[Tuple[list, list]]:
+def generate_boxworld_data(n, env=None, first_only=False, path_len=-1) -> list[Tuple[list, list]]:
     print('generating trajectories')
     if env is None:
         env = make_env()
-    data = [generate_traj(env) for i in range(n)]
+    data = [generate_traj(env, path_len=path_len) for i in range(n)]
 
     if first_only:
         # just keep first example from each

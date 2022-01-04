@@ -10,11 +10,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import utils
-from utils import assertEqual, num_params
+from utils import assertEqual, num_params, Timing
 from modules import FC, AllConv, ImageFC, RelationalDRLNet
 from torch.distributions import Categorical
 import boxworld
 import up_right
+import mlflow
 
 
 class AbstractPolicyNet(nn.Module):
@@ -357,23 +358,40 @@ def boxworld_train():
 
 def boxworld_sv_train(device, n=1000):
     env = boxworld.make_env()
-    # trajs = boxworld.generate_boxworld_data(n=n, env=env, first_only=False)
-    trajs = boxworld.generate_simple_boxworld_data(complexity=2)
-    data = boxworld.BoxWorldDataset(trajs)
-    print(f'{len(data)} examples')
-    dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-    net = RelationalDRLNet(input_channels=3).to(device)
-    # net = ImageFC(inp_shape=(14, 14, 3), fc_net=FC(64, 4, num_hidden=0))
-    net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
+    drlnet = True
+    if drlnet:
+        net = RelationalDRLNet(input_channels=3).to(device)
+        utils.load_model(net, f'models/sv_model_1-4_DRL.pt')
+        # utils.load_mlflow_model()
+    else:
+        net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
+        # this is a well-trained AllConv net.
+        # Solved 10/50 episodes; Counter({0: 13, 2: 12, 4: 12, 1: 7, 3: 6}) are path dists
+        # utils.load_model(net, f'models/sv_model_12-21__6.pt')
 
-    # utils.load_model(net, f'models/sv_model_12-20-21.pt')
-    # boxworld.eval_model(net, env, first_step=False, n=20, T=50, render=True)
-    for i in range(10000):
-        print(f'Round {i}')
-        train_supervised(dataloader, net, device=device, epochs=1000, print_every=10)
-        # boxworld.eval_model(net, env, first_step=False, n=100, T=100)
-        # utils.save_model(net, f'models/sv_model_12-20_{i}.pt')
+        # run_id = None
+        # utils.load_mlflow_model(run_id)
+
+
+    try:
+        for i in range(10000):
+            print(f'Round {i}')
+
+            with Timing("Generated trajectories"):
+                trajs = boxworld.generate_boxworld_data(n=n, env=env, path_len=1)
+            data = boxworld.BoxWorldDataset(trajs)
+            print(f'{len(data)} examples')
+            dataloader = DataLoader(data, batch_size=256, shuffle=True)
+
+            train_supervised(dataloader, net, device=device, epochs=20, print_every=5)
+
+            with Timing("evaluated model"):
+                boxworld.eval_model(net, env, n=100, T=100)
+                boxworld.eval_model(net, env, n=100, T=100, argmax=True)
+    except KeyboardInterrupt:
+        s = "DRL" if drlnet else "AllConv"
+        utils.save_model(net, f'models/sv_model_1-4_{s}.pt')
 
 
 def main():
@@ -412,5 +430,5 @@ if __name__ == '__main__':
 
 
     # boxworld_train()
-    boxworld_sv_train(device, n=50)
+    boxworld_sv_train(device, n=5000)
     # main()

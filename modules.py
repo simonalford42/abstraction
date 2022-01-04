@@ -19,7 +19,7 @@ class RelationalDRLNet(nn.Module):
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
 
         # shared weights, so just one network
-        self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads)
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads, batch_first=True)
 
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
@@ -48,7 +48,7 @@ class RelationalDRLNet(nn.Module):
         assertEqual(x.shape, (N, H*W, self.d))
 
         for _ in range(self.num_attn_blocks):
-            x = x + self.attn_block(x, x, x)[0]  # attn block returns tuple (out, attn_weights)
+            x = x + self.attn_block(x, x, x, need_weights=False)[0]
             x = F.layer_norm(x, (self.d,))
             assertEqual(x.shape, (N, H*W, self.d))
 
