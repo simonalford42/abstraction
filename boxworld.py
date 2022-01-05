@@ -181,6 +181,7 @@ def eval_model(net, env, n=100, T=100, render=False, argmax=False):
         assertEqual(obs.shape, (14, 14, 3))
         obs = torch.tensor(obs)
         obs = einops.rearrange(obs, 'h w c -> 1 c h w')
+        obs = obs.to(net.device)
         return obs
 
     print(f'Evaluating model on {n} episodes')
