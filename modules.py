@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import einops
-from utils import assertEqual
+from utils import assertEqual, DEVICE
 
 
 class Print(nn.Module):
@@ -19,15 +19,12 @@ class Print(nn.Module):
         return self.layer(x)
 
 
-
-
 class RelationalDRLNet(nn.Module):
-    def __init__(self, device, input_channels=3, d=64, attn_blocks=2, num_heads=2):
+    def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
         super().__init__()
-        self.device = device
         self.input_channels = input_channels
         self.d = 64
-        self.num_attn_blocks=2
+        self.num_attn_blocks = 2
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
 
@@ -35,7 +32,9 @@ class RelationalDRLNet(nn.Module):
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
 
         # shared weights, so just one network
-        self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads, batch_first=True)
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
 
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
@@ -47,7 +46,6 @@ class RelationalDRLNet(nn.Module):
                                 nn.ReLU())
 
         self.policy_proj = nn.Linear(self.d, 4)
-
 
     def forward(self, x):
         # input: (N, C, H, W)
@@ -81,7 +79,7 @@ class RelationalDRLNet(nn.Module):
         # ranges between -1 and 1
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
-        y_map, x_map = y_map.to(self.device), x_map.to(self.device)
+        y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
         assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
         assertEqual((x_map[0], y_map[0]), (-1., -1.,))
         assertEqual(y_map.shape[0], H)
@@ -226,7 +224,8 @@ class ImageFC(nn.Module):
     def __init__(self, inp_shape, fc_net: FC):
         super().__init__()
         self.fc_net = fc_net
-        self.first_layer = nn.Linear(in_features=np.prod(inp_shape), out_features=fc_net.input_dim)
+        self.first_layer = nn.Linear(in_features=np.prod(inp_shape),
+                                     out_features=fc_net.input_dim)
 
     def forward(self, x):
         x = einops.rearrange(x, 'n c h w -> n (c h w)')

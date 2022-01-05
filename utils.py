@@ -1,9 +1,19 @@
 import torch
 import torch.nn as nn
-from typing import List, Any
 import os
 import time
 import mlflow
+
+
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+def print_torch_device():
+    if torch.cuda.is_available():
+        print('Training on ' + torch.cuda.get_device_name(DEVICE))
+    else:
+        print('Training on CPU')
+
 
 def save_mlflow_model(net: nn.Module, model_name='model'):
     # torch.save(net.state_dict(), save_path)
@@ -19,6 +29,7 @@ def load_mlflow_model(run_id: str, model_name='model') -> nn.Module:
     print(f"Loaded model from run {run_id} with name {model_name}")
     return model
 
+
 class Timing(object):
     def __init__(self, message):
         self.message = message
@@ -30,21 +41,12 @@ class Timing(object):
     def __exit__(self, type, value, traceback):
         dt = time.time() - self.start
         if isinstance(self.message, str):
-             message = self.message
+            message = self.message
         elif callable(self.message):
-             message = self.message(dt)
+            message = self.message(dt)
         else:
             raise ValueError("Timing message should be string function")
         print(f"{message} in {dt:.1f} seconds")
-
-
-def get_torch_device():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    if torch.cuda.is_available():
-        print('Training on ' + torch.cuda.get_device_name(device))
-    else:
-        print('Training on CPU')
-    return device
 
 
 def assertEqual(a, b):

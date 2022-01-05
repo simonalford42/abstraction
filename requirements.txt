@@ -4,6 +4,6 @@ gym==0.21.0
 matplotlib==3.4.3
 mlflow==1.15.0
 numpy==1.21.2
-torch==1.9.1
-torchvision==0.10.1
-yapf==0.30.0
+torch>=1.9.1
+torchvision>=0.10.1
+mypy

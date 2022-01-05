@@ -1,17 +1,13 @@
-from collections import Counter
-from matplotlib import pyplot as plt
-import argparse
 # import psutil
 import random
-import einops
 import time
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import torch
 import utils
-from utils import assertEqual, num_params, Timing
-from modules import FC, AllConv, ImageFC, RelationalDRLNet
+from utils import assertEqual, num_params, Timing, DEVICE, print_torch_device
+from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
 import boxworld
 import up_right
@@ -31,8 +27,8 @@ class AbstractPolicyNet(nn.Module):
         self.stop_net = stop_net  # s -> 2b of (stop, 1 - stop) aka beta.
         self.start_net = start_net  # t -> b  aka P(b | t)
         self.alpha_net = alpha_net  # (t + b) -> t abstract transition
-        self.stop_net_stop_ix = 0  # index zero means stop, index 1 means go
-        self.stop_net_continue_ix = 1  # index zero means stop, index 1 means go
+        self.stop_net_stop_ix = 0  # index 0 means stop, index 1 means go
+        self.stop_net_continue_ix = 1  # index 0 means stop, index 1 means go
 
     def forward(self, s_i):
         """
@@ -41,8 +37,8 @@ class AbstractPolicyNet(nn.Module):
            (T, t) tensor of abstract states t_i
            (T, b, n) tensor of action logps
            (T, b, 2) tensor of stop logps
-               interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
-                               (T, b, 1) is stop logp
+             interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
+                             (T, b, 1) is stop logp
            (T, b) tensor of start logps
            (T, b, t, t) tensor of causal consistency penalties
         """
@@ -71,7 +67,8 @@ class AbstractPolicyNet(nn.Module):
         """
         Calculate a single abstract transition. Useful for test-time.
         """
-        return self.alpha_transitions(t.unsqueeze(0), torch.tensor([b])).reshape(self.t)
+        return self.alpha_transitions(t.unsqueeze(0),
+                                      torch.tensor([b])).reshape(self.t)
 
     def alpha_transitions(self, t_i, bs):
         """
@@ -84,12 +81,12 @@ class AbstractPolicyNet(nn.Module):
         nb = bs.shape[0]
         # calculate transition for each t_i + b pair
         t_i2 = t_i.repeat_interleave(nb, dim=0)  # (T*nb, t)
-        assertEqual(t_i2.shape, (T*nb, self.t))
+        assertEqual(t_i2.shape, (T * nb, self.t))
         b_onehots = F.one_hot(bs, num_classes=self.b).repeat(T, 1)  # (T*nb, b)
-        assertEqual(b_onehots.shape, (T*nb, self.b))
+        assertEqual(b_onehots.shape, (T * nb, self.b))
         # b is "less significant', changes in 'inner loop'
         t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
-        assertEqual(t_i2.shape, (T*nb, self.t + self.b))
+        assertEqual(t_i2.shape, (T * nb, self.t + self.b))
         # (T * nb, t + b) -> (T * nb, t)
         t_i2 = self.alpha_net(t_i2)
         return t_i2.reshape(T, nb, self.t)
@@ -173,8 +170,8 @@ class Eq2Net(nn.Module):
                                              new_mass.unsqueeze(0)))
 
                 # causal consistency penalty
-                consistency_pens = consistency_penalties[:i+1, i, :]  # (i+1, b)
-                assertEqual(consistency_pens.shape, (i+1, self.b))
+                consistency_pens = consistency_penalties[:i + 1, i, :]  # (i+1, b)
+                assertEqual(consistency_pens.shape, (i + 1, self.b))
                 consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
                 total_consistency_penalty += consistency_penalty
 
@@ -219,7 +216,8 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
-def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None, print_every=1):
+
+def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
 
@@ -232,8 +230,8 @@ def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_
         total = 0
         for states, actions in dataloader:
             optimizer.zero_grad()
-            states = states.to(device)
-            actions = actions.to(device)
+            states = states.to(DEVICE)
+            actions = actions.to(DEVICE)
             pred = net(states)
             loss = criterion(pred, actions)
             train_loss += loss
@@ -254,9 +252,9 @@ def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
-                + f"train loss: {loss}\t"
-                + f"acc: {acc:.3f}\t"
-                + f"({time.time() - start:.1f}s)")
+                  + f"train loss: {loss}\t"
+                  + f"acc: {acc:.3f}\t"
+                  + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
 
@@ -317,7 +315,7 @@ def sample_trajectories(net, data, full_abstract=False):
         options.append(current_option_path)
         print(f'({0, 0}) to ({x, y}) via {moves_taken}')
         print(f"options: {'/'.join(options)}")
-        print('-'*10)
+        print('-' * 10)
 
 
 def boxworld_train():
@@ -332,8 +330,8 @@ def boxworld_train():
     b = 5
     t = 10
     tau_net = AllConv(output_dim=t, input_filters=3)
-    micro_net = AllConv(output_dim=b*a, input_filters=3)
-    stop_net = AllConv(output_dim=b*2, input_filters=3)
+    micro_net = AllConv(output_dim=b * a, input_filters=3)
+    stop_net = AllConv(output_dim=b * 2, input_filters=3)
     start_net = FC(t, b, hidden_dim=128, num_hidden=2)
     alpha_net = FC(t + b, t, hidden_dim=64, num_hidden=1)
 
@@ -352,9 +350,10 @@ def boxworld_train():
     utils.load_model(net, f'models/model_12-2__20.pt')
     train_abstractions(data, net, epochs=1)
     # utils.save_model(net, f'models/model_12-2.pt')
-    boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
+    boxworld.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
 
-def boxworld_sv_train(device, n=1000):
+
+def boxworld_sv_train(n=1000):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = boxworld.make_env()
@@ -362,7 +361,7 @@ def boxworld_sv_train(device, n=1000):
         model_load_run_id = None
         drlnet = True
         epochs = 20
-        print_every=5
+        print_every = 5
 
         mlflow.log_params(dict(model_load_run_id=model_load_run_id,
                                epochs=epochs,
@@ -372,9 +371,9 @@ def boxworld_sv_train(device, n=1000):
         else:
             mlflow.log_params(dict(drlnet=drlnet))
             if drlnet:
-                net = RelationalDRLNet(input_channels=3).to(device)
+                net = RelationalDRLNet(input_channels=3).to(DEVICE)
             else:
-                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
+                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(DEVICE)
             print(f"Net has {num_params(net)} parameters")
 
             try:
@@ -389,7 +388,7 @@ def boxworld_sv_train(device, n=1000):
                     print(f'{len(data)} examples')
                     dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-                    train_supervised(dataloader, net, device=device, epochs=epochs, print_every=print_every)
+                    train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
                     with Timing("Evaluated model"):
                         boxworld.eval_model(net, env, n=100, T=100)
@@ -410,8 +409,8 @@ def main():
     abstract_policy_net = AbstractPolicyNet(
         a := 2, b := 2, t := 10,
         tau_net=FC(s, t, hidden_dim=64, num_hidden=1),
-        micro_net=FC(s, b*a, hidden_dim=64, num_hidden=1),
-        stop_net=FC(s, b*2, hidden_dim=64, num_hidden=1),
+        micro_net=FC(s, b * a, hidden_dim=64, num_hidden=1),
+        stop_net=FC(s, b * 2, hidden_dim=64, num_hidden=1),
         start_net=FC(t, b, hidden_dim=64, num_hidden=1),
         alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
     net = Eq2Net(abstract_policy_net,
@@ -427,12 +426,8 @@ def main():
 
 
 if __name__ == '__main__':
-    device = utils.get_torch_device()
-
     random.seed(1)
     torch.manual_seed(1)
+    print_torch_device()
 
-
-    # boxworld_train()
-    boxworld_sv_train(device, n=500)
-    # main()
+    boxworld_sv_train(n=5)
