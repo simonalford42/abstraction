@@ -56,18 +56,6 @@ def num_params(model):
                 for p in list(model.parameters())])
 
 
-class Print(nn.Module):
-    def __init__(self, layer):
-        super().__init__()
-        self.layer = layer
-
-    def forward(self, x):
-        print(x)
-        for p in self.parameters():
-            print(p)
-        return self.layer(x)
-
-
 def save_model(model, path):
     path2 = next_unused_path(path)
     torch.save(model.state_dict(), path2)

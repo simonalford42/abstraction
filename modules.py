@@ -6,6 +6,21 @@ import torch.nn.functional as F
 import einops
 from utils import assertEqual
 
+
+class Print(nn.Module):
+    def __init__(self, layer):
+        super().__init__()
+        self.layer = layer
+
+    def forward(self, x):
+        print(x)
+        for p in self.parameters():
+            print(p)
+        return self.layer(x)
+
+
+
+
 class RelationalDRLNet(nn.Module):
     def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
         super().__init__()

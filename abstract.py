@@ -197,7 +197,6 @@ def train_abstractions(data, net, epochs, lr=1E-3):
     print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 
-    train_losses = []
     net.train()
 
     for epoch in range(epochs):
@@ -217,50 +216,49 @@ def train_abstractions(data, net, epochs, lr=1E-3):
               + f"({time.time() - start:.0f}s)")
         if epoch % 10 == 0:
             utils.save_model(net, f'models/model_12-2.pt')
-        train_losses.append(train_loss)
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
 def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None, print_every=1):
-    print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
 
-    train_losses = []
     net.train()
 
     for epoch in range(epochs):
-        # print(psutil.Process().memory_info().rss / (1024 * 1024))
         train_loss = 0
         start = time.time()
         correct = 0
         total = 0
         for states, actions in dataloader:
-            # for s, a in zip(states, actions):
-            #     print(a, boxworld.BoxWorldData.action_to_move(a))
-            #     plt.imshow(einops.rearrange(s.long(), 'c h w -> h w c'))
-            #     plt.show()
             optimizer.zero_grad()
             states = states.to(device)
             actions = actions.to(device)
             pred = net(states)
-            pred2 = torch.argmax(pred, dim=1)
-            correct += sum(pred2 == actions)
-            total += len(actions)
             loss = criterion(pred, actions)
             train_loss += loss
             loss.backward()
             optimizer.step()
+
+            pred2 = torch.argmax(pred, dim=1)
+            correct += sum(pred2 == actions).item()
+            total += len(actions)
+
+        acc = correct / total
+        metrics = dict(
+            epoch=epoch,
+            loss=loss.item(),
+            acc=acc,
+        )
+        mlflow.log_metrics(metrics, step=epoch)
+
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
                 + f"train loss: {loss}\t"
-                + f"acc: {correct / total:.3f}\t"
+                + f"acc: {acc:.3f}\t"
                 + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
-            utils.save_model(net, f'models/model_12-15.pt')
-        train_losses.append(train_loss)
-
-    # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
+            utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
 
 
 def sample_trajectories(net, data, full_abstract=False):
@@ -357,41 +355,47 @@ def boxworld_train():
     boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
 
 def boxworld_sv_train(device, n=1000):
-    env = boxworld.make_env()
+    mlflow.set_experiment("Boxworld sv train")
+    with mlflow.start_run():
+        env = boxworld.make_env()
 
-    drlnet = True
-    if drlnet:
-        net = RelationalDRLNet(input_channels=3).to(device)
-        utils.load_model(net, f'models/sv_model_1-4_DRL.pt')
-        # utils.load_mlflow_model()
-    else:
-        net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
-        # this is a well-trained AllConv net.
-        # Solved 10/50 episodes; Counter({0: 13, 2: 12, 4: 12, 1: 7, 3: 6}) are path dists
-        # utils.load_model(net, f'models/sv_model_12-21__6.pt')
+        model_load_run_id = None
+        drlnet = True
+        epochs = 20
+        print_every=5
 
-        # run_id = None
-        # utils.load_mlflow_model(run_id)
+        mlflow.log_params(dict(model_load_run_id=model_load_run_id,
+                               epochs=epochs,
+                               ))
+        if model_load_run_id is not None:
+            net = utils.load_mlflow_model(model_load_run_id)
+        else:
+            mlflow.log_params(dict(drlnet=drlnet))
+            if drlnet:
+                net = RelationalDRLNet(input_channels=3).to(device)
+            else:
+                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
+            print(f"Net has {num_params(net)} parameters")
 
+            try:
+                i = 0
+                while True:
+                    i += 1
+                    print(f'Round {i}')
 
-    try:
-        for i in range(10000):
-            print(f'Round {i}')
+                    with Timing("Generated trajectories"):
+                        trajs = boxworld.generate_boxworld_data(n=n, env=env, path_len=1)
+                    data = boxworld.BoxWorldDataset(trajs)
+                    print(f'{len(data)} examples')
+                    dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-            with Timing("Generated trajectories"):
-                trajs = boxworld.generate_boxworld_data(n=n, env=env, path_len=1)
-            data = boxworld.BoxWorldDataset(trajs)
-            print(f'{len(data)} examples')
-            dataloader = DataLoader(data, batch_size=256, shuffle=True)
+                    train_supervised(dataloader, net, device=device, epochs=epochs, print_every=print_every)
 
-            train_supervised(dataloader, net, device=device, epochs=20, print_every=5)
-
-            with Timing("evaluated model"):
-                boxworld.eval_model(net, env, n=100, T=100)
-                boxworld.eval_model(net, env, n=100, T=100, argmax=True)
-    except KeyboardInterrupt:
-        s = "DRL" if drlnet else "AllConv"
-        utils.save_model(net, f'models/sv_model_1-4_{s}.pt')
+                    with Timing("Evaluated model"):
+                        boxworld.eval_model(net, env, n=100, T=100)
+                        boxworld.eval_model(net, env, n=100, T=100, argmax=True)
+            except KeyboardInterrupt:
+                utils.save_mlflow_model(net)
 
 
 def main():
@@ -430,5 +434,5 @@ if __name__ == '__main__':
 
 
     # boxworld_train()
-    boxworld_sv_train(device, n=5000)
+    boxworld_sv_train(device, n=500)
     # main()
