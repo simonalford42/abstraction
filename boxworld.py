@@ -8,7 +8,7 @@ from gym import envs
 import gym_boxworld
 import torch
 from torch.utils.data import Dataset  # , DataLoader
-from utils import assertEqual
+from utils import assertEqual, DEVICE
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from torch.distributions import Categorical
@@ -176,12 +176,12 @@ def exec(moves, env):
     return obs, done
 
 
-def eval_model(net, env, n=100, T=100, render=False, argmax=False):
+def eval_model(net, n=100, T=100, render=False, argmax=False):
     def obs_to_net(obs):
         assertEqual(obs.shape, (14, 14, 3))
         obs = torch.tensor(obs)
         obs = einops.rearrange(obs, 'h w c -> 1 c h w')
-        obs = obs.to(net.device)
+        obs = obs.to(DEVICE)
         return obs
 
     print(f'Evaluating model on {n} episodes')

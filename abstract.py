@@ -1,22 +1,17 @@
-from collections import Counter
-from matplotlib import pyplot as plt
 import argparse
-# import psutil
 import random
-import einops
 import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import utils
-from utils import assertEqual, num_params, Timing
-from modules import FC, AllConv, ImageFC, RelationalDRLNet
+from utils import assertEqual, num_params, Timing, DEVICE
+from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
 import boxworld
 import up_right
 import mlflow
-
 
 class AbstractPolicyNet(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
@@ -219,7 +214,7 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
 
-def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_every=None, print_every=1):
+def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
 
@@ -232,8 +227,8 @@ def train_supervised(dataloader: DataLoader, net, device, epochs, lr=1E-4, save_
         total = 0
         for states, actions in dataloader:
             optimizer.zero_grad()
-            states = states.to(device)
-            actions = actions.to(device)
+            states = states.to(DEVICE)
+            actions = actions.to(DEVICE)
             pred = net(states)
             loss = criterion(pred, actions)
             train_loss += loss
@@ -352,17 +347,17 @@ def boxworld_train():
     utils.load_model(net, f'models/model_12-2__20.pt')
     train_abstractions(data, net, epochs=1)
     # utils.save_model(net, f'models/model_12-2.pt')
-    boxworld.sample_trajectories(net, n=10, env=env, max_steps = data.max_steps + 10, full_abstract=True, render=True)
+    boxworld.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
 
-def boxworld_sv_train(device, n=1000):
+
+def boxworld_sv_train(n=1000, drlnet=True):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = boxworld.make_env()
 
         model_load_run_id = None
-        drlnet = True
-        epochs = 20
-        print_every=5
+        epochs = 500
+        print_every = 50
 
         mlflow.log_params(dict(model_load_run_id=model_load_run_id,
                                epochs=epochs,
@@ -372,9 +367,9 @@ def boxworld_sv_train(device, n=1000):
         else:
             mlflow.log_params(dict(drlnet=drlnet))
             if drlnet:
-                net = RelationalDRLNet(input_channels=3).to(device)
+                net = RelationalDRLNet(input_channels=3).to(DEVICE)
             else:
-                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(device)
+                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(DEVICE)
             print(f"Net has {num_params(net)} parameters")
 
             try:
@@ -389,7 +384,7 @@ def boxworld_sv_train(device, n=1000):
                     print(f'{len(data)} examples')
                     dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-                    train_supervised(dataloader, net, device=device, epochs=epochs, print_every=print_every)
+                    train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
                     with Timing("Evaluated model"):
                         boxworld.eval_model(net, env, n=100, T=100)
@@ -427,12 +422,15 @@ def main():
 
 
 if __name__ == '__main__':
-    device = utils.get_torch_device()
+    parser = argparse.ArgumentParser(description='gcsl')
+    parser.add_argument("--cnn",
+                        action="store_true",
+                        dest="cnn")
+    args = parser.parse_args()
+
 
     random.seed(1)
     torch.manual_seed(1)
+    utils.print_torch_device()
 
-
-    # boxworld_train()
-    boxworld_sv_train(device, n=500)
-    # main()
+    boxworld_sv_train(n=50, drlnet=not args.cnn)

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import einops
-from utils import assertEqual
+from utils import assertEqual, DEVICE
 
 
 class Print(nn.Module):
@@ -19,12 +19,9 @@ class Print(nn.Module):
         return self.layer(x)
 
 
-
-
 class RelationalDRLNet(nn.Module):
-    def __init__(self, device, input_channels=3, d=64, attn_blocks=2, num_heads=2):
+    def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
         super().__init__()
-        self.device = device
         self.input_channels = input_channels
         self.d = 64
         self.num_attn_blocks=2
@@ -81,7 +78,7 @@ class RelationalDRLNet(nn.Module):
         # ranges between -1 and 1
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
-        y_map, x_map = y_map.to(self.device), x_map.to(self.device)
+        y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
         assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
         assertEqual((x_map[0], y_map[0]), (-1., -1.,))
         assertEqual(y_map.shape[0], H)
