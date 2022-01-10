@@ -1,11 +1,11 @@
 from collections import Counter
-from typing import Tuple
+from typing import Any, Tuple
 import einops
 import gym
 import gym_boxworld
 import numpy as np
 import torch
-from torch.utils.data import Dataset  # , DataLoader
+from torch.utils.data import Dataset
 from utils import assertEqual, DEVICE
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -86,16 +86,16 @@ def domino_matches(p, obs, y, x):
         return False
 
 
-def shortest_path(color_obs, goal):
+def shortest_path(color_obs, goal_pos):
     # goal is coordinates
     # start is assumed to be where grey dot is
     start = tuple(np.argwhere(color_obs == 'DG')[0])
     assert color_obs[start] == 'DG'
-    nodes, adj_matrix = make_graph(color_obs, goal)
-    return dijkstra(nodes, adj_matrix, start, goal)
+    nodes, adj_matrix = make_graph(color_obs, goal_pos)
+    return dijkstra(nodes, adj_matrix, start, goal_pos)
 
 
-def make_graph(obs, goal):
+def make_graph(obs, goal_pos):
     # nodes that can be walked through:
     # - "self" color (dark grey)
     # - background color (grey)
@@ -103,7 +103,7 @@ def make_graph(obs, goal):
     nodes = {(y, x) for y in range(len(obs))
                     for x in range(len(obs[y]))
                     if (obs[y, x] in ['DG', 'GR']
-                        or (y, x) == goal)}
+                        or (y, x) == goal_pos)}
     adj_matrix = {(y, x): {n2: 1 for n2 in [(y+1, x), (y-1, x), (y, x-1), (y, x+1)]
                            if n2 in nodes}
                   for (y, x) in nodes}
@@ -115,7 +115,13 @@ class NoPathError(Exception):
     pass
 
 
-def dijkstra(nodes, adj_matrix, start, goal):
+def dijkstra(nodes: set, adj_matrix: dict[Any, dict], start, goal):
+    """
+    nodes: set of items
+    adj_matrix: map from item to map of adjacent_node: weight_to_node pairs (may be directed graph)
+    start: a node
+    goal: a node
+    """
     distances = {n: float('inf') for n in nodes}
     predecessors = {n: None for n in nodes}
     distances[start] = 0
@@ -404,7 +410,7 @@ def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, data: list[Tuple[list, list]]):
+    def __init__(self, data: list[tuple[list, list]]):
         """
         data: list of (states, moves) tuples
         """

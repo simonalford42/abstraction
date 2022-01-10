@@ -5,7 +5,20 @@ import time
 import mlflow
 
 
+POS = tuple[int, int]
+
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+def log(s: str):
+    with open('log.txt', 'r+') as f:
+        f.write(s)
+
+def print_memory_usage(message: str = ''):
+    # https://stackoverflow.com/a/21632554/4383594
+    import os, psutil
+    mem = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
+    print(message + ' memory usage: ' + str(mem))
 
 
 def print_torch_device():
