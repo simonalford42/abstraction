@@ -326,11 +326,11 @@ def sample_trajectories(net, data, full_abstract=False):
         print('-' * 10)
 
 
-def boxworld_train():
+def old_box_world_train():
     print('generating trajectories')
 
     env = old_box_world.make_env()
-    trajs = old_box_world.generate_boxworld_data(n=10, env=env)
+    trajs = old_box_world.generate_box_world_data(n=10, env=env)
     print('trajectories generated')
     data = old_box_world.BoxworldData(trajs)
 
@@ -362,7 +362,7 @@ def boxworld_train():
 
 
 def old_box_world_sv_train(n=1000):
-    mlflow.set_experiment("Old boxworld sv train")
+    mlflow.set_experiment("Old box_world sv train")
     with mlflow.start_run():
         env = old_box_world.make_env()
 
@@ -396,7 +396,7 @@ def old_box_world_sv_train(n=1000):
                     utils.print_memory_usage()
 
                     with Timing("Generated trajectories"):
-                        trajs = old_box_world.generate_boxworld_data(n=n, env=env, path_len=1)
+                        trajs = old_box_world.generate_box_world_data(n=n, env=env, path_len=1)
                     data = old_box_world.BoxWorldDataset(trajs)
                     utils.print_memory_usage()
                     print(f'{len(data)} examples')
@@ -407,22 +407,22 @@ def old_box_world_sv_train(n=1000):
 
                     with Timing("Evaluated model"):
                         old_box_world.eval_model(net, env, n=100, T=100)
-                        # boxworld.eval_model(net, env, n=100, T=100, argmax=True)
+                        # box_world.eval_model(net, env, n=100, T=100, argmax=True)
             except KeyboardInterrupt:
                 utils.save_mlflow_model(net)
 
 
-def boxworld_sv_train(n=1000):
+def box_world_sv_train(n=1000, epochs=100, drlnet=True):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
 
         model_load_run_id = None
-        drlnet = True
-        epochs = 1
-        print_every = 5
+        print_every = epochs / 5
+        save_every = 1
 
         mlflow.log_params(dict(model_load_run_id=model_load_run_id,
+                               drlnet=drlnet,
                                epochs=epochs,
                                ))
         if model_load_run_id is not None:
@@ -439,13 +439,15 @@ def boxworld_sv_train(n=1000):
             print(f"Net has {num_params(net)} parameters")
 
             try:
-                i = 0
+                round = 0
                 while True:
-                    i += 1
-                    print(f'Round {i}')
+                    round += 1
+                    print(f'Round {round}')
 
                     with Timing("Generated trajectories"):
-                        trajs = box_world.generate_boxworld_data(n=n, env=env)
+                        trajs = box_world.generate_box_world_data(n=n, env=env)
+                    
+                    data = box_world.BoxWorldDataset(trajs)
 
                     print(f'{len(data)} examples')
                     dataloader = DataLoader(data, batch_size=256, shuffle=True)
@@ -454,6 +456,8 @@ def boxworld_sv_train(n=1000):
 
                     with Timing("Evaluated model"):
                         box_world.eval_model(net, env, n=100, T=100)
+                    if round % save_every == 0:
+                        utils.save_mlflow_model(net)
             except KeyboardInterrupt:
                 utils.save_mlflow_model(net)
 
@@ -486,7 +490,7 @@ def main():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='gcsl')
+    parser = argparse.ArgumentParser(description='Abstraction')
     parser.add_argument("--cnn",
                         action="store_true",
                         dest="cnn")
@@ -500,6 +504,6 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    # n = 50 if args.test else 5000
-    n = 1000
-    boxworld_sv_train(n=n, drlnet=not args.cnn, epochs=100)
+    n = 500 if args.test else 5000
+    epochs = 100 if args.test else 1000
+    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn)

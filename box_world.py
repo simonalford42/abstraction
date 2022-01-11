@@ -65,7 +65,7 @@ class BoxWorldEnv(gym.Env):
         self, action: int
     ) -> tuple[Any, float, bool, dict]:
         """
-        Applies action to the boxworld environment.
+        Applies action to the box world environment.
 
         Returns:
             observation (object): agent's observation of the current environment, a numpy array of string characters.
@@ -403,8 +403,8 @@ def eval_model(net, env, n=100, T=100, render=False):
     print(f'Evaluating model on {n} episodes')
     solved = 0
     num_found_keys = []
-    found_keys = set()
     for i in range(n):
+        found_keys = set()
         obs = env.reset()
         done = False
         for t in range(T):
@@ -423,11 +423,11 @@ def eval_model(net, env, n=100, T=100, render=False):
         if done:
             solved += 1
         num_found_keys.append(len(found_keys))
-    print(f'Solved {solved}/{n} episodes; {Counter(num_found_keys)} are path dists')
+    print(f'Solved {solved}/{n} episodes; {Counter(num_found_keys)} is the distribution of the number of found keys each time')
     return solved
 
 
-def generate_boxworld_data(n, env) -> list[tuple[list, list]]:
+def generate_box_world_data(n, env) -> list[tuple[list, list]]:
     return [generate_traj(env) for i in range(n)]
 
 
@@ -502,4 +502,4 @@ if __name__ == '__main__':
 
     env = BoxWorldEnv(**vars(FLAGS))
     while True:
-        generate_traj(env)
+            generate_traj(env)

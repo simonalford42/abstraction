@@ -7,3 +7,4 @@ torch>=1.9.1
 torchvision>=0.10.1
 mypy
 lib/pycolab
+lib/Relational_DRL/env/gym-box-world
