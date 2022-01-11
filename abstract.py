@@ -9,7 +9,8 @@ import utils
 from utils import assertEqual, num_params, Timing, DEVICE
 from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
-import boxworld
+import old_box_world
+import box_world
 import up_right
 import mlflow
 
@@ -32,13 +33,13 @@ class AbstractPolicyNet(nn.Module):
 
     def forward(self, s_i):
         """
-        input: (T, s) tensor of states
+        s_i: (T, s) tensor of states
         outputs:
            (T, t) tensor of abstract states t_i
-           (T, b, n) tensor of action logps
+           (T, b, a) tensor of action logps
            (T, b, 2) tensor of stop logps
-             interpretation: (T, b, 0) is "keep going" (stop=False) (1 - beta)
-                             (T, b, 1) is stop logp
+              the index corresponding to stop/continue are in
+              self.stop_net_stop_ix, self.stop_net_continue_ix
            (T, b) tensor of start logps
            (T, b, t, t) tensor of causal consistency penalties
         """
@@ -47,8 +48,8 @@ class AbstractPolicyNet(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         action_logps = self.micro_net(s_i).reshape(T, self.b, self.a)
         stop_logps = self.stop_net(s_i).reshape(T, self.b, 2)
-        start_logps = self.start_net(t_i)  # (T, b) P(b | t)
-        consistency_penalty = self.calc_consistency_penalty(t_i)
+        start_logps = self.start_net(t_i)  # (T, b) aka P(b | t)
+        consistency_penalty = self.calc_consistency_penalty(t_i)  # (T, T, b)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
@@ -77,6 +78,7 @@ class AbstractPolicyNet(nn.Module):
         returns: (T, |bs|, self.t) batch of new abstract states for each
             option applied.
         """
+        # TODO: recalculate with einops, compare calculations
         T = t_i.shape[0]
         nb = bs.shape[0]
         # calculate transition for each t_i + b pair
@@ -92,6 +94,7 @@ class AbstractPolicyNet(nn.Module):
         return t_i2.reshape(T, nb, self.t)
 
     def calc_consistency_penalty(self, t_i):
+        # TODO: recalculate with einops, compare calculations
         T = t_i.shape[0]
         alpha_trans = self.alpha_transitions(t_i, torch.arange(self.b))
         alpha_trans = alpha_trans.reshape(T, 1, self.b, self.t)
@@ -129,6 +132,11 @@ class Eq2Net(nn.Module):
         outputs: logp of sequence
 
         HMM calculation, building off Smith et al. 2018.
+
+        At a high level:
+            - keeps track of distribution over abstract actions, and what timestep
+              that abstract action started. so (i+1, b) shape.
+            - uses this to calculate expected
         """
         T = len(actions)
         assertEqual(s_i.shape[0], T + 1)
@@ -321,10 +329,10 @@ def sample_trajectories(net, data, full_abstract=False):
 def boxworld_train():
     print('generating trajectories')
 
-    env = boxworld.make_env()
-    trajs = boxworld.generate_boxworld_data(n=10, env=env)
+    env = old_box_world.make_env()
+    trajs = old_box_world.generate_boxworld_data(n=10, env=env)
     print('trajectories generated')
-    data = boxworld.BoxworldData(trajs)
+    data = old_box_world.BoxworldData(trajs)
 
     a = 4
     b = 5
@@ -350,17 +358,20 @@ def boxworld_train():
     utils.load_model(net, f'models/model_12-2__20.pt')
     train_abstractions(data, net, epochs=1)
     # utils.save_model(net, f'models/model_12-2.pt')
-    boxworld.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
+    old_box_world.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
 
 
-def boxworld_sv_train(n=5000, drlnet=True, epochs=500, print_every=None):
-    mlflow.set_experiment("Boxworld sv train")
+def old_box_world_sv_train(n=1000):
+    mlflow.set_experiment("Old boxworld sv train")
     with mlflow.start_run():
-        env = boxworld.make_env()
+        env = old_box_world.make_env()
 
         model_load_run_id = None
         if print_every is None:
             print_every = epochs / 5
+
+        drlnet = True
+        epochs = 1
 
         mlflow.log_params(dict(model_load_run_id=model_load_run_id,
                                epochs=epochs,
@@ -382,17 +393,67 @@ def boxworld_sv_train(n=5000, drlnet=True, epochs=500, print_every=None):
                 while True:
                     i += 1
                     print(f'Round {i}')
+                    utils.print_memory_usage()
 
                     with Timing("Generated trajectories"):
-                        trajs = boxworld.generate_boxworld_data(n=n, env=env)
-                    data = boxworld.BoxWorldDataset(trajs)
+                        trajs = old_box_world.generate_boxworld_data(n=n, env=env, path_len=1)
+                    data = old_box_world.BoxWorldDataset(trajs)
+                    utils.print_memory_usage()
+                    print(f'{len(data)} examples')
+                    dataloader = DataLoader(data, batch_size=256, shuffle=True)
+                    utils.print_memory_usage()
+
+                    train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
+
+                    with Timing("Evaluated model"):
+                        old_box_world.eval_model(net, env, n=100, T=100)
+                        # boxworld.eval_model(net, env, n=100, T=100, argmax=True)
+            except KeyboardInterrupt:
+                utils.save_mlflow_model(net)
+
+
+def boxworld_sv_train(n=1000):
+    mlflow.set_experiment("Boxworld sv train")
+    with mlflow.start_run():
+        env = box_world.BoxWorldEnv()
+
+        model_load_run_id = None
+        drlnet = True
+        epochs = 1
+        print_every = 5
+
+        mlflow.log_params(dict(model_load_run_id=model_load_run_id,
+                               epochs=epochs,
+                               ))
+        if model_load_run_id is not None:
+            net = utils.load_mlflow_model(model_load_run_id)
+        else:
+            mlflow.log_params(dict(drlnet=drlnet))
+            if drlnet:
+                net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+            else:
+                net = AllConv(input_filters=box_world.NUM_ASCII,
+                              residual_blocks=2,
+                              residual_filters=24,
+                              output_dim=4).to(DEVICE)
+            print(f"Net has {num_params(net)} parameters")
+
+            try:
+                i = 0
+                while True:
+                    i += 1
+                    print(f'Round {i}')
+
+                    with Timing("Generated trajectories"):
+                        trajs = box_world.generate_boxworld_data(n=n, env=env)
+
                     print(f'{len(data)} examples')
                     dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
                     train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
                     with Timing("Evaluated model"):
-                        boxworld.eval_model(net, env, n=50)
+                        box_world.eval_model(net, env, n=100, T=100)
             except KeyboardInterrupt:
                 utils.save_mlflow_model(net)
 

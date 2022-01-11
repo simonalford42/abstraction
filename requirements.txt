@@ -1,9 +1,9 @@
 einops==0.3.2
 gym==0.21.0
--e git+https://github.com/gyh75520/Relational_DRL.git@a5f0d478e16b961d2bd1640952f1328046f85672#egg=gym_boxworld&subdirectory=env/gym-box-world
 matplotlib==3.4.3
 mlflow==1.15.0
 numpy==1.21.2
 torch>=1.9.1
 torchvision>=0.10.1
 mypy
+lib/pycolab

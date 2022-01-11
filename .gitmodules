@@ -1,6 +1,3 @@
-[submodule "Relational_DRL"]
-	path = Relational_DRL
-	url = ./Relational_DRL
-[submodule "pycolab"]
-	path = pycolab
-	url = ./pycolab
+[submodule "lib/Relational_DRL"]
+	path = lib/Relational_DRL
+	url = https://github.com/gyh75520/Relational_DRL.git
