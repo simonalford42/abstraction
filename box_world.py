@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Any, Optional
+from typing import Any, Optional, List, Tuple
 import gym
 import argparse
 import numpy as np
@@ -63,7 +63,7 @@ class BoxWorldEnv(gym.Env):
 
     def step(
         self, action: int
-    ) -> tuple[Any, float, bool, dict]:
+    ) -> Tuple[Any, float, bool, dict]:
         """
         Applies action to the box world environment.
 
@@ -80,13 +80,13 @@ class BoxWorldEnv(gym.Env):
         return obs, reward, done, dict()
 
 
-def hex_to_rgb(hex: str) -> tuple[int]:
+def hex_to_rgb(hex: str) -> Tuple[int]:
     # https://stackoverflow.com/a/29643643/4383594
     hex = hex.lstrip('#')
     return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
 
 
-def color_name_to_rgb(name: str) -> tuple[int]:
+def color_name_to_rgb(name: str) -> Tuple[int]:
     # https://matplotlib.org/stable/gallery/color/named_colors.html
     hex = matplotlib.colors.CSS4_COLORS[name]
     return hex_to_rgb(hex)
@@ -244,7 +244,7 @@ def get_held_key(obs) -> Optional[str]:
 
 
 def get_tree(domino_pos_map: dict[str, POS],
-             held_key: Optional[str]) -> tuple[set[str], dict[str, dict[str, int]]]:
+             held_key: Optional[str]) -> Tuple[set[str], dict[str, dict[str, int]]]:
     """
     returns nodes, adj_matrix where nodes are one or two character ascii strings
     for the dominoes.
@@ -265,7 +265,7 @@ def get_tree(domino_pos_map: dict[str, POS],
     return nodes, adj_matrix
 
 
-def is_valid_solution_path(path: list[str], dominoes: set[str], held_key: str) -> bool:
+def is_valid_solution_path(path: List[str], dominoes: set[str], held_key: str) -> bool:
     if path[0] != bw.PLAYER:
         return False
     if any([p not in dominoes for p in path]):
@@ -284,7 +284,7 @@ class NoPathError(Exception):
     pass
 
 
-def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> list:
+def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> List:
     """
     nodes: set of items
     adj_matrix: map from item to map of adjacent_node: weight_to_node pairs (may be directed graph)
@@ -327,7 +327,7 @@ def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> 
     return get_path_to(goal)
 
 
-def make_move_graph(obs, goal_pos) -> tuple[set[POS], dict[POS, dict[POS, int]]]:
+def make_move_graph(obs, goal_pos) -> Tuple[set[POS], dict[POS, dict[POS, int]]]:
     # nodes that can be walked through:
     # - "self"
     # - background
@@ -343,7 +343,7 @@ def make_move_graph(obs, goal_pos) -> tuple[set[POS], dict[POS, dict[POS, int]]]
     return nodes, adj_matrix
 
 
-def shortest_path(obs, goal_pos: POS) -> list[POS]:
+def shortest_path(obs, goal_pos: POS) -> List[POS]:
     start_pos = tuple(np.argwhere(obs == bw.PLAYER)[0])
     assert obs[start_pos] == bw.PLAYER
 
@@ -351,7 +351,7 @@ def shortest_path(obs, goal_pos: POS) -> list[POS]:
     return dijkstra(nodes, adj_matrix, start_pos, goal_pos)
 
 
-def path_to_moves(path: list[POS]) -> list[int]:
+def path_to_moves(path: List[POS]) -> List[int]:
     """
     path is a sequence of (y, x) positions.
     converts to a sequence of up/down/left/right actions.
@@ -365,7 +365,7 @@ def path_to_moves(path: list[POS]) -> list[int]:
     return [dir_to_action_map[d] for d in diffs]
 
 
-def generate_traj(env: BoxWorldEnv) -> tuple[list, list]:
+def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
 
     domino_pos_map = get_dominoes(obs)
@@ -380,7 +380,7 @@ def generate_traj(env: BoxWorldEnv) -> tuple[list, list]:
 
     for i, domino in enumerate(path):
         subgoal_pos: POS = domino_pos_map[domino]
-        option: list[POS] = shortest_path(obs, subgoal_pos)
+        option: List[POS] = shortest_path(obs, subgoal_pos)
 
         for a in path_to_moves(option):
             obs, _, done, _ = env.step(a)
@@ -428,7 +428,7 @@ def eval_model(net, env, n=100, render=False):
     return solved
 
 
-def generate_box_world_data(n, env) -> list[tuple[list, list]]:
+def generate_box_world_data(n, env) -> List[Tuple[List, List]]:
     return [generate_traj(env) for i in range(n)]
 
 
@@ -441,7 +441,7 @@ def obs_to_tensor(obs) -> torch.Tensor:
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, data: list[tuple[list, list]]):
+    def __init__(self, data: List[Tuple[List, List]]):
         """
         data: list of (states, moves) tuples
         """

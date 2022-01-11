@@ -395,7 +395,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100)
 
                     with Timing("Generated trajectories"):
                         trajs = box_world.generate_box_world_data(n=n, env=env)
-                    
+
                     data = box_world.BoxWorldDataset(trajs)
 
                     print(f'{len(data)} examples')
