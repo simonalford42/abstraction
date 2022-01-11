@@ -412,7 +412,7 @@ def old_box_world_sv_train(n=1000):
                 utils.save_mlflow_model(net)
 
 
-def box_world_sv_train(n=1000, epochs=100, drlnet=True):
+def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -440,7 +440,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True):
 
             try:
                 round = 0
-                while True:
+                while round != rounds:
                     round += 1
                     print(f'Round {round}')
 
@@ -455,9 +455,11 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True):
                     train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
                     with Timing("Evaluated model"):
-                        box_world.eval_model(net, env, n=100, T=100)
+                        box_world.eval_model(net, env, n=100, T=num_test)
                     if round % save_every == 0:
+                        print('saving model')
                         utils.save_mlflow_model(net)
+                        print('saved model')
             except KeyboardInterrupt:
                 utils.save_mlflow_model(net)
 
@@ -504,6 +506,8 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 500 if args.test else 5000
-    epochs = 100 if args.test else 1000
-    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn)
+    n = 5 if args.test else 5000
+    epochs = 10 if args.test else 1000
+    num_test = 10 if args.test else 100
+    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,
+                       num_test=num_test)
