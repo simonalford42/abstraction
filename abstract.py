@@ -457,8 +457,8 @@ if __name__ == '__main__':
     num_test = 100 if args.test else 100
 
     net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
-    utils.load_mlflow_model(net, "17b899ac52c34442ae65ecb19dffae5f")
-    box_world.eval_model(net, box_world.BoxWorldEnv(), render=True)
+    utils.load_mlflow_model(net, "59a52d4b64034adcb8a698112d303168")
+    box_world.eval_model(net, box_world.BoxWorldEnv(), render=False)
 
     # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,
-    #                    num_test=num_test)
+                       # num_test=num_test)

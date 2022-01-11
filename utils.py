@@ -47,7 +47,7 @@ def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
     If overwrite=True, will overwrite. Otherwise, raises RuntimeException.
     """
     run_id = mlflow.active_run().info.run_id
-    path = f'/models/{run_id}-{model_name}/'
+    path = f'models/{run_id}-{model_name}.pt'
     if os.path.isfile(path):
         if not overwrite:
             raise RuntimeError("model already exists at path " + path)
@@ -57,7 +57,7 @@ def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
 
 
 def load_mlflow_model(model: nn.Module, run_id: str, model_name: str = 'model'):
-    path = f'/models/{run_id}-{model_name}/'
+    path = f'models/{run_id}-{model_name}.pt'
     model.load_state_dict(torch.load(path))
     print('Loaded model from ' + path)
 
