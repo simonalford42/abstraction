@@ -23,9 +23,9 @@ def print_memory_usage(message: str = ''):
 
 def print_torch_device():
     if torch.cuda.is_available():
-        print('Training on ' + torch.cuda.get_device_name(DEVICE))
+        print('Using torch device ' + torch.cuda.get_device_name(DEVICE))
     else:
-        print('Training on CPU')
+        print('Using torch device CPU')
 
 
 def save_mlflow_model(net: nn.Module, model_name='model'):

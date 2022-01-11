@@ -125,7 +125,7 @@ def to_color_obs(obs):
     return np.array([[ascii_to_color(a) for a in row] for row in obs])
 
 
-def render_obs(obs, color=True, pause=0.0001):
+def render_obs(obs, color=True, pause=1):
     """
     With color=True, makes a plot.
     With color=False, prints ascii to command line.
@@ -398,16 +398,17 @@ def generate_traj(env: BoxWorldEnv) -> tuple[list, list]:
     return states, moves
 
 
-def eval_model(net, env, n=100, T=100, render=False):
-
+def eval_model(net, env, n=100, render=False):
     print(f'Evaluating model on {n} episodes')
-    solved = 0
-    num_found_keys = []
+    num_solved = 0
+    solved_lens = []
     for i in range(n):
         found_keys = set()
         obs = env.reset()
-        done = False
-        for t in range(T):
+        done, solved = False, False
+        t = 0
+        while not (done or solved):
+            t += 1
             if render:
                 render_obs(obs)
             if obs[0, 0].isalpha():
@@ -418,12 +419,12 @@ def eval_model(net, env, n=100, T=100, render=False):
             out = net(obs)[0]
             a = torch.distributions.Categorical(logits=out).sample().item()
             obs, rew, done, info = env.step(a)
-            if done:
-                break
-        if done:
-            solved += 1
-        num_found_keys.append(len(found_keys))
-    print(f'Solved {solved}/{n} episodes; {Counter(num_found_keys)} is the distribution of the number of found keys each time')
+            solved = rew == bw.REWARD_GOAL
+
+        if solved:
+            num_solved += 1
+            solved_lens.append(t)
+    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {0 if not num_solved else sum(solved_lens) / num_solved}')
     return solved
 
 

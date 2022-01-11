@@ -361,57 +361,6 @@ def old_box_world_train():
     old_box_world.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
 
 
-def old_box_world_sv_train(n=1000):
-    mlflow.set_experiment("Old box_world sv train")
-    with mlflow.start_run():
-        env = old_box_world.make_env()
-
-        model_load_run_id = None
-        if print_every is None:
-            print_every = epochs / 5
-
-        drlnet = True
-        epochs = 1
-
-        mlflow.log_params(dict(model_load_run_id=model_load_run_id,
-                               epochs=epochs,
-                               n=n,
-                               drlnet=drlnet,
-                               ))
-        if model_load_run_id is not None:
-            net = utils.load_mlflow_model(model_load_run_id)
-        else:
-            mlflow.log_params(dict(drlnet=drlnet))
-            if drlnet:
-                net = RelationalDRLNet(input_channels=3).to(DEVICE)
-            else:
-                net = AllConv(input_filters=3, residual_blocks=2, residual_filters=24, output_dim=4).to(DEVICE)
-            print(f"Net has {num_params(net)} parameters")
-
-            try:
-                i = 0
-                while True:
-                    i += 1
-                    print(f'Round {i}')
-                    utils.print_memory_usage()
-
-                    with Timing("Generated trajectories"):
-                        trajs = old_box_world.generate_box_world_data(n=n, env=env, path_len=1)
-                    data = old_box_world.BoxWorldDataset(trajs)
-                    utils.print_memory_usage()
-                    print(f'{len(data)} examples')
-                    dataloader = DataLoader(data, batch_size=256, shuffle=True)
-                    utils.print_memory_usage()
-
-                    train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
-
-                    with Timing("Evaluated model"):
-                        old_box_world.eval_model(net, env, n=100, T=100)
-                        # box_world.eval_model(net, env, n=100, T=100, argmax=True)
-            except KeyboardInterrupt:
-                utils.save_mlflow_model(net)
-
-
 def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
@@ -455,7 +404,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100)
                     train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
                     with Timing("Evaluated model"):
-                        box_world.eval_model(net, env, n=100, T=num_test)
+                        box_world.eval_model(net, env, n=num_test)
                     if round % save_every == 0:
                         print('saving model')
                         utils.save_mlflow_model(net)
@@ -506,8 +455,12 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 5 if args.test else 5000
-    epochs = 10 if args.test else 1000
-    num_test = 10 if args.test else 100
-    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,
-                       num_test=num_test)
+    n = 500 if args.test else 5000
+    epochs = 100 if args.test else 1000
+    num_test = 100 if args.test else 100
+
+    net = utils.load_mlflow_model("17b899ac52c34442ae65ecb19dffae5f")
+    box_world.eval_model(net, box_world.BoxWorldEnv(), render=True)
+
+    # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,
+    #                    num_test=num_test)
