@@ -3,9 +3,10 @@ import torch.nn as nn
 import os
 import time
 import mlflow
+from typing import Tuple
 
 
-POS = tuple[int, int]
+POS = Tuple[int, int]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
