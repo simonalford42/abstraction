@@ -1,16 +1,16 @@
 import torch
 import torch.nn as nn
-from typing import List, Any
 import os
 import time
 import mlflow
+
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def print_torch_device():
     if torch.cuda.is_available():
-        print('Training on ' + torch.cuda.get_device_name(device))
+        print('Training on ' + torch.cuda.get_device_name(DEVICE))
     else:
         print('Training on CPU')
 
@@ -21,7 +21,7 @@ def save_mlflow_model(net: nn.Module, model_name='model'):
           f"with name {model_name}")
 
 
-def load_mlflow_model(run_id: str, model_name: str='model') -> nn.Module:
+def load_mlflow_model(run_id: str, model_name: str = 'model') -> nn.Module:
     model_uri = f"runs:/{run_id}/{model_name}"
     model = mlflow.pytorch.load_model(model_uri)
     print(f"Loaded model from run {run_id} with name {model_name}")
@@ -39,9 +39,9 @@ class Timing(object):
     def __exit__(self, type, value, traceback):
         dt = time.time() - self.start
         if isinstance(self.message, str):
-             message = self.message
+            message = self.message
         elif callable(self.message):
-             message = self.message(dt)
+            message = self.message(dt)
         else:
             raise ValueError("Timing message should be string function")
         print(f"{message} in {dt:.1f} seconds")

@@ -1,17 +1,15 @@
 from collections import Counter
-import random
-from typing import Tuple
 import einops
 import gym
-import numpy as np
-from gym import envs
 import gym_boxworld
+import numpy as np
 import torch
 from torch.utils.data import Dataset  # , DataLoader
 from utils import assertEqual, DEVICE
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
 from torch.distributions import Categorical
+
 
 def make_env():
     env_name = 'BoxRandWorld'
@@ -47,8 +45,8 @@ COLORS = {'M': (255., 0., 255.),
           'W': (255., 255., 255.),
           'G': (0., 255., 0.),
           'R': (255., 0., 0.),
-          'S': (255. , 127.5, 127.5),
-          'P': (127.5,   0. , 255.),
+          'S': (255., 127.5, 127.5),
+          'P': (127.5, 0., 255.),
           'B': (0., 0., 0.),
           'DG': (105., 105., 105.),
           'GR': (169., 169., 169.),
@@ -58,11 +56,15 @@ RGB_TO_COLOR = {v: k for k, v in COLORS.items()}
 
 
 def to_color_obs(obs):
-    return np.array([[RGB_TO_COLOR[tuple(obs[y, x])] for x in range(len(obs[y]))] for y in range(len(obs))])
+    return np.array([[RGB_TO_COLOR[tuple(obs[y, x])]
+                      for x in range(len(obs[y]))]
+                     for y in range(len(obs))])
 
 
 def from_color_obs(color_obs):
-    return np.array([[COLORS[color_obs[y, x]] for x in range(len(color_obs[y]))] for y in range(len(color_obs))]).astype(np.float32)
+    return np.array([[COLORS[color_obs[y, x]]
+                      for x in range(len(color_obs[y]))]
+                     for y in range(len(color_obs))]).astype(np.float32)
 
 
 def get_domino_position(obs, p):
@@ -102,7 +104,7 @@ def make_graph(obs, goal):
                     if (obs[y, x] in ['DG', 'GR']
                         or (y, x) == goal)}
     adj_matrix = {(y, x): {n2: 1 for n2 in [(y+1, x), (y-1, x), (y, x-1), (y, x+1)]
-                                 if n2 in nodes}
+                           if n2 in nodes}
                   for (y, x) in nodes}
 
     return nodes, adj_matrix
@@ -110,6 +112,7 @@ def make_graph(obs, goal):
 
 class NoPathError(Exception):
     pass
+
 
 def dijkstra(nodes, adj_matrix, start, goal):
     distances = {n: float('inf') for n in nodes}
@@ -176,7 +179,7 @@ def exec(moves, env):
     return obs, done
 
 
-def eval_model(net, n=100, T=100, render=False, argmax=False):
+def eval_model(net, env, n=50, T=100, render=False, argmax=False):
     def obs_to_net(obs):
         assertEqual(obs.shape, (14, 14, 3))
         obs = torch.tensor(obs)
@@ -186,7 +189,7 @@ def eval_model(net, n=100, T=100, render=False, argmax=False):
 
     print(f'Evaluating model on {n} episodes')
     solved = 0
-    path_colors = ['B','M','Y','G','R','W']
+    path_colors = ['B', 'M', 'Y', 'G', 'R', 'W']
     path_dists = []
     for i in range(n):
         obs = env.reset()
@@ -195,7 +198,7 @@ def eval_model(net, n=100, T=100, render=False, argmax=False):
         for t in range(T):
             if render:
                 env.render()
-                s = input()
+                _ = input()
             top_left_corner = obs[0][0]
             color = RGB_TO_COLOR[tuple(top_left_corner)]
             if color == path_colors[path_dist+1]:
@@ -235,7 +238,7 @@ def test_solving():
     assert done, 'uh oh'
 
 
-def generate_traj(env=None, path_len=-1) -> Tuple[list, list]:
+def generate_traj(env=None, path_len=-1) -> tuple[list, list]:
     if env is None:
         env = make_env()
     # [states], [moves]
@@ -268,7 +271,7 @@ def generate_traj(env=None, path_len=-1) -> Tuple[list, list]:
     return states, moves
 
 
-def generate_boxworld_data(n, env=None, first_only=False, path_len=-1) -> list[Tuple[list, list]]:
+def generate_boxworld_data(n, env=None, first_only=False, path_len=-1) -> list[tuple[list, list]]:
     print('generating trajectories')
     if env is None:
         env = make_env()
@@ -282,7 +285,7 @@ def generate_boxworld_data(n, env=None, first_only=False, path_len=-1) -> list[T
     return data
 
 
-def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list]]:
+def generate_simple_boxworld_data(n=None, complexity=0) -> list[tuple[list, list]]:
     env = make_env()
     obs = env.reset()
     H, W = obs.shape[0:2]
@@ -296,7 +299,7 @@ def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list
     if complexity == 0:
         for action in range(4):
             color_obs = empty_color_obs()
-            middle_y, middle_x = H // 2, W //2
+            middle_y, middle_x = H // 2, W // 2
             color_obs[middle_y, middle_x] = 'DG'
             data = []
             direction = ['U', 'D', 'L', 'R'][action]
@@ -316,7 +319,7 @@ def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list
             for d in range(1, 6):
                 color_obs = empty_color_obs()
                 H, W = color_obs.shape
-                middle_y, middle_x = H // 2, W //2
+                middle_y, middle_x = H // 2, W // 2
                 color_obs[middle_y, middle_x] = 'DG'
                 data = []
                 direction = ['U', 'D', 'L', 'R'][action]
@@ -381,7 +384,7 @@ def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list
             for d in range(1, 6):
                 color_obs = empty_color_obs()
                 H, W = color_obs.shape
-                middle_y, middle_x = H // 2, W //2
+                middle_y, middle_x = H // 2, W // 2
                 color_obs[middle_y, middle_x] = 'DG'
                 data = []
                 direction = ['U', 'D', 'L', 'R'][action]
@@ -394,17 +397,13 @@ def generate_simple_boxworld_data(n=None, complexity=0) -> list[Tuple[list, list
 
         return data
 
-
     # complexity=4: move from a to b, anywhere, any direction.
-
     # complexity=5: move from a to b, multiple boxes, go towards color in top right
-
     # complexity=6: full boxworld game.
 
 
-
 class BoxWorldDataset(Dataset):
-    def __init__(self, data: list[Tuple[list, list]]):
+    def __init__(self, data: list[tuple[list, list]]):
         """
         data: list of (states, moves) tuples
         """
@@ -467,8 +466,8 @@ def render_sequence(states, fps=3):
         im.set_data(states[i])
         return [im]
 
-    anim = animation.FuncAnimation(fig, animate, frames=len(states),
-            interval=1000/fps, repeat=False)
+    _ = animation.FuncAnimation(fig, animate, frames=len(states),
+                                interval=1000/fps, repeat=False)
     plt.show()
 
 
@@ -519,13 +518,12 @@ def sample_trajectories(net, n, env, max_steps, full_abstract=False, render=True
                     for y in range(len(obs)):
                         obs2_row = []
                         for x in range(len(obs[y])):
-                            if np.array_equal(obs[y, x], [0., 0., 0.,]):
+                            if np.array_equal(obs[y, x], [0., 0., 0.]):
                                 obs2_row.append([255., 255., 0.])
                             else:
                                 obs2_row.append(obs[y, x])
                         obs2.append(obs2_row)
                     obss[-1] = np.array(obs2)
-
 
             current_option_path += str(option.item())
             action = Categorical(logits=action_logps[0, option, :]).sample()

@@ -24,7 +24,7 @@ class RelationalDRLNet(nn.Module):
         super().__init__()
         self.input_channels = input_channels
         self.d = 64
-        self.num_attn_blocks=2
+        self.num_attn_blocks = 2
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
 
@@ -32,7 +32,9 @@ class RelationalDRLNet(nn.Module):
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
 
         # shared weights, so just one network
-        self.attn_block = nn.MultiheadAttention(embed_dim=self.d, num_heads=num_heads, batch_first=True)
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
 
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
@@ -44,7 +46,6 @@ class RelationalDRLNet(nn.Module):
                                 nn.ReLU())
 
         self.policy_proj = nn.Linear(self.d, 4)
-
 
     def forward(self, x):
         # input: (N, C, H, W)
@@ -223,7 +224,8 @@ class ImageFC(nn.Module):
     def __init__(self, inp_shape, fc_net: FC):
         super().__init__()
         self.fc_net = fc_net
-        self.first_layer = nn.Linear(in_features=np.prod(inp_shape), out_features=fc_net.input_dim)
+        self.first_layer = nn.Linear(in_features=np.prod(inp_shape),
+                                     out_features=fc_net.input_dim)
 
     def forward(self, x):
         x = einops.rearrange(x, 'n c h w -> n (c h w)')
