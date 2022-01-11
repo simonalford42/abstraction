@@ -374,43 +374,40 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100)
                                drlnet=drlnet,
                                epochs=epochs,
                                ))
+        if drlnet:
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+        else:
+            net = AllConv(input_filters=box_world.NUM_ASCII,
+                            residual_blocks=2,
+                            residual_filters=24,
+                            output_dim=4).to(DEVICE)
         if model_load_run_id is not None:
             net = utils.load_mlflow_model(model_load_run_id)
-        else:
-            mlflow.log_params(dict(drlnet=drlnet))
-            if drlnet:
-                net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
-            else:
-                net = AllConv(input_filters=box_world.NUM_ASCII,
-                              residual_blocks=2,
-                              residual_filters=24,
-                              output_dim=4).to(DEVICE)
-            print(f"Net has {num_params(net)} parameters")
 
-            try:
-                round = 0
-                while round != rounds:
-                    round += 1
-                    print(f'Round {round}')
+        print(f"Net has {num_params(net)} parameters")
 
-                    with Timing("Generated trajectories"):
-                        trajs = box_world.generate_box_world_data(n=n, env=env)
+        try:
+            round = 0
+            while round != rounds:
+                round += 1
+                print(f'Round {round}')
 
-                    data = box_world.BoxWorldDataset(trajs)
+                with Timing("Generated trajectories"):
+                    trajs = box_world.generate_box_world_data(n=n, env=env)
 
-                    print(f'{len(data)} examples')
-                    dataloader = DataLoader(data, batch_size=256, shuffle=True)
+                data = box_world.BoxWorldDataset(trajs)
 
-                    train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
+                print(f'{len(data)} examples')
+                dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-                    with Timing("Evaluated model"):
-                        box_world.eval_model(net, env, n=num_test)
-                    if round % save_every == 0:
-                        print('saving model')
-                        utils.save_mlflow_model(net)
-                        print('saved model')
-            except KeyboardInterrupt:
-                utils.save_mlflow_model(net)
+                train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
+
+                with Timing("Evaluated model"):
+                    box_world.eval_model(net, env, n=num_test)
+                if round % save_every == 0:
+                    utils.save_mlflow_model(net, overwrite=True)
+        except KeyboardInterrupt:
+            utils.save_mlflow_model(net, overwrite=True)
 
 
 def main():
@@ -459,7 +456,8 @@ if __name__ == '__main__':
     epochs = 100 if args.test else 1000
     num_test = 100 if args.test else 100
 
-    net = utils.load_mlflow_model("17b899ac52c34442ae65ecb19dffae5f")
+    net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+    utils.load_mlflow_model(net, "17b899ac52c34442ae65ecb19dffae5f")
     box_world.eval_model(net, box_world.BoxWorldEnv(), render=True)
 
     # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,

@@ -29,17 +29,37 @@ def print_torch_device():
         print('Using torch device CPU')
 
 
-def save_mlflow_model(net: nn.Module, model_name='model'):
-    mlflow.pytorch.log_model(net, model_name)
+# def save_mlflow_model(net: nn.Module, model_name='model'):
+#     mlflow.pytorch.log_model(net, model_name)
+#     print(f"Saved model for run\n{mlflow.active_run().info.run_id}",
+#           f"with name {model_name}")
+
+
+# def load_mlflow_model(run_id: str, model_name: str = 'model') -> nn.Module:
+#     model_uri = f"runs:/{run_id}/{model_name}"
+#     model = mlflow.pytorch.load_model(model_uri)
+#     print(f"Loaded model from run {run_id} with name {model_name}")
+#     return model
+
+
+def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
+    """
+    If overwrite=True, will overwrite. Otherwise, raises RuntimeException.
+    """
+    run_id = mlflow.active_run().info.run_id
+    path = f'/models/{run_id}-{model_name}/'
+    if os.path.isfile(path):
+        if not overwrite:
+            raise RuntimeError("model already exists at path " + path)
+    torch.save(model.state_dict(), path)
     print(f"Saved model for run\n{mlflow.active_run().info.run_id}",
           f"with name {model_name}")
 
 
-def load_mlflow_model(run_id: str, model_name: str = 'model') -> nn.Module:
-    model_uri = f"runs:/{run_id}/{model_name}"
-    model = mlflow.pytorch.load_model(model_uri)
-    print(f"Loaded model from run {run_id} with name {model_name}")
-    return model
+def load_mlflow_model(model: nn.Module, run_id: str, model_name: str = 'model'):
+    path = f'/models/{run_id}-{model_name}/'
+    model.load_state_dict(torch.load(path))
+    print('Loaded model from ' + path)
 
 
 class Timing(object):
