@@ -125,7 +125,7 @@ def to_color_obs(obs):
     return np.array([[ascii_to_color(a) for a in row] for row in obs])
 
 
-def render_obs(obs, color=True, pause=1):
+def render_obs(obs, color=True, pause=0.0001):
     """
     With color=True, makes a plot.
     With color=False, prints ascii to command line.
