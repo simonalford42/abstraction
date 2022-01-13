@@ -96,11 +96,14 @@ class AbstractPolicyNet(nn.Module):
     def calc_consistency_penalty(self, t_i):
         # TODO: recalculate with einops, compare calculations
         T = t_i.shape[0]
+        # apply each action at each timestep.
         alpha_trans = self.alpha_transitions(t_i, torch.arange(self.b))
         alpha_trans = alpha_trans.reshape(T, 1, self.b, self.t)
         t_i2 = t_i.reshape(1, T, 1, self.t)
+        # (start, end, action, t value)
         penalty = (t_i2 - alpha_trans)**2
         assertEqual(penalty.shape, (T, T, self.b, self.t))
+        # L1 norm
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
 
@@ -108,12 +111,6 @@ class AbstractPolicyNet(nn.Module):
 class Eq2Net(nn.Module):
     def __init__(self, abstract_policy_net, abstract_penalty=0.5,
                  consistency_ratio=1.):
-        """
-        model:
-            DP: dynamic programming model
-            HMM: HMM model
-            micro: no options.
-        """
         super().__init__()
         self.abstract_policy_net = abstract_policy_net
         self.a = abstract_policy_net.a
@@ -173,19 +170,22 @@ class Eq2Net(nn.Module):
 
                 # mass that stays in place, aka doesn't stop; broadcast
                 option_step_dist = option_step_dist + one_minus_stop_lps  # (T, b)
-                # add new mass
+                # add new mass at new timestep; TODO: einops?
                 option_step_dist = torch.cat((option_step_dist,
                                              new_mass.unsqueeze(0)))
 
-                # causal consistency penalty
+                # causal consistency penalty; start up to current timestep, end here,
                 consistency_pens = consistency_penalties[:i + 1, i, :]  # (i+1, b)
                 assertEqual(consistency_pens.shape, (i + 1, self.b))
                 consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
+                # TODO: does this need to be a logsumexp?
+                # TODO: this needs to be a logsumexp
                 total_consistency_penalty += consistency_penalty
 
             action_lps = action_logps[i, :, action]  # (b,)
             # in prob space, this is a sum of probs weighted by macro-dist
             logp = torch.logsumexp(action_lps + option_step_dist, dim=(0, 1))
+            # TODO: does this need to be a logsumexp?
             total_logp += logp
 
         # all macro options need to stop at the very end.
@@ -361,7 +361,8 @@ def old_box_world_train():
     old_box_world.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
 
 
-def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100):
+def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100, test_every=1):
+    print('New box world environment')
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -389,7 +390,6 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100)
         try:
             round = 0
             while round != rounds:
-                round += 1
                 print(f'Round {round}')
 
                 with Timing("Generated trajectories"):
@@ -402,10 +402,13 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100)
 
                 train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
-                with Timing("Evaluated model"):
-                    box_world.eval_model(net, env, n=num_test)
+                if round % test_every == 0:
+                    with Timing("Evaluated model"):
+                        box_world.eval_model(net, env, n=num_test)
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
+
+                round += 1
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)
 
@@ -452,13 +455,13 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 500 if args.test else 5000
-    epochs = 100 if args.test else 1000
-    num_test = 100 if args.test else 100
+    n = 500
+    epochs = 10
+    num_test = 100
+    test_every = 2
 
-    net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
-    utils.load_mlflow_model(net, "59a52d4b64034adcb8a698112d303168")
-    box_world.eval_model(net, box_world.BoxWorldEnv(), render=True)
+    # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+    # utils.load_mlflow_model(net, "59a52d4b64034adcb8a698112d303168")
+    # box_world.eval_model(net, box_world.BoxWorldEnv(), render=False)
 
-    # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, rounds=2,
-                       # num_test=num_test)
+    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
