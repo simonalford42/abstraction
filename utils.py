@@ -60,7 +60,7 @@ def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
           f"with name {model_name}")
 
 
-def load_mlflow_model(model: nn.Module, run_id: str, model_name: str = 'model'):
+def load_mlflow_model(model: nn.Module, run_id: str, model_name: str = 'model') -> None:
     path = mlflow_model_path(run_id, model_name)
     model.load_state_dict(torch.load(path, map_location=DEVICE))
     print('Loaded model from ' + path)

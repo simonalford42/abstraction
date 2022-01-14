@@ -383,7 +383,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                             residual_filters=24,
                             output_dim=4).to(DEVICE)
         if model_load_run_id is not None:
-            net = utils.load_mlflow_model(model_load_run_id)
+            utils.load_mlflow_model(net, model_load_run_id)
 
         print(f"Net has {num_params(net)} parameters")
 
@@ -391,6 +391,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
             round = 0
             while round != rounds:
                 print(f'Round {round}')
+                env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
                     data = box_world.BoxWorldDataset(env=env, n=n)
@@ -402,6 +403,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
 
                 if round % test_every == 0:
                     with Timing("Evaluated model"):
+                        env = box_world.BoxWorldEnv(seed=round)
                         box_world.eval_model(net, env, n=num_test)
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
@@ -453,14 +455,14 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 500
-    epochs = 500
+    n = 5
+    epochs = 50
     num_test = 100
     test_every = 1
 
-    net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
-    utils.load_mlflow_model(net, "1537451d1ed84d089453e238d5d92011")
-    box_world.eval_model(net, box_world.BoxWorldEnv(),
-                         renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
+    # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+    # utils.load_mlflow_model(net, "1537451d1ed84d089453e238d5d92011")
+    # box_world.eval_model(net, box_world.BoxWorldEnv(),
+    #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
+    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)

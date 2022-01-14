@@ -32,7 +32,7 @@ class BoxWorldEnv(gym.Env):
         num_backward=(0,),
         branch_length=1,
         max_num_steps=120,
-        seed=0,
+        seed: int = 0,
     ):
         self.grid_size = grid_size
         # extra 2 because of border
@@ -44,13 +44,8 @@ class BoxWorldEnv(gym.Env):
         self.max_num_steps = max_num_steps
         self.random_state = np.random.RandomState(seed)
 
-<<<<<<< HEAD
-        self.action_space = spaces.Discrete(5, start=-1)
-        self.observation_space = spaces.
-=======
         # self.action_space = spaces.Discrete(4)
         # self.observation_space = spaces.Box(low=0, high=100, shape=np.zeros(self.shape))
->>>>>>> ce989eec0833fbb4447e3ce13f335043c62e5ebd
 
         self.obs = self.reset()
 
@@ -86,7 +81,7 @@ class BoxWorldEnv(gym.Env):
             done (bool): whether the episode has ended, in which case further step() calls will return undefined results
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
-        if action not in [-1, 0, 1, 2, 3]: 
+        if action not in [-1, 0, 1, 2, 3]:
             raise ValueError('Invalid action provided')
 
         obs, reward, _ = self.game.play(action)
@@ -383,6 +378,7 @@ def path_to_moves(path: List[POS]) -> List[int]:
 
 def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
+    render_obs(obs, pause=1)
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
@@ -414,20 +410,18 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-<<<<<<< HEAD
-def eval_model(net, env, n=100, render=False):
-=======
 def eval_model(net, env, n=100, renderer: Callable=None):
     """
     renderer is a callable that takes in obs.
     """
     print(f'Evaluating model on {n} episodes')
->>>>>>> ce989eec0833fbb4447e3ce13f335043c62e5ebd
     num_solved = 0
     solved_lens = []
     for i in range(n):
         found_keys = set()
         obs = env.reset()
+        render_obs(obs, pause=1)
+
         done, solved = False, False
         t = 0
         while not (done or solved):
