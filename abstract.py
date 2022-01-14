@@ -376,7 +376,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                                epochs=epochs,
                                ))
         if drlnet:
-            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
         else:
             net = AllConv(input_filters=box_world.NUM_ASCII,
                             residual_blocks=2,
@@ -394,8 +394,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
 
                 with Timing("Generated trajectories"):
                     trajs = box_world.generate_box_world_data(n=n, env=env)
-
-                data = box_world.BoxWorldDataset(trajs)
+                    data = box_world.BoxWorldDataset(trajs)
 
                 print(f'{len(data)} examples')
                 dataloader = DataLoader(data, batch_size=256, shuffle=True)
@@ -455,10 +454,11 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 500
-    epochs = 10
+    n = 5000
+    epochs = 100
+
     num_test = 100
-    test_every = 2
+    test_every = 1
 
     # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
     # utils.load_mlflow_model(net, "59a52d4b64034adcb8a698112d303168")

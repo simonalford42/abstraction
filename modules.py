@@ -20,11 +20,11 @@ class Print(nn.Module):
 
 
 class RelationalDRLNet(nn.Module):
-    def __init__(self, input_channels=3, d=64, attn_blocks=2, num_heads=2):
+    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4):
         super().__init__()
         self.input_channels = input_channels
         self.d = 64
-        self.num_attn_blocks = 2
+        self.num_attn_blocks = num_attn_blocks
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
 

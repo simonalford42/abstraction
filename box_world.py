@@ -1,6 +1,7 @@
 from collections import Counter
 from typing import Any, Optional, List, Tuple
 import gym
+from gym import spaces
 import argparse
 import numpy as np
 import pycolab
@@ -40,7 +41,12 @@ class BoxWorldEnv(gym.Env):
         self.branch_length = branch_length
         self.max_num_steps = max_num_steps
         self.random_state = np.random.RandomState(seed)
+
+        self.action_space = spaces.Discrete(5, start=-1)
+        self.observation_space = spaces.
+
         self.obs = self.reset()
+
 
     def reset(self):
         self.game = bw.make_game(
@@ -73,6 +79,9 @@ class BoxWorldEnv(gym.Env):
             done (bool): whether the episode has ended, in which case further step() calls will return undefined results
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
+        if action not in [-1, 0, 1, 2, 3]: 
+            raise ValueError('Invalid action provided')
+
         obs, reward, _ = self.game.play(action)
         obs = self.process_obs(obs)
         self.obs = obs
@@ -399,7 +408,6 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
 
 def eval_model(net, env, n=100, render=False):
-    print(f'Evaluating model on {n} episodes')
     num_solved = 0
     solved_lens = []
     for i in range(n):
