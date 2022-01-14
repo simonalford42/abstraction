@@ -1,6 +1,7 @@
 from collections import Counter
-from typing import Any, Optional, List, Tuple
+from typing import Any, Optional, List, Tuple, Callable
 import gym
+from gym import spaces
 import argparse
 import numpy as np
 import pycolab
@@ -25,7 +26,7 @@ class BoxWorldEnv(gym.Env):
 
     def __init__(
         self,
-        grid_size=12,
+        grid_size=12, # note grid shape is really (grid_size+2, grid_size+2) bc of border
         solution_length=(1, 2, 3, 4),
         num_forward=(0, 1, 2, 3, 4),
         num_backward=(0,),
@@ -34,12 +35,18 @@ class BoxWorldEnv(gym.Env):
         seed=0,
     ):
         self.grid_size = grid_size
+        # extra 2 because of border
+        self.shape = (grid_size + 2, grid_size + 2)
         self.solution_length = solution_length
         self.num_forward = num_forward
         self.num_backward = num_backward
         self.branch_length = branch_length
         self.max_num_steps = max_num_steps
         self.random_state = np.random.RandomState(seed)
+
+        # self.action_space = spaces.Discrete(4)
+        # self.observation_space = spaces.Box(low=0, high=100, shape=np.zeros(self.shape))
+
         self.obs = self.reset()
 
     def reset(self):
@@ -398,7 +405,10 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-def eval_model(net, env, n=100, render=False):
+def eval_model(net, env, n=100, renderer: Callable=None):
+    """
+    renderer is a callable that takes in obs.
+    """
     print(f'Evaluating model on {n} episodes')
     num_solved = 0
     solved_lens = []
@@ -409,8 +419,8 @@ def eval_model(net, env, n=100, render=False):
         t = 0
         while not (done or solved):
             t += 1
-            if render:
-                render_obs(obs)
+            if renderer is not None:
+                renderer(obs)
             if obs[0, 0].isalpha():
                 found_keys.add(obs[0, 0])
             obs = obs_to_tensor(obs)
@@ -424,34 +434,32 @@ def eval_model(net, env, n=100, render=False):
         if solved:
             num_solved += 1
             solved_lens.append(t)
-    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {0 if not num_solved else sum(solved_lens) / num_solved}')
+    avg_steps = 0 if not num_solved else sum(solved_lens) / num_solved
+    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {avg_steps}')
     return solved
-
-
-def generate_box_world_data(n, env) -> List[Tuple[List, List]]:
-    return [generate_traj(env) for i in range(n)]
 
 
 def obs_to_tensor(obs) -> torch.Tensor:
     obs = torch.tensor([[ascii_to_int(a) for a in row]
                         for row in obs])
     obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
+    assertEqual(obs.shape[-1], NUM_ASCII)
     obs = einops.rearrange(obs, 'h w c -> c h w')
     return obs
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, data: List[Tuple[List, List]]):
-        """
-        data: list of (states, moves) tuples
-        """
-        self.data = data
-        self.state_shape = data[0][0][0].shape
+    def __init__(self, env: BoxWorldEnv, n: int):
+        # all in memory
+        # list of (states, moves) tuple
+        self.data: List[Tuple[List, List]] = [generate_traj(env) for i in range(n)]
+        self.state_shape = self.data[0][0][0].shape
 
         # ignore last state
         self.states = [obs_to_tensor(s)
                        for states, _ in self.data for s in states[:-1]]
         self.moves = [torch.tensor(m) for _, moves in self.data for m in moves]
+        assertEqual(len(self.states), len(self.moves))
 
     def __len__(self):
         return len(self.states)
