@@ -378,7 +378,7 @@ def path_to_moves(path: List[POS]) -> List[int]:
 
 def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
-    render_obs(obs, pause=1)
+    # render_obs(obs, pause=1)
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
@@ -402,15 +402,15 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
         if len(domino) > 1:
             # move left to pick up new key, or final gem
             obs, _, done, _ = env.step(bw.ACTION_WEST)
-            # render_obs(obs, pause=0.03)
+            # render_obs(obs, pause=1)
             states.append(obs)
-            moves.append(a)
+            moves.append(bw.ACTION_WEST)
 
     assert done, 'uh oh, our path solver didnt actually solve'
     return states, moves
 
 
-def eval_model(net, env, n=100, renderer: Callable=None):
+def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None):
     """
     renderer is a callable that takes in obs.
     """
@@ -434,7 +434,10 @@ def eval_model(net, env, n=100, renderer: Callable=None):
             obs = einops.rearrange(obs, 'c h w -> 1 c h w')
             obs = obs.to(DEVICE)
             out = net(obs)[0]
-            a = torch.distributions.Categorical(logits=out).sample().item()
+            if argmax:
+                a = torch.argmax(out).item()
+            else:
+                a = torch.distributions.Categorical(logits=out).sample().item()
             obs, rew, done, info = env.step(a)
             solved = rew == bw.REWARD_GOAL
 
@@ -518,4 +521,4 @@ if __name__ == '__main__':
 
     env = BoxWorldEnv(**vars(FLAGS))
     while True:
-            generate_traj(env)
+        generate_traj(env)

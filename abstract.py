@@ -358,7 +358,12 @@ def old_box_world_train():
     utils.load_model(net, f'models/model_12-2__20.pt')
     train_abstractions(data, net, epochs=1)
     # utils.save_model(net, f'models/model_12-2.pt')
-    old_box_world.sample_trajectories(net, n=10, env=env, max_steps=data.max_steps + 10, full_abstract=True, render=True)
+    old_box_world.sample_trajectories(net,
+                                      n=10,
+                                      env=env,
+                                      max_steps=data.max_steps + 10,
+                                      full_abstract=True,
+                                      render=True)
 
 
 def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100, test_every=1):
@@ -379,9 +384,9 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
             net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
         else:
             net = AllConv(input_filters=box_world.NUM_ASCII,
-                            residual_blocks=2,
-                            residual_filters=24,
-                            output_dim=4).to(DEVICE)
+                          residual_blocks=2,
+                          residual_filters=24,
+                          output_dim=4).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
 
@@ -404,7 +409,8 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                 if round % test_every == 0:
                     with Timing("Evaluated model"):
                         env = box_world.BoxWorldEnv(seed=round)
-                        box_world.eval_model(net, env, n=num_test)
+                        box_world.eval_model(net, env, n=num_test, argmax=True,
+                                             renderer=lambda obs: box_world.render_obs(obs, pause=0.0001))
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
 
@@ -455,9 +461,9 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 5
-    epochs = 50
-    num_test = 100
+    n = 1
+    epochs = 500
+    num_test = min(n, 100)
     test_every = 1
 
     # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
