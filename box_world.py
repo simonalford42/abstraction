@@ -418,16 +418,19 @@ def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None)
     num_solved = 0
     solved_lens = []
     for i in range(n):
+        obss = []
         found_keys = set()
         obs = env.reset()
-        render_obs(obs, pause=1)
+        # render_obs(obs, pause=0.25)
+        obss.append(obs)
 
         done, solved = False, False
         t = 0
         while not (done or solved):
             t += 1
             if renderer is not None:
-                renderer(obs)
+                # renderer(obs)
+                obss.append(obs)
             if obs[0, 0].isalpha():
                 found_keys.add(obs[0, 0])
             obs = obs_to_tensor(obs)
@@ -443,7 +446,13 @@ def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None)
 
         if solved:
             num_solved += 1
+            print(num_solved)
             solved_lens.append(t)
+        else:
+            render_obs(obss[0], pause=1)
+            for obs in obss[1:]:
+                render_obs(obs, pause=0.1)
+
     avg_steps = 0 if not num_solved else sum(solved_lens) / num_solved
     print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {avg_steps}')
     return solved

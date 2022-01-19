@@ -178,7 +178,6 @@ class Eq2Net(nn.Module):
                 consistency_pens = consistency_penalties[:i + 1, i, :]  # (i+1, b)
                 assertEqual(consistency_pens.shape, (i + 1, self.b))
                 consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
-                # TODO: does this need to be a logsumexp?
                 # TODO: this needs to be a logsumexp
                 total_consistency_penalty += consistency_penalty
 
@@ -466,9 +465,9 @@ if __name__ == '__main__':
     num_test = min(n, 100)
     test_every = 1
 
-    # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
-    # utils.load_mlflow_model(net, "1537451d1ed84d089453e238d5d92011")
-    # box_world.eval_model(net, box_world.BoxWorldEnv(),
-    #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
+    net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
+    utils.load_mlflow_model(net, "fc3178b8b9b94314b4a259aa5ff8d22d")
+    box_world.eval_model(net, box_world.BoxWorldEnv(), n=500,
+                         renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
+    # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)

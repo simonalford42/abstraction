@@ -4,6 +4,7 @@ import os
 import time
 import mlflow
 from typing import Tuple
+import numpy as np
 
 
 POS = Tuple[int, int]
@@ -14,6 +15,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def log(s: str):
     with open('log.txt', 'r+') as f:
         f.write(s)
+
 
 def print_memory_usage(message: str = ''):
     # https://stackoverflow.com/a/21632554/4383594
@@ -86,7 +88,10 @@ class Timing(object):
 
 
 def assertEqual(a, b):
-    assert a == b, f'a != b: a:{a}, b:{b}'
+    if np.ndarray in [type(a), type(b)]:
+        assert np.array_equal(a, b), f'a != b: a:{a}, b:{b}'
+    else:
+        assert a == b, f'a != b: a:{a}, b:{b}'
 
 
 def num_params(model):
