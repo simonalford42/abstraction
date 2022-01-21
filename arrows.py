@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset  # , DataLoader
 import utils
 from utils import assertEqual
-import abstraction3
 from torch.distributions import Categorical
 
 
@@ -167,31 +166,31 @@ def sample_arrow_trajs(net, data):
         print(f"options: {'/'.join(options)}")
         print('-'*10)
 
-def main():
-    random.seed(1)
-    torch.manual_seed(1)
+# def main():
+#     random.seed(1)
+#     torch.manual_seed(1)
 
-    scale = 5
-    seq_len = 3
-    trajs = generate_arrow_data(scale=scale, seq_len=seq_len, n=200)
+#     scale = 5
+#     seq_len = 3
+#     trajs = generate_arrow_data(scale=scale, seq_len=seq_len, n=200)
 
-    data = ArrowData(trajs, scale)
-    print(f"Number of trajectories: {len(data.traj_batches)}")
+#     data = ArrowData(trajs, scale)
+#     print(f"Number of trajectories: {len(data.traj_batches)}")
 
-    n_abstractions = 3
-    model = 'HMM'
-    # model = 'DP'
-    # model = 'micro'
+#     n_abstractions = 3
+#     model = 'HMM'
+#     # model = 'DP'
+#     # model = 'micro'
 
-    net = abstraction3.Eq2Net(n_abstractions, data.state_dim, n_micro_actions=3,
-                              abstract_penalty=0.0, model=model)
-    # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    abstraction3.train_abstractions(data, net, epochs=50, lr=1E-3)
-    utils.save_model(net, f'models/arrow_9-10_{model}.pt')
+#     net = abstraction3.Eq2Net(n_abstractions, data.state_dim, n_micro_actions=3,
+#                               abstract_penalty=0.0, model=model)
+#     # utils.load_model(net, f'models/model_9-10_{model}.pt')
+#     abstraction3.train_abstractions(data, net, epochs=50, lr=1E-3)
+#     utils.save_model(net, f'models/arrow_9-10_{model}.pt')
 
-    eval_data = ArrowData(generate_arrow_data(scale=scale, seq_len=seq_len, n=10),
-                          scale=scale)
-    sample_arrow_trajs(net, eval_data)
+#     eval_data = ArrowData(generate_arrow_data(scale=scale, seq_len=seq_len, n=10),
+#                           scale=scale)
+#     sample_arrow_trajs(net, eval_data)
 
 
 if __name__ == '__main__':

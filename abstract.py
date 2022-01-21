@@ -1,5 +1,3 @@
-import argparse
-import random
 import time
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +13,11 @@ import up_right
 import mlflow
 
 
+STOP_NET_STOP_IX = 0
+STOP_NET_CONTINUE_IX = 1
+
 class AbstractPolicyNet(nn.Module):
+
     def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
                  alpha_net):
         super().__init__()
@@ -28,8 +30,6 @@ class AbstractPolicyNet(nn.Module):
         self.stop_net = stop_net  # s -> 2b of (stop, 1 - stop) aka beta.
         self.start_net = start_net  # t -> b  aka P(b | t)
         self.alpha_net = alpha_net  # (t + b) -> t abstract transition
-        self.stop_net_stop_ix = 0  # index 0 means stop, index 1 means go
-        self.stop_net_continue_ix = 1  # index 0 means stop, index 1 means go
 
     def forward(self, s_i):
         """
@@ -39,7 +39,7 @@ class AbstractPolicyNet(nn.Module):
            (T, b, a) tensor of action logps
            (T, b, 2) tensor of stop logps
               the index corresponding to stop/continue are in
-              self.stop_net_stop_ix, self.stop_net_continue_ix
+              STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
            (T, b) tensor of start logps
            (T, b, t, t) tensor of causal consistency penalties
         """
@@ -157,8 +157,8 @@ class Eq2Net(nn.Module):
             # starts is where its first move happens
             # => skip transition for the first step
             if i > 0:
-                stop_lps = stop_logps[i, :, self.abstract_policy_net.stop_net_stop_ix]  # (b,)
-                one_minus_stop_lps = stop_logps[i, :, self.abstract_policy_net.stop_net_continue_ix]  # (b,)
+                stop_lps = stop_logps[i, :, STOP_NET_STOP_IX]  # (b,)
+                one_minus_stop_lps = stop_logps[i, :, STOP_NET_CONTINUE_IX]  # (b,)
                 start_lps = start_logps[i]  # (b,)
 
                 # prob mass for options exiting which started at step i; broadcast
@@ -188,7 +188,7 @@ class Eq2Net(nn.Module):
             total_logp += logp
 
         # all macro options need to stop at the very end.
-        final_stop_lps = stop_logps[-1, :, self.abstract_policy_net.stop_net_stop_ix]  # (b,)
+        final_stop_lps = stop_logps[-1, :, STOP_NET_STOP_IX]  # (b,)
         # broadcast
         total_logp += torch.logsumexp(final_stop_lps.reshape(1, self.b) + option_step_dist, dim=(0, 1))
 
@@ -203,25 +203,28 @@ def train_abstractions(data, net, epochs, lr=1E-3):
 
     net.train()
 
-    for epoch in range(epochs):
-        train_loss = 0
-        start = time.time()
-        for s_i, actions in zip(data.states, data.moves):
-            optimizer.zero_grad()
-            loss = net(s_i, actions)
-            # print(f"loss: {loss}")
-            train_loss += loss
-            # print(f"train_loss: {train_loss}")
-            loss.backward()
-            optimizer.step()
+    model_name = 'model_1-21.pt'
+    try:
+        for epoch in range(epochs):
+            train_loss = 0
+            start = time.time()
+            for s_i, actions in zip(data.states, data.moves):
+                optimizer.zero_grad()
+                loss = net(s_i, actions)
+                # print(f"loss: {loss}")
+                train_loss += loss
+                # print(f"train_loss: {train_loss}")
+                loss.backward()
+                optimizer.step()
 
-        print(f"epoch: {epoch}\t"
-              + f"train loss: {loss}\t"
-              + f"({time.time() - start:.0f}s)")
-        if epoch % 10 == 0:
-            utils.save_model(net, f'models/model_12-2.pt')
+            print(f"epoch: {epoch}\t"
+                + f"train loss: {loss}\t"
+                + f"({time.time() - start:.0f}s)")
 
-    # torch.save(abstract_net.state_dict(), 'abstract_net.pt')
+        utils.save_model(net, f'models/{model_name}')
+    except KeyboardInterrupt:
+        utils.save_model(net, f'models/{model_name}')
+
 
 
 def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -300,7 +303,7 @@ def sample_trajectories(net, data, full_abstract=False):
             else:
                 # possibly stop previous option!
                 stop = Categorical(logits=stop_logps[0, option, :]).sample()
-                if stop == net.abstract_policy_net.stop_net_stop_ix:
+                if stop == STOP_NET_STOP_IX:
                     if full_abstract:
                         new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
                         logits = net.abstract_policy_net.new_option_logps(new_t_i)
@@ -416,58 +419,3 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                 round += 1
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)
-
-
-def main():
-    scale = 3
-    seq_len = 5
-    trajs = up_right.generate_data(scale, seq_len, n=100)
-
-    data = up_right.TrajData(trajs)
-
-    s = data.state_dim
-    abstract_policy_net = AbstractPolicyNet(
-        a := 2, b := 2, t := 10,
-        tau_net=FC(s, t, hidden_dim=64, num_hidden=1),
-        micro_net=FC(s, b * a, hidden_dim=64, num_hidden=1),
-        stop_net=FC(s, b * 2, hidden_dim=64, num_hidden=1),
-        start_net=FC(t, b, hidden_dim=64, num_hidden=1),
-        alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
-    net = Eq2Net(abstract_policy_net,
-                 abstract_penalty=0.0001,
-                 consistency_ratio=1.0)
-
-    # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    train_abstractions(data, net, epochs=100)
-    # utils.save_model(net, f'models/model_9-17.pt')
-    eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
-                                  max_coord=data.max_coord)
-    sample_trajectories(net, eval_data, full_abstract=True)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Abstraction')
-    parser.add_argument("--cnn",
-                        action="store_true",
-                        dest="cnn")
-    parser.add_argument("--test",
-                        action="store_true",
-                        dest="test")
-    args = parser.parse_args()
-    print(f"args: {args}")
-
-    random.seed(1)
-    torch.manual_seed(1)
-    utils.print_torch_device()
-
-    n = 1
-    epochs = 500
-    num_test = min(n, 100)
-    test_every = 1
-
-    net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
-    utils.load_mlflow_model(net, "fc3178b8b9b94314b4a259aa5ff8d22d")
-    box_world.eval_model(net, box_world.BoxWorldEnv(), n=500,
-                         renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
-
-    # box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
