@@ -16,6 +16,7 @@ import mlflow
 STOP_NET_STOP_IX = 0
 STOP_NET_CONTINUE_IX = 1
 
+
 class AbstractPolicyNet(nn.Module):
 
     def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
@@ -226,7 +227,6 @@ def train_abstractions(data, net, epochs, lr=1E-3):
         utils.save_model(net, f'models/{model_name}')
 
 
-
 def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
@@ -307,13 +307,13 @@ def sample_trajectories(net, data, full_abstract=False):
                     if full_abstract:
                         new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
                         logits = net.abstract_policy_net.new_option_logps(new_t_i)
+                        start_t_of_current_option = new_t_i
                     else:
                         logits = start_logps[0]
 
                     option = Categorical(logits=logits).sample()
                     options.append(current_option_path)
                     current_option_path = ''
-                    start_t_of_current_option = new_t_i
 
             current_option_path += str(option.item())
             action = Categorical(logits=action_logps[0, option, :]).sample()
@@ -323,8 +323,9 @@ def sample_trajectories(net, data, full_abstract=False):
             moves_taken += move
             # print(f'now at ({x, y})')
         options.append(current_option_path)
-        print(f'({0, 0}) to ({x, y}) via {moves_taken}')
-        print(f"options: {'/'.join(options)}")
+        print(f'({0, 0}) to ({x, y}) via')
+        print(f'{moves_taken}')
+        print(f"{''.join(options)}")
         print('-' * 10)
 
 

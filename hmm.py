@@ -1,9 +1,10 @@
-from ctypes.wintypes import tagRECT
 import math
+from up_right import TrajData
 from utils import assertEqual
 from scipy.special import logsumexp
 import unittest
 import numpy as np
+from einops import rearrange
 
 
 def forward(init_dist, trans_fn, obs_dist, obs):
@@ -78,7 +79,7 @@ def forward_log(init_dist, trans_fn, obs_dist, obs):
 
     for t in range(1, T):
         # new_f[j] = f[i] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        new_f_vector = (f_matrix[t-1])[:, np.newaxis] + trans_fn + (p_obs_at_t_given_state[t])[np.newaxis, :]  # (a, a)
+        new_f_vector = rearrange(f_matrix[t-1], 'a -> a 1') + trans_fn + rearrange(p_obs_at_t_given_state[t], 'a -> 1 a')  # (a, a)
         f_matrix[t] = logsumexp(new_f_vector, axis=0)
 
     p = logsumexp(f_matrix[T-1], axis=0)
@@ -158,7 +159,7 @@ def backward_log(init_dist, trans_fn, obs_dist, obs):
 
     for t in range(T-2, -1, -1):
         # new_f[i] = f[j] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        new_f = (f_matrix[t+1])[np.newaxis, :] + trans_fn + (p_obs_at_t_given_state[t+1])[np.newaxis, :]
+        new_f = rearrange(f_matrix[t+1], 'b -> 1 b') + trans_fn + rearrange(p_obs_at_t_given_state[t+1], 'b -> 1 b')
         f_matrix[t] = logsumexp(new_f, axis=1)
 
     p = logsumexp(f_matrix[0] + init_dist + p_obs_at_t_given_state[0])
@@ -184,7 +185,7 @@ def viterbi(init_dist, trans_fn, obs_dist, obs):
     pointer_matrix = np.zeros((T, b))
 
     for t in range(1, T):
-        f_new = (f_matrix[t-1])[:, np.newaxis] * trans_fn
+        f_new = rearrange(f_matrix[t-1], 'b -> b 1') * trans_fn
         pointers = np.argmax(f_new, axis=0)
 
         f_matrix[t] = p_obs_at_t_given_state[t] * np.max(f_new, axis=0)
@@ -192,8 +193,8 @@ def viterbi(init_dist, trans_fn, obs_dist, obs):
 
     path = np.zeros(T, dtype=int)
     path[-1] = np.argmax(f_matrix[-1])
-    for t, pointers in zip(range(T-2, -1, -1), pointer_matrix[::-1]):
-        path[t] = int(pointers[path[t+1]])
+    for t in range(T-1, 0, -1):
+        path[t-1] = int(pointer_matrix[t, path[t]])
 
     return path
 
@@ -265,7 +266,7 @@ def viterbi_log(init_dist, trans_fn, obs_dist, obs):
     pointer_matrix = np.zeros((T, b))
 
     for t in range(1, T):
-        f_new = (f_matrix[t-1])[:, np.newaxis] + trans_fn
+        f_new = rearrange(f_matrix[t-1], 'b -> b 1') + trans_fn
         pointers = np.argmax(f_new, axis=0)
 
         f_matrix[t] = p_obs_at_t_given_state[t] + np.max(f_new, axis=0)
@@ -273,8 +274,8 @@ def viterbi_log(init_dist, trans_fn, obs_dist, obs):
 
     path = np.zeros(T, dtype=int)
     path[-1] = np.argmax(f_matrix[-1])
-    for t, pointers in zip(range(T-2, -1, -1), pointer_matrix[::-1]):
-        path[t] = int(pointers[path[t+1]])
+    for t in range(T-1, 0, -1):
+        path[t-1] = int(pointer_matrix[t, path[t]])
 
     return path
 

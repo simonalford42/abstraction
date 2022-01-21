@@ -7,6 +7,27 @@ from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
 import math
 
 
+def calc_trans_fn(stop_logps, start_logps, i):
+    """
+    stop_logps: (T+1, b, 2) output from abstract_policy_net
+    start_logps: (T+1, b) output from abstract_policy_net
+    i: current time step
+
+    output: (b, b) matrix whose i,j'th entry is the probabiolity of transitioning from option i to option j.
+    """
+    b = start_logps.shape[1]
+    # for each b' -> b
+    beta = stop_logps[i, :, STOP_NET_STOP_IX]  # (b,)
+    one_minus_beta = stop_logps[i, :, STOP_NET_CONTINUE_IX]  # (b,)
+
+    continue_trans_fn = torch.full((b, b), float('-inf'))
+    continue_trans_fn[torch.arange(b), torch.arange(b)] = one_minus_beta
+    trans_fn = torch.logaddexp(rearrange(beta, 'b -> b 1') + rearrange(start_logps[i], 'b -> 1 b'),
+                                continue_trans_fn)
+    assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(b), atol=1E-6)
+    return trans_fn
+
+
 class HMMNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
@@ -41,15 +62,7 @@ class HMMNet(nn.Module):
         f_prev = f_0
         for i in range(1, T):
             action = actions[i]
-            # for each b' -> b
-            beta = stop_logps[i, :, STOP_NET_STOP_IX]  # (b,)
-            one_minus_beta = stop_logps[i, :, STOP_NET_CONTINUE_IX]  # (b,)
-
-            continue_trans_fn = torch.full((self.b, self.b), float('-inf'))
-            continue_trans_fn[torch.arange(self.b), torch.arange(self.b)] = one_minus_beta
-            trans_fn = torch.logaddexp(rearrange(beta, 'b -> b 1') + rearrange(start_logps[i], 'b -> 1 b'),
-                                       continue_trans_fn)
-            assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(self.b), atol=1E-6)
+            trans_fn = calc_trans_fn(stop_logps, start_logps, i)
 
             f_unsummed = (rearrange(f_prev, 'b -> b 1')
                           + trans_fn
@@ -102,35 +115,36 @@ def forward_test():
     assert math.isclose(torch.exp(logp), 0.2 * 0.88 / 16, abs_tol=1E-7)
 
 
-def viterbi(hmm_net, s_i, actions):
-    (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
-    (T, ) = obs.shape
+def viterbi(hmm: HMMNet, s_i, actions):
+    """
+    hmm: a trained HMMNet
+    s_i: (T+1, s) tensor
+    actions: (T,) tensor of ints
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    output: most likely path of options over the sequence
+    """
+    T = len(actions)
+    b = hmm.b
+    assertEqual(s_i.shape[0], T + 1)
+    # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
+    t_i, action_logps, stop_logps, start_logps, consistency_penalties = hmm.abstract_policy_net(s_i)
 
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[0] = init_dist * p_obs_at_t_given_state[0]
-    pointer_matrix = np.zeros((T, b))
+    f_matrix = torch.zeros((T, b))
+    f_matrix[0] = start_logps[0] + action_logps[0, :, actions[0]]
+    pointer_matrix = torch.zeros((T, b))
 
     for t in range(1, T):
-        f_new = (f_matrix[t-1])[:, np.newaxis] * trans_fn
-        pointers = np.argmax(f_new, axis=0)
+        trans_fn = calc_trans_fn(stop_logps, start_logps, t)
+        f_new = rearrange(f_matrix[t-1], 'b -> b 1') + trans_fn
+        pointers = torch.argmax(f_new, axis=0)
 
-        f_matrix[t] = p_obs_at_t_given_state[t] * np.max(f_new, axis=0)
+        f_matrix[t] = action_logps[t, :, actions[t]] + torch.max(f_new, axis=0)[0]
         pointer_matrix[t] = pointers
 
-    path = np.zeros(T, dtype=int)
-    path[-1] = np.argmax(f_matrix[-1])
-    for t, pointers in zip(range(T-2, -1, -1), pointer_matrix[::-1]):
-        path[t] = int(pointers[path[t+1]])
+    path = [0] * T
+    path[-1] = int(torch.argmax(f_matrix[-1]))
+    for t in range(T-1, 0, -1):
+        path[t-1] = int(pointer_matrix[t, path[t]])
 
     return path
 

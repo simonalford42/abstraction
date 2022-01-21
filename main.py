@@ -2,11 +2,14 @@ import up_right
 import torch
 import random
 import utils
-from utils import assertEqual
+from utils import DEVICE
 import abstract
 from abstract2 import HMMNet
-from modules import FC, AllConv, RelationalDRLNet
+from modules import FC, RelationalDRLNet
 import box_world
+import argparse
+import up_right
+import abstract2
 
 
 def up_right_main():
@@ -27,12 +30,24 @@ def up_right_main():
     # net = Eq2Net(abstract_policy_net,
     net = HMMNet(abstract_policy_net)
 
-    # utils.load_model(net, f'models/model_9-10_{model}.pt')
-    abstract.train_abstractions(data, net, epochs=100)
+    utils.load_model(net, f'models/model_1-21__4.pt')
+    # abstract.train_abstractions(data, net, epochs=100)
     # utils.save_model(net, f'models/model_9-17.pt')
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
                                   max_coord=data.max_coord)
-    abstract.sample_trajectories(net, eval_data, full_abstract=False)
+
+    eval_viterbi(net, eval_data,)
+    # abstract.sample_trajectories(net, eval_data, full_abstract=False)
+
+
+def eval_viterbi(net: HMMNet, data: up_right.TrajData):
+    for i, s_i, actions, points in zip(range(len(data.states)), data.states, data.moves, data.points):
+        (x, y, x_goal, y_goal) = points[0][0]
+        moves = ''.join(data.trajs[i])
+        print(f'{moves}')
+        path = abstract2.viterbi(net, s_i, actions)
+        print(''.join(map(str, path)))
+        print('-'*10)
 
 
 def box_world_main():
