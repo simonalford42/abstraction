@@ -4,7 +4,7 @@ import random
 import utils
 from utils import DEVICE
 import abstract
-from abstract2 import ControlNet, HMMNet
+from abstract2 import ControlNet, HMMNet, ControlAPN, ControlAPN2
 from modules import FC, RelationalDRLNet
 import box_world
 import argparse
@@ -116,7 +116,7 @@ def box_world_main2():
 
     if hmm:
         print('hmm training!')
-        abstract_policy_net = abstract.ControlAPN2(
+        abstract_policy_net = ControlAPN2(
             a=4,
             b=20,
         )
@@ -124,7 +124,7 @@ def box_world_main2():
     else:
         print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
-        abstract_policy_net = abstract.ControlAPN(
+        abstract_policy_net = ControlAPN(
             a=4,
             net=relational_net,
         )
@@ -136,5 +136,5 @@ def box_world_main2():
 
 if __name__ == '__main__':
     # up_right_main()
-    box_world_main2()
+    box_world_main()
     # box_world_sv2()

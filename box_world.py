@@ -483,6 +483,8 @@ class BoxWorldDataset(Dataset):
 
         self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
+        print(f'traj_length dist ({len(self.traj_moves)} of them): {Counter([len(ms) for ms in self.traj_moves])}')
+        assert False
         assertEqual([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
     def __len__(self):

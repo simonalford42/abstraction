@@ -18,58 +18,6 @@ STOP_NET_STOP_IX = 0
 STOP_NET_CONTINUE_IX = 1
 
 
-class ControlAPN(nn.Module):
-    def __init__(self, a, net):
-        super().__init__()
-        self.a = a
-        self.b = 1
-        self.t = None
-        self.net = net
-
-    def forward(self, s_i):
-        """
-        s_i: (T, s) tensor of states
-        outputs:
-            None, (T, 1, a) tensor of action logps, None, None, None
-        """
-        T = s_i.shape[0]
-
-        action_logps = self.net(s_i)
-        action_logps = F.log_softmax(action_logps, dim=1)
-        action_logps = rearrange(action_logps, 'T a -> T 1 a')
-
-        return None, action_logps, None, None, None
-
-
-class ControlAPN2(nn.Module):
-    def __init__(self, a, b):
-        super().__init__()
-        self.a = a
-        self.b = b
-        self.t = None
-        self.net = RelationalDRLNet2(input_channels=box_world.NUM_ASCII,
-                                     num_attn_blocks=4,
-                                     num_heads=4,
-                                     out_dim=b*a + 2 * b + b).to(DEVICE)
-
-    def forward(self, s_i):
-        """
-        s_i: (T, s) tensor of states
-        outputs:
-            None, (T, 1, a) tensor of action logps, None, None, None
-        """
-        out = self.net(s_i)
-        action_logits = out[:, :self.b * self.a].reshape(-1, self.b, self.a)
-        stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(-1, self.b, 2)
-        start_logits = out[:, self.b * self.a + 2 * self.b:]
-        assertEqual(start_logits.shape[1], self.b)
-        action_logps = F.log_softmax(action_logits, dim=2)
-        stop_logps = F.log_softmax(stop_logits, dim=2)
-        start_logps = F.log_softmax(start_logits, dim=1)
-
-        return None, action_logps, stop_logps, start_logps, None
-
-
 class AbstractPolicyNet(nn.Module):
 
     def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
@@ -480,7 +428,6 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
 
 def box_world_sv_train2(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
     # does it HMM-style but without the abstract model
-    print('New box world environment')
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
