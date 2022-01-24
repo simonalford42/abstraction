@@ -82,7 +82,7 @@ class BoxWorldEnv(gym.Env):
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
         if action not in [-1, 0, 1, 2, 3]:
-            raise ValueError('Invalid action provided')
+            raise ValueError(f'Invalid action provided: {action}')
 
         obs, reward, _ = self.game.play(action)
         obs = self.process_obs(obs)

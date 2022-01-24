@@ -108,20 +108,28 @@ def box_world_main2():
     torch.manual_seed(1)
     utils.print_torch_device()
 
+    hmm = True
     n = 10
     epochs = 5
     num_test = min(n, 100)
     test_every = 1
 
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
-    abstract_policy_net = abstract.ControlAPN(
-        a=4,
-        net=relational_net,
-    )
-    net = ControlNet(abstract_policy_net)
+
+    if hmm:
+        abstract_policy_net = abstract.ControlAPN2(
+            a=4,
+            b=20,
+        )
+        net = HMMNet(abstract_policy_net)
+    else:
+        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
+        abstract_policy_net = abstract.ControlAPN(
+            a=4,
+            net=relational_net,
+        )
+        net = ControlNet(abstract_policy_net)
 
     abstract.box_world_sv_train2(net, n=n, epochs=epochs, num_test=num_test, test_every=test_every)
-
 
 
 if __name__ == '__main__':

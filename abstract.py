@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 import torch
 import utils
 from utils import assertEqual, num_params, Timing, DEVICE
-from modules import FC, AllConv, RelationalDRLNet
+from modules import FC, AllConv, RelationalDRLNet, RelationalDRLNet2
 from torch.distributions import Categorical
 import old_box_world
 import box_world
@@ -47,10 +47,10 @@ class ControlAPN2(nn.Module):
         self.a = a
         self.b = b
         self.t = None
-        self.net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                    num_attn_blocks=4,
-                                    num_heads=4,
-                                    out_dim=b*a + 2 * b + b).to(DEVICE)
+        self.net = RelationalDRLNet2(input_channels=box_world.NUM_ASCII,
+                                     num_attn_blocks=4,
+                                     num_heads=4,
+                                     out_dim=b*a + 2 * b + b).to(DEVICE)
 
     def forward(self, s_i):
         """
@@ -58,12 +58,10 @@ class ControlAPN2(nn.Module):
         outputs:
             None, (T, 1, a) tensor of action logps, None, None, None
         """
-        T = s_i.shape[0]
-
         out = self.net(s_i)
-        action_logits = out[:self.b * self.a].reshape(-1, self.b, self.a)
-        stop_logits = out[self.b * self.a:self.b * self.a + 2 * self.b].reshape(-1, self.b, 2)
-        start_logits = out[self.b * self.a + 2 * self.b:]
+        action_logits = out[:, :self.b * self.a].reshape(-1, self.b, self.a)
+        stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(-1, self.b, 2)
+        start_logits = out[:, self.b * self.a + 2 * self.b:]
         assertEqual(start_logits.shape[1], self.b)
         action_logps = F.log_softmax(action_logits, dim=2)
         stop_logps = F.log_softmax(stop_logits, dim=2)
