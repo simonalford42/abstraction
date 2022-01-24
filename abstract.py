@@ -263,6 +263,8 @@ def train_abstractions(data, net, epochs, lr=1E-3):
             train_loss = 0
             start = time.time()
             for s_i, actions in zip(data.traj_states, data.traj_moves):
+                s_i = s_i.to(DEVICE)
+                actions = actions.to(DEVICE)
                 optimizer.zero_grad()
                 loss = net(s_i, actions)
                 # print(f"loss: {loss}")
@@ -428,7 +430,8 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
 
-        model_load_run_id = '96f61c9cc1ca4d1f92b3e98993664e23'
+        # model_load_run_id = 'b8149a1f84f84edcb6ff0c389f80db78'
+        model_load_run_id = None
         print_every = epochs / 5
         save_every = 1
 
@@ -437,7 +440,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                                epochs=epochs,
                                ))
         if drlnet:
-            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=2, num_heads=4).to(DEVICE)
         else:
             net = AllConv(input_filters=box_world.NUM_ASCII,
                           residual_blocks=2,
@@ -452,7 +455,6 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
             round = 0
             while round != rounds:
                 print(f'Round {round}')
-                env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
                     data = box_world.BoxWorldDataset(env=env, n=n)
@@ -464,13 +466,12 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
 
                 if round % test_every == 0:
                     with Timing("Evaluated model"):
-                        env = box_world.BoxWorldEnv(seed=round)
-                        box_world.eval_model(net, env, n=num_test,
-                                             renderer=lambda obs: box_world.render_obs(obs, pause=0.0001))
+                        box_world.eval_model(net, env, n=num_test)
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
 
                 round += 1
+                epochs = max(50, epochs - 25)
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)
 
@@ -506,8 +507,7 @@ def box_world_sv_train2(net, n=1000, epochs=100, rounds=-1, num_test=100, test_e
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
 
-                epochs = max(200, epochs - 50)
                 round += 1
-
+                epochs = max(50, epochs - 25)
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)
