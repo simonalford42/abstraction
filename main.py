@@ -108,26 +108,21 @@ def box_world_main2():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    hmm = True
+    hmm = False
     n = 5000
     epochs = 500
     num_test = min(n, 100)
     test_every = 1
 
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
-    abstract_policy_net = abstract.ControlAPN(
-        a=4,
-        net=relational_net,
-    )
-    net = ControlNet(abstract_policy_net).to(DEVICE)
-
     if hmm:
+        print('hmm training!')
         abstract_policy_net = abstract.ControlAPN2(
             a=4,
             b=20,
         )
         net = HMMNet(abstract_policy_net)
     else:
+        print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
         abstract_policy_net = abstract.ControlAPN(
             a=4,
@@ -135,7 +130,8 @@ def box_world_main2():
         )
         net = ControlNet(abstract_policy_net)
 
-    abstract.box_world_sv_train2(net, n=n, epochs=epochs, num_test=num_test, test_every=test_every)
+    net = net.to(DEVICE)
+    abstract.box_world_sv_train2(net, n=n, epochs=epochs, num_test=num_test, test_every=0)
 
 
 if __name__ == '__main__':

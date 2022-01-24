@@ -55,12 +55,14 @@ class ControlNet(nn.Module):
 
         # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
         t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
-        total = 0
-        for i, action in enumerate(actions):
-            logp = action_logps[i, 0, action]
-            total += logp
 
-        return -total
+        return -torch.sum(action_logps[range(T), 0, actions])
+        # total = 0
+        # for i, action in enumerate(actions):
+            # logp = action_logps[i, 0, action]
+            # total += logp
+
+        # return -total
 
 
 class HMMNet(nn.Module):

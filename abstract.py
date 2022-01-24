@@ -254,6 +254,7 @@ class Eq2Net(nn.Module):
 def train_abstractions(data, net, epochs, lr=1E-3):
     print(f"net has {num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+    print_every = epochs / 10
 
     net.train()
 
@@ -273,9 +274,10 @@ def train_abstractions(data, net, epochs, lr=1E-3):
                 loss.backward()
                 optimizer.step()
 
-            print(f"epoch: {epoch}\t"
-                + f"train loss: {loss}\t"
-                + f"({time.time() - start:.0f}s)")
+            if epoch % print_every == 0:
+                print(f"epoch: {epoch}\t"
+                    + f"train loss: {loss}\t"
+                    + f"({time.time() - start:.0f}s)")
 
         utils.save_model(net, f'models/{model_name}')
     except KeyboardInterrupt:
@@ -499,7 +501,7 @@ def box_world_sv_train2(net, n=1000, epochs=100, rounds=-1, num_test=100, test_e
 
                 train_abstractions(data, net, epochs=epochs, lr=1E-4)
 
-                if round % test_every == 0:
+                if test_every and round % test_every == 0:
                     with Timing("Evaluated model"):
                         env = box_world.BoxWorldEnv(seed=round)
                         box_world.eval_model(net.abstract_policy_net.net, env, n=num_test)
