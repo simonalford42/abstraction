@@ -100,7 +100,7 @@ def box_world_main():
     # box_world.eval_model(net, box_world.BoxWorldEnv(),
     #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
+    abstract.box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
 
 
 def box_world_main2():
@@ -108,8 +108,8 @@ def box_world_main2():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 10
-    epochs = 5
+    n = 5000
+    epochs = 500
     num_test = min(n, 100)
     test_every = 1
 
@@ -118,7 +118,7 @@ def box_world_main2():
         a=4,
         net=relational_net,
     )
-    net = ControlNet(abstract_policy_net)
+    net = ControlNet(abstract_policy_net).to(DEVICE)
 
     abstract.box_world_sv_train2(net, n=n, epochs=epochs, num_test=num_test, test_every=test_every)
 

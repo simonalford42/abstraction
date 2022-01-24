@@ -1,4 +1,4 @@
-    import time
+import time
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -265,6 +265,8 @@ def train_abstractions(data, net, epochs, lr=1E-3):
             train_loss = 0
             start = time.time()
             for s_i, actions in zip(data.traj_states, data.traj_moves):
+                s_i = s_i.to(DEVICE)
+                actions = actions.to(DEVICE)
                 optimizer.zero_grad()
                 loss = net(s_i, actions)
                 # print(f"loss: {loss}")
