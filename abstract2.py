@@ -28,6 +28,41 @@ def calc_trans_fn(stop_logps, start_logps, i):
     return trans_fn
 
 
+class ControlNet(nn.Module):
+    """
+    Like HMMNet, but no abstract model or anything.
+    """
+    def __init__(self, abstract_policy_net, abstract_penalty=0.5,
+                 consistency_ratio=1.):
+        super().__init__()
+        self.abstract_policy_net = abstract_policy_net
+        self.b = abstract_policy_net.b
+        self.t = abstract_policy_net.t
+
+        # logp penalty for longer sequences
+        self.abstract_penalty = abstract_penalty
+        self.consistency_ratio = consistency_ratio
+
+    def forward(self, s_i, actions):
+        """
+        s_i: (T+1, s) tensor
+        actions: (T,) tensor of ints
+
+        outputs: negative logp of sequence
+        """
+        T = actions.shape[0]
+        assertEqual(T+1, s_i.shape[0])
+
+        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
+        t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
+        total = 0
+        for i, action in enumerate(actions):
+            logp = action_logps[i, 0, action]
+            total += logp
+
+        return -total
+
+
 class HMMNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
@@ -56,7 +91,7 @@ class HMMNet(nn.Module):
         T = len(actions)
         assertEqual(s_i.shape[0], T + 1)
         # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
+        _, action_logps, stop_logps, start_logps, _ = self.abstract_policy_net(s_i)
 
         f_0 = start_logps[0] + action_logps[0, :, actions[0]]
         f_prev = f_0

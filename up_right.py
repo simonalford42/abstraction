@@ -82,12 +82,12 @@ class TrajData():
 
         # list of tensor of moves
         # does not include -1 at end
-        self.moves = [torch.tensor([m for (s, m) in embed[:-1]])
-                      for embed in self.embeds]
+        self.traj_moves = [torch.tensor([m for (s, m) in embed[:-1]])
+                           for embed in self.embeds]
 
         # each trajectory as a (traj_length, state_dim) tensor
-        self.states = [torch.stack([s for (s, m) in embed])
-                             for embed in self.embeds]
+        self.traj_states = [torch.stack([s for (s, m) in embed])
+                            for embed in self.embeds]
 
     def make_points(traj):
         trace = exec_traj(traj)
