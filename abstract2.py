@@ -59,14 +59,11 @@ class BatchedVanillaController(nn.Module):
 
 
 class Controller(nn.Module):
-    def __init__(self, a, b):
+    def __init__(self, a, b, net):
         super().__init__()
         self.a = a
         self.b = b
-        self.net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                    num_attn_blocks=4,
-                                    num_heads=4,
-                                    out_dim=b*a + 2 * b + b).to(DEVICE)
+        self.net = net
 
     def forward(self, s_i):
         """
@@ -78,6 +75,7 @@ class Controller(nn.Module):
         """
         T = s_i.shape[0]
         out = self.net(s_i)
+        assertEqual(out.shape, (T, self.a * self.b + 2 * self.b + self.b))
         action_logits = out[:, :self.b * self.a].reshape(T, self.b, self.a)
         stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(T, self.b, 2)
         start_logits = out[:, self.b * self.a + 2 * self.b:]
@@ -97,7 +95,7 @@ class BatchedController(nn.Module):
         self.b = b
         self.net = net
 
-    def forward(self, s_i_batch, lengths):
+    def forward(self, s_i_batch):
         """
         s_i: (B, T, s) tensor of states
         lengths: (B, ) tensor of lengths
@@ -106,8 +104,9 @@ class BatchedController(nn.Module):
             (B, T, b, 2) tensor of stop logps,
             (B, T, b) tensor of start logps,
         """
-        B, T, s = s_i_batch.shape
-        out = self.net(s_i_batch.reshape(B * T, s)).reshape(B, T, -1)
+        B, T, *s = s_i_batch.shape
+        out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        assertEqual(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
         action_logits = out[:, :, :self.b * self.a].reshape(B, T, self.b, self.a)
         stop_logits = out[:, :, self.b * self.a:self.b * self.a + 2 * self.b].reshape(B, T, self.b, 2)
         start_logits = out[:, :, self.b * self.a + 2 * self.b:]

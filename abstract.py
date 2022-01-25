@@ -390,12 +390,10 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                                epochs=epochs,
                                ))
         if drlnet:
-            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=2, num_heads=4).to(DEVICE)
-        else:
-            net = AllConv(input_filters=box_world.NUM_ASCII,
-                          residual_blocks=2,
-                          residual_filters=24,
-                          output_dim=4).to(DEVICE)
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                   num_attn_blocks=2,
+                                   num_heads=4,
+                                   out_dim=4).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
 

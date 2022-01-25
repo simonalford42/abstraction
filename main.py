@@ -103,23 +103,26 @@ def box_world_main():
     abstract.box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
 
 
-def vanilla_batched_comparison():
+def batched_comparison():
     random.seed(0)
     torch.manual_seed(0)
 
     a = 4
+    b = 1
     relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                       num_attn_blocks=4,
                                       num_heads=4,
-                                      out_dim=a).to(DEVICE)
+                                      out_dim=a * b + 2 * b + b).to(DEVICE)
 
-    control_net = VanillaController(
+    control_net = Controller(
         a=4,
+        b=1,
         net=relational_net,
     )
 
-    batched_control_net = BatchedVanillaController(
+    batched_control_net = BatchedController(
         a=4,
+        b=1,
         net=relational_net,
     )
 
@@ -203,7 +206,7 @@ def traj_box_world_batched_main():
 
 
 if __name__ == '__main__':
-    vanilla_batched_comparison()
+    batched_comparison()
     # up_right_main()
     # box_world_main()
     # box_world_sv2()
