@@ -19,7 +19,7 @@ class Print(nn.Module):
         return self.layer(x)
 
 
-class RelationalDRLNet(nn.Module):
+class RelationalDRLNetOld(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4):
         super().__init__()
         self.input_channels = input_channels
@@ -92,7 +92,7 @@ class RelationalDRLNet(nn.Module):
         return inp
 
 
-class RelationalDRLNet2(nn.Module):
+class RelationalDRLNet(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
         super().__init__()
         self.input_channels = input_channels

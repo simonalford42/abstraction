@@ -1,5 +1,4 @@
 import math
-from up_right import TrajData
 from utils import assertEqual
 from scipy.special import logsumexp
 import unittest
@@ -23,7 +22,7 @@ def forward(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -60,7 +59,7 @@ def forward_log(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -79,7 +78,9 @@ def forward_log(init_dist, trans_fn, obs_dist, obs):
 
     for t in range(1, T):
         # new_f[j] = f[i] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        new_f_vector = rearrange(f_matrix[t-1], 'a -> a 1') + trans_fn + rearrange(p_obs_at_t_given_state[t], 'a -> 1 a')  # (a, a)
+        new_f_vector = (rearrange(f_matrix[t-1], 'a -> a 1')
+                        + trans_fn
+                        + rearrange(p_obs_at_t_given_state[t], 'a -> 1 a'))  # (a, a)
         f_matrix[t] = logsumexp(new_f_vector, axis=0)
 
     p = logsumexp(f_matrix[T-1], axis=0)
@@ -103,7 +104,7 @@ def backward(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -140,7 +141,7 @@ def backward_log(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -170,7 +171,7 @@ def viterbi(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -251,7 +252,7 @@ def viterbi_log(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
     assertEqual(trans_fn.shape, (b, b))
     assertEqual(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
+    # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
     assertEqual(sum(init_dist), 1)
@@ -429,7 +430,6 @@ class HMMTest(unittest.TestCase):
         new_init_dist, new_trans_fn, new_obs_dist, p = fw_bw(init_dist, trans_fn, obs_dist, obs)
         target_new_trans_fn = np.array([[0.63, 0.37], [0.31, 0.69]])
         np.testing.assert_array_almost_equal(new_trans_fn, target_new_trans_fn, decimal=2)
-
 
 
 if __name__ == '__main__':

@@ -4,14 +4,13 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch
 import utils
-from utils import assertEqual, num_params, Timing, DEVICE
-from modules import FC, AllConv, RelationalDRLNet, RelationalDRLNet2
+from utils import assertEqual, Timing, DEVICE
+from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
 import old_box_world
 import box_world
 import up_right
 import mlflow
-from einops import rearrange
 
 
 STOP_NET_STOP_IX = 0
@@ -25,7 +24,7 @@ class AbstractPolicyNet(nn.Module):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
-        # self.s = s  # state dim; not actually used actually
+        # self.s = s  # state dim; not actually used
         self.t = t  # abstract state dim
         self.tau_net = tau_net  # s -> t
         self.micro_net = micro_net  # s -> (b, a)  = P(a | b, s)
@@ -200,32 +199,33 @@ class Eq2Net(nn.Module):
 
 
 def train_abstractions(data, net, epochs, lr=1E-3):
-    print(f"net has {num_params(net)} parameters")
+    print(f"net has {utils.num_params(net)} parameters")
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     print_every = epochs / 10
 
     net.train()
+
+    dataloader = DataLoader(data, batch_size=256, shuffle=False)
 
     model_name = 'model_1-21.pt'
     try:
         for epoch in range(epochs):
             train_loss = 0
             start = time.time()
-            for s_i, actions in zip(data.traj_states, data.traj_moves):
-                s_i = s_i.to(DEVICE)
-                actions = actions.to(DEVICE)
+            for s_i_batch, actions_batch in dataloader:
+                s_i_batch = s_i_batch.to(DEVICE)
+                actions_batch = actions_batch.to(DEVICE)
                 optimizer.zero_grad()
-                loss = net(s_i, actions)
-                # print(f"loss: {loss}")
+                loss = net(s_i_batch, actions_batch)
+                loss = torch.sum(loss)  # sum over batch
                 train_loss += loss
-                # print(f"train_loss: {train_loss}")
                 loss.backward()
                 optimizer.step()
 
             if epoch % print_every == 0:
                 print(f"epoch: {epoch}\t"
-                    + f"train loss: {loss}\t"
-                    + f"({time.time() - start:.0f}s)")
+                      + f"train loss: {loss}\t"
+                      + f"({time.time() - start:.0f}s)")
 
         utils.save_model(net, f'models/{model_name}')
     except KeyboardInterrupt:
@@ -399,7 +399,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
 
-        print(f"Net has {num_params(net)} parameters")
+        print(f"Net has {utils.num_params(net)} parameters")
 
         try:
             round = 0
@@ -426,16 +426,14 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
             utils.save_mlflow_model(net, overwrite=True)
 
 
-def box_world_sv_train2(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
+def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
     # does it HMM-style but without the abstract model
-    mlflow.set_experiment("Boxworld sv train")
+    mlflow.set_experiment("Boxworld sv train2 ")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
-
         save_every = 1
-
         mlflow.log_params(dict(epochs=epochs))
-        print(f"Net has {num_params(net)} parameters")
+        print(f"Net has {utils.num_params(net)} parameters")
 
         try:
             round = 0
@@ -444,7 +442,7 @@ def box_world_sv_train2(net, n=1000, epochs=100, rounds=-1, num_test=100, test_e
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    data = box_world.BoxWorldDataset(env=env, n=n)
+                    data = box_world.BoxWorldTrajDataset(env=env, n=n)
 
                 train_abstractions(data, net, epochs=epochs, lr=1E-4)
 

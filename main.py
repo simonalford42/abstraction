@@ -1,14 +1,14 @@
 import up_right
 import torch
+from torch.utils.data import DataLoader
 import random
 import utils
 from utils import DEVICE
 import abstract
-from abstract2 import ControlNet, HMMNet, ControlAPN, ControlAPN2
+from abstract2 import VanillaController, BatchedVanillaController, Controller, BatchedController, TrajNet, HMMTrajNet
 from modules import FC, RelationalDRLNet
 import box_world
 import argparse
-import up_right
 import abstract2
 
 
@@ -28,7 +28,7 @@ def up_right_main():
         start_net=FC(t, b, hidden_dim=64, num_hidden=1),
         alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
     # net = Eq2Net(abstract_policy_net,
-    net = HMMNet(abstract_policy_net)
+    net = HMMTrajNet(abstract_policy_net)
 
     # utils.load_model(net, f'models/model_1-21__4.pt')
     abstract.train_abstractions(data, net, epochs=100, lr=1E-4)
@@ -54,18 +54,18 @@ def box_world_sv2():
     relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
     utils.load_mlflow_model(relational_net, "fc3178b8b9b94314b4a259aa5ff8d22d")
 
-    abstract_policy_net = abstract.ControlAPN(
+    control_net = Controller(
         a=4,
         net=relational_net,
     )
-    net = ControlNet(abstract_policy_net)
+    net = TrajNet(control_net)
 
     abstract.train_abstractions(data, net, epochs=10, lr=1E-4)
 
     box_world.eval_model(relational_net, box_world.BoxWorldEnv(), n=100,)
 
 
-def eval_viterbi(net: HMMNet, data: up_right.TrajData):
+def eval_viterbi(net: HMMTrajNet, data: up_right.TrajData):
     for i, s_i, actions, points in zip(range(len(data.traj_states)), data.traj_states, data.traj_moves, data.points):
         (x, y, x_goal, y_goal) = points[0][0]
         moves = ''.join(data.trajs[i])
@@ -103,7 +103,46 @@ def box_world_main():
     abstract.box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
 
 
-def box_world_main2():
+def vanilla_batched_comparison():
+    random.seed(0)
+    torch.manual_seed(0)
+
+    a = 4
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                      num_attn_blocks=4,
+                                      num_heads=4,
+                                      out_dim=a).to(DEVICE)
+
+    control_net = VanillaController(
+        a=4,
+        net=relational_net,
+    )
+
+    batched_control_net = BatchedVanillaController(
+        a=4,
+        net=relational_net,
+    )
+
+    env = box_world.BoxWorldEnv()
+    data = box_world.BoxWorldDataset(env=env, n=1, traj=True)
+
+    logp = torch.tensor(0.)
+    for s_i, actions in zip(data.traj_states, data.traj_moves):
+        action_logps, _, _ = control_net(s_i)
+        logp += torch.sum(action_logps)
+
+    print(f'logp1: {logp}')
+
+    dataloader = DataLoader(data, batch_size=1, shuffle=False)
+    logp = torch.tensor(0.)
+    for s_i_batch, actions_batch in dataloader:
+        # (B, T, 1, a) tensor of action logps,
+        action_logps, _, _ = batched_control_net(s_i_batch)
+        logp += torch.sum(action_logps)
+    print(f'logp3: {logp}')
+
+
+def traj_box_world_main():
     random.seed(1)
     torch.manual_seed(1)
     utils.print_torch_device()
@@ -112,29 +151,59 @@ def box_world_main2():
     n = 5000
     epochs = 500
     num_test = min(n, 100)
-    test_every = 1
 
     if hmm:
         print('hmm training!')
-        abstract_policy_net = ControlAPN2(
+        control_net = Controller(
             a=4,
             b=20,
         )
-        net = HMMNet(abstract_policy_net)
+        net = HMMTrajNet(control_net)
     else:
         print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
-        abstract_policy_net = ControlAPN(
+        control_net = VanillaController(
             a=4,
             net=relational_net,
         )
-        net = ControlNet(abstract_policy_net)
+        net = TrajNet(control_net)
 
     net = net.to(DEVICE)
-    abstract.box_world_sv_train2(net, n=n, epochs=epochs, num_test=num_test, test_every=0)
+    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=0)
+
+
+def traj_box_world_batched_main():
+    random.seed(1)
+    torch.manual_seed(1)
+    utils.print_torch_device()
+
+    hmm = False
+    n = 5000
+    epochs = 500
+    num_test = min(n, 100)
+
+    if hmm:
+        print('hmm training!')
+        abstract_policy_net = BatchedController(
+            a=4,
+            b=20,
+        )
+        net = HMMTrajNet(abstract_policy_net)
+    else:
+        print('traj-level training without hmm')
+        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, num_attn_blocks=4, num_heads=4).to(DEVICE)
+        control_net = BatchedVanillaController(
+            a=4,
+            net=relational_net,
+        )
+        net = TrajNet(control_net)
+
+    net = net.to(DEVICE)
+    abstract.traj_box_world_batched_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=0)
 
 
 if __name__ == '__main__':
+    vanilla_batched_comparison()
     # up_right_main()
-    box_world_main()
+    # box_world_main()
     # box_world_sv2()

@@ -1,7 +1,5 @@
-from collections import Counter
 from typing import Any, Optional, List, Tuple, Callable
 import gym
-from gym import spaces
 import argparse
 import numpy as np
 import pycolab
@@ -26,7 +24,7 @@ class BoxWorldEnv(gym.Env):
 
     def __init__(
         self,
-        grid_size=12, # note grid shape is really (grid_size+2, grid_size+2) bc of border
+        grid_size=12,  # note grid shape is really (grid_size+2, grid_size+2) bc of border
         solution_length=(1, 2, 3, 4),
         num_forward=(0, 1, 2, 3, 4),
         num_backward=(0,),
@@ -48,7 +46,6 @@ class BoxWorldEnv(gym.Env):
         # self.observation_space = spaces.Box(low=0, high=100, shape=np.zeros(self.shape))
 
         self.obs = self.reset()
-
 
     def reset(self):
         self.game = bw.make_game(
@@ -129,7 +126,6 @@ def ascii_to_color(ascii: str):
 def ascii_to_int(ascii: str):
     # lower and uppercase render the same, just like the colors
     return '# *.abcdefghijklmnopqrst'.index(ascii.lower())
-
 
 
 def to_color_obs(obs):
@@ -469,11 +465,17 @@ def obs_to_tensor(obs) -> torch.Tensor:
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: BoxWorldEnv, n: int):
+    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = False):
+        """
+        If traj is true, spits out a trajectory and its actions.
+        Otherwise, spits out a single state and its action.
+        """
         # all in memory
         # list of (states, moves) tuple
         self.data: List[Tuple[List, List]] = [generate_traj(env) for i in range(n)]
-        self.state_shape = self.data[0][0][0].shape
+        # states, moves = self.data[0]
+        # self.data = [(states[0:2], moves[0:1])]
+        self.traj = traj
 
         # ignore last state
         self.states = [obs_to_tensor(s)
@@ -483,15 +485,22 @@ class BoxWorldDataset(Dataset):
 
         self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
-        print(f'traj_length dist ({len(self.traj_moves)} of them): {Counter([len(ms) for ms in self.traj_moves])}')
-        assert False
+
+        self.traj_states, self.traj_moves = zip(*sorted(zip(
+            self.traj_states, self.traj_moves), key=lambda t: t[0].shape[0]))
         assertEqual([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
     def __len__(self):
-        return len(self.states)
+        if self.traj:
+            return len(self.traj_states)
+        else:
+            return len(self.states)
 
     def __getitem__(self, i):
-        return self.states[i], self.moves[i]
+        if self.traj:
+            return self.traj_states[i], self.traj_moves[i]
+        else:
+            return self.states[i], self.moves[i]
 
 
 if __name__ == '__main__':
