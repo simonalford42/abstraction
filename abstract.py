@@ -210,6 +210,9 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             s_i_batch = s_i_batch.to(DEVICE)
             actions_batch = actions_batch.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths)
+            # need to reduce by mean, just like cross entropy, so batch size
+            # doesn't affect LR.
+            loss = loss / s_i_batch.shape[0]
             loss = torch.sum(loss)  # sum over batch
             train_loss += loss
             loss.backward()
@@ -332,7 +335,7 @@ def sample_trajectories(net, data, full_abstract=False):
         print('-' * 10)
 
 
-def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100, test_every=1):
+def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -343,7 +346,6 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
         save_every = 1
 
         mlflow.log_params(dict(model_load_run_id=model_load_run_id,
-                               drlnet=drlnet,
                                epochs=epochs,
                                ))
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
@@ -360,7 +362,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                 print(f'Round {round}')
 
                 with Timing("Generated trajectories"):
-                    data = box_world.BoxWorldDataset(env=env, n=n)
+                    data = box_world.BoxWorldDataset(env=env, n=n, traj=False)
 
                 print(f'{len(data)} examples')
                 dataloader = DataLoader(data, batch_size=256, shuffle=True)
@@ -383,6 +385,7 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
     mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
+        print_every = epochs / 5
         save_every = 1
         mlflow.log_params(dict(epochs=epochs))
         print(f"Net has {utils.num_params(net)} parameters")
@@ -394,14 +397,16 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=256)
+                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=50)
 
-                train_abstractions(dataloader, net, epochs=epochs, lr=1E-4)
+                train_abstractions(dataloader, net, epochs=epochs, lr=1E-4,
+                                   print_every=print_every)
 
                 if test_every and round % test_every == 0:
+                    assert net.b == 1, 'need b=1 to extract action logps easily'
                     with Timing("Evaluated model"):
                         env = box_world.BoxWorldEnv(seed=round)
-                        box_world.eval_model(net.control_net.net, env, n=num_test)
+                        box_world.eval_model(lambda x: net.control_net.net(x)[:, :4], env, n=num_test)
 
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)

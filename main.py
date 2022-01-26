@@ -6,7 +6,7 @@ import utils
 from utils import DEVICE
 import abstract
 from abstract2 import UnbatchedTrajNet, VanillaController, BatchedVanillaController, Controller, BatchedController, TrajNet, HMMTrajNet
-from modules import FC, RelationalDRLNet
+from modules import FC, RelationalDRLNet, abstract_out_dim
 import box_world
 import argparse
 import abstract2
@@ -51,15 +51,15 @@ def eval_viterbi(net: HMMTrajNet, data: up_right.TrajData):
 
 
 def box_world_main():
-    parser = argparse.ArgumentParser(description='Abstraction')
-    parser.add_argument("--cnn",
-                        action="store_true",
-                        dest="cnn")
-    parser.add_argument("--test",
-                        action="store_true",
-                        dest="test")
-    args = parser.parse_args()
-    print(f"args: {args}")
+    # parser = argparse.ArgumentParser(description='Abstraction')
+    # parser.add_argument("--cnn",
+    #                     action="store_true",
+    #                     dest="cnn")
+    # parser.add_argument("--test",
+    #                     action="store_true",
+    #                     dest="test")
+    # args = parser.parse_args()
+    # print(f"args: {args}")
 
     random.seed(1)
     torch.manual_seed(1)
@@ -75,7 +75,7 @@ def box_world_main():
     # box_world.eval_model(net, box_world.BoxWorldEnv(),
     #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    abstract.box_world_sv_train(n=n, epochs=epochs, drlnet=not args.cnn, num_test=num_test, test_every=test_every)
+    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every)
 
 
 def batched_comparison():
@@ -129,7 +129,7 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     hmm = False
-    n = 500
+    n = 5000
     epochs = 500
     num_test = min(n, 100)
 
@@ -145,7 +145,7 @@ def traj_box_world_batched_main():
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                           num_attn_blocks=4,
                                           num_heads=4,
-                                          out_dim=4).to(DEVICE)
+                                          out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
         control_net = BatchedController(
             a=4,
             b=1,
@@ -160,5 +160,5 @@ def traj_box_world_batched_main():
 if __name__ == '__main__':
     # up_right_main()
     # box_world_main()
-    batched_comparison()
-    # traj_box_world_batched_main()
+    # batched_comparison()
+    traj_box_world_batched_main()

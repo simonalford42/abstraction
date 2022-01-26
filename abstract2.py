@@ -141,7 +141,6 @@ class TrajNet(nn.Module):
 
         total_logp = 0
         for i, length in enumerate(lengths):
-            print(actions_batch[i, :length])
             logp = torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
             total_logp += logp
 
@@ -173,6 +172,49 @@ class UnbatchedTrajNet(nn.Module):
 
 
 class HMMTrajNet(nn.Module):
+    """
+    batched Class for doing the HMM calculations for learning options.
+    for now just wraps unbactched.
+    """
+    def __init__(self, control_net):
+        super().__init__()
+        self.control_net = control_net
+        self.b = control_net.b
+
+    def forward(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+
+        returns: negative logp of all trajs in batch
+        """
+        B, max_T = actions_batch.shape[0:2]
+        assertEqual((B, max_T+1), s_i_batch.shape[0:2])
+        assert B == 1, 'for now stick with batch size 1'
+
+        s_i = s_i_batch.squeeze
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
+        f_0 = start_logps[0] + action_logps[0, :, actions[0]]
+        f_prev = f_0
+        for i in range(1, T):
+            action = actions[i]
+            trans_fn = calc_trans_fn(stop_logps, start_logps, i)
+
+            f_unsummed = (rearrange(f_prev, 'b -> b 1')
+                          + trans_fn
+                          + rearrange(action_logps[i, :, action], 'b -> 1 b'))
+            f = torch.logsumexp(f_unsummed, axis=0)
+            assertEqual(f.shape, (self.b, ))
+            f_prev = f
+
+        assertEqual(T+1, stop_logps.shape[0])
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
+        return -total_logp
+
+class UnbatchedHMMTrajNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """

@@ -451,7 +451,7 @@ def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None)
             #     render_obs(obs, pause=0.1)
 
     avg_steps = 0 if not num_solved else sum(solved_lens) / num_solved
-    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {avg_steps}')
+    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {avg_steps:.1f}')
     return solved
 
 

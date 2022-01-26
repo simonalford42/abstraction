@@ -19,6 +19,11 @@ class Print(nn.Module):
         return self.layer(x)
 
 
+def abstract_out_dim(a, b):
+    # a * b for action probs, 2 * b for stop probs, b for start probs
+    return a * b + 2 * b + b
+
+
 class RelationalDRLNetOld(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4):
         super().__init__()
