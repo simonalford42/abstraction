@@ -2,12 +2,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 import einops
-from utils import assertEqual, DEVICE
+from utils import assertEqual
 import torch
 from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
-from modules import RelationalDRLNet
 import math
-import box_world
 
 
 class VanillaController(nn.Module):
@@ -133,7 +131,7 @@ class TrajNet(nn.Module):
         actions: (B, max_T,) tensor of ints
         lengths: T for each traj in the batch
 
-        outputs: (B, ) tensor of negative logp of each sequence
+        returns: negative logp of all trajs in batch
         """
         B, max_T = actions_batch.shape[0:2]
         assertEqual((B, max_T+1), s_i_batch.shape[0:2])
@@ -143,10 +141,11 @@ class TrajNet(nn.Module):
 
         total_logp = 0
         for i, length in enumerate(lengths):
-            logp = -torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
+            print(actions_batch[i, :length])
+            logp = torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
             total_logp += logp
 
-        return total_logp
+        return -total_logp
 
 
 class UnbatchedTrajNet(nn.Module):

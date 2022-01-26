@@ -7,7 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import einops
 from utils import assertEqual, POS, DEVICE
 
@@ -457,33 +457,39 @@ def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None)
 
 def obs_to_tensor(obs) -> torch.Tensor:
     obs = torch.tensor([[ascii_to_int(a) for a in row]
-                        for row in obs])
+                       for row in obs])
     obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
     assertEqual(obs.shape[-1], NUM_ASCII)
     obs = einops.rearrange(obs, 'h w c -> c h w')
     return obs
 
 
-def traj_collate(batch: list[tuple[tensor, tensor, int]]):
+def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
     """
     batch is a list of (states, moves, length) tuples.
     """
     max_T = max([length for _, _, length in batch])
-    print(f"dummy_state: {dummy_state.shape}")
-    print(f"dummy_move: {dummy_move}")
-    batch2 = []
+    states_batch = []
+    moves_batch = []
+    lengths = []
     for states, moves, length in batch:
-        _, *s = 
+        _, *s = states.shape
         T = moves.shape[0]
-        to_add = max_t - T
-        states2 = torch.cat(states, torch.zeros([dummy_state] * to_add))
-        moves2 = torch.cat(moves, torch.zeros(
-    
+        to_add = max_T - T
+        states2 = torch.cat((states, torch.zeros((to_add, *s))))
+        moves2 = torch.cat((moves, torch.zeros(to_add, dtype=int)))
+        assertEqual(states2.shape, (max_T + 1, *s))
+        assertEqual(moves2.shape, (max_T, ))
+        states_batch.append(states2)
+        moves_batch.append(moves2)
+        lengths.append(length)
+
+    return torch.stack(states_batch), torch.stack(moves_batch), torch.tensor(lengths)
 
 
-
-
-
+def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
+    data = BoxWorldDataset(env, n, traj)
+    return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
 
 
 class BoxWorldDataset(Dataset):

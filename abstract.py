@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 import torch
 import utils
 from utils import assertEqual, Timing, DEVICE
-from modules import FC, AllConv, RelationalDRLNet
+from modules import RelationalDRLNet
 from torch.distributions import Categorical
 import box_world
 import up_right
@@ -215,7 +215,6 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             loss.backward()
             optimizer.step()
 
-        
         metrics = dict(
             epoch=epoch,
             loss=loss.item(),
@@ -395,8 +394,7 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    data = box_world.BoxWorldDataset(env=env, n=n, traj=True)
-                dataloader = DataLoader(data, batch_size=256, shuffle=False)
+                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=256)
 
                 train_abstractions(dataloader, net, epochs=epochs, lr=1E-4)
 

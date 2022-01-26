@@ -5,7 +5,7 @@ import random
 import utils
 from utils import DEVICE
 import abstract
-from abstract2 import VanillaController, BatchedVanillaController, Controller, BatchedController, TrajNet, HMMTrajNet
+from abstract2 import UnbatchedTrajNet, VanillaController, BatchedVanillaController, Controller, BatchedController, TrajNet, HMMTrajNet
 from modules import FC, RelationalDRLNet
 import box_world
 import argparse
@@ -94,30 +94,33 @@ def batched_comparison():
         b=1,
         net=relational_net,
     )
+    unbatched_traj_net = UnbatchedTrajNet(control_net)
 
     batched_control_net = BatchedController(
         a=4,
         b=1,
         net=relational_net,
     )
+    traj_net = TrajNet(batched_control_net)
 
     env = box_world.BoxWorldEnv()
-    data = box_world.BoxWorldDataset(env=env, n=1, traj=True)
+    dataloader = box_world.box_world_dataloader(env, n=1, traj=True, batch_size=1)
+    data = box_world.BoxWorldDataset(env, n=1, traj=True)
+    dataloader = DataLoader(data, batch_size=1, shuffle=False, collate_fn=box_world.traj_collate)
 
-    logp = torch.tensor(0.)
+    total = 0
+    for d in dataloader:
+        negative_logp = traj_net(*d)
+        total += negative_logp
+
+    print(f'total: {total}')
+
+    total2 = 0
     for s_i, actions in zip(data.traj_states, data.traj_moves):
-        action_logps, _, _ = control_net(s_i)
-        logp += torch.sum(action_logps)
+        negative_logp = unbatched_traj_net(s_i, actions)
+        total2 += negative_logp
 
-    print(f'logp1: {logp}')
-
-    dataloader = DataLoader(data, batch_size=1, shuffle=False)
-    logp = torch.tensor(0.)
-    for s_i_batch, actions_batch in dataloader:
-        # (B, T, 1, a) tensor of action logps,
-        action_logps, _, _ = batched_control_net(s_i_batch)
-        logp += torch.sum(action_logps)
-    print(f'logp3: {logp}')
+    print(f'total2: {total2}')
 
 
 def traj_box_world_batched_main():
@@ -143,8 +146,9 @@ def traj_box_world_batched_main():
                                           num_attn_blocks=4,
                                           num_heads=4,
                                           out_dim=4).to(DEVICE)
-        control_net = BatchedVanillaController(
+        control_net = BatchedController(
             a=4,
+            b=1,
             net=relational_net,
         )
         net = TrajNet(control_net)
@@ -156,4 +160,5 @@ def traj_box_world_batched_main():
 if __name__ == '__main__':
     # up_right_main()
     # box_world_main()
-    traj_box_world_batched_main()
+    batched_comparison()
+    # traj_box_world_batched_main()
