@@ -215,8 +215,8 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             loss = loss / s_i_batch.shape[0]
             loss = torch.sum(loss)  # sum over batch
             train_loss += loss
-            loss.backward()
-            optimizer.step()
+            # loss.backward()
+            # optimizer.step()
 
         metrics = dict(
             epoch=epoch,
@@ -226,7 +226,7 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
-                  + f"train loss: {loss}\t"
+                  + f"train loss: {train_loss}\t"
                   + f"({time.time() - start:.0f}s)")
 
         if save_every and epoch % save_every == 0:
@@ -249,10 +249,12 @@ def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=No
             states = states.to(DEVICE)
             actions = actions.to(DEVICE)
             pred = net(states)
+            print('warning: altering pred')
+            pred = pred[:, :4]
             loss = criterion(pred, actions)
             train_loss += loss
-            loss.backward()
-            optimizer.step()
+            # loss.backward()
+            # optimizer.step()
 
             pred2 = torch.argmax(pred, dim=1)
             correct += sum(pred2 == actions).item()
@@ -268,7 +270,7 @@ def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=No
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
-                  + f"train loss: {loss}\t"
+                  + f"train loss: {train_loss}\t"
                   + f"acc: {acc:.3f}\t"
                   + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
@@ -351,7 +353,7 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                num_attn_blocks=2,
                                num_heads=4,
-                               out_dim=4).to(DEVICE)
+                               out_dim=4 * 1 + 2 + 1).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
         print(f"Net has {utils.num_params(net)} parameters")
@@ -365,7 +367,7 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
                     data = box_world.BoxWorldDataset(env=env, n=n, traj=False)
 
                 print(f'{len(data)} examples')
-                dataloader = DataLoader(data, batch_size=256, shuffle=True)
+                dataloader = DataLoader(data, batch_size=1, shuffle=False)
 
                 train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
 
@@ -397,7 +399,7 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=50)
+                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=1)
 
                 train_abstractions(dataloader, net, epochs=epochs, lr=1E-4,
                                    print_every=print_every)

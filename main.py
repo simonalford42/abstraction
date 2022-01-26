@@ -1,6 +1,7 @@
 import up_right
 import torch
 from torch.utils.data import DataLoader
+import torch.nn as nn
 import random
 import utils
 from utils import DEVICE
@@ -65,9 +66,9 @@ def box_world_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 5000
-    epochs = 500
-    num_test = 100
+    n = 1
+    epochs = 1
+    num_test = min(n, 100)
     test_every = 1
 
     # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
@@ -75,7 +76,7 @@ def box_world_main():
     # box_world.eval_model(net, box_world.BoxWorldEnv(),
     #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every)
+    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=1)
 
 
 def batched_comparison():
@@ -122,6 +123,26 @@ def batched_comparison():
 
     print(f'total2: {total2}')
 
+    data.traj = False
+    dataloader = DataLoader(data, batch_size=1, shuffle=False)
+    criterion = nn.CrossEntropyLoss(reduction='sum')
+    total3 = 0
+    for s_i, actions in dataloader:
+        pred = relational_net(s_i)
+        loss = criterion(pred[:, :4], actions)
+        total3 += loss
+    print(f'total3: {total3}')
+
+    total4 = 0
+    for s_i, actions in dataloader:
+        pred = relational_net(s_i)
+        logps = torch.log_softmax(pred[:, :4], dim=1)
+        loss = - torch.sum(logps[range(len(actions)), actions])
+        total4 += loss
+    print(f'total4: {total4}')
+
+    abstract.train_supervised(dataloader, relational_net, epochs=1)
+
 
 def traj_box_world_batched_main():
     random.seed(1)
@@ -129,8 +150,8 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     hmm = False
-    n = 5000
-    epochs = 500
+    n = 1
+    epochs = 1
     num_test = min(n, 100)
 
     if hmm:
@@ -143,7 +164,7 @@ def traj_box_world_batched_main():
     else:
         print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                          num_attn_blocks=4,
+                                          num_attn_blocks=2,
                                           num_heads=4,
                                           out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
         control_net = BatchedController(
@@ -154,11 +175,11 @@ def traj_box_world_batched_main():
         net = TrajNet(control_net)
 
     net = net.to(DEVICE)
-    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=1)
+    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=1)
 
 
 if __name__ == '__main__':
     # up_right_main()
-    # box_world_main()
+    box_world_main()
     # batched_comparison()
-    traj_box_world_batched_main()
+    # traj_box_world_batched_main()

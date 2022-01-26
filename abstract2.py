@@ -198,7 +198,7 @@ class HMMTrajNet(nn.Module):
         T = lengths[0]
         s_i = s_i[:T+1]
         actions = actions[:T]
-        
+
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i)
 
