@@ -66,8 +66,8 @@ def box_world_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 1
-    epochs = 1
+    n = 5000
+    epochs = 500
     num_test = min(n, 100)
     test_every = 1
 
@@ -76,7 +76,7 @@ def box_world_main():
     # box_world.eval_model(net, box_world.BoxWorldEnv(),
     #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=1)
+    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1)
 
 
 def batched_comparison():
@@ -150,8 +150,8 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     hmm = False
-    n = 1
-    epochs = 1
+    n = 5000
+    epochs = 500
     num_test = min(n, 100)
 
     if hmm:
