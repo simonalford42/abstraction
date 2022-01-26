@@ -205,11 +205,17 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
+        total = 0
+        total_correct = 0
         for s_i_batch, actions_batch, lengths in dataloader:
             optimizer.zero_grad()
             s_i_batch = s_i_batch.to(DEVICE)
             actions_batch = actions_batch.to(DEVICE)
-            loss = net(s_i_batch, actions_batch, lengths)
+            loss, correct = net(s_i_batch, actions_batch, lengths)
+
+            total += s_i_batch.shape[0]
+            total_correct += correct
+
             # need to reduce by mean, just like cross entropy, so batch size
             # doesn't affect LR.
             loss = loss / s_i_batch.shape[0]
@@ -218,17 +224,19 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             loss.backward()
             optimizer.step()
 
+        acc = (correct / total).item()
         metrics = dict(
             epoch=epoch,
             loss=loss.item(),
+            acc=acc,
         )
         mlflow.log_metrics(metrics, step=epoch)
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
                   + f"train loss: {train_loss}\t"
-                  + f"({time.time() - start:.0f}s)")
-
+                  + f"acc: {acc:.3f}\t"
+                  + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
 

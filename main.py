@@ -150,8 +150,8 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     hmm = False
-    n = 5000
-    epochs = 500
+    n = 1
+    epochs = 1
     num_test = min(n, 100)
 
     if hmm:
@@ -180,6 +180,6 @@ def traj_box_world_batched_main():
 
 if __name__ == '__main__':
     # up_right_main()
-    box_world_main()
+    # box_world_main()
     # batched_comparison()
-    # traj_box_world_batched_main()
+    traj_box_world_batched_main()
