@@ -127,6 +127,37 @@ class TrajNet(nn.Module):
         self.control_net = control_net
         self.b = control_net.b
 
+    def forward(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+
+        outputs: (B, ) tensor of negative logp of each sequence
+        """
+        B, max_T = actions_batch.shape[0:2]
+        assertEqual((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
+        total_logp = 0
+        for i, length in enumerate(lengths):
+            logp = -torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
+            total_logp += logp
+
+        return total_logp
+
+
+class UnbatchedTrajNet(nn.Module):
+    """
+    Like HMMNet, but no abstract model or anything.
+    """
+    def __init__(self, control_net):
+        super().__init__()
+        self.control_net = control_net
+        self.b = control_net.b
+
     def forward(self, s_i, actions):
         """
         s_i: (T+1, s) tensor

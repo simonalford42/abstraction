@@ -464,6 +464,28 @@ def obs_to_tensor(obs) -> torch.Tensor:
     return obs
 
 
+def traj_collate(batch: list[tuple[tensor, tensor, int]]):
+    """
+    batch is a list of (states, moves, length) tuples.
+    """
+    max_T = max([length for _, _, length in batch])
+    print(f"dummy_state: {dummy_state.shape}")
+    print(f"dummy_move: {dummy_move}")
+    batch2 = []
+    for states, moves, length in batch:
+        _, *s = 
+        T = moves.shape[0]
+        to_add = max_t - T
+        states2 = torch.cat(states, torch.zeros([dummy_state] * to_add))
+        moves2 = torch.cat(moves, torch.zeros(
+    
+
+
+
+
+
+
+
 class BoxWorldDataset(Dataset):
     def __init__(self, env: BoxWorldEnv, n: int, traj: bool = False):
         """
@@ -498,7 +520,7 @@ class BoxWorldDataset(Dataset):
 
     def __getitem__(self, i):
         if self.traj:
-            return self.traj_states[i], self.traj_moves[i]
+            return self.traj_states[i], self.traj_moves[i], len(self.traj_moves[i])
         else:
             return self.states[i], self.moves[i]
 

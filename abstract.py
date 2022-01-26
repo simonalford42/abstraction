@@ -7,7 +7,6 @@ import utils
 from utils import assertEqual, Timing, DEVICE
 from modules import FC, AllConv, RelationalDRLNet
 from torch.distributions import Categorical
-import old_box_world
 import box_world
 import up_right
 import mlflow
@@ -198,38 +197,38 @@ class Eq2Net(nn.Module):
         return loss
 
 
-def train_abstractions(data, net, epochs, lr=1E-3):
-    print(f"net has {utils.num_params(net)} parameters")
+def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
-    print_every = epochs / 10
 
     net.train()
 
-    dataloader = DataLoader(data, batch_size=256, shuffle=False)
+    for epoch in range(epochs):
+        train_loss = 0
+        start = time.time()
+        for s_i_batch, actions_batch, lengths in dataloader:
+            optimizer.zero_grad()
+            s_i_batch = s_i_batch.to(DEVICE)
+            actions_batch = actions_batch.to(DEVICE)
+            loss = net(s_i_batch, actions_batch, lengths)
+            loss = torch.sum(loss)  # sum over batch
+            train_loss += loss
+            loss.backward()
+            optimizer.step()
 
-    model_name = 'model_1-21.pt'
-    try:
-        for epoch in range(epochs):
-            train_loss = 0
-            start = time.time()
-            for s_i_batch, actions_batch in dataloader:
-                s_i_batch = s_i_batch.to(DEVICE)
-                actions_batch = actions_batch.to(DEVICE)
-                optimizer.zero_grad()
-                loss = net(s_i_batch, actions_batch)
-                loss = torch.sum(loss)  # sum over batch
-                train_loss += loss
-                loss.backward()
-                optimizer.step()
+        
+        metrics = dict(
+            epoch=epoch,
+            loss=loss.item(),
+        )
+        mlflow.log_metrics(metrics, step=epoch)
 
-            if epoch % print_every == 0:
-                print(f"epoch: {epoch}\t"
-                      + f"train loss: {loss}\t"
-                      + f"({time.time() - start:.0f}s)")
+        if print_every and epoch % print_every == 0:
+            print(f"epoch: {epoch}\t"
+                  + f"train loss: {loss}\t"
+                  + f"({time.time() - start:.0f}s)")
 
-        utils.save_model(net, f'models/{model_name}')
-    except KeyboardInterrupt:
-        utils.save_model(net, f'models/{model_name}')
+        if save_every and epoch % save_every == 0:
+            utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
 
 
 def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -334,48 +333,7 @@ def sample_trajectories(net, data, full_abstract=False):
         print('-' * 10)
 
 
-def old_box_world_train():
-    print('generating trajectories')
-
-    env = old_box_world.make_env()
-    trajs = old_box_world.generate_box_world_data(n=10, env=env)
-    print('trajectories generated')
-    data = old_box_world.BoxworldData(trajs)
-
-    a = 4
-    b = 5
-    t = 10
-    tau_net = AllConv(output_dim=t, input_filters=3)
-    micro_net = AllConv(output_dim=b * a, input_filters=3)
-    stop_net = AllConv(output_dim=b * 2, input_filters=3)
-    start_net = FC(t, b, hidden_dim=128, num_hidden=2)
-    alpha_net = FC(t + b, t, hidden_dim=64, num_hidden=1)
-
-    abstract_policy_net = AbstractPolicyNet(
-        a, b, t,
-        tau_net,
-        micro_net,
-        stop_net,
-        start_net,
-        alpha_net)
-
-    net = Eq2Net(abstract_policy_net,
-                 abstract_penalty=0.001,
-                 consistency_ratio=1.0)
-
-    utils.load_model(net, f'models/model_12-2__20.pt')
-    train_abstractions(data, net, epochs=1)
-    # utils.save_model(net, f'models/model_12-2.pt')
-    old_box_world.sample_trajectories(net,
-                                      n=10,
-                                      env=env,
-                                      max_steps=data.max_steps + 10,
-                                      full_abstract=True,
-                                      render=True)
-
-
 def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100, test_every=1):
-    print('New box world environment')
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -389,14 +347,12 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
                                drlnet=drlnet,
                                epochs=epochs,
                                ))
-        if drlnet:
-            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                   num_attn_blocks=2,
-                                   num_heads=4,
-                                   out_dim=4).to(DEVICE)
+        net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                               num_attn_blocks=2,
+                               num_heads=4,
+                               out_dim=4).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
-
         print(f"Net has {utils.num_params(net)} parameters")
 
         try:
@@ -425,8 +381,7 @@ def box_world_sv_train(n=1000, epochs=100, drlnet=True, rounds=-1, num_test=100,
 
 
 def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
-    # does it HMM-style but without the abstract model
-    mlflow.set_experiment("Boxworld sv train2 ")
+    mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
         save_every = 1
@@ -440,14 +395,15 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    data = box_world.BoxWorldTrajDataset(env=env, n=n)
+                    data = box_world.BoxWorldDataset(env=env, n=n, traj=True)
+                dataloader = DataLoader(data, batch_size=256, shuffle=False)
 
-                train_abstractions(data, net, epochs=epochs, lr=1E-4)
+                train_abstractions(dataloader, net, epochs=epochs, lr=1E-4)
 
                 if test_every and round % test_every == 0:
                     with Timing("Evaluated model"):
                         env = box_world.BoxWorldEnv(seed=round)
-                        box_world.eval_model(net.abstract_policy_net.net, env, n=num_test)
+                        box_world.eval_model(net.control_net.net, env, n=num_test)
 
                 if round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
