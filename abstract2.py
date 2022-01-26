@@ -193,9 +193,14 @@ class HMMTrajNet(nn.Module):
         assertEqual((B, max_T+1), s_i_batch.shape[0:2])
         assert B == 1, 'for now stick with batch size 1'
 
-        s_i = s_i_batch.squeeze
-        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+        s_i = s_i_batch.squeeze(0)
+        actions = actions_batch.squeeze(0)
+        T = lengths[0]
+        s_i = s_i[:T+1]
+        actions = actions[:T]
+        
+        # (T+1, b, n), (T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i)
 
         f_0 = start_logps[0] + action_logps[0, :, actions[0]]
         f_prev = f_0
