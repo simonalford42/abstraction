@@ -66,10 +66,10 @@ def box_world_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    n = 5000
-    epochs = 500
+    n = 50
+    epochs = 50
     num_test = min(n, 100)
-    test_every = 1
+    test_every = False
 
     # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
     # utils.load_mlflow_model(net, "1537451d1ed84d089453e238d5d92011")
@@ -150,8 +150,8 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     hmm = False
-    n = 1
-    epochs = 1
+    n = 50
+    epochs = 50
     num_test = min(n, 100)
 
     if hmm:
@@ -175,11 +175,11 @@ def traj_box_world_batched_main():
         net = TrajNet(control_net)
 
     net = net.to(DEVICE)
-    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=1)
+    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=False, rounds=-1)
 
 
 if __name__ == '__main__':
     # up_right_main()
-    # box_world_main()
+    box_world_main()
     # batched_comparison()
-    traj_box_world_batched_main()
+    # traj_box_world_batched_main()

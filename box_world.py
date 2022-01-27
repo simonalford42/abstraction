@@ -518,6 +518,7 @@ class BoxWorldDataset(Dataset):
             self.traj_states, self.traj_moves), key=lambda t: t[0].shape[0]))
         assertEqual([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
+
     def __len__(self):
         if self.traj:
             return len(self.traj_states)
