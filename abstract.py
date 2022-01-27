@@ -257,7 +257,6 @@ def train_supervised(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=No
             states = states.to(DEVICE)
             actions = actions.to(DEVICE)
             pred = net(states)
-            pred = pred[:, :4]
             loss = criterion(pred, actions)
             train_loss += loss * states.shape[0]
             loss.backward()
@@ -359,8 +358,8 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                num_attn_blocks=2,
                                num_heads=4,
-                               # out_dim=4).to(DEVICE)
-                               out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
+                               out_dim=4).to(DEVICE)
+                               # out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
         print(f"Net has {utils.num_params(net)} parameters")
