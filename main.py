@@ -70,13 +70,14 @@ def box_world_main():
     epochs = 500
     num_test = min(n, 100)
     test_every = 1
+    lr = 1E-4
 
     # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII).to(DEVICE)
     # utils.load_mlflow_model(net, "1537451d1ed84d089453e238d5d92011")
     # box_world.eval_model(net, box_world.BoxWorldEnv(),
     #                      renderer=lambda obs: box_world.render_obs(obs, color=True, pause=0.001))
 
-    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1)
+    abstract.box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1, lr=lr)
 
 
 def batched_comparison():

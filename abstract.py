@@ -343,7 +343,7 @@ def sample_trajectories(net, data, full_abstract=False):
         print('-' * 10)
 
 
-def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
+def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4):
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -352,9 +352,13 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
         print_every = epochs / 5
         save_every = 1
 
-        mlflow.log_params(dict(model_load_run_id=model_load_run_id,
-                               epochs=epochs,
-                               ))
+        params = dict(model_load_run_id=model_load_run_id,
+                      n=n,
+                      epochs=epochs,
+                      lr=lr,
+                 )
+        print(f"params: {params}")
+        mlflow.log_params(params)
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                num_attn_blocks=2,
                                num_heads=4,
@@ -375,7 +379,7 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
                 print(f'{len(data)} examples')
                 dataloader = DataLoader(data, batch_size=256, shuffle=True)
 
-                train_supervised(dataloader, net, epochs=epochs, print_every=print_every)
+                train_supervised(dataloader, net, epochs=epochs, print_every=print_every, lr=lr)
 
                 if test_every and round % test_every == 0:
                     with Timing("Evaluated model"):
@@ -384,7 +388,7 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
                     utils.save_mlflow_model(net, overwrite=True)
 
                 round += 1
-                epochs = max(50, epochs - 25)
+                epochs = max(50, epochs - 50)
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)
 
