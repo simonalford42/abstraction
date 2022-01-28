@@ -144,13 +144,12 @@ class TrajNet(nn.Module):
         for i, length in enumerate(lengths):
             logp = torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
             choices = action_logps[i, :length, 0]
-            print(f'choices: {choices.shape}')
             preds = torch.argmax(choices, dim=1)
             correct = torch.sum(preds == actions_batch[i, :length])
             total_correct += correct
             total_logp += logp
 
-        return -total_logp, total_correct
+        return -total_logp # , total_correct
 
 
 class UnbatchedTrajNet(nn.Module):

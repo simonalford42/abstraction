@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+import queue
 from typing import Any, Optional, List, Tuple, Callable
 import gym
 import argparse
@@ -10,6 +12,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import einops
 from utils import assertEqual, POS, DEVICE
+from profiler import profile
 
 from pycolab.examples.research.box_world import box_world as bw
 
@@ -303,11 +306,15 @@ def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> 
     distances = {n: float('inf') for n in nodes}
     predecessors = {n: None for n in nodes}
     distances[start] = 0
+
+    unvisited_queue = queue.PriorityQueue()
     visited = set()
 
+    for n in nodes:
+        unvisited_queue.put((distances[n], n))
+
     def get_min_unvisited():
-        unvisited_dists = [(n, d) for (n, d) in distances.items() if n not in visited]
-        return min(unvisited_dists, key=lambda t: t[1])
+        return unvisited_queue.get()
 
     def get_path_to(node):
         path = [node]
@@ -318,17 +325,22 @@ def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> 
             path.append(node)
         return path[::-1]
 
-    while goal not in visited:
-        current, current_dist = get_min_unvisited()
+    goal_visited = False
+    while not goal_visited:
+        while True:
+            current_dist, current = get_min_unvisited()
+            if current not in visited:
+                break
 
         for neighbor, weight_from_current_to_neighbor in adj_matrix[current].items():
             neighbor_dist = distances[neighbor]
             alt_neighbor_dist = current_dist + weight_from_current_to_neighbor
             if alt_neighbor_dist < neighbor_dist:
-                assert neighbor not in visited
                 distances[neighbor] = alt_neighbor_dist
                 predecessors[neighbor] = current
+                unvisited_queue.put((alt_neighbor_dist, neighbor))
 
+        goal_visited = current == goal
         visited.add(current)
 
     return get_path_to(goal)
@@ -531,6 +543,12 @@ class BoxWorldDataset(Dataset):
             return self.states[i], self.moves[i]
 
 
+@profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)
+def profile_traj_generation2(env):
+    for i in range(50):
+        generate_traj(env)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play Box-World.')
     parser.add_argument(
@@ -573,5 +591,4 @@ if __name__ == '__main__':
     #     run_deepmind_ui(**vars(FLAGS))
 
     env = BoxWorldEnv(**vars(FLAGS))
-    while True:
-        generate_traj(env)
+    profile_traj_generation2(env)
