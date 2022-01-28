@@ -436,13 +436,13 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
             utils.save_mlflow_model(net, overwrite=True)
 
 
-def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1):
+def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4):
     mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
         print_every = epochs / 5
         save_every = 1
-        mlflow.log_params(dict(epochs=epochs))
+        mlflow.log_params(dict(epochs=epochs, lr=lr))
         print(f"Net has {utils.num_params(net)} parameters")
 
         try:
@@ -454,7 +454,7 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 with Timing("Generated trajectories"):
                     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=10)
 
-                train_abstractions(dataloader, net, epochs=epochs, lr=1E-4,
+                train_abstractions(dataloader, net, epochs=epochs, lr=lr,
                                    print_every=print_every)
 
                 if test_every and round % test_every == 0:
@@ -467,6 +467,5 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                     utils.save_mlflow_model(net, overwrite=True)
 
                 round += 1
-                epochs = max(50, epochs - 25)
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=True)

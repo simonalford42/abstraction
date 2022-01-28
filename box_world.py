@@ -544,14 +544,10 @@ class BoxWorldDataset(Dataset):
             return self.states[i], self.moves[i]
 
 
-<<<<<<< HEAD
-
-=======
 @profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)
 def profile_traj_generation2(env):
     for i in range(50):
         generate_traj(env)
->>>>>>> 8209f36984ba657d23fd04e62a2476aa9b5820ce
 
 
 if __name__ == '__main__':
