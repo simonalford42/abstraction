@@ -155,19 +155,21 @@ def traj_box_world_batched_main():
     epochs = 500
     num_test = min(n, 100)
 
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                        num_attn_blocks=2,
+                                        num_heads=4,
+                                        out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
+
     if hmm:
         print('hmm training!')
         abstract_policy_net = BatchedController(
             a=4,
-            b=20,
+            b=5,
+            net=relational_net,
         )
         net = HMMTrajNet(abstract_policy_net)
     else:
         print('traj-level training without hmm')
-        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                          num_attn_blocks=2,
-                                          num_heads=4,
-                                          out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
         control_net = BatchedController(
             a=4,
             b=1,
@@ -176,7 +178,11 @@ def traj_box_world_batched_main():
         net = TrajNet(control_net)
 
     net = net.to(DEVICE)
+<<<<<<< HEAD
     abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=True, rounds=-1)
+=======
+    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=-1)
+>>>>>>> 8209f36984ba657d23fd04e62a2476aa9b5820ce
 
 
 if __name__ == '__main__':

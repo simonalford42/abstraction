@@ -150,7 +150,7 @@ class TrajNet(nn.Module):
             total_correct += correct
             total_logp += logp
 
-        return -total_logp, total_correct
+        return -total_logp # , total_correct
 
 
 class UnbatchedTrajNet(nn.Module):
