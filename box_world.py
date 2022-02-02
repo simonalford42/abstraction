@@ -466,7 +466,7 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
             num_solved += 1
 
     print(f'Solved {num_solved}/{n} episodes')
-    net.train()
+    control_net.train()
     return solved
 
 

@@ -70,7 +70,7 @@ class Controller(nn.Module):
             (B, T, b) tensor of start logps,
         """
         if not self.batched:
-            return self.unbatched_forward(self, s_i_batch)
+            return self.unbatched_forward(s_i_batch)
 
         B, T, *s = s_i_batch.shape
         out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
@@ -107,7 +107,7 @@ class Controller(nn.Module):
 
         return action_logps, stop_logps, start_logps
 
-    def eval(self, s_i):
+    def eval_obs(self, s_i):
         """
         For evaluation when we act for a single state.
 
@@ -169,7 +169,6 @@ class TrajNet(nn.Module):
 
         returns: negative logp of all trajs in batch
         """
-        # return self.forward2(s_i_batch, actions_batch, lengths)
         B, max_T = actions_batch.shape[0:2]
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
@@ -222,6 +221,7 @@ class HMMTrajNet(nn.Module):
     def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
+        assert not control_net.batched
         self.b = control_net.b
 
     def forward(self, s_i_batch, actions_batch, lengths):

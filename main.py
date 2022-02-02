@@ -153,14 +153,13 @@ def traj_box_world_batched_main():
     utils.print_torch_device()
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    hmm = False
-    n = 5000
-    epochs = 100
-    num_test = 200
+    hmm = True
+    n = 10
+    epochs = 10
+    num_test = 0
     lr = 8E-4
-    rounds = 10
+    rounds = 1
     fix_seed = False
-
 
 
     if hmm:
@@ -174,7 +173,7 @@ def traj_box_world_batched_main():
             a=4,
             b=b,
             net=relational_net,
-            batched=True,
+            batched=False,
         )
         net = HMMTrajNet(control_net)
         batch_size=1

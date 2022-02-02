@@ -245,18 +245,18 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
-        total = 0
-        total_correct = 0
+        # total = 0
+        # total_correct = 0
         for s_i_batch, actions_batch, lengths in dataloader:
             optimizer.zero_grad()
             s_i_batch = s_i_batch.to(DEVICE)
             actions_batch = actions_batch.to(DEVICE)
 
-            loss, correct = net(s_i_batch, actions_batch, lengths)
-            # loss = net(s_i_batch, actions_batch, lengths)
+            # loss, correct = net(s_i_batch, actions_batch, lengths)
+            loss = net(s_i_batch, actions_batch, lengths)
 
-            total += sum(lengths)
-            total_correct += correct
+            # total += sum(lengths)
+            # total_correct += correct
 
             # want total loss here
             train_loss += loss
@@ -267,18 +267,18 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             loss.backward()
             optimizer.step()
 
-        acc = (total_correct / total).item()
+        # acc = (total_correct / total).item()
         metrics = dict(
             epoch=epoch,
             loss=loss.item(),
-            acc=acc,
+            # acc=acc,
         )
         mlflow.log_metrics(metrics, step=epoch)
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
                   + f"train loss: {train_loss}\t"
-                  + f"acc: {acc:.3f}\t"
+                  # + f"acc: {acc:.3f}\t"
                   + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
