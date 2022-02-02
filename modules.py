@@ -46,13 +46,13 @@ class RelationalDRLNet(nn.Module):
 
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                nn.BatchNorm1d(self.d),
+                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                nn.BatchNorm1d(self.d),
+                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                nn.BatchNorm1d(self.d),
+                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.out_dim),
@@ -64,9 +64,9 @@ class RelationalDRLNet(nn.Module):
         assert_equal(C, self.input_channels)
 
         x = self.conv1(x)
-        x = self.conv1_batchnorm(x)
+        # x = self.conv1_batchnorm(x)
         x = self.conv2(x)
-        x = self.conv2_batchnorm(x)
+        # x = self.conv2_batchnorm(x)
         x = F.relu(x)
         assert_equal(x.shape[-2:], (H, W))
 

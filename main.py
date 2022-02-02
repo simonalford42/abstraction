@@ -154,12 +154,12 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = False
-    n = 20
-    epochs = 600
-    num_test = 20
+    n = 5000
+    epochs = 100
+    num_test = 200
     lr = 8E-4
-    rounds = 1
-    fix_seed = True
+    rounds = 10
+    fix_seed = False
 
 
 
@@ -203,5 +203,7 @@ if __name__ == '__main__':
     # up_right_main()
     # box_world_main()
     # batched_comparison()
-    print('batch norm')
+    print('no fix seed')
+    # torch.manual_seed(10)
+    print('no batch norm')
     traj_box_world_batched_main()
