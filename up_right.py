@@ -1,6 +1,6 @@
 import torch
 import random
-from utils import assertEqual
+from utils import assert_equal
 import torch.nn.functional as F
 
 
@@ -91,7 +91,7 @@ class TrajData():
 
     def make_points(traj):
         trace = exec_traj(traj)
-        assertEqual(len(trace), len(traj) + 1)
+        assert_equal(len(trace), len(traj) + 1)
         goal = trace[-1]
 
         # list of ((x, y, x_goal, y_goal), move) tuples
@@ -116,9 +116,9 @@ class TrajData():
         """
         s = torch.cat([torch.tensor([coord]) for coord in s])
         s = F.one_hot(s, num_classes=self.max_coord + 1).to(torch.float)
-        assertEqual(s.shape, (4, self.max_coord + 1))
+        assert_equal(s.shape, (4, self.max_coord + 1))
         s = s.flatten()
-        assertEqual(s.shape, (4 * (self.max_coord + 1), ))
+        assert_equal(s.shape, (4 * (self.max_coord + 1), ))
         return s
 
     def embed_points(self, points):

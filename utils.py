@@ -87,11 +87,15 @@ class Timing(object):
         print(f"{message} in {dt:.1f} seconds")
 
 
-def assertEqual(a, b):
+def assert_equal(a, b):
     if np.ndarray in [type(a), type(b)]:
         assert np.array_equal(a, b), f'a != b: a:{a}, b:{b}'
     else:
         assert a == b, f'a != b: a:{a}, b:{b}'
+
+def assert_shape(a: torch.Tensor, shape: tuple):
+    assert_equal(a.shape, shape)
+
 
 
 def num_params(model):

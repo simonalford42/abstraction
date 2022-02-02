@@ -2,42 +2,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 import einops
-from utils import assertEqual, DEVICE
+from utils import assert_equal, DEVICE
 import torch
 from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
 import math
 
 
 class VanillaController(nn.Module):
-    def __init__(self, a, net):
+    def __init__(self, a, net, batched: bool = False):
         super().__init__()
         self.a = a
         self.b = 1
         self.net = net
-
-    def forward(self, s_i):
-        """
-        s_i: (T, *s) tensor of states
-        outputs:
-            (T, 1, a) tensor of action logps,
-            None for stop logps,
-            None for start logps
-        """
-        T = s_i.shape[0]
-        action_logps = self.net(s_i)
-        assertEqual(action_logps.shape, (T, self.a))
-        action_logps = F.log_softmax(action_logps, dim=1)
-        action_logps = rearrange(action_logps, 'T a -> T 1 a')
-
-        return action_logps, None, None
-
-
-class BatchedVanillaController(nn.Module):
-    def __init__(self, a, net):
-        super().__init__()
-        self.a = a
-        self.b = 1
-        self.net = net
+        self.batched = batched
 
     def forward(self, s_i_batch):
         """
@@ -47,51 +24,41 @@ class BatchedVanillaController(nn.Module):
             None for stop logps,
             None for start logps
         """
+        if not self.batched:
+            return self.forward_unbatched(self, s_i_batch)
+
         B, T, *s = s_i_batch.shape
         action_logps = self.net(s_i_batch.reshape(B * T, *s))
-        assertEqual(action_logps.shape, (B * T, self.a))
+        assert_equal(action_logps.shape, (B * T, self.a))
         action_logps = F.log_softmax(action_logps, dim=1)
         action_logps = action_logps.reshape(B, T, 1, self.a)
 
         return action_logps, None, None
 
+    def forward_unbatched(self, s_i):
+        """
+        s_i: (t, *s) tensor of states
+        outputs:
+            (t, 1, a) tensor of action logps,
+            none for stop logps,
+            none for start logps
+        """
+        t = s_i.shape[0]
+        action_logps = self.net(s_i)
+        assertequal(action_logps.shape, (t, self.a))
+        action_logps = f.log_softmax(action_logps, dim=1)
+        action_logps = rearrange(action_logps, 't a -> t 1 a')
+
+        return action_logps, none, none
+
 
 class Controller(nn.Module):
-    def __init__(self, a, b, net):
+    def __init__(self, a, b, net, batched: bool = False):
         super().__init__()
         self.a = a
         self.b = b
         self.net = net
-
-    def forward(self, s_i):
-        """
-        s_i: (T, s) tensor of states
-        outputs:
-            (T, b, a) tensor of action logps
-            (T, b, 2) tensor of stop logps,
-            (T, b) tensor of start logps
-        """
-        T = s_i.shape[0]
-        out = self.net(s_i)
-        assertEqual(out.shape, (T, self.a * self.b + 2 * self.b + self.b))
-        action_logits = out[:, :self.b * self.a].reshape(T, self.b, self.a)
-        stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(T, self.b, 2)
-        start_logits = out[:, self.b * self.a + 2 * self.b:]
-        assertEqual(start_logits.shape[1], self.b)
-
-        action_logps = F.log_softmax(action_logits, dim=2)
-        stop_logps = F.log_softmax(stop_logits, dim=2)
-        start_logps = F.log_softmax(start_logits, dim=1)
-
-        return action_logps, stop_logps, start_logps
-
-
-class BatchedController(nn.Module):
-    def __init__(self, a, b, net):
-        super().__init__()
-        self.a = a
-        self.b = b
-        self.net = net
+        self.batched = batched
 
     def forward(self, s_i_batch):
         """
@@ -102,18 +69,58 @@ class BatchedController(nn.Module):
             (B, T, b, 2) tensor of stop logps,
             (B, T, b) tensor of start logps,
         """
+        if not self.batched:
+            return self.unbatched_forward(self, s_i_batch)
+
         B, T, *s = s_i_batch.shape
         out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
-        assertEqual(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
+        assert_equal(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
         action_logits = out[:, :, :self.b * self.a].reshape(B, T, self.b, self.a)
         stop_logits = out[:, :, self.b * self.a:self.b * self.a + 2 * self.b].reshape(B, T, self.b, 2)
         start_logits = out[:, :, self.b * self.a + 2 * self.b:]
-        assertEqual(start_logits.shape[-1], self.b)
+        assert_equal(start_logits.shape[-1], self.b)
         action_logps = F.log_softmax(action_logits, dim=3)
         stop_logps = F.log_softmax(stop_logits, dim=3)
         start_logps = F.log_softmax(start_logits, dim=2)
 
         return action_logps, stop_logps, start_logps
+
+    def unbatched_forward(self, s_i):
+        """
+        s_i: (T, s) tensor of states
+        outputs:
+            (T, b, a) tensor of action logps
+            (T, b, 2) tensor of stop logps,
+            (T, b) tensor of start logps
+        """
+        T = s_i.shape[0]
+        out = self.net(s_i)
+        assert_equal(out.shape, (T, self.a * self.b + 2 * self.b + self.b))
+        action_logits = out[:, :self.b * self.a].reshape(T, self.b, self.a)
+        stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(T, self.b, 2)
+        start_logits = out[:, self.b * self.a + 2 * self.b:]
+        assert_equal(start_logits.shape[1], self.b)
+
+        action_logps = F.log_softmax(action_logits, dim=2)
+        stop_logps = F.log_softmax(stop_logits, dim=2)
+        start_logps = F.log_softmax(start_logits, dim=1)
+
+        return action_logps, stop_logps, start_logps
+
+    def eval(self, s_i):
+        """
+        For evaluation when we act for a single state.
+
+        s_i: (s, ) tensor
+
+        Returns:
+            (b, a) tensor of action logps
+            (b, 2) tensor of stop logps
+            (b, ) tensor of start logps
+        """
+        # (1, b, a), (1, b, 2), (1, b)
+        action_logps, stop_logps, start_logps = self.unbatched_forward(rearrange(s_i,  's -> 1 s')) 
+        return action_logps[0], stop_logps[0], start_logps[0]
 
 
 class TrajNet(nn.Module):
@@ -134,7 +141,7 @@ class TrajNet(nn.Module):
         returns: negative logp of all trajs in batch
         """
         B, max_T = actions_batch.shape[0:2]
-        assertEqual((B, max_T+1), s_i_batch.shape[0:2])
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
@@ -145,7 +152,7 @@ class TrajNet(nn.Module):
             logp = torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
             choices = action_logps[i, :length, 0]
             preds = torch.argmax(choices, dim=1)
-            assertEqual(preds.shape, actions_batch[i, :length].shape)
+            assert_equal(preds.shape, actions_batch[i, :length].shape)
             correct = torch.sum(preds == actions_batch[i, :length])
             total_correct += correct
             total_logp += logp
@@ -170,7 +177,7 @@ class UnbatchedTrajNet(nn.Module):
         outputs: negative logp of sequence
         """
         T = actions.shape[0]
-        assertEqual(T+1, s_i.shape[0])
+        assert_equal(T+1, s_i.shape[0])
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i)
@@ -196,7 +203,7 @@ class HMMTrajNet(nn.Module):
         returns: negative logp of all trajs in batch
         """
         B, max_T = actions_batch.shape[0:2]
-        assertEqual((B, max_T+1), s_i_batch.shape[0:2])
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
         assert B == 1, 'for now stick with batch size 1'
 
         s_i = s_i_batch.squeeze(0)
@@ -218,10 +225,10 @@ class HMMTrajNet(nn.Module):
                           + trans_fn
                           + rearrange(action_logps[i, :, action], 'b -> 1 b'))
             f = torch.logsumexp(f_unsummed, axis=0)
-            assertEqual(f.shape, (self.b, ))
+            assert_equal(f.shape, (self.b, ))
             f_prev = f
 
-        assertEqual(T+1, stop_logps.shape[0])
+        assert_equal(T+1, stop_logps.shape[0])
         total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
         return -total_logp
 
@@ -244,7 +251,7 @@ class UnbatchedHMMTrajNet(nn.Module):
         HMM calculation, building off Smith et al. 2018.
         """
         T = len(actions)
-        assertEqual(s_i.shape[0], T + 1)
+        assert_equal(s_i.shape[0], T + 1)
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i)
 
@@ -258,10 +265,10 @@ class UnbatchedHMMTrajNet(nn.Module):
                           + trans_fn
                           + rearrange(action_logps[i, :, action], 'b -> 1 b'))
             f = torch.logsumexp(f_unsummed, axis=0)
-            assertEqual(f.shape, (self.b, ))
+            assert_equal(f.shape, (self.b, ))
             f_prev = f
 
-        assertEqual(T+1, stop_logps.shape[0])
+        assert_equal(T+1, stop_logps.shape[0])
         total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
         return -total_logp
 
@@ -303,15 +310,15 @@ def forward_test():
     # stop goes first when concatenating
     assert STOP_NET_STOP_IX == 0
     stop_probs = torch.stack((stop_probs, one_minus_stop_probs))
-    assertEqual(stop_probs.shape, (2, s, b))
+    assert_equal(stop_probs.shape, (2, s, b))
     stop_probs = rearrange(stop_probs, 't b s -> s b t')
     stop_probs = torch.stack([stop_probs[s] for s in s_i])
-    assertEqual(stop_probs.shape, (4, b, 2))
+    assert_equal(stop_probs.shape, (4, b, 2))
 
     start_probs = torch.tensor([[0.5, 0.4], [0.5, 0.6]])
     start_probs = rearrange(start_probs, 'b s -> s b')
     start_probs = torch.stack([start_probs[s] for s in s_i])
-    assertEqual(start_probs.shape, (4, b))
+    assert_equal(start_probs.shape, (4, b))
 
     class APN():
         def __init__(self):
@@ -337,7 +344,7 @@ def viterbi(hmm: HMMTrajNet, s_i, actions):
     """
     T = len(actions)
     b = hmm.b
-    assertEqual(s_i.shape[0], T + 1)
+    assert_equal(s_i.shape[0], T + 1)
     # (T+1, b, n), (T+1, b, 2), (T+1, b)
     action_logps, stop_logps, start_logps = hmm.control_net(s_i)
 

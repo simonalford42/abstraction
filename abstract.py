@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import torch
 import utils
-from utils import assertEqual, Timing, DEVICE
+from utils import assert_equal, Timing, DEVICE
 from modules import RelationalDRLNet, abstract_out_dim
 from torch.distributions import Categorical
 import box_world
@@ -83,12 +83,12 @@ class AbstractPolicyNet(nn.Module):
         nb = bs.shape[0]
         # calculate transition for each t_i + b pair
         t_i2 = t_i.repeat_interleave(nb, dim=0)  # (T*nb, t)
-        assertEqual(t_i2.shape, (T * nb, self.t))
+        assert_equal(t_i2.shape, (T * nb, self.t))
         b_onehots = F.one_hot(bs, num_classes=self.b).repeat(T, 1)  # (T*nb, b)
-        assertEqual(b_onehots.shape, (T * nb, self.b))
+        assert_equal(b_onehots.shape, (T * nb, self.b))
         # b is "less significant', changes in 'inner loop'
         t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
-        assertEqual(t_i2.shape, (T * nb, self.t + self.b))
+        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
         # (T * nb, t + b) -> (T * nb, t)
         t_i2 = self.alpha_net(t_i2)
         return t_i2.reshape(T, nb, self.t)
@@ -102,7 +102,7 @@ class AbstractPolicyNet(nn.Module):
         t_i2 = t_i.reshape(1, T, 1, self.t)
         # (start, end, action, t value)
         penalty = (t_i2 - alpha_trans)**2
-        assertEqual(penalty.shape, (T, T, self.b, self.t))
+        assert_equal(penalty.shape, (T, T, self.b, self.t))
         # L1 norm
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
@@ -136,7 +136,7 @@ class Eq2Net(nn.Module):
             - uses this to calculate expected
         """
         T = len(actions)
-        assertEqual(s_i.shape[0], T + 1)
+        assert_equal(s_i.shape[0], T + 1)
         # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
         t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
 
@@ -176,7 +176,7 @@ class Eq2Net(nn.Module):
 
                 # causal consistency penalty; start up to current timestep, end here,
                 consistency_pens = consistency_penalties[:i + 1, i, :]  # (i+1, b)
-                assertEqual(consistency_pens.shape, (i + 1, self.b))
+                assert_equal(consistency_pens.shape, (i + 1, self.b))
                 consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
                 # TODO: this needs to be a logsumexp
                 total_consistency_penalty += consistency_penalty
@@ -451,7 +451,7 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
             round = 0
             while round != rounds:
                 print(f'Round {round}')
-                env = box_world.BoxWorldEnv(seed=round)
+                # env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
                     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
@@ -462,9 +462,11 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 if test_every and round % test_every == 0:
                     if net.b != 1:
                         print('skipping testing abstract model since b != 1')
+                        with Timing("Evaluated model"):
+                            box_world.eval_options_model(net.control_net, env, n=num_test)
                     else:
                         with Timing("Evaluated model"):
-                            env = box_world.BoxWorldEnv(seed=round)
+                            # env = box_world.BoxWorldEnv(seed=round)
                             box_world.eval_model(lambda x: net.control_net.net(x)[:, :4], env, n=num_test)
 
                 if save_every and round % save_every == 0:

@@ -3,7 +3,7 @@ import random
 import torch.nn.functional as F
 from torch.utils.data import Dataset  # , DataLoader
 import utils
-from utils import assertEqual
+from utils import assert_equal
 from torch.distributions import Categorical
 
 
@@ -104,7 +104,7 @@ class ArrowData(Dataset):
 
     def make_points(traj):
         trace = ArrowData.exec_traj(traj)
-        assertEqual(len(trace), len(traj) + 1)
+        assert_equal(len(trace), len(traj) + 1)
         goal = trace[-1]
 
         # list of ((x, y, x_goal, y_goal), move) tuples

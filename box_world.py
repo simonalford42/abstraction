@@ -11,8 +11,9 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import einops
-from utils import assertEqual, POS, DEVICE
+from utils import assert_equal, POS, DEVICE
 from profiler import profile
+from torch.distributions import Categorical
 
 from pycolab.examples.research.box_world import box_world as bw
 
@@ -122,7 +123,7 @@ def ascii_to_color(ascii: str):
         colors = ['brown', 'maroon', 'red', 'orangered', 'orange',
                   'yellow', 'gold', 'olive', 'greenyellow', 'limegreen', 'green', 'darkgreen', 'cyan',
                   'dodgerblue', 'blue', 'darkblue', 'indigo', 'purple', 'magenta', 'violet']
-        assertEqual(len(colors), len(s))
+        assert_equal(len(colors), len(s))
         return color_name_to_rgb(colors[i])
 
 
@@ -135,7 +136,7 @@ def to_color_obs(obs):
     return np.array([[ascii_to_color(a) for a in row] for row in obs])
 
 
-def render_obs(obs, color=True, pause=0.0001):
+def render_obs(obs, option=None, color=True, pause=0.0001):
     """
     With color=True, makes a plot.
     With color=False, prints ascii to command line.
@@ -147,9 +148,12 @@ def render_obs(obs, color=True, pause=0.0001):
         fig = plt.figure(0)
         plt.clf()
         plt.imshow(color_array / 255)
+        if option is not None:
+            plt.title(f'option={option}')
         fig.canvas.draw()
         plt.pause(pause)
     else:
+        print(f'option={option}')
         for row in obs:
             print(''.join(row))
 
@@ -418,29 +422,64 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None):
+def eval_options_model(control_net, env, n=100, renderer: Callable = None):
     """
     renderer is a callable that takes in obs.
     """
     print(f'Evaluating model on {n} episodes')
     num_solved = 0
-    solved_lens = []
-    for i in range(n):
-        # obss = []
-        found_keys = set()
-        obs = env.reset()
-        # render_obs(obs, pause=0.25)
-        # obss.append(obs)
 
+    for i in range(n):
+        obs = env.reset()
         done, solved = False, False
         t = 0
+        options = []
+
+        current_option = None
+
+        while not (done or solved):
+            t += 1
+            if renderer is not None:
+                renderer(obs, current_option)
+            obs = obs_to_tensor(obs)
+            obs = obs.to(DEVICE)
+            # (b, a), (b, 2), (b, )
+            action_logps, stop_logps, start_logps = control_net.eval(obs)
+
+            if current_option is not None:
+                stop = Categorical(logits=stop_logps).sample().item()
+            if current_option is None or stop:
+                current_option = Categorical(logits=start_logps).sample().item()
+            options.append(current_option.item())
+
+            a = Categorical(logits=action_logps[current_option]).sample().item()
+            obs, rew, done, info = env.step(a)
+            solved = rew == bw.REWARD_GOAL
+
+        print(f"options: {options}")
+        if solved:
+            num_solved += 1
+
+    print(f'Solved {num_solved}/{n} episodes')
+    return solved
+
+
+def eval_model(net, env, n=100, renderer: Callable = None):
+    """
+    renderer is a callable that takes in obs.
+    """
+    print(f'Evaluating model on {n} episodes')
+    num_solved = 0
+
+    for i in range(n):
+        obs = env.reset()
+        done, solved = False, False
+        t = 0
+
         while not (done or solved):
             t += 1
             if renderer is not None:
                 renderer(obs)
-                # obss.append(obs)
-            if obs[0, 0].isalpha():
-                found_keys.add(obs[0, 0])
             obs = obs_to_tensor(obs)
             obs = einops.rearrange(obs, 'c h w -> 1 c h w')
             obs = obs.to(DEVICE)
@@ -454,16 +493,8 @@ def eval_model(net, env, n=100, argmax: bool = False, renderer: Callable = None)
 
         if solved:
             num_solved += 1
-            # print(num_solved)
-            solved_lens.append(t)
-        else:
-            pass
-            # render_obs(obss[0], pause=1)
-            # for obs in obss[1:]:
-            #     render_obs(obs, pause=0.1)
 
-    avg_steps = 0 if not num_solved else sum(solved_lens) / num_solved
-    print(f'Solved {num_solved}/{n} episodes; avg steps taken in solved episodes: {avg_steps:.1f}')
+    print(f'Solved {num_solved}/{n} episodes')
     return solved
 
 
@@ -471,7 +502,7 @@ def obs_to_tensor(obs) -> torch.Tensor:
     obs = torch.tensor([[ascii_to_int(a) for a in row]
                        for row in obs])
     obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
-    assertEqual(obs.shape[-1], NUM_ASCII)
+    assert_equal(obs.shape[-1], NUM_ASCII)
     obs = einops.rearrange(obs, 'h w c -> c h w')
     return obs
 
@@ -490,8 +521,8 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
         to_add = max_T - T
         states2 = torch.cat((states, torch.zeros((to_add, *s))))
         moves2 = torch.cat((moves, torch.zeros(to_add, dtype=int)))
-        assertEqual(states2.shape, (max_T + 1, *s))
-        assertEqual(moves2.shape, (max_T, ))
+        assert_equal(states2.shape, (max_T + 1, *s))
+        assert_equal(moves2.shape, (max_T, ))
         states_batch.append(states2)
         moves_batch.append(moves2)
         lengths.append(length)
@@ -521,14 +552,14 @@ class BoxWorldDataset(Dataset):
         self.states = [obs_to_tensor(s)
                        for states, _ in self.data for s in states[:-1]]
         self.moves = [torch.tensor(m) for _, moves in self.data for m in moves]
-        assertEqual(len(self.states), len(self.moves))
+        assert_equal(len(self.states), len(self.moves))
 
         self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
 
         self.traj_states, self.traj_moves = zip(*sorted(zip(
             self.traj_states, self.traj_moves), key=lambda t: t[0].shape[0]))
-        assertEqual([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
+        assert_equal([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
 
     def __len__(self):

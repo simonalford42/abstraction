@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import einops
-from utils import assertEqual, DEVICE
+from utils import assert_equal, DEVICE
 
 
 class Print(nn.Module):
@@ -55,21 +55,21 @@ class RelationalDRLNetOld(nn.Module):
     def forward(self, x):
         # input: (N, C, H, W)
         (N, C, H, W) = x.shape
-        assertEqual(C, self.input_channels)
+        assert_equal(C, self.input_channels)
         x = self.conv1(x)
         x = self.conv2(x)
         x = F.relu(x)
-        assertEqual(x.shape[-2:], (H, W))
+        assert_equal(x.shape[-2:], (H, W))
 
         x = self.add_positions(x)
         x = einops.rearrange(x, 'n c h w -> n (h w) c')
         x = self.pre_attn_linear(x)
-        assertEqual(x.shape, (N, H*W, self.d))
+        assert_equal(x.shape, (N, H*W, self.d))
 
         for _ in range(self.num_attn_blocks):
             x = x + self.attn_block(x, x, x, need_weights=False)[0]
             x = F.layer_norm(x, (self.d,))
-            assertEqual(x.shape, (N, H*W, self.d))
+            assert_equal(x.shape, (N, H*W, self.d))
 
         x = einops.reduce(x, 'n l d -> n d', 'max')
 
@@ -85,15 +85,15 @@ class RelationalDRLNetOld(nn.Module):
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
         y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
-        assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
-        assertEqual((x_map[0], y_map[0]), (-1., -1.,))
-        assertEqual(y_map.shape[0], H)
-        assertEqual(x_map.shape[0], W)
+        assert_equal((x_map[-1], y_map[-1]), (1., 1.,))
+        assert_equal((x_map[0], y_map[0]), (-1., -1.,))
+        assert_equal(y_map.shape[0], H)
+        assert_equal(x_map.shape[0], W)
         x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
         y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
         # wonder if there could be a good way to do with einops
         inp = torch.cat((inp, x_map, y_map), dim=1)
-        assertEqual(inp.shape, (N, C+2, H, W))
+        assert_equal(inp.shape, (N, C+2, H, W))
         return inp
 
 
@@ -128,22 +128,22 @@ class RelationalDRLNet(nn.Module):
     def forward(self, x):
         # input: (N, C, H, W)
         (N, C, H, W) = x.shape
-        assertEqual(C, self.input_channels)
+        assert_equal(C, self.input_channels)
 
         x = self.conv1(x)
         x = self.conv2(x)
         x = F.relu(x)
-        assertEqual(x.shape[-2:], (H, W))
+        assert_equal(x.shape[-2:], (H, W))
 
         x = self.add_positions(x)
         x = einops.rearrange(x, 'n c h w -> n (h w) c')
         x = self.pre_attn_linear(x)
-        assertEqual(x.shape, (N, H*W, self.d))
+        assert_equal(x.shape, (N, H*W, self.d))
 
         for _ in range(self.num_attn_blocks):
             x = x + self.attn_block(x, x, x, need_weights=False)[0]
             x = F.layer_norm(x, (self.d,))
-            assertEqual(x.shape, (N, H*W, self.d))
+            assert_equal(x.shape, (N, H*W, self.d))
 
         x = einops.reduce(x, 'n l d -> n d', 'max')
         x = self.fc(x)
@@ -158,15 +158,15 @@ class RelationalDRLNet(nn.Module):
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
         y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
-        assertEqual((x_map[-1], y_map[-1]), (1., 1.,))
-        assertEqual((x_map[0], y_map[0]), (-1., -1.,))
-        assertEqual(y_map.shape[0], H)
-        assertEqual(x_map.shape[0], W)
+        assert_equal((x_map[-1], y_map[-1]), (1., 1.,))
+        assert_equal((x_map[0], y_map[0]), (-1., -1.,))
+        assert_equal(y_map.shape[0], H)
+        assert_equal(x_map.shape[0], W)
         x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
         y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
         # wonder if there could be a good way to do with einops
         inp = torch.cat((inp, x_map, y_map), dim=1)
-        assertEqual(inp.shape, (N, C+2, H, W))
+        assert_equal(inp.shape, (N, C+2, H, W))
         return inp
 
 

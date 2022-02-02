@@ -1,5 +1,5 @@
 import math
-from utils import assertEqual
+from utils import assert_equal
 from scipy.special import logsumexp
 import unittest
 import numpy as np
@@ -20,14 +20,14 @@ def forward(init_dist, trans_fn, obs_dist, obs):
     probability of the observation up to time t given the t'th state is i.
     """
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
     p_obs_at_t_given_state = obs_dist[:, obs].transpose()
@@ -57,14 +57,14 @@ def forward_log(init_dist, trans_fn, obs_dist, obs):
     probability of the observation up to time t given the t'th state is i.
     """
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     trans_fn = np.log(trans_fn)
     obs_dist = np.log(obs_dist)
@@ -102,14 +102,14 @@ def backward(init_dist, trans_fn, obs_dist, obs):
     and total_prob is the total probability
     """
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
     p_obs_at_t_given_state = obs_dist[:, obs].transpose()
@@ -139,14 +139,14 @@ def backward_log(init_dist, trans_fn, obs_dist, obs):
     log probability of the observation from t+1 onwards given the t'th state is i.
     """
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     trans_fn = np.log(trans_fn)
     obs_dist = np.log(obs_dist)
@@ -169,14 +169,14 @@ def backward_log(init_dist, trans_fn, obs_dist, obs):
 
 def viterbi(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
     p_obs_at_t_given_state = obs_dist[:, obs].transpose()
@@ -202,14 +202,14 @@ def viterbi(init_dist, trans_fn, obs_dist, obs):
 
 def fw_bw(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
     p_obs_at_t_given_state = obs_dist[:, obs].transpose()
@@ -223,9 +223,9 @@ def fw_bw(init_dist, trans_fn, obs_dist, obs):
     p_obs = p_obss[0]
 
     gamma = (alpha * beta) / p_obs
-    assertEqual(gamma.shape, (T, b))
+    assert_equal(gamma.shape, (T, b))
     xi_numerator = np.einsum('ti, ij, tj, tj -> tij', alpha[:-1], trans_fn, p_obs_at_t_given_state[1:], beta[1:])
-    assertEqual(xi_numerator.shape, (T-1, b, b))
+    assert_equal(xi_numerator.shape, (T-1, b, b))
     xi = xi_numerator / p_obs
 
     new_trans_fn_denom = np.sum(gamma[:-1], axis=0)
@@ -236,10 +236,10 @@ def fw_bw(init_dist, trans_fn, obs_dist, obs):
     new_trans_fn = np.sum(xi, axis=0) / new_trans_fn_denom[:, np.newaxis]
 
     obs_indicator = (obs == np.arange(a)[:, np.newaxis]).transpose()
-    assertEqual(obs_indicator.shape, (T, a))
+    assert_equal(obs_indicator.shape, (T, a))
 
     new_obs_dist = np.einsum('ta, tb -> ba', obs_indicator, gamma) / np.einsum('ti -> i', gamma)[:, np.newaxis]
-    assertEqual(new_obs_dist.shape, (b, a))
+    assert_equal(new_obs_dist.shape, (b, a))
 
     np.testing.assert_almost_equal(np.sum(new_init_dist, axis=0), 1)
     np.testing.assert_almost_equal(np.sum(new_trans_fn, axis=1), np.ones(b))
@@ -250,14 +250,14 @@ def fw_bw(init_dist, trans_fn, obs_dist, obs):
 
 def viterbi_log(init_dist, trans_fn, obs_dist, obs):
     (b, ) = init_dist.shape
-    assertEqual(trans_fn.shape, (b, b))
-    assertEqual(obs_dist.shape[0], b)
+    assert_equal(trans_fn.shape, (b, b))
+    assert_equal(obs_dist.shape[0], b)
     # a = obs_dist.shape[1]
     (T, ) = obs.shape
 
-    assertEqual(sum(init_dist), 1)
-    assertEqual(np.sum(trans_fn, axis=1), np.ones(b))
-    assertEqual(np.sum(obs_dist, axis=1), np.ones(b))
+    assert_equal(sum(init_dist), 1)
+    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
+    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
 
     # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
     p_obs_at_t_given_state = obs_dist[:, obs].transpose()
@@ -301,7 +301,7 @@ class HMMTest(unittest.TestCase):
         target_p = 0.25 * 0.75 * 0.75
 
         self.assertTrue(np.array_equal(fw_out, target))
-        self.assertEqual(p, target_p)
+        self.assert_equal(p, target_p)
 
         out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
         self.assertTrue(np.allclose(out2, np.log(fw_out)))
@@ -314,7 +314,7 @@ class HMMTest(unittest.TestCase):
 
         np.testing.assert_array_equal(bw_out, target)
         self.assertTrue(np.array_equal(bw_out, target))
-        self.assertEqual(p, target_p)
+        self.assert_equal(p, target_p)
 
         out2, p2 = backward_log(init_dist, trans_fn, obs_dist, obs)
         np.testing.assert_allclose(out2, np.log(bw_out))
@@ -326,8 +326,8 @@ class HMMTest(unittest.TestCase):
         most_likely = [0, 0, 0]
         v = viterbi(init_dist, trans_fn, obs_dist, obs)
         v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertEqual(list(v), most_likely)
-        self.assertEqual(list(v2), most_likely)
+        self.assert_equal(list(v), most_likely)
+        self.assert_equal(list(v2), most_likely)
 
     def test2(self):
         # b = 2, a = 2
@@ -341,7 +341,7 @@ class HMMTest(unittest.TestCase):
         target_p = 0.75 * 0.75
 
         self.assertTrue(np.array_equal(fw_out, target))
-        self.assertEqual(p, target_p)
+        self.assert_equal(p, target_p)
 
         out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
         self.assertTrue(np.allclose(out2, np.log(fw_out)))
@@ -353,8 +353,8 @@ class HMMTest(unittest.TestCase):
         most_likely = [1, 0]
         v = viterbi(init_dist, trans_fn, obs_dist, obs)
         v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertEqual(list(v), most_likely)
-        self.assertEqual(list(v2), most_likely)
+        self.assert_equal(list(v), most_likely)
+        self.assert_equal(list(v2), most_likely)
 
     def test3(self):
         # b = 2, a = 2
@@ -369,7 +369,7 @@ class HMMTest(unittest.TestCase):
         target_p = 0.5 * 0.75 * 0.75
 
         self.assertTrue(np.array_equal(fw_out, target))
-        self.assertEqual(p, target_p)
+        self.assert_equal(p, target_p)
 
         bw_out, _ = backward(init_dist, trans_fn, obs_dist, obs)
         self.check_fw_bw(fw_out, bw_out)
@@ -381,8 +381,8 @@ class HMMTest(unittest.TestCase):
         most_likely = [0, 0]
         v = viterbi(init_dist, trans_fn, obs_dist, obs)
         v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertEqual(list(v), most_likely)
-        self.assertEqual(list(v2), most_likely)
+        self.assert_equal(list(v), most_likely)
+        self.assert_equal(list(v2), most_likely)
 
     def test4(self):
         trans_fn = np.array([[0.6, 0.4], [0.3, 0.7]])
@@ -421,8 +421,8 @@ class HMMTest(unittest.TestCase):
         most_likely = [0, 0, 0, 0]
         v = viterbi(init_dist, trans_fn, obs_dist, obs)
         v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertEqual(list(v), most_likely)
-        self.assertEqual(list(v2), most_likely)
+        self.assert_equal(list(v), most_likely)
+        self.assert_equal(list(v2), most_likely)
 
         fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
         bw_out, p2 = backward(init_dist, trans_fn, obs_dist, obs)

@@ -150,7 +150,7 @@ def traj_box_world_batched_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    hmm = True
+    hmm = False
     n = 2000
     epochs = 50
     num_test = 200
@@ -170,6 +170,7 @@ def traj_box_world_batched_main():
             a=4,
             b=b,
             net=relational_net,
+            batched=False,
         )
         net = HMMTrajNet(abstract_policy_net)
         batch_size=1
@@ -179,10 +180,11 @@ def traj_box_world_batched_main():
                                           num_attn_blocks=2,
                                           num_heads=4,
                                           out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
-        control_net = BatchedController(
+        control_net = Controller(
             a=4,
             b=1,
             net=relational_net,
+            batched=True,
         )
         net = TrajNet(control_net)
         batch_size=10
