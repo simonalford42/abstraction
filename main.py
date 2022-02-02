@@ -154,10 +154,10 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = False
-    n = 1
-    epochs = 5
-    num_test = 50
-    lr = 0
+    n = 20
+    epochs = 600
+    num_test = 20
+    lr = 8E-4
     rounds = 1
     fix_seed = True
 
