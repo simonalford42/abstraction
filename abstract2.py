@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 import einops
-from utils import assertEqual
+from utils import assertEqual, DEVICE
 import torch
 from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
 import math
@@ -280,11 +280,11 @@ def calc_trans_fn(stop_logps, start_logps, i):
     beta = stop_logps[i, :, STOP_NET_STOP_IX]  # (b,)
     one_minus_beta = stop_logps[i, :, STOP_NET_CONTINUE_IX]  # (b,)
 
-    continue_trans_fn = torch.full((b, b), float('-inf'))
+    continue_trans_fn = torch.full((b, b), float('-inf'), device=DEVICE)
     continue_trans_fn[torch.arange(b), torch.arange(b)] = one_minus_beta
     trans_fn = torch.logaddexp(rearrange(beta, 'b -> b 1') + rearrange(start_logps[i], 'b -> 1 b'),
                                continue_trans_fn)
-    assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(b), atol=1E-6)
+    assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(b, device=DEVICE), atol=1E-6)
     return trans_fn
 
 

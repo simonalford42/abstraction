@@ -150,36 +150,47 @@ def traj_box_world_batched_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
-    hmm = False
-    n = 5000
-    epochs = 100
-    num_test = min(n, 100)
-    lr = 3E-4
+    hmm = True
+    n = 2000
+    epochs = 50
+    num_test = 200
+    lr = 8E-4
+    rounds = -1
 
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                        num_attn_blocks=2,
-                                        num_heads=4,
-                                        out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
+
 
     if hmm:
+        b = 20
         print('hmm training!')
-        abstract_policy_net = BatchedController(
+        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                          num_attn_blocks=2,
+                                          num_heads=4,
+                                          out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
+        abstract_policy_net = Controller(
             a=4,
-            b=5,
+            b=b,
             net=relational_net,
         )
         net = HMMTrajNet(abstract_policy_net)
+        batch_size=1
     else:
         print('traj-level training without hmm')
+        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                          num_attn_blocks=2,
+                                          num_heads=4,
+                                          out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
         control_net = BatchedController(
             a=4,
             b=1,
             net=relational_net,
         )
         net = TrajNet(control_net)
+        batch_size=10
 
     net = net.to(DEVICE)
-    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=-1, lr=lr)
+    abstract.traj_box_world_sv_train(net, n=n, epochs=epochs,
+            num_test=num_test, test_every=1, rounds=rounds, lr=lr,
+            batch_size=batch_size)
 
 
 if __name__ == '__main__':

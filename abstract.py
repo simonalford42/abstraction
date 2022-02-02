@@ -436,13 +436,15 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
             utils.save_mlflow_model(net, overwrite=True)
 
 
-def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4):
+def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4, batch_size=10):
     mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
         print_every = epochs / 5
         save_every = 1
-        mlflow.log_params(dict(epochs=epochs, lr=lr))
+        params = dict(epochs=epochs, lr=lr, n=n)
+        print(f"params: {params}")
+        mlflow.log_params(params)
         print(f"Net has {utils.num_params(net)} parameters")
 
         try:
@@ -452,16 +454,18 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                 env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
-                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=10)
+                    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
 
                 train_abstractions(dataloader, net, epochs=epochs, lr=lr,
                                    print_every=print_every)
 
                 if test_every and round % test_every == 0:
-                    assert net.b == 1, 'need b=1 to extract action logps easily'
-                    with Timing("Evaluated model"):
-                        env = box_world.BoxWorldEnv(seed=round)
-                        box_world.eval_model(lambda x: net.control_net.net(x)[:, :4], env, n=num_test)
+                    if net.b != 1:
+                        print('skipping testing abstract model since b != 1')
+                    else:
+                        with Timing("Evaluated model"):
+                            env = box_world.BoxWorldEnv(seed=round)
+                            box_world.eval_model(lambda x: net.control_net.net(x)[:, :4], env, n=num_test)
 
                 if save_every and round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)
