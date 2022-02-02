@@ -6,7 +6,7 @@ import random
 import utils
 from utils import DEVICE
 import abstract
-from abstract2 import UnbatchedTrajNet, VanillaController, BatchedVanillaController, Controller, BatchedController, TrajNet, HMMTrajNet
+from abstract2 import UnbatchedTrajNet, Controller, TrajNet, HMMTrajNet
 from modules import FC, RelationalDRLNet, abstract_out_dim
 import box_world
 import argparse
@@ -95,13 +95,15 @@ def batched_comparison():
         a=4,
         b=1,
         net=relational_net,
+        batched=False
     )
     unbatched_traj_net = UnbatchedTrajNet(control_net)
 
-    batched_control_net = BatchedController(
+    batched_control_net = Controller(
         a=4,
         b=1,
         net=relational_net,
+        batched=True,
     )
     traj_net = TrajNet(batched_control_net)
 
@@ -150,12 +152,14 @@ def traj_box_world_batched_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
+    # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = False
-    n = 2000
-    epochs = 50
-    num_test = 200
-    lr = 8E-4
-    rounds = -1
+    n = 1
+    epochs = 5
+    num_test = 50
+    lr = 0
+    rounds = 1
+    fix_seed = True
 
 
 
@@ -166,13 +170,13 @@ def traj_box_world_batched_main():
                                           num_attn_blocks=2,
                                           num_heads=4,
                                           out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
-        abstract_policy_net = Controller(
+        control_net = Controller(
             a=4,
             b=b,
             net=relational_net,
-            batched=False,
+            batched=True,
         )
-        net = HMMTrajNet(abstract_policy_net)
+        net = HMMTrajNet(control_net)
         batch_size=1
     else:
         print('traj-level training without hmm')
@@ -192,11 +196,12 @@ def traj_box_world_batched_main():
     net = net.to(DEVICE)
     abstract.traj_box_world_sv_train(net, n=n, epochs=epochs,
             num_test=num_test, test_every=1, rounds=rounds, lr=lr,
-            batch_size=batch_size)
+            batch_size=batch_size, fix_seed=fix_seed)
 
 
 if __name__ == '__main__':
     # up_right_main()
     # box_world_main()
     # batched_comparison()
+    print('batch norm')
     traj_box_world_batched_main()

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-import einops
+from einops import rearrange
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
@@ -424,9 +424,14 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
 def eval_options_model(control_net, env, n=100, renderer: Callable = None):
     """
+    control_net takes in a single observation, and outputs tuple of:
+        (b, a) action logps
+        (b, 2) stop logps
+        (b, ) start logps
     renderer is a callable that takes in obs.
     """
     print(f'Evaluating model on {n} episodes')
+    control_net.eval()
     num_solved = 0
 
     for i in range(n):
@@ -444,7 +449,7 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, )
-            action_logps, stop_logps, start_logps = control_net.eval(obs)
+            action_logps, stop_logps, start_logps = control_net.eval_obs(obs)
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps).sample().item()
@@ -461,6 +466,7 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
             num_solved += 1
 
     print(f'Solved {num_solved}/{n} episodes')
+    net.train()
     return solved
 
 
@@ -469,6 +475,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
     renderer is a callable that takes in obs.
     """
     print(f'Evaluating model on {n} episodes')
+    net.eval()
     num_solved = 0
 
     for i in range(n):
@@ -481,13 +488,9 @@ def eval_model(net, env, n=100, renderer: Callable = None):
             if renderer is not None:
                 renderer(obs)
             obs = obs_to_tensor(obs)
-            obs = einops.rearrange(obs, 'c h w -> 1 c h w')
             obs = obs.to(DEVICE)
-            out = net(obs)[0]
-            if argmax:
-                a = torch.argmax(out).item()
-            else:
-                a = torch.distributions.Categorical(logits=out).sample().item()
+            action_logps = net.eval_obs(obs)
+            a = Categorical(logits=action_logps).sample().item()
             obs, rew, done, info = env.step(a)
             solved = rew == bw.REWARD_GOAL
 
@@ -495,6 +498,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
             num_solved += 1
 
     print(f'Solved {num_solved}/{n} episodes')
+    net.train()
     return solved
 
 
@@ -503,7 +507,7 @@ def obs_to_tensor(obs) -> torch.Tensor:
                        for row in obs])
     obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
     assert_equal(obs.shape[-1], NUM_ASCII)
-    obs = einops.rearrange(obs, 'h w c -> c h w')
+    obs = rearrange(obs, 'h w c -> c h w')
     return obs
 
 

@@ -245,18 +245,18 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
-        # total = 0
-        # total_correct = 0
+        total = 0
+        total_correct = 0
         for s_i_batch, actions_batch, lengths in dataloader:
             optimizer.zero_grad()
             s_i_batch = s_i_batch.to(DEVICE)
             actions_batch = actions_batch.to(DEVICE)
 
-            # loss, correct = net(s_i_batch, actions_batch, lengths)
-            loss = net(s_i_batch, actions_batch, lengths)
+            loss, correct = net(s_i_batch, actions_batch, lengths)
+            # loss = net(s_i_batch, actions_batch, lengths)
 
-            # total += s_i_batch.shape[0]
-            # total_correct += correct
+            total += sum(lengths)
+            total_correct += correct
 
             # want total loss here
             train_loss += loss
@@ -267,18 +267,18 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
             loss.backward()
             optimizer.step()
 
-        # acc = (total_correct / total).item()
+        acc = (total_correct / total).item()
         metrics = dict(
             epoch=epoch,
             loss=loss.item(),
-            # acc=acc,
+            acc=acc,
         )
         mlflow.log_metrics(metrics, step=epoch)
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
                   + f"train loss: {train_loss}\t"
-                #   + f"acc: {acc:.3f}\t"
+                  + f"acc: {acc:.3f}\t"
                   + f"({time.time() - start:.1f}s)")
         if save_every and epoch % save_every == 0:
             utils.save_mlflow_model(net, model_name=f"epoch-{epoch}")
@@ -436,7 +436,7 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
             utils.save_mlflow_model(net, overwrite=True)
 
 
-def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4, batch_size=10):
+def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4, batch_size=10, fix_seed: bool = False):
     mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -451,7 +451,8 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
             round = 0
             while round != rounds:
                 print(f'Round {round}')
-                # env = box_world.BoxWorldEnv(seed=round)
+                if fix_seed:
+                    env = box_world.BoxWorldEnv(seed=round)
 
                 with Timing("Generated trajectories"):
                     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
@@ -460,14 +461,14 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                                    print_every=print_every)
 
                 if test_every and round % test_every == 0:
-                    if net.b != 1:
-                        print('skipping testing abstract model since b != 1')
-                        with Timing("Evaluated model"):
+                    if fix_seed:
+                        env = box_world.BoxWorldEnv(seed=round)
+                        print('fixed seed so eval trajs = train trajs')
+                    with Timing("Evaluated model"):
+                        if net.b != 1:
                             box_world.eval_options_model(net.control_net, env, n=num_test)
-                    else:
-                        with Timing("Evaluated model"):
-                            # env = box_world.BoxWorldEnv(seed=round)
-                            box_world.eval_model(lambda x: net.control_net.net(x)[:, :4], env, n=num_test)
+                        else:
+                            box_world.eval_model(net, env, n=num_test)
 
                 if save_every and round % save_every == 0:
                     utils.save_mlflow_model(net, overwrite=True)

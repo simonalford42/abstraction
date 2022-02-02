@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 import einops
-from utils import assert_equal, DEVICE
+from utils import assert_equal, DEVICE, assert_shape
 import torch
 from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
 import math
@@ -130,7 +130,36 @@ class TrajNet(nn.Module):
     def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
+        assert control_net.batched
         self.b = control_net.b
+
+    def eval_obs(self, s_i):
+        """
+        s_i: single observation
+        returns: (4, ) of action log probabilities
+        """
+        # (1, b, 4)
+        action_logps, _, _, = self.control_net.unbatched_forward(s_i.unsqueeze(0))
+        action_logps = action_logps[0, 0]
+        assert_shape(action_logps, (4, ))
+        return action_logps
+
+    def forward2(self, s_i_batch, actions_batch, lengths):
+        total_logp = 0
+        total_correct = 0
+        for s_i, actions, length in zip(s_i_batch, actions_batch, lengths):
+            for s, a in zip(s_i[:length], actions[:length]):
+                action_logps = self.eval_obs(s)
+                pred = torch.argmax(action_logps)
+                correct = pred == a
+                if correct:
+                    total_correct += 1
+                logp = action_logps[a] 
+                total_logp += logp
+
+        return -total_logp, total_correct
+
+
 
     def forward(self, s_i_batch, actions_batch, lengths):
         """
@@ -140,6 +169,7 @@ class TrajNet(nn.Module):
 
         returns: negative logp of all trajs in batch
         """
+        # return self.forward2(s_i_batch, actions_batch, lengths)
         B, max_T = actions_batch.shape[0:2]
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
@@ -157,7 +187,7 @@ class TrajNet(nn.Module):
             total_correct += correct
             total_logp += logp
 
-        return -total_logp # , total_correct
+        return -total_logp, total_correct
 
 
 class UnbatchedTrajNet(nn.Module):
