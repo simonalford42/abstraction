@@ -6,6 +6,7 @@ import random
 import utils
 from utils import assert_equal, Timing, DEVICE
 import abstract
+from torch.distributions import Categorical
 from abstract2 import UnbatchedTrajNet, Controller, TrajNet, HMMTrajNet
 import time
 from modules import FC, RelationalDRLNet, abstract_out_dim
