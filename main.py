@@ -360,7 +360,7 @@ def traj_box_world_batched_main():
             batched=True,
         )
         net = HMMTrajNet(control_net)
-        batch_size=1
+        batch_size=10
     else:
         print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
