@@ -279,29 +279,29 @@ def batched_comparison():
         a=4,
         b=1,
         net=relational_net,
-        batched=False
+        batched=False,
     )
     unbatched_traj_net = UnbatchedTrajNet(control_net)
 
-    batched_control_net = Controller(
+    control_net = Controller(
         a=4,
         b=1,
         net=relational_net,
         batched=True,
     )
-    traj_net = TrajNet(batched_control_net)
+    traj_net = TrajNet(control_net)
 
     env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env, n=1, traj=True, batch_size=1)
-    data = box_world.BoxWorldDataset(env, n=1, traj=True)
-    dataloader = DataLoader(data, batch_size=1, shuffle=False, collate_fn=box_world.traj_collate)
+    dataloader = box_world.box_world_dataloader(env, n=3, traj=True, batch_size=2)
+    data = box_world.BoxWorldDataset(env, n=3, traj=True)
+    dataloader = DataLoader(data, batch_size=2, shuffle=False, collate_fn=box_world.traj_collate)
 
     total = 0
     for d in dataloader:
         negative_logp = traj_net(*d)
         total += negative_logp
 
-    print(f'total: {total}')
+    print(f'total0: {total}')
 
     total2 = 0
     for s_i, actions in zip(data.traj_states, data.traj_moves):
@@ -324,11 +324,11 @@ def batched_comparison():
     for s_i, actions in dataloader:
         pred = relational_net(s_i)
         logps = torch.log_softmax(pred[:, :4], dim=1)
-        loss = - torch.sum(logps[range(len(actions)), actions])
+        loss = -torch.sum(logps[range(len(actions)), actions])
         total4 += loss
     print(f'total4: {total4}')
 
-    abstract.train_supervised(dataloader, relational_net, epochs=1)
+    # abstract.train_supervised(dataloader, relational_net, epochs=1)
 
 
 def traj_box_world_batched_main():
@@ -338,17 +338,17 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = True
-    n = 10
-    epochs = 10
+    n = 20
+    epochs = 1
     num_test = 0
-    lr = 8E-4
+    lr = 0
     rounds = 1
     fix_seed = False
 
 
     if hmm:
         b = 20
-        print('hmm training!')
+        # print('hmm training!')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                           num_attn_blocks=2,
                                           num_heads=4,
@@ -360,9 +360,9 @@ def traj_box_world_batched_main():
             batched=True,
         )
         net = HMMTrajNet(control_net)
-        batch_size=10
+        batch_size=1
     else:
-        print('traj-level training without hmm')
+        # print('traj-level training without hmm')
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                           num_attn_blocks=2,
                                           num_heads=4,
@@ -378,7 +378,7 @@ def traj_box_world_batched_main():
 
     net = net.to(DEVICE)
     traj_box_world_sv_train(net, n=n, epochs=epochs,
-            num_test=num_test, test_every=1, rounds=rounds, lr=lr,
+            num_test=num_test, test_every=0, rounds=rounds, lr=lr,
             batch_size=batch_size, fix_seed=fix_seed)
 
 
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     # up_right_main()
     # box_world_main()
     # batched_comparison()
-    print('no fix seed')
+    # print('no fix seed')
     # torch.manual_seed(10)
-    print('no batch norm')
+    # print('no batch norm')
     traj_box_world_batched_main()

@@ -145,6 +145,10 @@ class TrajNet(nn.Module):
         return action_logps
 
     def forward2(self, s_i_batch, actions_batch, lengths):
+        """
+        uses eval_obs so we can check eval_obs is implemented the same as
+        training, by checking that this gives the same loss as training
+        """
         total_logp = 0
         total_correct = 0
         for s_i, actions, length in zip(s_i_batch, actions_batch, lengths):
@@ -157,8 +161,7 @@ class TrajNet(nn.Module):
                 logp = action_logps[a] 
                 total_logp += logp
 
-        return -total_logp, total_correct
-
+        return -total_logp #, total_correct
 
 
     def forward(self, s_i_batch, actions_batch, lengths):
@@ -186,7 +189,7 @@ class TrajNet(nn.Module):
             total_correct += correct
             total_logp += logp
 
-        return -total_logp, total_correct
+        return -total_logp #, total_correct
 
 
 class UnbatchedTrajNet(nn.Module):
@@ -221,7 +224,7 @@ class HMMTrajNet(nn.Module):
     def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
-        assert control_net.batched
+        # assert not control_net.batched
         self.b = control_net.b
 
     def forward(self, s_i_batch, actions_batch, lengths):
@@ -232,11 +235,13 @@ class HMMTrajNet(nn.Module):
 
         returns: negative logp of all trajs in batch
         """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
         B, max_T = actions_batch.shape[0:2]
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
         total_total_logp = 0
 
         f_i = torch.zeros((max_T, B, self.b, ), device=DEVICE)
@@ -256,8 +261,7 @@ class HMMTrajNet(nn.Module):
         # max_T will give last element of (max_T + 1) axis
         x1 = stop_logps[range(B), lengths, :, STOP_NET_STOP_IX]
         assert_shape(x1, (B, self.b))
-        # (B, )
-        total_logps = torch.logsumexp(x0 + x1, axis=1)
+        total_logps = torch.logsumexp(x0 + x1, axis=1) # (B, )
         return -torch.sum(total_logps)
 
     def forward_old(self, s_i_batch, actions_batch, lengths):
@@ -296,6 +300,7 @@ class HMMTrajNet(nn.Module):
 
         assert_equal(T+1, stop_logps.shape[0])
         total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
+        print(f"total_logp: {total_logp}")
         return -total_logp
 
 

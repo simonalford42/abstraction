@@ -10,6 +10,8 @@ import numpy as np
 POS = Tuple[int, int]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# print('using cpu!!')
+# DEVICE = torch.device("cpu")
 
 
 def log(s: str):
