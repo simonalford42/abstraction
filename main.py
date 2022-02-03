@@ -4,14 +4,12 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import random
 import utils
-from utils import assert_equal, Timing, DEVICE
+from utils import Timing, DEVICE
 import abstract
-from torch.distributions import Categorical
 from abstract2 import UnbatchedTrajNet, Controller, TrajNet, HMMTrajNet
 import time
 from modules import FC, RelationalDRLNet, abstract_out_dim
 import box_world
-import argparse
 import abstract2
 import mlflow
 
@@ -118,14 +116,14 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
                       n=n,
                       epochs=epochs,
                       lr=lr,
-                 )
+                      )
         print(f"params: {params}")
         mlflow.log_params(params)
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                num_attn_blocks=2,
                                num_heads=4,
-                               out_dim=4).to(DEVICE)
-                               # out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
+                               out_dim=4,
+                               ).to(DEVICE)
         if model_load_run_id is not None:
             utils.load_mlflow_model(net, model_load_run_id)
         print(f"Net has {utils.num_params(net)} parameters")
@@ -155,7 +153,10 @@ def box_world_sv_train(n=1000, epochs=100, rounds=-1, num_test=100, test_every=1
             utils.save_mlflow_model(net, overwrite=True)
 
 
-def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4, batch_size=10, fix_seed: bool = False):
+def traj_box_world_sv_train(
+    net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4,
+    batch_size=10, fix_seed: bool = False,
+):
     mlflow.set_experiment("Boxworld traj sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
@@ -365,11 +366,10 @@ def traj_box_world_batched_main():
     else:
         net = TrajNet(control_net).to(DEVICE)
 
-    traj_box_world_sv_train(net, n=n, epochs=epochs,
-            num_test=num_test, test_every=1, rounds=rounds, lr=lr,
-            batch_size=batch_size, fix_seed=fix_seed)
+    traj_box_world_sv_train(
+        net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
+        lr=lr, batch_size=batch_size, fix_seed=fix_seed)
 
 
 if __name__ == '__main__':
-    torch.manual_seed(10)
     traj_box_world_batched_main()

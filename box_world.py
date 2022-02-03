@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import queue
 from typing import Any, Optional, List, Tuple, Callable
 import gym
@@ -14,8 +13,7 @@ from einops import rearrange
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
-from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
-
+from abstract import STOP_NET_STOP_IX
 from pycolab.examples.research.box_world import box_world as bw
 
 
@@ -566,7 +564,6 @@ class BoxWorldDataset(Dataset):
         self.traj_states, self.traj_moves = zip(*sorted(zip(
             self.traj_states, self.traj_moves), key=lambda t: t[0].shape[0]))
         assert_equal([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
-
 
     def __len__(self):
         if self.traj:

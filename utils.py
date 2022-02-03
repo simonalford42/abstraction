@@ -94,9 +94,9 @@ def assert_equal(a, b):
     else:
         assert a == b, f'a != b: a:{a}, b:{b}'
 
+
 def assert_shape(a: torch.Tensor, shape: tuple):
     assert_equal(a.shape, shape)
-
 
 
 def num_params(model):
