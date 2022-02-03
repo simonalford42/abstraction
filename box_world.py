@@ -14,6 +14,7 @@ from einops import rearrange
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
+from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
 
 from pycolab.examples.research.box_world import box_world as bw
 
@@ -453,7 +454,7 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps).sample().item()
-            if current_option is None or stop:
+            if current_option is None or stop == STOP_NET_STOP_IX:
                 current_option = Categorical(logits=start_logps).sample().item()
             options.append(current_option.item())
 

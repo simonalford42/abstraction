@@ -130,3 +130,63 @@ class TrajData():
         # convert traj from UURRUU to list of (state_embed, action)
         points = self.make_points(traj)
         return self.embed_points(points)
+
+
+def sample_trajectories(net, data, full_abstract=False):
+    """
+    To sample with options:
+    1. sample option from start state.
+    2. choose actions according to option policy until stop.
+    3. after stopping, sample new option.
+    4. repeat until done.
+
+    if full_abstract=True, then we will execute alpha(t_0, b) to get new t_i to
+    sample new option from. Otherwise, will get t_i from tau(s_i).
+    """
+    for i in range(len(data.trajs)):
+        points = data.points[i]
+        (x, y, x_goal, y_goal) = points[0][0]
+        moves = ''.join(data.trajs[i])
+        print(f'({x, y}) to ({x_goal, y_goal}) via {moves}')
+        moves_taken = ''
+        options = []
+        current_option_path = ''
+        start_t_of_current_option = None
+        option = None
+        for j in range(data.seq_len):
+            if max(x, y) == data.max_coord:
+                break
+            state_embed = data.embed_state((x, y, x_goal, y_goal))
+            state_batch = torch.unsqueeze(state_embed, 0)
+            # only use action_logps, stop_logps, and start_logps
+            t_i, action_logps, stop_logps, start_logps, causal_penalty = net.abstract_policy_net(state_batch)
+            if option is None:
+                option = Categorical(logits=start_logps).sample()
+                start_t_of_current_option = t_i[0]
+            else:
+                # possibly stop previous option!
+                stop = Categorical(logits=stop_logps[0, option, :]).sample()
+                if stop == STOP_NET_STOP_IX:
+                    if full_abstract:
+                        new_t_i = net.abstract_policy_net.alpha_transition(start_t_of_current_option, option)
+                        logits = net.abstract_policy_net.new_option_logps(new_t_i)
+                        start_t_of_current_option = new_t_i
+                    else:
+                        logits = start_logps[0]
+
+                    option = Categorical(logits=logits).sample()
+                    options.append(current_option_path)
+                    current_option_path = ''
+
+            current_option_path += str(option.item())
+            action = Categorical(logits=action_logps[0, option, :]).sample()
+            # print(f"action: {action}")
+            x, y = up_right.TrajData.execute((x, y), action)
+            move = 'R' if action == 0 else 'U'
+            moves_taken += move
+            # print(f'now at ({x, y})')
+        options.append(current_option_path)
+        print(f'({0, 0}) to ({x, y}) via')
+        print(f'{moves_taken}')
+        print(f"{''.join(options)}")
+        print('-' * 10)

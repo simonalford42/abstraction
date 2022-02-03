@@ -221,10 +221,49 @@ class HMMTrajNet(nn.Module):
     def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
-        assert not control_net.batched
+        assert control_net.batched
         self.b = control_net.b
 
     def forward(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+
+        returns: negative logp of all trajs in batch
+        """
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        batch_action_logps, batch_stop_logps, batch_start_logps = self.control_net(s_i_batch)
+        total_total_logp = 0
+
+        for batch_num, (s_i, actions, T) in enumerate(zip(s_i_batch, actions_batch, lengths)):
+            action_logps = batch_action_logps[batch_num, :T+1]
+            stop_logps = batch_stop_logps[batch_num, :T+1]
+            start_logps = batch_start_logps[batch_num, :T+1]
+
+            f_0 = start_logps[0] + action_logps[0, :, actions[0]]
+            f_prev = f_0
+            for i in range(1, T):
+                action = actions[i]
+                trans_fn = calc_trans_fn(stop_logps, start_logps, i)
+
+                f_unsummed = (rearrange(f_prev, 'b -> b 1')
+                              + trans_fn
+                              + rearrange(action_logps[i, :, action], 'b -> 1 b'))
+                f = torch.logsumexp(f_unsummed, axis=0)
+                assert_equal(f.shape, (self.b, ))
+                f_prev = f
+
+            assert_equal(T+1, stop_logps.shape[0])
+            total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
+            total_total_logp += total_logp
+
+        return -total_total_logp
+
+    def forward_old(self, s_i_batch, actions_batch, lengths):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
