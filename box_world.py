@@ -453,16 +453,17 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
             action_logps, stop_logps, start_logps = control_net.eval_obs(obs)
 
             if current_option is not None:
-                stop = Categorical(logits=stop_logps).sample().item()
+                stop = Categorical(logits=stop_logps[current_option]).sample().item()
             if current_option is None or stop == STOP_NET_STOP_IX:
                 current_option = Categorical(logits=start_logps).sample().item()
-            options.append(current_option.item())
+            options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
             obs, rew, done, info = env.step(a)
             solved = rew == bw.REWARD_GOAL
 
-        print(f"options: {options}")
+        if i < 3:
+            print(f"options for eval {i}: {options}")
         if solved:
             num_solved += 1
 

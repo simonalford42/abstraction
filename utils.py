@@ -56,9 +56,8 @@ def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
     """
     run_id = mlflow.active_run().info.run_id
     path = mlflow_model_path(run_id, model_name)
-    if os.path.isfile(path):
-        if not overwrite:
-            raise RuntimeError("model already exists at path " + path)
+    if not overwrite:
+        path = next_unused_path(path)
     torch.save(model.state_dict(), path)
     print(f"Saved model for run\n{mlflow.active_run().info.run_id}",
           f"with name {model_name}")

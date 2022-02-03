@@ -190,11 +190,11 @@ def traj_box_world_sv_train(net, n=1000, epochs=100, rounds=-1, num_test=100, te
                             box_world.eval_model(net, env, n=num_test)
 
                 if save_every and round % save_every == 0:
-                    utils.save_mlflow_model(net, overwrite=True)
+                    utils.save_mlflow_model(net, model_name=f'round-{round}', overwrite=False)
 
                 round += 1
         except KeyboardInterrupt:
-            utils.save_mlflow_model(net, overwrite=True)
+            utils.save_mlflow_model(net, overwrite=False)
 
 
 def up_right_main():
@@ -216,7 +216,7 @@ def up_right_main():
     net = HMMTrajNet(abstract_policy_net)
 
     # utils.load_model(net, f'models/model_1-21__4.pt')
-    abstract.train_abstractions(data, net, epochs=100, lr=1E-4)
+    train_abstractions(data, net, epochs=100, lr=1E-4)
     # utils.save_model(net, f'models/model_9-17.pt')
     eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
                                   max_coord=data.max_coord)
@@ -338,55 +338,38 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = True
-    n = 20
-    epochs = 1
-    num_test = 0
-    lr = 0
-    rounds = 1
+    n = 5000
+    epochs = 100
+    num_test = 200
+    lr = 8E-4
+    rounds = 20
     fix_seed = False
+    b = 30
+    batch_size = 10
 
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                      num_attn_blocks=2,
+                                      num_heads=4,
+                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
+    control_net = Controller(
+        a=4,
+        b=b,
+        net=relational_net,
+        batched=True,
+    )
 
     if hmm:
-        b = 20
-        # print('hmm training!')
-        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                          num_attn_blocks=2,
-                                          num_heads=4,
-                                          out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
-        control_net = Controller(
-            a=4,
-            b=b,
-            net=relational_net,
-            batched=True,
-        )
-        net = HMMTrajNet(control_net)
-        batch_size=1
+        print('hmm training!')
+        print(f"b: {b}")
+        net = HMMTrajNet(control_net).to(DEVICE)
     else:
-        # print('traj-level training without hmm')
-        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                          num_attn_blocks=2,
-                                          num_heads=4,
-                                          out_dim=abstract_out_dim(a=4, b=1)).to(DEVICE)
-        control_net = Controller(
-            a=4,
-            b=1,
-            net=relational_net,
-            batched=True,
-        )
-        net = TrajNet(control_net)
-        batch_size=10
+        net = TrajNet(control_net).to(DEVICE)
 
-    net = net.to(DEVICE)
     traj_box_world_sv_train(net, n=n, epochs=epochs,
-            num_test=num_test, test_every=0, rounds=rounds, lr=lr,
+            num_test=num_test, test_every=1, rounds=rounds, lr=lr,
             batch_size=batch_size, fix_seed=fix_seed)
 
 
 if __name__ == '__main__':
-    # up_right_main()
-    # box_world_main()
-    # batched_comparison()
-    # print('no fix seed')
-    # torch.manual_seed(10)
-    # print('no batch norm')
+    torch.manual_seed(10)
     traj_box_world_batched_main()
