@@ -345,7 +345,7 @@ def traj_box_world_batched_main():
     lr = 8E-4
     rounds = 20
     fix_seed = False
-    b = 30
+    b = 10
     batch_size = 10
 
     relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
@@ -363,12 +363,16 @@ def traj_box_world_batched_main():
         print('hmm training!')
         print(f"b: {b}")
         net = HMMTrajNet(control_net).to(DEVICE)
+        utils.load_mlflow_model(net, run_id='d66d14463f2041d6928f93f48ee26cc6', model_name='round-19')
     else:
         net = TrajNet(control_net).to(DEVICE)
 
-    traj_box_world_sv_train(
-        net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
-        lr=lr, batch_size=batch_size, fix_seed=fix_seed)
+    env = box_world.BoxWorldEnv(seed=1)
+
+    box_world.eval_options_model(net.control_net, env, n=200)
+    # traj_box_world_sv_train(
+    #     net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
+    #     lr=lr, batch_size=batch_size, fix_seed=fix_seed)
 
 
 if __name__ == '__main__':

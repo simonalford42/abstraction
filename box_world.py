@@ -10,6 +10,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
+from modules import RelationalDRLNet
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
@@ -135,24 +136,23 @@ def to_color_obs(obs):
     return np.array([[ascii_to_color(a) for a in row] for row in obs])
 
 
-def render_obs(obs, option=None, color=True, pause=0.0001):
+def render_obs(obs, title=None, ascii=False, pause=0.0001):
     """
-    With color=True, makes a plot.
-    With color=False, prints ascii to command line.
-    if color=True, then pause tells how long to wait between frames.
+    With ascii=True, prints ascii to command line.
+    Pause tells how long to wait between frames.
     """
-    if color:
+    if not ascii:
         color_array = to_color_obs(obs)
 
         fig = plt.figure(0)
         plt.clf()
         plt.imshow(color_array / 255)
-        if option is not None:
-            plt.title(f'option={option}')
+        if title:
+            plt.title(title)
         fig.canvas.draw()
         plt.pause(pause)
     else:
-        print(f'option={option}')
+        print(title)
         for row in obs:
             print(''.join(row))
 
@@ -365,8 +365,12 @@ def make_move_graph(obs, goal_pos) -> Tuple[set[POS], dict[POS, dict[POS, int]]]
     return nodes, adj_matrix
 
 
+def player_pos(obs):
+    return tuple(np.argwhere(obs == bw.PLAYER)[0])
+
+
 def shortest_path(obs, goal_pos: POS) -> List[POS]:
-    start_pos = tuple(np.argwhere(obs == bw.PLAYER)[0])
+    start_pos = player_pos(obs)
     assert obs[start_pos] == bw.PLAYER
 
     nodes, adj_matrix = make_move_graph(obs, goal_pos)
@@ -421,7 +425,7 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-def eval_options_model(control_net, env, n=100, renderer: Callable = None):
+def eval_options_model(control_net, env, n=100):
     """
     control_net takes in a single observation, and outputs tuple of:
         (b, a) action logps
@@ -433,18 +437,21 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
     control_net.eval()
     num_solved = 0
 
+    option_map = {i: [] for i in range(control_net.b)}
+
     for i in range(n):
+        print(f'i: {i}')
         obs = env.reset()
         done, solved = False, False
         t = 0
         options = []
+        moves_without_moving = 0
+        prev_pos = (-1, -1)
 
         current_option = None
 
         while not (done or solved):
             t += 1
-            if renderer is not None:
-                renderer(obs, current_option)
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, )
@@ -452,13 +459,34 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
-            if current_option is None or stop == STOP_NET_STOP_IX:
+            new_option = current_option is None or stop == STOP_NET_STOP_IX
+            if new_option:
                 current_option = Categorical(logits=start_logps).sample().item()
-            options.append(current_option)
+            # options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
+            option_map[current_option].append(a)
+
             obs, rew, done, info = env.step(a)
             solved = rew == bw.REWARD_GOAL
+
+            pos = player_pos(obs)
+            if prev_pos == pos:
+                moves_without_moving += 1
+            else:
+                moves_without_moving = 0
+                prev_pos = pos
+            if moves_without_moving >= 5:
+                print('Quitting due to 5 repeated moves')
+                done = True
+
+            title = f'option={current_option}'
+            pause = 0.2
+            if new_option:
+                title += ' (new)'
+                pause = 0.5
+            option_map[current_option].append((obs, title, pause))
+            render_obs(obs, title=title, pause=pause)
 
         if i < 3:
             print(f"options for eval {i}: {options}")
@@ -466,6 +494,15 @@ def eval_options_model(control_net, env, n=100, renderer: Callable = None):
             num_solved += 1
 
     print(f'Solved {num_solved}/{n} episodes')
+    for i in option_map:
+        # print(i, Counter(option_map[i]))
+        # if i < 3:
+        #     continue
+        print(i)
+        for k, (obs, title, pause) in enumerate(option_map[i]):
+            if k > 10:
+                break
+            render_obs(obs, title=title, pause=0.5)
     control_net.train()
     return solved
 

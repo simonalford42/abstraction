@@ -24,6 +24,39 @@ def abstract_out_dim(a, b):
     return a * b + 2 * b + b
 
 
+class MicroNet(nn.Module):
+    def __init__(self, input_shape, input_channels=3, d=32, out_dim=4):
+        super().__init__()
+        self.input_channels = input_channels
+        self.input_shape = input_shape
+        self.d = 64
+        self.out_dim = out_dim
+        self.conv1 = nn.Conv2d(input_channels, 12, 3, padding='same')
+        self.conv2 = nn.Conv2d(12, 12, 3, padding='same')
+        self.fc = nn.Sequential(nn.Linear(12 * np.prod(input_shape), self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.out_dim)
+                                )
+
+        def forward(self, x):
+            # input: (N, C, H, W)
+            (N, C, H, W) = x.shape
+            assert_equal(C, self.input_channels)
+            assert_equal((H, W), self.input_shape)
+
+            x = F.relu(self.conv1(x))
+            x = F.relu(self.conv2(x))
+            assert_equal(x.shape, (N, 12, H, W))
+
+            x = einops.rearrange(x, 'n c h w -> n (c h w)')
+            x = self.fc(x)
+            return x
+
+
 class RelationalDRLNet(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
         super().__init__()
@@ -32,9 +65,9 @@ class RelationalDRLNet(nn.Module):
         self.out_dim = out_dim
         self.num_attn_blocks = num_attn_blocks
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
-        self.conv1_batchnorm = nn.BatchNorm2d(12)
+        # self.conv1_batchnorm = nn.BatchNorm2d(12)
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
-        self.conv2_batchnorm = nn.BatchNorm2d(24)
+        # self.conv2_batchnorm = nn.BatchNorm2d(24)
 
         # 2 exra dims for positional encoding
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
@@ -56,7 +89,7 @@ class RelationalDRLNet(nn.Module):
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.out_dim),
-                               )
+                                )
 
     def forward(self, x):
         # input: (N, C, H, W)

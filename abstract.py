@@ -1,26 +1,27 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from utils import assert_equal
+from einops import rearrange, repeat
+from utils import assert_equal, assert_shape
+from modules import MicroNet, RelationalDRLNet, FC
+import box_world
 
 STOP_NET_STOP_IX = 0
 STOP_NET_CONTINUE_IX = 1
 
 
 class AbstractPolicyNet(nn.Module):
-
-    def __init__(self, a, b, t, tau_net, micro_net, stop_net, start_net,
-                 alpha_net):
+    def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
+                 macro_transition_net):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
         # self.s = s  # state dim; not actually used
         self.t = t  # abstract state dim
         self.tau_net = tau_net  # s -> t
-        self.micro_net = micro_net  # s -> (b, a)  = P(a | b, s)
-        self.stop_net = stop_net  # s -> 2b of (stop, 1 - stop) aka beta.
-        self.start_net = start_net  # t -> b  aka P(b | t)
-        self.alpha_net = alpha_net  # (t + b) -> t abstract transition
+        self.micro_net = micro_net  # s -> (b * a +  2 * b)
+        self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
+        self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
 
     def forward(self, s_i):
         """
@@ -37,14 +38,46 @@ class AbstractPolicyNet(nn.Module):
         T = s_i.shape[0]
 
         t_i = self.tau_net(s_i)  # (T, t)
-        action_logps = self.micro_net(s_i).reshape(T, self.b, self.a)
-        stop_logps = self.stop_net(s_i).reshape(T, self.b, 2)
-        start_logps = self.start_net(t_i)  # (T, b) aka P(b | t)
+        micro_out = self.micro_net(s_i)
+        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a')
+        stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b 2) -> T b 2')
+
+        start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
         consistency_penalty = self.calc_consistency_penalty(t_i)  # (T, T, b)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
+
+        return t_i, action_logps, stop_logps, start_logps, consistency_penalty
+
+    def forward_batched(self, s_i_batch):
+        """
+        s_i: (B, T, s) tensor of states
+        outputs:
+           (B, T, t) tensor of abstract states t_i
+           (B, T, b, a) tensor of action logps
+           (B, T, b, 2) tensor of stop logps
+              the index corresponding to stop/continue are in
+              STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
+           (B, T, b) tensor of start logps
+           (B, T, b, t, t) tensor of causal consistency penalties
+        """
+        B, T, *s = s_i_batch.shape[0:2]
+
+        t_i = self.tau_net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)  # (T, t)
+        assert_shape(t_i, (B, T, self.t))
+        micro_out = self.micro_net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        assert_shape(micro_out, (B, T, self.b * self.a + self.b * 2))
+        action_logps = rearrange(micro_out[:, :, :self.b * self.a], 'B T (b a) -> B T b a', a=self.a)
+        stop_logps = rearrange(micro_out[:, :, self.b * self.a:], 'B T (b 2) -> B T b 2')
+
+        start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
+        consistency_penalty = self.calc_consistency_penalty_batched(t_i)  # (B, T, T, b)
+
+        action_logps = F.log_softmax(action_logps, dim=3)
+        stop_logps = F.log_softmax(stop_logps, dim=3)
+        start_logps = F.log_softmax(start_logps, dim=2)
 
         return t_i, action_logps, stop_logps, start_logps, consistency_penalty
 
@@ -84,19 +117,100 @@ class AbstractPolicyNet(nn.Module):
         t_i2 = self.alpha_net(t_i2)
         return t_i2.reshape(T, nb, self.t)
 
+    def alpha_transitions2(self, t_i, bs):
+        """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+
+        Args:
+            t_i: (T, t) batch of abstract states
+            bs: 1D tensor of actions to try
+        """
+        T = t_i.shape[0]
+        nb = bs.shape[0]
+        # calculate transition for each t_i + b pair
+        t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
+        b_onehots = F.one_hot(bs, num_classes=self.b).repeat(T, 1)
+        b_onehots = repeat(b_onehots, 'nb b -> (repeat nb) b', repeat=T)
+        # b is 'less significant', changes in 'inner loop'
+        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
+        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
+        # (T * nb, t + b) -> (T * nb, t)
+        t_i2 = self.alpha_net(t_i2)
+        return rearrange(t_i2, '(T nb) t -> T nb t')
+
     def calc_consistency_penalty(self, t_i):
-        # TODO: recalculate with einops, compare calculations
+        """For each pair of indices and each option, calculates (t - alpha(b, t))^2
+
+        Args:
+            t_i: (T, t) tensor of abstract states
+
+        Returns:
+            (T, T, b) tensor of penalties
+        """
         T = t_i.shape[0]
         # apply each action at each timestep.
         alpha_trans = self.alpha_transitions(t_i, torch.arange(self.b))
-        alpha_trans = alpha_trans.reshape(T, 1, self.b, self.t)
+        alpha_trans2 = self.alpha_transitions2(t_i, torch.arange(self.b))
+        assert torch.all(alpha_trans == alpha_trans2)
+
+        alpha_trans1 = alpha_trans.reshape(T, 1, self.b, self.t)
+        alpha_trans2 = rearrange(alpha_trans, 'T nb t -> T 1 nb t')
+        assert torch.all(alpha_trans1 == alpha_trans2)
+
         t_i2 = t_i.reshape(1, T, 1, self.t)
+        t_i3 = rearrange(t_i, 'T t -> 1 T 1 t')
+        assert torch.all(t_i2 == t_i3)
+        assert False
+
         # (start, end, action, t value)
-        penalty = (t_i2 - alpha_trans)**2
+        penalty = (t_i2 - alpha_trans1)**2
         assert_equal(penalty.shape, (T, T, self.b, self.t))
         # L1 norm
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
+
+    def calc_consistency_penalty_batched(self, t_i_batch):
+        """For each pair of indices and each option, calculates (t - alpha(b, t))^2
+
+        Args:
+            t_i_batch: (B, T, t) tensor of abstract states
+
+        Returns:
+            (B, T, T, b) tensor of penalties
+        """
+        B, T = t_i_batch.shape[0:2]
+
+        t_i_flat = rearrange(t_i_batch, '(B T) t -> B T t')
+        alpha_trans = self.alpha_transitions2(t_i_flat,
+                                              torch.arange(self.b)),
+        alpha_trans = rearrange(alpha_trans, '(B T) b t -> B T 1 b t', B=B)
+
+        t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
+
+        # (start, end, action, t value)
+        penalty = (t_i2 - alpha_trans)**2
+        assert_shape(penalty, (B, T, T, self.b, self.t))
+        penalty = penalty.sum(dim=-1)  # (B, T, T, b)
+        return penalty
+
+
+def boxworld_relational_net(out_dim: int = 4):
+    return RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                            num_attn_blocks=2,
+                            num_heads=4,
+                            out_dim=out_dim)
+
+
+def attention_apn(b, t):
+    a = 4
+    tau_net = boxworld_relational_net(out_dim=t)
+    input_shape = (14, 14)  # assume default box world grid size
+    micro_net = MicroNet(input_shape=input_shape,
+                         input_channels=box_world.NUM_ASCII,
+                         # both P(a | s, b) and beta(s, b)
+                         out_dim=a * b + 2 * b)
+    macro_policy_net = FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=32)
+    macro_transition_net = FC(input_dim=t + b, output_dim=t, num_hidden=3, hidden_dim=32)
+    return AbstractPolicyNet(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net)
 
 
 class Eq2Net(nn.Module):
