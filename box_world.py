@@ -10,15 +10,16 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
-from modules import RelationalDRLNet
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
-from abstract import STOP_NET_STOP_IX
 from pycolab.examples.research.box_world import box_world as bw
 
 
-NUM_ASCII = len('# *.abcdefghijklmnopqrst')
+NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
+
+STOP_IX = 0
+CONTINUE_IX = 1
 
 
 class BoxWorldEnv(gym.Env):
@@ -459,7 +460,7 @@ def eval_options_model(control_net, env, n=100):
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
-            new_option = current_option is None or stop == STOP_NET_STOP_IX
+            new_option = current_option is None or stop == STOP_IX
             if new_option:
                 current_option = Categorical(logits=start_logps).sample().item()
             # options.append(current_option)
@@ -573,7 +574,10 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
     data = BoxWorldDataset(env, n, traj)
-    return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
+    if traj:
+        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
+    else:
+        return DataLoader(data, batch_size=batch_size, shuffle=not traj)
 
 
 class BoxWorldDataset(Dataset):

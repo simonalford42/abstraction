@@ -4,7 +4,7 @@ from einops import rearrange
 import einops
 from utils import assert_equal, DEVICE, assert_shape
 import torch
-from abstract import STOP_NET_STOP_IX, STOP_NET_CONTINUE_IX
+from box_world import STOP_IX, CONTINUE_IX
 import math
 
 
@@ -324,7 +324,7 @@ class HMMTrajNet(nn.Module):
         x0 = f_i[lengths-1, range(B)]
         assert_shape(x0, (B, self.b))
         # max_T will give last element of (max_T + 1) axis
-        x1 = stop_logps[range(B), lengths, :, STOP_NET_STOP_IX]
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
         assert_shape(x1, (B, self.b))
         total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
         return -torch.sum(total_logps)
@@ -364,7 +364,7 @@ class HMMTrajNet(nn.Module):
             f_prev = f
 
         assert_equal(T+1, stop_logps.shape[0])
-        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_NET_STOP_IX], axis=0)
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], axis=0)
         print(f"total_logp: {total_logp}")
         return -total_logp
 
@@ -380,8 +380,8 @@ def calc_trans_fn_batched(stop_logps, start_logps, i):
     """
     (B, _, b) = start_logps.shape
     # for each b' -> b
-    beta = stop_logps[:, i, :, STOP_NET_STOP_IX]  # (B, b,)
-    one_minus_beta = stop_logps[:, i, :, STOP_NET_CONTINUE_IX]  # (B, b,)
+    beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+    one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
 
     continue_trans_fn = torch.full((B, b, b), float('-inf'), device=DEVICE)
     continue_trans_fn[:, torch.arange(b), torch.arange(b)] = one_minus_beta
@@ -403,8 +403,8 @@ def calc_trans_fn(stop_logps, start_logps, i):
     """
     b = start_logps.shape[1]
     # for each b' -> b
-    beta = stop_logps[i, :, STOP_NET_STOP_IX]  # (b,)
-    one_minus_beta = stop_logps[i, :, STOP_NET_CONTINUE_IX]  # (b,)
+    beta = stop_logps[i, :, STOP_IX]  # (b,)
+    one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
 
     continue_trans_fn = torch.full((b, b), float('-inf'), device=DEVICE)
     continue_trans_fn[torch.arange(b), torch.arange(b)] = one_minus_beta
@@ -427,7 +427,7 @@ def forward_test():
     stop_probs = torch.tensor([[0, 0.2], [0.5, 0.5]])
     one_minus_stop_probs = 1 - stop_probs
     # stop goes first when concatenating
-    assert STOP_NET_STOP_IX == 0
+    assert STOP_IX == 0
     stop_probs = torch.stack((stop_probs, one_minus_stop_probs))
     assert_equal(stop_probs.shape, (2, s, b))
     stop_probs = rearrange(stop_probs, 't b s -> s b t')
