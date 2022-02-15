@@ -1,4 +1,5 @@
 from typing import List, Any
+import math
 import numpy as np
 import torch
 import torch.nn as nn
@@ -73,76 +74,16 @@ def debug():
 
 
 class DebugNet(nn.Module):
-    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
+    def __init__(self):
         super().__init__()
-        self.input_channels = input_channels
-        self.d = 32
-        self.out_dim = out_dim
-        self.num_attn_blocks = num_attn_blocks
-
-        # 2 exra dims for positional encoding
-        self.pre_attn_linear = nn.Linear(24 + 2, self.d)
-
-        # shared weights, so just one network
-        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
-                                                num_heads=num_heads,
-                                                batch_first=True)
-
-        self.fc = nn.Sequential(nn.Linear(self.d, self.d),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.d, self.d),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.d, self.d),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.d, self.d),
-                                nn.ReLU(),
-                                nn.Linear(self.d, self.out_dim),
-                                )
-
-    def add_positions(self, inp):
-        # input shape: (N, C, H, W)
-        # output: (N, C+2, H, W)
-        N, C, H, W = inp.shape
-        # ranges between -1 and 1
-        y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
-        x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
-        y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
-        assert_equal((x_map[-1], y_map[-1]), (1., 1.,))
-        assert_equal((x_map[0], y_map[0]), (-1., -1.,))
-        assert_equal(y_map.shape[0], H)
-        assert_equal(x_map.shape[0], W)
-        x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
-        y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
-        # wonder if there could be a good way to do with einops
-        inp = torch.cat((inp, x_map, y_map), dim=1)
-        assert_equal(inp.shape, (N, C+2, H, W))
-        return inp
+        self.weight = torch.empty((3, 4))
+        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
 
     def forward(self, x):
-        # input: (N, C, H, W)
-        (N, C, H, W) = x.shape
-
-        x = self.add_positions(x)
-        x = einops.rearrange(x, 'n c h w -> n (h w) c')
-        print(f'x1: {x.shape}')
-        store(N, x, 'pos')
-        x = self.pre_attn_linear(x)
-        print(f'x2: {x.shape}')
-        store(N, x, 'pre_attn')
-        assert_equal(x.shape, (N, H*W, self.d))
-
-        for _ in range(self.num_attn_blocks):
-            x = x + self.attn_block(x, x, x, need_weights=False)[0]
-            x = F.layer_norm(x, (self.d,))
-            assert_equal(x.shape, (N, H*W, self.d))
-
-        x = einops.reduce(x, 'n l d -> n d', 'max')
-        x = self.fc(x)
-
-        return x
+        N = x.shape[0]
+        store(N, x, '0')
+        x = torch.mm(x, torch.transpose(self.weight, 0, 1))
+        store(N, x, '1')
 
 
 class RelationalDRLNet(nn.Module):

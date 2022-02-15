@@ -8,6 +8,54 @@ from box_world import STOP_IX, CONTINUE_IX
 import math
 
 
+class HmmTrajNet2(nn.Module):
+    def __init__(self, abstract_policy_net):
+        super().__init__()
+        self.abstract_policy_net = abstract_policy_net
+        self.b = abstract_policy_net.b
+
+    def forward(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+
+
+        lengths: T for each traj in the batch
+
+        returns: negative logp of all trajs in batch
+        """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, t), (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b)
+        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net.forward_batched(s_i_batch)
+
+        # Z_t is (b, i, 2); one for each timestep and batch
+        f_i = torch.zeros((max_T, B, self.b, max_T, 2), device=DEVICE)
+        # initial prob is 0, but 1 for e_0 = 1, c_0 = 0, so set e_0=0 to -inf
+        f_i[0] = torch.full((B, self.b, max_T, 2), float('-inf'), device=DEVICE)
+        f_i[0, :, 0, 0, 1] = torch.full((B, ), 1, device=DEVICE)
+
+        for i in range(1, max_T):
+            assert torch.allclose(torch.logsumexp(f_i[i-1], dim=(1, 2, 3)), torch.zeros((B,)))
+
+            trans_fn = calc_trans_fn_batched(stop_logps, start_logps, i)
+
+            f_unsummed = (rearrange(f_i[i-1], 'B b -> B b 1')
+                          + trans_fn
+                          + rearrange(action_logps[range(B), i, :, actions_batch[:, i]], 'B b -> B 1 b'))
+            f_i[i] = torch.logsumexp(f_unsummed, axis=1)
+
+        # max_T length would be out of bounds since we zero-index
+        x0 = f_i[lengths-1, range(B)]
+        assert_shape(x0, (B, self.b))
+        # max_T will give last element of (max_T + 1) axis
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
+        assert_shape(x1, (B, self.b))
+        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        return -torch.sum(total_logps)
+
 class VanillaController(nn.Module):
     def __init__(self, a, net, batched: bool = False):
         super().__init__()

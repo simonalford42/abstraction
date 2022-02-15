@@ -1,3 +1,5 @@
+from einops import rearrange
+import math
 import numpy as np
 import up_right
 import torch
@@ -267,33 +269,18 @@ def box_world_main():
     box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1, lr=lr)
 
 
+def mm(x, y):
+    # ax + bz
+    out = x[0,0] * y[0,1] + x[0,1] * y[1,1]
+    print(out - torch.mm(x, y)[0,1])
+
+
 def debug():
-    random.seed(1)
-    torch.manual_seed(2)
-    tau_net = abstract.boxworld_relational_net(out_dim=1)
-    inp = torch.zeros(2, 24, 3, 3)
-    out = tau_net(inp)
-    # print(f'out: {out}')
-    out2 = tau_net(inp[0:1])
-    # print(f'out2: {out2}')
-    print(out2[0] - out[0])
-    modules.debug()
-
-
-def debug2():
-    random.seed(1)
-    torch.manual_seed(2)
-    tau_net = modules.DebugNet(input_channels=box_world.NUM_ASCII,
-                            num_attn_blocks=2,
-                            num_heads=4,
-                            out_dim=1)
-    inp = torch.zeros(2, 24, 3, 3)
-    out = tau_net(inp)
-    # print(f'out: {out}')
-    out2 = tau_net(inp[0:1])
-    # print(f'out2: {out2}')
-    print(out2[0] - out[0])
-    modules.debug()
+    for i in range(100):
+        torch.manual_seed(i)
+        weight = torch.transpose(torch.tensor([[0., 0.,],[1., 3.]]), 0, 1)
+        inp = torch.randn(2, 2)
+        mm(inp, weight)
 
 
 def batched_comparison2():

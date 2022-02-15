@@ -102,10 +102,6 @@ class AbstractPolicyNet(nn.Module):
            (B, T, T, b) tensor of causal consistency penalties
         """
         B, T, *s = s_i_batch.shape
-        s_i_batch = s_i_batch[:, 0:1, :]
-        T = 1
-        for i in range(B):
-            print('hi', (torch.arange(np.prod(s_i_batch[i].shape)).reshape(s_i_batch[i].shape) * s_i_batch[i]).sum())
 
         t_i = self.tau_net(s_i_batch.reshape(B * T, *s))
         t_i = t_i.reshape(B, T, -1)
@@ -117,14 +113,14 @@ class AbstractPolicyNet(nn.Module):
         stop_logps = rearrange(micro_out[:, :, self.b * self.a:], 'B T (b two) -> B T b two', b=self.b)
 
         start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
+
         consistency_penalty = self.calc_consistency_penalty_batched(t_i)  # (B, T, T, b)
 
-        # action_logps = F.log_softmax(action_logps, dim=3)
-        # stop_logps = F.log_softmax(stop_logps, dim=3)
-        # start_logps = F.log_softmax(start_logps, dim=2)
+        action_logps = F.log_softmax(action_logps, dim=3)
+        stop_logps = F.log_softmax(stop_logps, dim=3)
+        start_logps = F.log_softmax(start_logps, dim=2)
 
         return t_i, action_logps, stop_logps, start_logps, consistency_penalty
-        # return t_i, None, None, None, None
 
     def new_option_logps(self, t):
         """
