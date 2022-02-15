@@ -269,18 +269,17 @@ def box_world_main():
     box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1, lr=lr)
 
 
-def mm(x, y):
-    # ax + bz
-    out = x[0,0] * y[0,1] + x[0,1] * y[1,1]
-    print(out - torch.mm(x, y)[0,1])
-
-
 def debug():
-    for i in range(100):
-        torch.manual_seed(i)
-        weight = torch.transpose(torch.tensor([[0., 0.,],[1., 3.]]), 0, 1)
-        inp = torch.randn(2, 2)
-        mm(inp, weight)
+    torch.manual_seed(2)
+    torch.set_printoptions(precision=10)
+    y = torch.transpose(torch.tensor([[1., 3.,],[0., 0.]]), 0, 1)
+    x = torch.stack([torch.randn(2), torch.tensor([0., 0.])])
+    print(f'x: {x}')
+    print(f'y: {y}')
+    out = x[0,0] * y[0,0] + x[0,1] * y[1,0]
+    print(f'{x[0,0]:.3f} * {y[0,0]} + {x[0,1]:.3f} * {y[1,0]} = {out}')
+    print(torch.mm(x, y))
+    print(out - torch.mm(x, y)[0,0])  # this should be zero, but is not
 
 
 def batched_comparison2():
