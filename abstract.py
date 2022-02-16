@@ -34,13 +34,6 @@ class AbstractPolicyNet(nn.Module):
            (T, b) tensor of start logps
            (T, T, b) tensor of causal consistency penalties
         """
-        T = s_i.shape[0]
-        print(f'T: {T}')
-        s_i = s_i[0:1, :]
-        print(f's_i: {s_i.shape}')
-        print((torch.arange(np.prod(s_i.shape)).reshape(s_i.shape) * s_i).sum())
-        T = 1
-
         t_i = self.tau_net(s_i)  # (T, t)
         micro_out = self.micro_net(s_i)
         action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
@@ -49,45 +42,11 @@ class AbstractPolicyNet(nn.Module):
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
         consistency_penalty = self.calc_consistency_penalty(t_i)  # (T, T, b)
 
-        # action_logps = F.log_softmax(action_logps, dim=2)
-        # stop_logps = F.log_softmax(stop_logps, dim=2)
-        # start_logps = F.log_softmax(start_logps, dim=1)
+        action_logps = F.log_softmax(action_logps, dim=2)
+        stop_logps = F.log_softmax(stop_logps, dim=2)
+        start_logps = F.log_softmax(start_logps, dim=1)
 
         return t_i, action_logps, stop_logps, start_logps, consistency_penalty
-
-    def forward2(self, s_i):
-        T = s_i.shape[0]
-        print(f'T: {T}')
-        s_i = s_i[0:1, :]
-        print(f's_i: {s_i.shape}')
-        print((torch.arange(np.prod(s_i.shape)).reshape(s_i.shape) * s_i).sum())
-        T = 1
-        s_i = s_i[0:1, :]
-        print(f's_i: {s_i.shape}')
-        return self.tau_net(s_i)
-
-    def forward_batched2(self, s_i_batch):
-        B, T, *s = s_i_batch.shape
-        s_i_batch = s_i_batch[:, 0:1, :]
-        T = 1
-        for i in range(B):
-            print('hi', (torch.arange(np.prod(s_i_batch[i].shape)).reshape(s_i_batch[i].shape) * s_i_batch[i]).sum())
-
-        t_i2 = []
-        for s_i in s_i_batch:
-            t = self.tau_net(s_i)
-            t_i2.append(t)
-
-        t_i2 = torch.cat(t_i2)
-
-        t_i = self.tau_net(s_i_batch.reshape(B * T, *s))
-        t_i = t_i.reshape(B, T, -1)
-        print(f't_i: {t_i.shape}')
-
-        print('hi2', t_i - t_i2)
-
-        assert_shape(t_i, (B, T, self.t))
-        return t_i
 
     def forward_batched(self, s_i_batch):
         """

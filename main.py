@@ -1,6 +1,3 @@
-from einops import rearrange
-import math
-import numpy as np
 import up_right
 import torch
 from torch.utils.data import DataLoader
@@ -12,7 +9,6 @@ import abstract
 from abstract2 import UnbatchedTrajNet, Controller, TrajNet, HMMTrajNet
 import time
 from modules import FC, RelationalDRLNet, abstract_out_dim
-import modules
 import box_world
 import abstract2
 import mlflow
@@ -269,50 +265,61 @@ def box_world_main():
     box_world_sv_train(n=n, epochs=epochs, num_test=num_test, test_every=test_every, rounds=-1, lr=lr)
 
 
-def debug():
-    torch.manual_seed(2)
-    torch.set_printoptions(precision=10)
-    y = torch.transpose(torch.tensor([[1., 3.,],[0., 0.]]), 0, 1)
-    x = torch.stack([torch.randn(2), torch.tensor([0., 0.])])
-    print(f'x: {x}')
-    print(f'y: {y}')
-    out = x[0,0] * y[0,0] + x[0,1] * y[1,0]
-    print(f'{x[0,0]:.3f} * {y[0,0]} + {x[0,1]:.3f} * {y[1,0]} = {out}')
-    print(torch.mm(x, y))
-    print(out - torch.mm(x, y)[0,0])  # this should be zero, but is not
-
-
 def batched_comparison2():
     random.seed(1)
     torch.manual_seed(2)
 
     a = 4
-    b = 1
-    t = 1
+    b = 10
+    t = 50
     env = box_world.BoxWorldEnv()
     data = box_world.BoxWorldDataset(env, n=2, traj=True)
     dataloader = DataLoader(data, batch_size=1, shuffle=False, collate_fn=box_world.traj_collate)
 
     apn = abstract.attention_apn(b, t)
-    t1 = []
+    t1, a1, s1, st1, cc1 = [], [], [], [], []
 
     for s_i_batch, actions_batch, lengths in dataloader:
-        t_i = apn.forward_batched2(s_i_batch)
-        t1.append(t_i[0])
+        t_i, a, s, st, cc = apn(s_i_batch[0])
+        print(f't_i: {t_i.shape}')
+        t1.append(t_i)
+        a1.append(a)
+        s1.append(s)
+        st1.append(st)
+        cc1.append(cc)
 
     t1 = torch.cat(t1)
+    a1 = torch.cat(a1)
+    s1 = torch.cat(s1)
+    st1 = torch.cat(st1)
+    # cc1 = torch.cat(cc1)
 
     dataloader = DataLoader(data, batch_size=2, shuffle=False, collate_fn=box_world.traj_collate)
-    t2 = []
+    t2, a2, s2, st2, cc2 = [], [], [], [], []
 
     for s_i_batch, actions_batch, lengths in dataloader:
-        t_i = apn.forward_batched2(s_i_batch)
+        t_i, a, s, st, cc = apn.forward_batched(s_i_batch)
         for i, max_T in enumerate(lengths):
-            t2.append(t_i[i])
+            print(max_T)
+            t2.append(t_i[i, :max_T+1])
+            a2.append(a[i, :max_T+1])
+            s2.append(s[i, :max_T+1])
+            st2.append(st[i, :max_T+1])
+            cc2.append(cc[i, :max_T+1, :max_T+1])
 
     t2 = torch.cat(t2)
-    print(t2 - t1)
+    a2 = torch.cat(a2)
+    s2 = torch.cat(s2)
+    st2 = torch.cat(st2)
+
     torch.testing.assert_allclose(t1, t2)
+    torch.testing.assert_allclose(a1, a2)
+    torch.testing.assert_allclose(s1, s2)
+    torch.testing.assert_allclose(st1, st2)
+    for c1, c2 in zip(cc1, cc2):
+        torch.testing.assert_allclose(c1, c2)
+    print('all good')
+
 
 
 def batched_comparison():
@@ -426,6 +433,5 @@ def traj_box_world_batched_main():
 
 
 if __name__ == '__main__':
-    debug()
-    # batched_comparison2()
+    batched_comparison2()
     # traj_box_world_batched_main()

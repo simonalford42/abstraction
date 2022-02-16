@@ -1,5 +1,4 @@
 from typing import List, Any
-import math
 import numpy as np
 import torch
 import torch.nn as nn
@@ -58,34 +57,6 @@ class MicroNet(nn.Module):
         return x
 
 
-store_debug = {}
-
-def store(N, x, s):
-    if N == 2:
-        store_debug[s + '2'] = x
-    else:
-        store_debug[s] = x
-
-
-def debug():
-    for key in store_debug:
-        if key[-1] != '2':
-            print(key, torch.sum(store_debug[key][0] - store_debug[key + '2'][0]))
-
-
-class DebugNet(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.weight = torch.empty((3, 4))
-        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-
-    def forward(self, x):
-        N = x.shape[0]
-        store(N, x, '0')
-        x = torch.mm(x, torch.transpose(self.weight, 0, 1))
-        store(N, x, '1')
-
-
 class RelationalDRLNet(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
         super().__init__()
@@ -134,11 +105,7 @@ class RelationalDRLNet(nn.Module):
 
         x = self.add_positions(x)
         x = einops.rearrange(x, 'n c h w -> n (h w) c')
-        print(f'x1: {x.shape}')
-        store(N, x, 'pos')
         x = self.pre_attn_linear(x)
-        print(f'x2: {x.shape}')
-        store(N, x, 'pre_attn')
         assert_equal(x.shape, (N, H*W, self.d))
 
         for _ in range(self.num_attn_blocks):
