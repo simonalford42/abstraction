@@ -391,13 +391,12 @@ class HMMTrajNet(nn.Module):
         f_i = torch.zeros((max_T, B, self.b, ), device=DEVICE)
         f_i[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
         for i in range(1, max_T):
-            # (B, b, b)
-            trans_fn = calc_trans_fn_batched(stop_logps, start_logps, i)
+            beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+            one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
 
-            f_unsummed = (rearrange(f_i[i-1], 'B b -> B b 1')
-                          + trans_fn
-                          + rearrange(action_logps[range(B), i, :, actions_batch[:, i]], 'B b -> B 1 b'))
-            f_i[i] = torch.logsumexp(f_unsummed, axis=1)
+            f_i[i] = (torch.logaddexp(f_i[i-1] + one_minus_beta,
+                                      torch.logsumexp(f_i[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
+                      + action_logps[range(B), i, :, actions_batch[:, i]])
 
         # max_T length would be out of bounds since we zero-index
         x0 = f_i[lengths-1, range(B)]
@@ -583,6 +582,7 @@ def forward_test2():
     torch.manual_seed(1)
     import box_world
     from modules import RelationalDRLNet, abstract_out_dim
+    from utils import Timing
 
     n = 5
     b = 10
@@ -605,8 +605,12 @@ def forward_test2():
 
     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
     for s_i_batch, actions_batch, lengths in dataloader:
-        loss1 = net.forward(s_i_batch, actions_batch, lengths)
-        loss2 = net.forward2(s_i_batch, actions_batch, lengths)
+        with Timing('loss1'):
+            for _ in range(10):
+                loss1 = net.forward(s_i_batch, actions_batch, lengths)
+        with Timing('loss2'):
+            for _ in range(10):
+                loss2 = net.forward2(s_i_batch, actions_batch, lengths)
         # they should be equal
         print(f'loss1: {loss1}')
         print(f'loss2: {loss2}')
