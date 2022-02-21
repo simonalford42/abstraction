@@ -14,47 +14,43 @@ class HmmTrajNet2(nn.Module):
         self.abstract_policy_net = abstract_policy_net
         self.b = abstract_policy_net.b
 
-    def forward(self, s_i_batch, actions_batch, lengths):
+    def forward(self, s_i, actions):
         """
-        s_i: (B, max_T+1, s) tensor
-        actions: (B, max_T,) tensor of ints
-
-
-        lengths: T for each traj in the batch
-
-        returns: negative logp of all trajs in batch
+        s_i: (T+1, s) tensor
+        actions: (T,) tensor of ints
         """
         # return self.forward_old(s_i_batch, actions_batch, lengths)
-        B, max_T = actions_batch.shape[0:2]
-        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+        T = actions.shape[0]
+        assert_equal(T+1, s_i.shape[0])
 
-        # (B, max_T+1, t), (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b)
-        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net.forward_batched(s_i_batch)
+        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
+        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net(s_i)
+        # (T+1, b)
+        action_logps = action_logps[range(T+1), :, actions]
 
-        # Z_t is (b, i, 2); one for each timestep and batch
-        f_i = torch.zeros((max_T, B, self.b, max_T, 2), device=DEVICE)
-        # initial prob is 0, but 1 for e_0 = 1, c_0 = 0, so set e_0=0 to -inf
-        f_i[0] = torch.full((B, self.b, max_T, 2), float('-inf'), device=DEVICE)
-        f_i[0, :, 0, 0, 1] = torch.full((B, ), 1, device=DEVICE)
+        # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
+        # to make base case easy, allow option to start at t=0, c axis has one extra spot
+        f_i = [torch.zeros(self.b, t+1, 2, device=DEVICE) for t in range(T+2)]
+        # P(s0, a1, Z0) = 1[e0 = 1]
+        # so logp = 0 if e0 = 1, -inf otherwise
+        f_i[0][:, :, 1] = float('-inf')
 
-        for i in range(1, max_T):
-            assert torch.allclose(torch.logsumexp(f_i[i-1], dim=(1, 2, 3)), torch.zeros((B,)))
+        for i in range(1, T+2):
+            assert torch.allclose(torch.logsumexp(f_i[i-1]), torch.tensor(0.), atol=1E-7)
 
-            trans_fn = calc_trans_fn_batched(stop_logps, start_logps, i)
+            # e_prev = 0; options stay same;
+            f_i[i][:, :i, :] = (f_i[i-1][:, :, 0:1]
+                                + action_logps[i-1, :, None, None]
+                                + stop_logps[i, :, None, :])
+            # e_prev = 1; options new, c mass fixed at i
+            f_i[i][:, i, :] = (torch.logsumexp(f_i[i-1][:, :, 1], keepdim=True)
+                               + start_logps[i, :, None]
+                               + action_logps[i-1, :, None]
+                               + stop_logps[i, :, :])
 
-            f_unsummed = (rearrange(f_i[i-1], 'B b -> B b 1')
-                          + trans_fn
-                          + rearrange(action_logps[range(B), i, :, actions_batch[:, i]], 'B b -> B 1 b'))
-            f_i[i] = torch.logsumexp(f_unsummed, axis=1)
+        total_logp = torch.logsumexp(f_i[T][:, :, 1])
+        return f_i, total_logp
 
-        # max_T length would be out of bounds since we zero-index
-        x0 = f_i[lengths-1, range(B)]
-        assert_shape(x0, (B, self.b))
-        # max_T will give last element of (max_T + 1) axis
-        x1 = stop_logps[range(B), lengths, :, STOP_IX]
-        assert_shape(x1, (B, self.b))
-        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
-        return -torch.sum(total_logps)
 
 class VanillaController(nn.Module):
     def __init__(self, a, net, batched: bool = False):
@@ -377,7 +373,7 @@ class HMMTrajNet(nn.Module):
         total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
         return -torch.sum(total_logps)
 
-    def forward_old(self, s_i_batch, actions_batch, lengths):
+    def forward2(self, s_i_batch, actions_batch, lengths):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -385,15 +381,38 @@ class HMMTrajNet(nn.Module):
 
         returns: negative logp of all trajs in batch
         """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
         B, max_T = actions_batch.shape[0:2]
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
-        assert B == 1, 'for now stick with batch size 1'
 
-        s_i = s_i_batch.squeeze(0)
-        actions = actions_batch.squeeze(0)
-        T = lengths[0]
-        s_i = s_i[:T+1]
-        actions = actions[:T]
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
+        f_i = torch.zeros((max_T, B, self.b, ), device=DEVICE)
+        f_i[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
+        for i in range(1, max_T):
+            # (B, b, b)
+            trans_fn = calc_trans_fn_batched(stop_logps, start_logps, i)
+
+            f_unsummed = (rearrange(f_i[i-1], 'B b -> B b 1')
+                          + trans_fn
+                          + rearrange(action_logps[range(B), i, :, actions_batch[:, i]], 'B b -> B 1 b'))
+            f_i[i] = torch.logsumexp(f_unsummed, axis=1)
+
+        # max_T length would be out of bounds since we zero-index
+        x0 = f_i[lengths-1, range(B)]
+        assert_shape(x0, (B, self.b))
+        # max_T will give last element of (max_T + 1) axis
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
+        assert_shape(x1, (B, self.b))
+        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        return -torch.sum(total_logps)
+
+    def forward_old(self, s_i, actions):
+        """
+        returns: negative logp of all trajs in batch
+        """
+        T = actions.shape[0]
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps = self.control_net(s_i)
@@ -412,9 +431,35 @@ class HMMTrajNet(nn.Module):
             f_prev = f
 
         assert_equal(T+1, stop_logps.shape[0])
-        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], axis=0)
-        print(f"total_logp: {total_logp}")
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
         return -total_logp
+
+    def forward_old2(self, s_i, actions):
+        """
+        returns: negative logp of all trajs in batch
+        """
+        T = actions.shape[0]
+
+        # (T+1, b, n), (T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i)
+        # (T+1, b)
+        action_logps = action_logps[range(T), :, actions]
+
+        f_0 = start_logps[0] + action_logps[0]
+        f_prev = f_0
+        for i in range(1, T):
+            beta = stop_logps[i, :, STOP_IX]  # (b,)
+            one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+            f = (torch.logaddexp(f_prev + one_minus_beta,
+                                 torch.logsumexp(f_prev + beta, dim=0) + start_logps[i])
+                 + action_logps[i])
+            f_prev = f
+
+        assert_equal(T+1, stop_logps.shape[0])
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+        return -total_logp
+
 
 
 def calc_trans_fn_batched(stop_logps, start_logps, i):
@@ -494,11 +539,11 @@ def forward_test():
             self.t = 10
 
         def __call__(self, s_i):
-            return None, torch.log(action_probs), torch.log(stop_probs), torch.log(start_probs), None
+            return torch.log(action_probs), torch.log(stop_probs), torch.log(start_probs)
 
     hmmnet = HMMTrajNet(APN())
-    logp = hmmnet.forward(s_i, actions)
-    assert math.isclose(torch.exp(logp), 0.2 * 0.88 / 16, abs_tol=1E-7)
+    negative_logp = hmmnet.forward_old2(s_i, actions)
+    assert math.isclose(torch.exp(-negative_logp), 0.2 * 0.88 / 16, abs_tol=1E-7)
 
 
 def viterbi(hmm: HMMTrajNet, s_i, actions):
@@ -534,6 +579,39 @@ def viterbi(hmm: HMMTrajNet, s_i, actions):
 
     return path
 
+def forward_test2():
+    torch.manual_seed(1)
+    import box_world
+    from modules import RelationalDRLNet, abstract_out_dim
+
+    n = 5
+    b = 10
+    batch_size = 10
+
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                      num_attn_blocks=2,
+                                      num_heads=4,
+                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
+    control_net = Controller(
+        a=4,
+        b=b,
+        net=relational_net,
+        batched=True,
+    )
+
+    net = HMMTrajNet(control_net).to(DEVICE)
+
+    env = box_world.BoxWorldEnv(seed=1)
+
+    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
+    for s_i_batch, actions_batch, lengths in dataloader:
+        loss1 = net.forward(s_i_batch, actions_batch, lengths)
+        loss2 = net.forward2(s_i_batch, actions_batch, lengths)
+        # they should be equal
+        print(f'loss1: {loss1}')
+        print(f'loss2: {loss2}')
+
 
 if __name__ == '__main__':
     forward_test()
+    forward_test2()

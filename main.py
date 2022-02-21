@@ -273,7 +273,7 @@ def batched_comparison2():
     b = 10
     t = 50
     env = box_world.BoxWorldEnv()
-    data = box_world.BoxWorldDataset(env, n=200, traj=True)
+    data = box_world.BoxWorldDataset(env, n=10, traj=True)
     dataloader = DataLoader(data, batch_size=1, shuffle=False, collate_fn=box_world.traj_collate)
 
     apn = abstract.attention_apn(b, t)
@@ -281,7 +281,6 @@ def batched_comparison2():
 
     for s_i_batch, actions_batch, lengths in dataloader:
         t_i, a, s, st, cc = apn(s_i_batch[0])
-        print(f't_i: {t_i.shape}')
         t1.append(t_i)
         a1.append(a)
         s1.append(s)
@@ -293,7 +292,7 @@ def batched_comparison2():
     s1 = torch.cat(s1)
     st1 = torch.cat(st1)
 
-    dataloader = DataLoader(data, batch_size=256, shuffle=False, collate_fn=box_world.traj_collate)
+    dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
     t2, a2, s2, st2, cc2 = [], [], [], [], []
 
     for s_i_batch, actions_batch, lengths in dataloader:
