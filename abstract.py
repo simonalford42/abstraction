@@ -26,11 +26,10 @@ class AbstractPolicyNet(nn.Module):
         """
         s_i: (T, s) tensor of states
         outputs:
-           (T, t) tensor of abstract states t_i
            (T, b, a) tensor of action logps
            (T, b, 2) tensor of stop logps
               the index corresponding to stop/continue are in
-              STOP_IX, CONTINUE_IX
+              box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
            (T, b) tensor of start logps
            (T, T, b) tensor of causal consistency penalties
         """
@@ -46,7 +45,7 @@ class AbstractPolicyNet(nn.Module):
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
 
-        return t_i, action_logps, stop_logps, start_logps, consistency_penalty
+        return action_logps, stop_logps, start_logps, consistency_penalty
 
     def forward_batched(self, s_i_batch):
         """
@@ -212,105 +211,6 @@ def attention_apn(b, t):
     macro_policy_net = FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=32)
     macro_transition_net = FC(input_dim=t + b, output_dim=t, num_hidden=3, hidden_dim=32)
     return AbstractPolicyNet(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net)
-
-
-class CCNet(nn.Moduile):
-    def __init__(self, abstract_policy_net, abstract_penalty=0.5,
-                 consistency_ratio=1.):
-        super().__init__()
-        self.abstract_policy_net = abstract_policy_net
-        self.a = abstract_policy_net.a
-        self.b = abstract_policy_net.b
-        self.t = abstract_policy_net.t
-
-        # logp penalty for longer sequences
-        self.abstract_penalty = abstract_penalty
-        self.consistency_ratio = consistency_ratio
-
-    def forward(self, s_i, actions):
-        T = len(actions)
-        assert_equal(s_i.shape[0], T+1)
-        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        t_i, action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net(s_i)
-        beta_logps = stop_logps[:, :, STOP_IX]
-        one_minus_beta_logps = stop_logps[:, :, CONTINUE_IX]
-        # (T+1, b)
-        action_logps = action_logps[range(T+1), :, actions]
-
-        return cc_loss(action_logps, beta_logps, one_minus_beta_logps, start_logps, causal_penalties)
-
-
-def cc_test():
-    a = 2
-    b = 2
-    T = 3
-    s_i = (0, 1, 0, 1)
-    a_i = (1, 1, 0)
-
-    def p_a_given_s_and_b(a, s, b):
-        if a == s and b == 0:
-            return 0.75
-        elif a != s and b == 1:
-            return 0.75
-        else:
-            return 0.25
-
-    def p_b_given_s(b, s):
-        return [[1, 0], [0.75, 0.25]][s][b]
-
-    def p_stop(b, s):
-        return [[0.25, 0.75],[0.6, 0.4]][s][b]
-
-
-    # (T, b)
-    action_probs = torch.tensor([[p_a_given_s_and_b(a=a, s=s, b=b1)
-                                  for b1 in range(b)]
-                                  for a, s in zip(a_i, s_i[:-1])])
-    start_probs = torch.tensor([[p_b_given_s(b=b1, s=s) for b1 in range(b)]
-                                 for s in s_i[:-1]])
-    stop_probs = torch.tensor([[p_stop(b=b1, s=s) for b1 in range(b)]
-                                 for s in s_i[:-1]])
-    causal_penalties = torch.arange((T+1)**2 * b).reshape(T+1, T+1, 2)
-
-    assert_shape(action_probs, (T, b))
-    assert_shape(start_probs, (T, b))
-    assert_shape(stop_probs, (T, b))
-
-    action_logps = torch.log(action_probs)
-    start_logps = torch.log(start_probs)
-    stop_logps = torch.log(stop_probs)
-    beta_logps = stop_logps
-    one_minus_beta_logps = torch.log(1 - stop_probs)
-
-    # b_vec = 0, 0, 0
-    p_start = 1
-    p_stop_at_end = stop_probs[-1, 0]
-    p_actions = torch.prod(action_probs[:, 0])
-    p_dont_stop = torch.prod(stop_probs[1:, 0])
-    p_0_0_0 = p_start * p_stop_at_end * p_actions * p_dont_stop
-    cc_0_0_0 = causal_penalties[0, 3, 0]
-
-    # b_vec = 0, 1, 0
-    p_start = 1
-    p_stop1 = stop_probs[1, 0]
-    p_stop2 = stop_probs[2, 1]
-    p_stop3 = stop_probs[3, 0]
-    p_actions = action_probs[0, 0] * action_probs[1, 1] * action_probs[2, 0]
-    p_0_1_0 = p_start * p_stop1 * p_stop2 * p_stop3 * p_actions
-    cc_0_1_0 = causal_penalties[0, 1, 0] + causal_penalties[1, 2, 1] + causal_penalties[2, 3, 0]
-
-    # b_vec = 0, 1, 1
-    p_start = 1
-    p_stop1 = stop_probs[1, 0]
-    p_stop2 = stop_probs[3, 1]
-    p_actions = action_probs[0, 0] * action_probs[1, 1] * action_probs[2, 1]
-    p_0_1_1 = p_start * p_stop1 * p_stop2 * p_actions
-    cc_0_1_1 = causal_penalties[0, 1, 0] + causal_penalties[1, 3, 1]
-
-    cc_target = (p_0_0_0 * cc_0_0_0) + (p_0_1_0 * cc_0_1_0) + (p_0_1_1 * cc_0_1_1)
-    cc = cc_loss(action_logps, beta_logps, one_minus_beta_logps, stop_probs, causal_penalties)
-    assert_equal(cc_target, cc)
-
 
 
 class Eq2Net(nn.Module):
