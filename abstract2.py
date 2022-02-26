@@ -1,17 +1,17 @@
-from tracemalloc import start
+import itertools
 import torch.nn as nn
+
 import torch.nn.functional as F
 from einops import rearrange
-import einops
 from utils import assert_equal, DEVICE, assert_shape
 import torch
 from box_world import STOP_IX, CONTINUE_IX
-import math
+
 
 def fw(b, action_logps, stop_logps, start_logps):
     """
     The forward calculation.
-        action_logps: [T+1, b]
+        action_logps: [T, b]
         stop_logps: [T+1, b, 2]
         start_logps: [T+1, b]
         See Notion for more notes on this.
@@ -21,10 +21,13 @@ def fw(b, action_logps, stop_logps, start_logps):
         P(e_t | s_t, b_t) = stop_logps[t]
         P(b_{t+1} | s_t ) = start_logps[t]
         The easy way to think of this is that t denotes where s_t is.
+
+        Assumes stop_logps are arranged so that 0 is continue, 1 is stop.
+        cc_loss which calls this should preprocess it to make it so.
     """
-    T = action_logps.shape[0] - 1
+    T = action_logps.shape[0]
     # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
-    f = [torch.full((b, min(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
+    f = [torch.full((b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
     f[0][0, 0, 1] = 0
 
     for t in range(1, T+1):
@@ -33,12 +36,12 @@ def fw(b, action_logps, stop_logps, start_logps):
                             + action_logps[t-1, :, None, None]
                             + stop_logps[t, :, None, :])
         # e_prev = 1; options new, c mass fixed at t-1
-        f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1], dim=(0, 1, 2), keepdim=True)
+        f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1:2], dim=(0, 1), keepdim=True)
                             + start_logps[t-1, :, None]
                             + action_logps[t-1, :, None]
                             + stop_logps[t, :, :])
 
-    total_logp = torch.logsumexp(f[T][:, :, 1])
+    total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
     return f, total_logp
 
 
@@ -46,108 +49,151 @@ def bw(b, action_logps, stop_logps, start_logps):
     """
     The backward calculation.
     """
-    T = action_logps.shape[0] - 1
+    T = action_logps.shape[0]
     # f[0] is P(s[1:T], a[1:T] | Z0, s0)
     f = torch.full((T+1, b, 2), float('-inf'), device=DEVICE)
     # P(-) = 1[eT = 1]
     f[-1, :, 1] = 0
 
     for t in range(T-1, -1, -1):
-        # e_prev = 0;
-        f[t, :, 0] = (action_logps[t]
-                        + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
-        f[t, :, 1] = torch.logsumexp(start_logps[t, None],
-                                        + action_logps[t, :, None]
-                                        + stop_logps[t+1]
-                                        + f[t+1],
-                                        dim=(0, 1))
+        # e = 0; continue option
+        f[t, :, 0] = (action_logps[t]  # this is really p(a_{t+1})
+                      + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
+
+        # e = 1; stop option
+        f[t, :, 1] = torch.logsumexp(start_logps[t, :, None]
+                                     + action_logps[t, :, None]
+                                     + stop_logps[t+1]
+                                     + f[t+1],
+                                     dim=(0, 1))
 
     total_logp = f[0, 0, 1]
     return f, total_logp
 
-def cc_loss(b, action_logps, stop_logps, start_logps, causal_penalties):
+
+def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens):
     """
-        action_logps (T+1, b)
+        action_logps (T, b)
         stop_logps (T+1, b, 2)
         start_logps (T+1, b)
-        causal_penalties (T+1, T+1, b)
+        causal_pens (T+1, T+1, b)
     """
-    T = action_logps.shape[0] - 1
-    fw_logps, total_logp = fw(action_logps, stop_logps, start_logps)  # (T, b, c, e)
-    bw_logps, total_logp2 = bw(action_logps, stop_logps, start_logps)  # (T, b, e)
-    assert_equal(total_logp, total_logp2)
+    T = action_logps.shape[0]
 
-    total_cc_loss = torch.tensor(float('-inf'))
-    for t in range(T):
-        marginal = fw_logps[t] + bw_logps[t+1, :, None, :]  # (b, c, e)
+    assert_shape(action_logps, (T, b))
+    assert_shape(stop_logps, (T+1, b, 2))
+    assert_shape(start_logps, (T+1, b))
+    assert_shape(causal_pens, (T+1, T+1, b))
+
+    if STOP_IX == 0:
+        # e_t = 1 means stop, so 'stop_ix' must be 1
+        stop_logps = stop_logps.flip(dims=(2, ))
+
+    fw_logps, total_logp = fw(b, action_logps, stop_logps, start_logps)  # (T+1, b, c, e)
+    bw_logps, total_logp2 = bw(b, action_logps, stop_logps, start_logps)  # (T+1, b, e)
+    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+
+    total_cc_loss = 0
+    # t is when we stop
+    for t in range(1, T+1):
+        marginal = fw_logps[t] + bw_logps[t, :, None, :]  # (b, c, e)
         assert_shape(marginal, (b, t, 2))
-        cc_loss = torch.logsumexp(marginal[:, :, 1] + rearrange(causal_penalties[t], 'T b -> b T')[:, :t],
-                                    dim=(0, 1))
-        total_cc_loss = torch.logaddexp(total_cc_loss, cc_loss)
+        causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
+        cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
+        # print(f't: {t}, causal_pen: {causal_pen}', f'cc_loss: {cc_loss}')
+        # print(f'marginal[:, :, 1]: {marginal[:, :, 1]}')
+        # print(f'norm marginal: {torch.exp(marginal[:, :, 1] - total_logp)}')
+        total_cc_loss += cc_loss
 
-    return total_cc_loss - total_logp
+    # print(f'total_cc_loss hmm: {total_cc_loss}')
+    # print(f'total_logp hmm: {total_logp}')
+    return total_cc_loss
+
+
+def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens):
+    """
+        action_logps (T, b)
+        stop_logps (T+1, b, 2)
+        start_logps (T+1, b)
+        causal_pens (T+1, T+1, b)
+
+        The indexing with b_i is really fucked.
+    """
+    T = action_logps.shape[0]
+    assert T > 0
+    assert b > 0
+    assert_shape(action_logps, (T, b))
+    assert_shape(stop_logps, (T+1, b, 2))
+    assert_shape(start_logps, (T+1, b))
+    assert_shape(causal_pens, (T+1, T+1, b))
+
+    total_logp = torch.tensor(float('-inf'))
+
+    def calc_seq_logp(b_i, stops):
+        stop_or_continue_here = [STOP_IX if s else CONTINUE_IX for s in stops]
+        start_ixs = [0] + [i+1 for i in range(T-1) if stops[i]]
+        b_i_starts = [b_i[i] for i in start_ixs]
+        seq_starts_logp = torch.sum(start_logps[start_ixs, b_i_starts])
+        seq_stops_and_continues_logp = torch.sum(stop_logps[range(1, T+1), b_i, stop_or_continue_here])
+        seq_actions_logp = torch.sum(action_logps[range(T), b_i])
+        seq_logp = seq_starts_logp + seq_stops_and_continues_logp + seq_actions_logp
+        # if seq_logp > float('-inf'):
+        #     print(f'b_i: {b_i}',
+        #           f'start_ixs: {start_ixs}',
+        #           f'stops: {stops}',
+        #           f'p: {torch.exp(seq_logp)}',
+        #           f'actions: {torch.exp(seq_actions_logp)}',
+        #           f'stops: {torch.exp(seq_stops_and_continues_logp)}',
+        #           f'starts: {torch.exp(seq_starts_logp)}')
+        return seq_logp
+
+    # b_i is started based on s_{i-1}, gives action a_i which yields state s_i
+    # ranges from 1 to T, so b_i[0] is really b_1, sorry
+    for b_i in itertools.product(range(b), repeat=T):
+        # based off s_i, can we stop and start new option for b_{i+1}
+        stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
+                      for i in range(T-1)]
+        stop_at_i.append([True])  # always stop at end
+
+        for stops in itertools.product(*stop_at_i):
+            assert_equal(len(stops), T)
+            # i'th entry of stops is whether b_i was stopped
+            seq_logp = calc_seq_logp(b_i, stops)
+            total_logp = torch.logaddexp(total_logp, seq_logp)
+
+    total_cc_loss = 0
+    for b_i in itertools.product(range(b), repeat=T):
+        # based off s_i, can we stop and start new option for b_{i+1}
+        stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
+                      for i in range(len(b_i)-1)]
+        stop_at_i.append([True])  # always stop at end
+
+        for stops in itertools.product(*stop_at_i):
+            seq_logp = calc_seq_logp(b_i, stops)
+            # i'th entry of stops is whether b_i was stopped
+            # if b_j is stopped, and prev b_i was stopped at i, then we
+            # started at s_{i-1} and end at s_j
+            # print(f'stops: {stops}')
+            start_ixs = [0] + [i+1 for i in range(T) if stops[i]]
+            # print(f'start_ixs: {start_ixs}')
+            stop_ixs = [i+1 for i in range(T) if stops[i]]
+            # print(f'stop_ixs: {stop_ixs}')
+            options = [(i, j, b_i[i]) for (i, j) in zip(start_ixs, stop_ixs)]
+            cc_seq = sum([causal_pens[i, j, b] for (i, j, b) in options])
+            # print(f'options: {options}', f'cc_seq: {cc_seq}')
+            norm_p_seq = torch.exp(seq_logp - total_logp)
+            total_cc_loss += norm_p_seq * cc_seq
+
+    # print(f'total_cc_loss brute: {total_cc_loss}')
+    # print(f'total_logp brute: {total_logp}')
+    return total_cc_loss
+
 
 class HmmTrajNet2(nn.Module):
     def __init__(self, abstract_policy_net):
         super().__init__()
         self.abstract_policy_net = abstract_policy_net
         self.b = abstract_policy_net.b
-
-    def fw(self, action_logps, stop_logps, start_logps):
-        """
-        The forward calculation.
-            action_logps: [T+1, b]
-            stop_logps: [T+1, b, 2]
-            start_logps: [T+1, b]
-            See Notion for more notes on this.
-
-            Due to a change in indexing, the relationship is:
-            P(a_t | b_t, s_{t-1} = action_logps[t-1]
-            P(e_t | s_t, b_t) = stop_logps[t]
-            P(b_{t+1} | s_t ) = start_logps[t]
-            The easy way to think of this is that t denotes where s_t is.
-        """
-        T = action_logps.shape[0] - 1
-        # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
-        f = [torch.full((self.b, min(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
-        f[0][0, 0, 1] = 0
-
-        for t in range(1, T+1):
-            # e_prev = 0; options stay same
-            f[t][:, :t-1, :] = (f[t-1][:, :, 0:1]
-                                + action_logps[t-1, :, None, None]
-                                + stop_logps[t, :, None, :])
-            # e_prev = 1; options new, c mass fixed at t-1
-            f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1], dim=(0, 1, 2), keepdim=True)
-                               + start_logps[t-1, :, None]
-                               + action_logps[t-1, :, None]
-                               + stop_logps[t, :, :])
-
-        total_logp = torch.logsumexp(f[T][:, :, 1])
-        return f, total_logp
-
-    def bw(self, action_logps, stop_logps, start_logps):
-        """
-        The backward calculation.
-        """
-        T = action_logps.shape[0] - 1
-        # f[0] is P(s[1:T], a[1:T] | Z0, s0)
-        f = torch.full((T+1, self.b, 2), float('-inf'), device=DEVICE)
-        # P(-) = 1[eT = 1]
-        f[-1, :, 1] = 0
-
-        for t in range(T-1, -1, -1):
-            # e_prev = 0;
-            f[t, :, 0] = (action_logps[t]
-                          + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
-            f[t, :, 1] = torch.logsumexp(start_logps[t, None],
-                                            + action_logps[t, :, None]
-                                            + stop_logps[t+1]
-                                            + f[t+1],
-                                         dim=(0, 1))
-
-        total_logp = f[0, 0, 1]
-        return f, total_logp
 
     def forward(self, s_i, actions):
         """
@@ -158,23 +204,12 @@ class HmmTrajNet2(nn.Module):
         assert_equal(T+1, s_i.shape[0])
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        action_logps, stop_logps, start_logps, causal_penalties = self.abstract_policy_net(s_i)
-        # (T+1, b)
-        action_logps = action_logps[range(T+1), :, actions]
+        action_logps, stop_logps, start_logps, causal_pens = self.abstract_policy_net(s_i)
+        # (T, b)
+        action_logps = action_logps[range(T), :, actions]
 
-        fw_logps, total_logp = self.fw(action_logps, stop_logps, start_logps)  # (T, b, c, e)
-        bw_logps, total_logp2 = self.bw(action_logps, stop_logps, start_logps)  # (T, b, e)
-        assert_equal(total_logp, total_logp2)
-
-        total_cc_loss = torch.tensor(float('-inf'))
-        for t in range(T):
-            marginal = fw_logps[t] + bw_logps[t+1, :, None, :]  # (b, c, e)
-            assert_shape(marginal, (self.b, t, 2))
-            cc_loss = torch.logsumexp(marginal[:, :, 1] + rearrange(causal_penalties[t], 'T b -> b T')[:, :t],
-                                      dim=(0, 1))
-            total_cc_loss = torch.logaddexp(total_cc_loss, cc_loss)
-
-        return total_cc_loss - total_logp
+        loss = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens)
+        return loss
 
 
 class VanillaController(nn.Module):
@@ -455,7 +490,6 @@ class UnbatchedTrajNet(nn.Module):
 class HMMTrajNet(nn.Module):
     """
     batched Class for doing the HMM calculations for learning options.
-    for now just wraps unbactched.
     """
     def __init__(self, control_net):
         super().__init__()
@@ -465,6 +499,8 @@ class HMMTrajNet(nn.Module):
 
     def forward(self, s_i_batch, actions_batch, lengths):
         """
+        batched, inefficient.
+
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
         lengths: T for each traj in the batch
@@ -500,6 +536,8 @@ class HMMTrajNet(nn.Module):
 
     def forward2(self, s_i_batch, actions_batch, lengths):
         """
+        batched, efficient.
+
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
         lengths: T for each traj in the batch
@@ -532,7 +570,7 @@ class HMMTrajNet(nn.Module):
         total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
         return -torch.sum(total_logps)
 
-    def forward_old(self, s_i, actions):
+    def forward_unatched_inefficient(self, s_i, actions):
         """
         returns: negative logp of all trajs in batch
         """
@@ -558,7 +596,7 @@ class HMMTrajNet(nn.Module):
         total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
         return -total_logp
 
-    def forward_old2(self, s_i, actions):
+    def forward_unbatched_efficient(self, s_i, actions):
         """
         returns: negative logp of all trajs in batch
         """
@@ -630,45 +668,6 @@ def calc_trans_fn(stop_logps, start_logps, i):
     return trans_fn
 
 
-def forward_test():
-    b = 2
-    s = 2
-
-    s_i = torch.tensor([0, 0, 1, 1])
-    actions = torch.tensor([0, 0, 0])
-    action_probs = torch.tensor([[0.5, 0.5], [0, 1]])
-    action_probs = einops.repeat(action_probs, 'b a -> 3 b a')
-
-    # b, s
-    stop_probs = torch.tensor([[0, 0.2], [0.5, 0.5]])
-    one_minus_stop_probs = 1 - stop_probs
-    # stop goes first when concatenating
-    assert STOP_IX == 0
-    stop_probs = torch.stack((stop_probs, one_minus_stop_probs))
-    assert_equal(stop_probs.shape, (2, s, b))
-    stop_probs = rearrange(stop_probs, 't b s -> s b t')
-    stop_probs = torch.stack([stop_probs[s] for s in s_i])
-    assert_equal(stop_probs.shape, (4, b, 2))
-
-    start_probs = torch.tensor([[0.5, 0.4], [0.5, 0.6]])
-    start_probs = rearrange(start_probs, 'b s -> s b')
-    start_probs = torch.stack([start_probs[s] for s in s_i])
-    assert_equal(start_probs.shape, (4, b))
-
-    class APN():
-        def __init__(self):
-            self.a = 2
-            self.b = 2
-            self.t = 10
-
-        def __call__(self, s_i):
-            return torch.log(action_probs), torch.log(stop_probs), torch.log(start_probs)
-
-    hmmnet = HMMTrajNet(APN())
-    negative_logp = hmmnet.forward_old2(s_i, actions)
-    assert math.isclose(torch.exp(-negative_logp), 0.2 * 0.88 / 16, abs_tol=1E-7)
-
-
 def viterbi(hmm: HMMTrajNet, s_i, actions):
     """
     hmm: a trained HMMNet
@@ -701,121 +700,3 @@ def viterbi(hmm: HMMTrajNet, s_i, actions):
         path[t-1] = int(pointer_matrix[t, path[t]])
 
     return path
-
-def forward_test2():
-    torch.manual_seed(1)
-    import box_world
-    from modules import RelationalDRLNet, abstract_out_dim
-    from utils import Timing
-
-    n = 5
-    b = 10
-    batch_size = 10
-
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                      num_attn_blocks=2,
-                                      num_heads=4,
-                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
-    control_net = Controller(
-        a=4,
-        b=b,
-        net=relational_net,
-        batched=True,
-    )
-
-    net = HMMTrajNet(control_net).to(DEVICE)
-
-    env = box_world.BoxWorldEnv(seed=1)
-
-    dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
-    for s_i_batch, actions_batch, lengths in dataloader:
-        with Timing('loss1'):
-            for _ in range(10):
-                loss1 = net.forward(s_i_batch, actions_batch, lengths)
-        with Timing('loss2'):
-            for _ in range(10):
-                loss2 = net.forward2(s_i_batch, actions_batch, lengths)
-        # they should be equal
-        print(f'loss1: {loss1}')
-        print(f'loss2: {loss2}')
-
-
-def cc_test():
-    a = 2
-    b = 2
-    T = 3
-    s_i = (0, 1, 0, 1)
-    a_i = (1, 1, 0)
-
-    def p_a_given_s_and_b(a, s, b):
-        if a == s and b == 0:
-            return 0.75
-        elif a != s and b == 1:
-            return 0.75
-        else:
-            return 0.25
-
-    def p_b_given_s(b, s):
-        return [[1, 0], [0.75, 0.25]][s][b]
-
-    def p_stop(b, s):
-        return [[0.25, 0.75],[0.6, 0.4]][s][b]
-
-
-    # (T, b)
-    action_probs = torch.tensor([[p_a_given_s_and_b(a=a, s=s, b=b1)
-                                  for b1 in range(b)]
-                                  for a, s in zip(a_i, s_i[:-1])])
-    start_probs = torch.tensor([[p_b_given_s(b=b1, s=s) for b1 in range(b)]
-                                 for s in s_i[:-1]])
-    stop_probs = torch.tensor([[p_stop(b=b1, s=s) for b1 in range(b)]
-                                 for s in s_i[:-1]])
-    causal_penalties = torch.arange((T+1)**2 * b).reshape(T+1, T+1, 2)
-
-    assert_shape(action_probs, (T, b))
-    assert_shape(start_probs, (T, b))
-    assert_shape(stop_probs, (T, b))
-
-    action_logps = torch.log(action_probs)
-    start_logps = torch.log(start_probs)
-    stop_logps = torch.log(stop_probs)
-    beta_logps = stop_logps
-    one_minus_beta_logps = torch.log(1 - stop_probs)
-
-    # b_vec = 0, 0, 0
-    p_start = 1
-    p_stop_at_end = stop_probs[-1, 0]
-    p_actions = torch.prod(action_probs[:, 0])
-    p_dont_stop = torch.prod(stop_probs[1:, 0])
-    p_0_0_0 = p_start * p_stop_at_end * p_actions * p_dont_stop
-    cc_0_0_0 = causal_penalties[0, 3, 0]
-
-    # b_vec = 0, 1, 0
-    p_start = 1
-    p_stop1 = stop_probs[1, 0]
-    p_stop2 = stop_probs[2, 1]
-    p_stop3 = stop_probs[3, 0]
-    p_actions = action_probs[0, 0] * action_probs[1, 1] * action_probs[2, 0]
-    p_0_1_0 = p_start * p_stop1 * p_stop2 * p_stop3 * p_actions
-    cc_0_1_0 = causal_penalties[0, 1, 0] + causal_penalties[1, 2, 1] + causal_penalties[2, 3, 0]
-
-    # b_vec = 0, 1, 1
-    p_start = 1
-    p_stop1 = stop_probs[1, 0]
-    p_stop2 = stop_probs[3, 1]
-    p_actions = action_probs[0, 0] * action_probs[1, 1] * action_probs[2, 1]
-    p_0_1_1 = p_start * p_stop1 * p_stop2 * p_actions
-    cc_0_1_1 = causal_penalties[0, 1, 0] + causal_penalties[1, 3, 1]
-
-    cc_target = (p_0_0_0 * cc_0_0_0) + (p_0_1_0 * cc_0_1_0) + (p_0_1_1 * cc_0_1_1)
-    cc = cc_loss(action_logps, beta_logps, one_minus_beta_logps, stop_probs, causal_penalties)
-    assert_equal(cc_target, cc)
-
-
-
-
-
-if __name__ == '__main__':
-    # forward_test()
-    # forward_test2()
-    cc_test()

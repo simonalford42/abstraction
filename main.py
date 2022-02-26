@@ -319,7 +319,6 @@ def batched_comparison2():
     print('all good')
 
 
-
 def batched_comparison():
     random.seed(0)
     torch.manual_seed(0)

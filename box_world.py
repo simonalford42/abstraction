@@ -19,7 +19,7 @@ from pycolab.examples.research.box_world import box_world as bw
 NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
 
 STOP_IX = 0
-CONTINUE_IX = 1
+CONTINUE_IX = 1 - STOP_IX
 
 
 class BoxWorldEnv(gym.Env):
