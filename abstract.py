@@ -5,12 +5,11 @@ from einops import rearrange, repeat
 from utils import assert_equal, assert_shape
 from modules import MicroNet, RelationalDRLNet, FC
 import box_world
-from box_world import STOP_IX, CONTINUE_IX
 
 
-class AbstractPolicyNet(nn.Module):
+class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net):
+                 macro_transition_net, batched: bool = False):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -20,8 +19,15 @@ class AbstractPolicyNet(nn.Module):
         self.micro_net = micro_net  # s -> (b * a +  2 * b)
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
+        self.batched = batched
 
-    def forward(self, s_i):
+    def forward(self, s_i_batch):
+        if self.batched:
+            return self.forward_b(s_i_batch)
+        else:
+            return self.forward_ub(s_i_batch)
+
+    def forward_ub(self, s_i):
         """
         s_i: (T, s) tensor of states
         outputs:
@@ -46,11 +52,10 @@ class AbstractPolicyNet(nn.Module):
 
         return action_logps, stop_logps, start_logps, consistency_penalty
 
-    def forward_batched(self, s_i_batch):
+    def forward_b(self, s_i_batch):
         """
         s_i: (B, T, s) tensor of states
         outputs:
-           (B, T, t) tensor of abstract states t_i
            (B, T, b, a) tensor of action logps
            (B, T, b, 2) tensor of stop logps
               the index corresponding to stop/continue are in
@@ -77,7 +82,7 @@ class AbstractPolicyNet(nn.Module):
         stop_logps = F.log_softmax(stop_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return t_i, action_logps, stop_logps, start_logps, consistency_penalty
+        return action_logps, stop_logps, start_logps, consistency_penalty
 
     def new_option_logps(self, t):
         """
@@ -167,7 +172,7 @@ class AbstractPolicyNet(nn.Module):
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
 
-    def calc_consistency_penalty_batched(self, t_i_batch):
+    def calc_consistency_penalty_b(self, t_i_batch):
         """For each pair of indices and each option, calculates (t - alpha(b, t))^2
 
         Args:
@@ -191,6 +196,101 @@ class AbstractPolicyNet(nn.Module):
         penalty = penalty.sum(dim=-1)  # (B, T, T, b)
         return penalty
 
+    def eval_obs(self, s_i):
+        """
+        For evaluation when we act for a single state.
+
+        s_i: (*s, ) tensor
+
+        Returns:
+            (b, a) tensor of action logps
+            (b, 2) tensor of stop logps
+            (b, ) tensor of start logps
+        """
+        # (1, b, a), (1, b, 2), (1, b)
+        action_logps, stop_logps, start_logps, causal_pens = self.unbatched_forward(s_i.unsqueeze(0))
+        return action_logps[0], stop_logps[0], start_logps[0]
+
+
+class HomoController(nn.Module):
+    """Controller as in microcontroller and macrocontroller.
+    Homo because all of the outputs come from one big network.
+    Really this one should be phased out if I can show just as good results from the Hetero one.
+    Given the state, we give action logps, start logps, stop logps, etc.
+    """
+
+    def __init__(self, a, b, net, batched: bool = False):
+        super().__init__()
+        self.a = a
+        self.b = b
+        self.net = net
+        self.batched = batched
+
+    def forward(self, s_i_batch):
+        return self.forward_b(s_i_batch)
+
+    def forward_b(self, s_i_batch):
+        """
+        s_i: (B, T, s) tensor of states
+        lengths: (B, ) tensor of lengths
+        outputs:
+            (B, T, b, a) tensor of action logps,
+            (B, T, b, 2) tensor of stop logps,
+            (B, T, b) tensor of start logps,
+        """
+        if not self.batched:
+            return self.unbatched_forward(s_i_batch)
+
+        B, T, *s = s_i_batch.shape
+        out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        assert_equal(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
+        action_logits = out[:, :, :self.b * self.a].reshape(B, T, self.b, self.a)
+        stop_logits = out[:, :, self.b * self.a:self.b * self.a + 2 * self.b].reshape(B, T, self.b, 2)
+        start_logits = out[:, :, self.b * self.a + 2 * self.b:]
+        assert_equal(start_logits.shape[-1], self.b)
+        action_logps = F.log_softmax(action_logits, dim=3)
+        stop_logps = F.log_softmax(stop_logits, dim=3)
+        start_logps = F.log_softmax(start_logits, dim=2)
+
+        return action_logps, stop_logps, start_logps
+
+    def forward_ub(self, s_i):
+        """
+        s_i: (T, s) tensor of states
+        outputs:
+            (T, b, a) tensor of action logps
+            (T, b, 2) tensor of stop logps,
+            (T, b) tensor of start logps
+        """
+        T = s_i.shape[0]
+        out = self.net(s_i)
+        assert_equal(out.shape, (T, self.a * self.b + 2 * self.b + self.b))
+        action_logits = out[:, :self.b * self.a].reshape(T, self.b, self.a)
+        stop_logits = out[:, self.b * self.a:self.b * self.a + 2 * self.b].reshape(T, self.b, 2)
+        start_logits = out[:, self.b * self.a + 2 * self.b:]
+        assert_equal(start_logits.shape[1], self.b)
+
+        action_logps = F.log_softmax(action_logits, dim=2)
+        stop_logps = F.log_softmax(stop_logits, dim=2)
+        start_logps = F.log_softmax(start_logits, dim=1)
+
+        return action_logps, stop_logps, start_logps
+
+    def eval_obs(self, s_i):
+        """
+        For evaluation when we act for a single state.
+
+        s_i: (s, ) tensor
+
+        Returns:
+            (b, a) tensor of action logps
+            (b, 2) tensor of stop logps
+            (b, ) tensor of start logps
+        """
+        # (1, b, a), (1, b, 2), (1, b)
+        action_logps, stop_logps, start_logps = self.unbatched_forward(s_i.unsqueeze(0))
+        return action_logps[0], stop_logps[0], start_logps[0]
+
 
 def boxworld_relational_net(out_dim: int = 4):
     return RelationalDRLNet(input_channels=box_world.NUM_ASCII,
@@ -199,7 +299,7 @@ def boxworld_relational_net(out_dim: int = 4):
                             out_dim=out_dim)
 
 
-def attention_apn(b, t):
+def boxworld_controller(b, t=16):
     a = 4
     tau_net = boxworld_relational_net(out_dim=t)
     input_shape = (14, 14)  # assume default box world grid size
@@ -209,93 +309,4 @@ def attention_apn(b, t):
                          out_dim=a * b + 2 * b)
     macro_policy_net = FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=32)
     macro_transition_net = FC(input_dim=t + b, output_dim=t, num_hidden=3, hidden_dim=32)
-    return AbstractPolicyNet(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net)
-
-
-class Eq2Net(nn.Module):
-    def __init__(self, abstract_policy_net, abstract_penalty=0.5,
-                 consistency_ratio=1.):
-        super().__init__()
-        self.abstract_policy_net = abstract_policy_net
-        self.a = abstract_policy_net.a
-        self.b = abstract_policy_net.b
-        self.t = abstract_policy_net.t
-
-        # logp penalty for longer sequences
-        self.abstract_penalty = abstract_penalty
-        self.consistency_ratio = consistency_ratio
-
-    def forward(self, s_i, actions):
-        """
-        s_i: (T+1, s) tensor
-        actions: (T,) tensor of ints
-
-        outputs: logp of sequence
-
-        HMM calculation, building off Smith et al. 2018.
-
-        At a high level:
-            - keeps track of distribution over abstract actions, and what timestep
-              that abstract action started. so (i+1, b) shape.
-            - uses this to calculate expected
-        """
-        T = len(actions)
-        assert_equal(s_i.shape[0], T + 1)
-        # (T+1, t), (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        t_i, action_logps, stop_logps, start_logps, consistency_penalties = self.abstract_policy_net(s_i)
-
-        total_logp = 0.
-        total_consistency_penalty = 0.
-        # (i+1, b) dist over options keeps track of when option started.
-        option_step_dist = start_logps[0].unsqueeze(0)
-        for i, action in enumerate(actions):
-            # invariant: prob dist should sum to 1
-            # I was getting error of ~1E-7 which got triggered by default value
-            # only applies if no abstract penalty
-            if not self.abstract_penalty:
-                assert torch.isclose((s := torch.logsumexp(option_step_dist, (0, 1))),
-                                     torch.tensor(0.), atol=1E-5), \
-                       f'Not quite zero: {s}'
-
-            # transition before acting. this way the state at which an option
-            # starts is where its first move happens
-            # => skip transition for the first step
-            if i > 0:
-                stop_lps = stop_logps[i, :, STOP_IX]  # (b,)
-                one_minus_stop_lps = stop_logps[i, :, CONTINUE_IX]  # (b,)
-                start_lps = start_logps[i]  # (b,)
-
-                # prob mass for options exiting which started at step i; broadcast
-                option_step_stops = option_step_dist + stop_lps.reshape(1, self.b)  # (i+1, b)
-                total_rearrange = torch.logsumexp(option_step_stops, dim=(0, 1))
-                total_rearrange = total_rearrange - self.abstract_penalty
-                # distribute new mass among new options. broadcast
-                new_mass = start_lps + total_rearrange  # (b,)
-
-                # mass that stays in place, aka doesn't stop; broadcast
-                option_step_dist = option_step_dist + one_minus_stop_lps  # (T, b)
-                # add new mass at new timestep; TODO: einops?
-                option_step_dist = torch.cat((option_step_dist,
-                                             new_mass.unsqueeze(0)))
-
-                # causal consistency penalty; start up to current timestep, end here,
-                consistency_pens = consistency_penalties[:i + 1, i, :]  # (i+1, b)
-                assert_equal(consistency_pens.shape, (i + 1, self.b))
-                consistency_penalty = torch.logsumexp(option_step_dist + consistency_pens, dim=(0, 1))
-                # TODO: this needs to be a logsumexp
-                total_consistency_penalty += consistency_penalty
-
-            action_lps = action_logps[i, :, action]  # (b,)
-            # in prob space, this is a sum of probs weighted by macro-dist
-            logp = torch.logsumexp(action_lps + option_step_dist, dim=(0, 1))
-            # TODO: does this need to be a logsumexp?
-            total_logp += logp
-
-        # all macro options need to stop at the very end.
-        final_stop_lps = stop_logps[-1, :, STOP_IX]  # (b,)
-        # broadcast
-        total_logp += torch.logsumexp(final_stop_lps.reshape(1, self.b) + option_step_dist, dim=(0, 1))
-
-        # maximize logp, minimize causal inconsistency
-        loss = -total_logp + self.consistency_ratio * total_consistency_penalty
-        return loss
+    return HeteroController(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net)

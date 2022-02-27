@@ -1,448 +1,387 @@
-import math
-from main import up_right_main
-from utils import assert_equal
-from scipy.special import logsumexp
-import unittest
-import numpy as np
+import itertools
+import torch.nn as nn
 from einops import rearrange
-import abstract2
+from utils import assert_equal, DEVICE, assert_shape
+import torch
+from box_world import STOP_IX, CONTINUE_IX
 
 
-def eval_viterbi(net: abstract2.HMMTrajNet, data: up_right_main.TrajData):
-    for i, s_i, actions, points in zip(range(len(data.traj_states)), data.traj_states, data.traj_moves, data.points):
-        (x, y, x_goal, y_goal) = points[0][0]
-        moves = ''.join(data.trajs[i])
-        print(f'{moves}')
-        path = abstract2.viterbi(net, s_i, actions)
-        print(''.join(map(str, path)))
-        print('-'*10)
-
-
-def forward(init_dist, trans_fn, obs_dist, obs):
+def cc_fw(b, action_logps, stop_logps, start_logps):
     """
-    observations are in [0, a-1]
-    states are in [0, b-1]
-    init_dist: (b, ) vector of initial distribution over states
-    trans_fn: (b, b) matrix whose i,j'th entry is probability of transitioning
-        from state i to state j obs_dist: (b, a) matrix whose i,j'th entry is
-        probability of outputing observation j given state i.
-    obs: (T, ) observation of states.
+    The forward calculation.
+        action_logps: [T, b]
+        stop_logps: [T+1, b, 2]
+        start_logps: [T+1, b]
+        See Notion for more notes on this.
 
-    returns (matrix, total_prob), where the t,i'th entry of matrix is the
-    probability of the observation up to time t given the t'th state is i.
+        Due to a change in indexing, the relationship is:
+        P(a_t | b_t, s_{t-1} = action_logps[t-1]
+        P(e_t | s_t, b_t) = stop_logps[t]
+        P(b_{t+1} | s_t ) = start_logps[t]
+        The easy way to think of this is that t denotes where s_t is.
+
+        Assumes stop_logps are arranged so that 0 is continue, 1 is stop.
+        cc_loss which calls this should preprocess it to make it so.
     """
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
+    T = action_logps.shape[0]
+    # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
+    f = [torch.full((b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
+    f[0][0, 0, 1] = 0
 
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
+    for t in range(1, T+1):
+        # e_prev = 0; options stay same
+        f[t][:, :t-1, :] = (f[t-1][:, :, 0:1]
+                            + action_logps[t-1, :, None, None]
+                            + stop_logps[t, :, None, :])
+        # e_prev = 1; options new, c mass fixed at t-1
+        f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1:2], dim=(0, 1), keepdim=True)
+                            + start_logps[t-1, :, None]
+                            + action_logps[t-1, :, None]
+                            + stop_logps[t, :, :])
 
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
+    total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
+    return f, total_logp
 
-    f_matrix = np.zeros((T, b))
-    f_matrix[0] = init_dist * p_obs_at_t_given_state[0, :]
 
+def cc_bw(b, action_logps, stop_logps, start_logps):
+    """
+    The backward calculation.
+    """
+    T = action_logps.shape[0]
+    # f[0] is P(s[1:T], a[1:T] | Z0, s0)
+    f = torch.full((T+1, b, 2), float('-inf'), device=DEVICE)
+    # P(-) = 1[eT = 1]
+    f[-1, :, 1] = 0
+
+    for t in range(T-1, -1, -1):
+        # e = 0; continue option
+        f[t, :, 0] = (action_logps[t]  # this is really p(a_{t+1})
+                      + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
+
+        # e = 1; stop option
+        f[t, :, 1] = torch.logsumexp(start_logps[t, :, None]
+                                     + action_logps[t, :, None]
+                                     + stop_logps[t+1]
+                                     + f[t+1],
+                                     dim=(0, 1))
+
+    total_logp = f[0, 0, 1]
+    return f, total_logp
+
+
+def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens):
+    """
+        action_logps (T, b)
+        stop_logps (T+1, b, 2)
+        start_logps (T+1, b)
+        causal_pens (T+1, T+1, b)
+    """
+    T = action_logps.shape[0]
+
+    assert_shape(action_logps, (T, b))
+    assert_shape(stop_logps, (T+1, b, 2))
+    assert_shape(start_logps, (T+1, b))
+    assert_shape(causal_pens, (T+1, T+1, b))
+
+    if STOP_IX == 0:
+        # e_t = 1 means stop, so 'stop_ix' must be 1
+        stop_logps = stop_logps.flip(dims=(2, ))
+
+    fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps)  # (T+1, b, c, e)
+    bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps)  # (T+1, b, e)
+    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+
+    total_cc_loss = 0
+    # t is when we stop
+    for t in range(1, T+1):
+        marginal = fw_logps[t] + bw_logps[t, :, None, :]  # (b, c, e)
+        assert_shape(marginal, (b, t, 2))
+        causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
+        cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
+        total_cc_loss += cc_loss
+
+    return total_logp, total_cc_loss
+
+
+def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens):
+    """
+        action_logps (T, b)
+        stop_logps (T+1, b, 2)
+        start_logps (T+1, b)
+        causal_pens (T+1, T+1, b)
+
+        The indexing with b_i is really fucked.
+    """
+    T = action_logps.shape[0]
+    assert T > 0
+    assert b > 0
+    assert_shape(action_logps, (T, b))
+    assert_shape(stop_logps, (T+1, b, 2))
+    assert_shape(start_logps, (T+1, b))
+    assert_shape(causal_pens, (T+1, T+1, b))
+
+    total_logp = torch.tensor(float('-inf'))
+
+    def calc_seq_logp(b_i, stops):
+        stop_or_continue_here = [STOP_IX if s else CONTINUE_IX for s in stops]
+        start_ixs = [0] + [i+1 for i in range(T-1) if stops[i]]
+        b_i_starts = [b_i[i] for i in start_ixs]
+        seq_starts_logp = torch.sum(start_logps[start_ixs, b_i_starts])
+        seq_stops_and_continues_logp = torch.sum(stop_logps[range(1, T+1), b_i, stop_or_continue_here])
+        seq_actions_logp = torch.sum(action_logps[range(T), b_i])
+        seq_logp = seq_starts_logp + seq_stops_and_continues_logp + seq_actions_logp
+        return seq_logp
+
+    # b_i is started based on s_{i-1}, gives action a_i which yields state s_i
+    # ranges from 1 to T, so b_i[0] is really b_1, sorry
+    for b_i in itertools.product(range(b), repeat=T):
+        # based off s_i, can we stop and start new option for b_{i+1}
+        stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
+                      for i in range(T-1)]
+        stop_at_i.append([True])  # always stop at end
+
+        for stops in itertools.product(*stop_at_i):
+            assert_equal(len(stops), T)
+            # i'th entry of stops is whether b_i was stopped
+            seq_logp = calc_seq_logp(b_i, stops)
+            total_logp = torch.logaddexp(total_logp, seq_logp)
+
+    total_cc_loss = 0
+    for b_i in itertools.product(range(b), repeat=T):
+        # based off s_i, can we stop and start new option for b_{i+1}
+        stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
+                      for i in range(len(b_i)-1)]
+        stop_at_i.append([True])  # always stop at end
+
+        for stops in itertools.product(*stop_at_i):
+            seq_logp = calc_seq_logp(b_i, stops)
+            # i'th entry of stops is whether b_i was stopped
+            # if b_j is stopped, and prev b_i was stopped at i, then we
+            # started at s_{i-1} and end at s_j
+            start_ixs = [0] + [i+1 for i in range(T) if stops[i]]
+            stop_ixs = [i+1 for i in range(T) if stops[i]]
+            options = [(i, j, b_i[i]) for (i, j) in zip(start_ixs, stop_ixs)]
+            cc_seq = sum([causal_pens[i, j, b] for (i, j, b) in options])
+            norm_p_seq = torch.exp(seq_logp - total_logp)
+            total_cc_loss += norm_p_seq * cc_seq
+
+    return total_logp, total_cc_loss
+
+
+class CausalNet(nn.Module):
+    """
+    Uses AbstractPolicyNet instead of Controller for getting action logps, etc.
+    The difference is that here these come from separate nets which can be
+    different sizes, instead of simply slicing the output of one big Relational
+    net.
+    """
+
+    def __init__(self, controller, cc_weight=1, batched: bool = False):
+        super().__init__()
+        assert not batched, 'not yet implemented'
+        self.controller = controller
+        self.b = controller.b
+        self.cc_weight = cc_weight
+
+    def forward(self, s_i_batch, actions_batch, lengths):
+        assert s_i_batch.shape[0] == 1
+        T = lengths[0]
+        s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
+
+        # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
+        action_logps, stop_logps, start_logps, causal_pens = self.controller(s_i)
+        # (T, b)
+        action_logps = action_logps[range(T), :, actions]
+
+        logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens)
+        loss = -logp + self.cc_weight * cc
+        return loss
+
+
+class TrajNet(nn.Module):
+    """
+    Like HmmNet, but no abstract model or anything.
+    This way, we can swap out HmmNet with this and see how just basic SV
+    training does as a baseline.
+    """
+    def __init__(self, control_net):
+        super().__init__()
+        self.control_net = control_net
+        assert control_net.batched
+        self.b = control_net.b
+
+    def eval_obs(self, s_i):
+        """
+        s_i: single observation
+        returns: (4, ) of action log probabilities
+        """
+        # (1, b, 4)
+        action_logps, _, _, = self.control_net.unbatched_forward(s_i.unsqueeze(0))
+        action_logps = action_logps[0, 0]
+        assert_shape(action_logps, (4, ))
+        return action_logps
+
+    def forward(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+
+        returns: negative logp of all trajs in batch
+        """
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
+        total_logp = 0
+        total_correct = 0
+        for i, length in enumerate(lengths):
+            logp = torch.sum(action_logps[i, range(length), 0, actions_batch[i, :length]])
+            choices = action_logps[i, :length, 0]
+            preds = torch.argmax(choices, dim=1)
+            assert_equal(preds.shape, actions_batch[i, :length].shape)
+            correct = torch.sum(preds == actions_batch[i, :length])
+            total_correct += correct
+            total_logp += logp
+
+        return -total_logp
+
+
+class HmmNet(nn.Module):
+    """
+    Class for doing the HMM calculations for learning options.
+    """
+    def __init__(self, control_net, batched: bool = True):
+        super().__init__()
+        self.control_net = control_net
+        self.b = control_net.b
+        self.batched = batched
+
+    def forward(self, s_i_batch, actions_batch, lengths):
+        if self.batched:
+            return self.logp_loss(s_i_batch, actions_batch, lengths)
+        else:
+            assert s_i_batch.shape[0] == 1
+            T = lengths[0]
+            s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
+            return self.logp_loss_ub(s_i, actions)
+
+    def logp_loss(self, s_i_batch, actions_batch, lengths):
+        """
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+
+        returns: negative logp of all trajs in batch
+        """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+
+        f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
+        f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
+        for i in range(1, max_T):
+            beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+            one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+
+            f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
+                                    torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
+                      + action_logps[range(B), i, :, actions_batch[:, i]])
+
+        # max_T length would be out of bounds since we zero-index
+        x0 = f[lengths-1, range(B)]
+        assert_shape(x0, (B, self.b))
+        # max_T will give last element of (max_T + 1) axis
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
+        assert_shape(x1, (B, self.b))
+        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        return -torch.sum(total_logps)
+
+    def logp_loss_ub(self, s_i, actions):
+        """
+        returns: negative logp of all trajs in batch
+        """
+        T = actions.shape[0]
+
+        # (T+1, b, n), (T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps = self.control_net(s_i)
+        # (T+1, b)
+        action_logps = action_logps[range(T), :, actions]
+
+        f_0 = start_logps[0] + action_logps[0]
+        f_prev = f_0
+        for i in range(1, T):
+            beta = stop_logps[i, :, STOP_IX]  # (b,)
+            one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+            f = (torch.logaddexp(f_prev + one_minus_beta,
+                                 torch.logsumexp(f_prev + beta, dim=0) + start_logps[i])
+                 + action_logps[i])
+            f_prev = f
+
+        assert_equal(T+1, stop_logps.shape[0])
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+        return -total_logp
+
+
+# don't delete, viterbi still needs it
+def calc_trans_fn(stop_logps, start_logps, i):
+    """
+    stop_logps: (T+1, b, 2) output from control_net
+    start_logps: (T+1, b) output from control_net
+    i: current time step
+
+    output: (b, b) matrix whose i,j'th entry is the probability of transitioning
+            from option i to option j.
+    """
+    b = start_logps.shape[1]
+    # for each b' -> b
+    beta = stop_logps[i, :, STOP_IX]  # (b,)
+    one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+    continue_trans_fn = torch.full((b, b), float('-inf'), device=DEVICE)
+    continue_trans_fn[torch.arange(b), torch.arange(b)] = one_minus_beta
+    trans_fn = torch.logaddexp(rearrange(beta, 'b -> b 1') + rearrange(start_logps[i], 'b -> 1 b'),
+                               continue_trans_fn)
+    assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(b, device=DEVICE), atol=1E-6)
+    return trans_fn
+
+
+def viterbi(hmm: HmmNet, s_i, actions):
+    """
+    hmm: a trained HMMNet
+    s_i: (T+1, s) tensor
+    actions: (T,) tensor of ints
+
+    output: most likely path of options over the sequence
+    """
+    T = len(actions)
+    b = hmm.b
+    assert_equal(s_i.shape[0], T + 1)
+    # (T+1, b, n), (T+1, b, 2), (T+1, b)
+    action_logps, stop_logps, start_logps = hmm.control_net(s_i)
+
+    f_matrix = torch.zeros((T, b))
+    f_matrix[0] = start_logps[0] + action_logps[0, :, actions[0]]
+    pointer_matrix = torch.zeros((T, b))
+
+    # TODO: implement with the more efficient trans fn
     for t in range(1, T):
-        # new_f[j] = f[i] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        f_matrix[t] = np.einsum('i, ij, j -> j', f_matrix[t-1], trans_fn, p_obs_at_t_given_state[t])
-
-    p = f_matrix[T-1].sum()
-    return f_matrix, p
-
-
-def forward_log(init_dist, trans_fn, obs_dist, obs):
-    """
-    observations are in [0, a-1]
-    states are in [0, b-1]
-    init_dist: (b, ) vector of initial distribution over states
-    trans_fn: (b, b) matrix whose i,j'th entry is probability of transitioning
-        from state i to state j obs_dist: (b, a) matrix whose i,j'th entry is
-        probability of outputing observation j given state i.
-    obs: (T, ) observation of states.
-
-    returns (matrix, total_prob), where the t,i'th entry of matrix is the
-    probability of the observation up to time t given the t'th state is i.
-    """
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    trans_fn = np.log(trans_fn)
-    obs_dist = np.log(obs_dist)
-    init_dist = np.log(init_dist)
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[0] = init_dist + p_obs_at_t_given_state[0, :]
-
-    for t in range(1, T):
-        # new_f[j] = f[i] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        new_f_vector = (rearrange(f_matrix[t-1], 'a -> a 1')
-                        + trans_fn
-                        + rearrange(p_obs_at_t_given_state[t], 'a -> 1 a'))  # (a, a)
-        f_matrix[t] = logsumexp(new_f_vector, axis=0)
-
-    p = logsumexp(f_matrix[T-1], axis=0)
-    return f_matrix, p
-
-
-def backward(init_dist, trans_fn, obs_dist, obs):
-    """
-    observations are in [0, a-1]
-    states are in [0, b-1]
-    init_dist: (b, ) vector of initial distribution over states
-    trans_fn: (b, b) matrix whose i,j'th entry is probability of transitioning
-        from state i to state j obs_dist: (b, a) matrix whose i,j'th entry is
-        probability of outputing observation j given state i.
-    obs: (T, ) observation of states.
-
-    returns (matrix, total_prob), where the t,i'th entry of matrix is the
-    probability of the observation from t+1 onwards given the t'th state is i.
-    and total_prob is the total probability
-    """
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[-1] = np.ones(b)
-
-    for t in range(T-2, -1, -1):
-        # new_f[i] = f[j] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        f_matrix[t] = np.einsum('j, ij, j -> i', f_matrix[t+1], trans_fn, p_obs_at_t_given_state[t+1])
-
-    p = (f_matrix[0] * init_dist * p_obs_at_t_given_state[0]).sum()
-    return f_matrix, p
-
-
-def backward_log(init_dist, trans_fn, obs_dist, obs):
-    """
-    observations are in [0, a-1]
-    states are in [0, b-1]
-    init_dist: (b, ) vector of initial distribution over states
-    trans_fn: (b, b) matrix whose i,j'th entry is probability of transitioning
-        from state i to state j obs_dist: (b, a) matrix whose i,j'th entry is
-        probability of outputing observation j given state i.
-    obs: (T, ) observation of states.
-
-    returns (matrix, total_prob), where the t,i'th entry of matrix is the
-    log probability of the observation from t+1 onwards given the t'th state is i.
-    """
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    trans_fn = np.log(trans_fn)
-    obs_dist = np.log(obs_dist)
-    init_dist = np.log(init_dist)
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[-1] = np.zeros(b)
-
-    for t in range(T-2, -1, -1):
-        # new_f[i] = f[j] * trans_fn[i, j] * p_obs_at_t_given_state[t, j]
-        new_f = rearrange(f_matrix[t+1], 'b -> 1 b') + trans_fn + rearrange(p_obs_at_t_given_state[t+1], 'b -> 1 b')
-        f_matrix[t] = logsumexp(new_f, axis=1)
-
-    p = logsumexp(f_matrix[0] + init_dist + p_obs_at_t_given_state[0])
-    return f_matrix, p
-
-
-def viterbi(init_dist, trans_fn, obs_dist, obs):
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[0] = init_dist * p_obs_at_t_given_state[0]
-    pointer_matrix = np.zeros((T, b))
-
-    for t in range(1, T):
-        f_new = rearrange(f_matrix[t-1], 'b -> b 1') * trans_fn
-        pointers = np.argmax(f_new, axis=0)
-
-        f_matrix[t] = p_obs_at_t_given_state[t] * np.max(f_new, axis=0)
-        pointer_matrix[t] = pointers
-
-    path = np.zeros(T, dtype=int)
-    path[-1] = np.argmax(f_matrix[-1])
-    for t in range(T-1, 0, -1):
-        path[t-1] = int(pointer_matrix[t, path[t]])
-
-    return path
-
-
-def fw_bw(init_dist, trans_fn, obs_dist, obs):
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    # see derivation at https://en.wikipedia.org/wiki/Baum%E2%80%93Welch_algorithm#Update
-    alpha, _ = forward(init_dist, trans_fn, obs_dist, obs)
-    beta, _ = backward(init_dist, trans_fn, obs_dist, obs)
-    p_obss = np.sum(alpha * beta, axis=1)
-    # calculation should be the same for each point in time
-    assert np.all(p_obss[0] == p_obss), 'mistake in fw/bw calculations'
-    p_obs = p_obss[0]
-
-    gamma = (alpha * beta) / p_obs
-    assert_equal(gamma.shape, (T, b))
-    xi_numerator = np.einsum('ti, ij, tj, tj -> tij', alpha[:-1], trans_fn, p_obs_at_t_given_state[1:], beta[1:])
-    assert_equal(xi_numerator.shape, (T-1, b, b))
-    xi = xi_numerator / p_obs
-
-    new_trans_fn_denom = np.sum(gamma[:-1], axis=0)
-    alt_new_trans_fn_denom = np.einsum('tij->i', xi)
-    np.testing.assert_allclose(new_trans_fn_denom, alt_new_trans_fn_denom)
-
-    new_init_dist = gamma[0]
-    new_trans_fn = np.sum(xi, axis=0) / new_trans_fn_denom[:, np.newaxis]
-
-    obs_indicator = (obs == np.arange(a)[:, np.newaxis]).transpose()
-    assert_equal(obs_indicator.shape, (T, a))
-
-    new_obs_dist = np.einsum('ta, tb -> ba', obs_indicator, gamma) / np.einsum('ti -> i', gamma)[:, np.newaxis]
-    assert_equal(new_obs_dist.shape, (b, a))
-
-    np.testing.assert_almost_equal(np.sum(new_init_dist, axis=0), 1)
-    np.testing.assert_almost_equal(np.sum(new_trans_fn, axis=1), np.ones(b))
-    np.testing.assert_almost_equal(np.sum(new_obs_dist, axis=1), np.ones(b))
-
-    return new_init_dist, new_trans_fn, new_obs_dist, p_obs
-
-
-def viterbi_log(init_dist, trans_fn, obs_dist, obs):
-    (b, ) = init_dist.shape
-    assert_equal(trans_fn.shape, (b, b))
-    assert_equal(obs_dist.shape[0], b)
-    # a = obs_dist.shape[1]
-    (T, ) = obs.shape
-
-    assert_equal(sum(init_dist), 1)
-    assert_equal(np.sum(trans_fn, axis=1), np.ones(b))
-    assert_equal(np.sum(obs_dist, axis=1), np.ones(b))
-
-    # (T, b) matrix whose i,j'th entry is probability of observation from time step i given state j.
-    p_obs_at_t_given_state = obs_dist[:, obs].transpose()
-
-    f_matrix = np.zeros((T, b))
-    f_matrix[0] = init_dist + p_obs_at_t_given_state[0]
-    pointer_matrix = np.zeros((T, b))
-
-    for t in range(1, T):
+        trans_fn = calc_trans_fn(stop_logps, start_logps, t)
         f_new = rearrange(f_matrix[t-1], 'b -> b 1') + trans_fn
-        pointers = np.argmax(f_new, axis=0)
+        pointers = torch.argmax(f_new, axis=0)
 
-        f_matrix[t] = p_obs_at_t_given_state[t] + np.max(f_new, axis=0)
+        f_matrix[t] = action_logps[t, :, actions[t]] + torch.max(f_new, axis=0)[0]
         pointer_matrix[t] = pointers
 
-    path = np.zeros(T, dtype=int)
-    path[-1] = np.argmax(f_matrix[-1])
+    path = [0] * T
+    path[-1] = int(torch.argmax(f_matrix[-1]))
     for t in range(T-1, 0, -1):
         path[t-1] = int(pointer_matrix[t, path[t]])
 
     return path
-
-
-class HMMTest(unittest.TestCase):
-
-    def check_fw_bw(self, fw_probs, bw_probs):
-        obs_probs = np.einsum('tj, tj -> t', fw_probs, bw_probs)
-        self.assertTrue(np.all(obs_probs == obs_probs[0]))
-
-    def test1(self):
-        # b = 2, a = 2
-        trans_fn = np.array([[1, 0], [0.75, 0.25]])
-        obs_dist = np.array([[0.75, 0.25], [0, 1]])
-
-        obs = np.array([1, 0, 0])
-        init_dist = np.array([1, 0])
-        fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
-        target = np.array([[0.25, 0],
-                           [0.25 * 0.75, 0],
-                           [0.25 * 0.75 * 0.75, 0]])
-        target_p = 0.25 * 0.75 * 0.75
-
-        self.assertTrue(np.array_equal(fw_out, target))
-        self.assert_equal(p, target_p)
-
-        out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertTrue(np.allclose(out2, np.log(fw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p)))
-
-        bw_out, p = backward(init_dist, trans_fn, obs_dist, obs)
-        target = np.array([[1, 1], [0.75, 0.75 * 0.75], [0.75 * 0.75, 0.75 ** 3]])
-        target = target[::-1]  # I entered them backwards
-        # target_p stays the same
-
-        np.testing.assert_array_equal(bw_out, target)
-        self.assertTrue(np.array_equal(bw_out, target))
-        self.assert_equal(p, target_p)
-
-        out2, p2 = backward_log(init_dist, trans_fn, obs_dist, obs)
-        np.testing.assert_allclose(out2, np.log(bw_out))
-        self.assertTrue(np.allclose(out2, np.log(bw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p)))
-
-        self.check_fw_bw(fw_out, bw_out)
-
-        most_likely = [0, 0, 0]
-        v = viterbi(init_dist, trans_fn, obs_dist, obs)
-        v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assert_equal(list(v), most_likely)
-        self.assert_equal(list(v2), most_likely)
-
-    def test2(self):
-        # b = 2, a = 2
-        trans_fn = np.array([[1, 0], [0.75, 0.25]])
-        obs_dist = np.array([[0.75, 0.25], [0, 1]])
-
-        obs = np.array([1, 0])
-        init_dist = np.array([0, 1])
-        fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
-        target = np.array([[0, 1], [0.75 * 0.75, 0]])
-        target_p = 0.75 * 0.75
-
-        self.assertTrue(np.array_equal(fw_out, target))
-        self.assert_equal(p, target_p)
-
-        out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertTrue(np.allclose(out2, np.log(fw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p)))
-
-        bw_out, _ = backward(init_dist, trans_fn, obs_dist, obs)
-        self.check_fw_bw(fw_out, bw_out)
-
-        most_likely = [1, 0]
-        v = viterbi(init_dist, trans_fn, obs_dist, obs)
-        v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assert_equal(list(v), most_likely)
-        self.assert_equal(list(v2), most_likely)
-
-    def test3(self):
-        # b = 2, a = 2
-        trans_fn = np.array([[1, 0], [0.75, 0.25]])
-        obs_dist = np.array([[0.75, 0.25], [0, 1]])
-
-        obs = np.array([0, 0])
-        init_dist = np.array([0.5, 0.5])
-        fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
-
-        target = np.array([[0.5 * 0.75, 0], [0.5 * 0.75 * 0.75, 0]])
-        target_p = 0.5 * 0.75 * 0.75
-
-        self.assertTrue(np.array_equal(fw_out, target))
-        self.assert_equal(p, target_p)
-
-        bw_out, _ = backward(init_dist, trans_fn, obs_dist, obs)
-        self.check_fw_bw(fw_out, bw_out)
-
-        out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertTrue(np.allclose(out2, np.log(fw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p)))
-
-        most_likely = [0, 0]
-        v = viterbi(init_dist, trans_fn, obs_dist, obs)
-        v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assert_equal(list(v), most_likely)
-        self.assert_equal(list(v2), most_likely)
-
-    def test4(self):
-        trans_fn = np.array([[0.6, 0.4], [0.3, 0.7]])
-        obs_dist = np.array([[0.3, 0.4, 0.3], [0.4, 0.3, 0.3]])
-
-        obs = np.array([0, 1, 2, 2])
-        init_dist = np.array([0.8, 0.2])
-        fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
-
-        target = np.array([[0.24, 0.08], [0.067, 0.046], [0.016, 0.017], [0.0045, 0.0056]])
-        target_p = 0.0045 + 0.0056
-
-        self.assertTrue(np.allclose(fw_out, target, atol=0.005))
-        self.assertTrue(math.isclose(p, target_p, abs_tol=0.005))
-
-        out2, p2 = forward_log(init_dist, trans_fn, obs_dist, obs)
-        self.assertTrue(np.allclose(out2, np.log(fw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p), abs_tol=0.005))
-
-        bw_out, p = backward(init_dist, trans_fn, obs_dist, obs)
-        target = np.array([[1, 1], [0.3, 0.3], [0.09, 0.09], [0.0324, 0.0297]])
-        target = target[::-1]  # I entered them backwards
-        # target_p stays the same
-
-        self.check_fw_bw(fw_out, bw_out)
-
-        np.testing.assert_array_equal(bw_out, target)
-        self.assertTrue(np.array_equal(bw_out, target))
-        self.assertTrue(math.isclose(p, target_p, abs_tol=0.005))
-
-        out2, p2 = backward_log(init_dist, trans_fn, obs_dist, obs)
-        np.testing.assert_allclose(out2, np.log(bw_out))
-        self.assertTrue(np.allclose(out2, np.log(bw_out)))
-        self.assertTrue(math.isclose(p2, np.log(p)))
-
-        most_likely = [0, 0, 0, 0]
-        v = viterbi(init_dist, trans_fn, obs_dist, obs)
-        v2 = viterbi_log(init_dist, trans_fn, obs_dist, obs)
-        self.assert_equal(list(v), most_likely)
-        self.assert_equal(list(v2), most_likely)
-
-        fw_out, p = forward(init_dist, trans_fn, obs_dist, obs)
-        bw_out, p2 = backward(init_dist, trans_fn, obs_dist, obs)
-
-        new_init_dist, new_trans_fn, new_obs_dist, p = fw_bw(init_dist, trans_fn, obs_dist, obs)
-        target_new_trans_fn = np.array([[0.63, 0.37], [0.31, 0.69]])
-        np.testing.assert_array_almost_equal(new_trans_fn, target_new_trans_fn, decimal=2)
-
-
-if __name__ == '__main__':
-    unittest.main()

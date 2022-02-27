@@ -428,11 +428,11 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
 def eval_options_model(control_net, env, n=100):
     """
-    control_net takes in a single observation, and outputs tuple of:
+    control_net needs to have fn eval_obs that takes in a single observation,
+    and outputs tuple of:
         (b, a) action logps
         (b, 2) stop logps
         (b, ) start logps
-    renderer is a callable that takes in obs.
     """
     print(f'Evaluating model on {n} episodes')
     control_net.eval()
@@ -445,7 +445,7 @@ def eval_options_model(control_net, env, n=100):
         obs = env.reset()
         done, solved = False, False
         t = 0
-        options = []
+        # options = []
         moves_without_moving = 0
         prev_pos = (-1, -1)
 
@@ -481,29 +481,27 @@ def eval_options_model(control_net, env, n=100):
                 print('Quitting due to 5 repeated moves')
                 done = True
 
-            title = f'option={current_option}'
-            pause = 0.2
-            if new_option:
-                title += ' (new)'
-                pause = 0.5
-            option_map[current_option].append((obs, title, pause))
-            render_obs(obs, title=title, pause=pause)
+            # title = f'option={current_option}'
+            # pause = 0.2
+            # if new_option:
+            #     title += ' (new)'
+            #     pause = 0.5
+            # option_map[current_option].append((obs, title, pause))
+            # render_obs(obs, title=title, pause=pause)
 
-        if i < 3:
-            print(f"options for eval {i}: {options}")
         if solved:
             num_solved += 1
 
     print(f'Solved {num_solved}/{n} episodes')
-    for i in option_map:
-        # print(i, Counter(option_map[i]))
-        # if i < 3:
-        #     continue
-        print(i)
-        for k, (obs, title, pause) in enumerate(option_map[i]):
-            if k > 10:
-                break
-            render_obs(obs, title=title, pause=0.5)
+    # for i in option_map:
+    #     # print(i, Counter(option_map[i]))
+    #     # if i < 3:
+    #     #     continue
+    #     print(i)
+    #     for k, (obs, title, pause) in enumerate(option_map[i]):
+    #         if k > 10:
+    #             break
+    #         render_obs(obs, title=title, pause=0.5)
     control_net.train()
     return solved
 
@@ -602,8 +600,8 @@ class BoxWorldDataset(Dataset):
         self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
 
-        self.traj_states, self.traj_moves = zip(*sorted(zip(
-            self.traj_states, self.traj_moves), key=lambda t: t[0].shape[0]))
+        self.traj_states, self.traj_moves = zip(*sorted(zip(self.traj_states, self.traj_moves),
+                                                        key=lambda t: t[0].shape[0]))
         assert_equal([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
     def __len__(self):

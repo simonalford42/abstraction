@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import einops
 from utils import assert_equal, DEVICE
+import warnings
 
 
 class Print(nn.Module):
@@ -43,18 +44,24 @@ class MicroNet(nn.Module):
                                 )
 
     def forward(self, x):
-        # input: (N, C, H, W)
-        (N, C, H, W) = x.shape
-        assert_equal(C, self.input_channels)
-        assert_equal((H, W), self.input_shape)
+        with warnings.catch_warnings():
+            # UserWarning: Using padding='same' with even kernel lengths and odd
+            # dilation may require a zero-padded copy of the input be created
+            # ^^ those are annoying
+            warnings.filterwarnings("ignore",category=UserWarning)
 
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
-        assert_equal(x.shape, (N, 12, H, W))
+            # input: (N, C, H, W)
+            (N, C, H, W) = x.shape
+            assert_equal(C, self.input_channels)
+            assert_equal((H, W), self.input_shape)
 
-        x = einops.rearrange(x, 'n c h w -> n (c h w)')
-        x = self.fc(x)
-        return x
+            x = F.relu(self.conv1(x))
+            x = F.relu(self.conv2(x))
+            assert_equal(x.shape, (N, 12, H, W))
+
+            x = einops.rearrange(x, 'n c h w -> n (c h w)')
+            x = self.fc(x)
+            return x
 
 
 class RelationalDRLNet(nn.Module):
@@ -92,31 +99,37 @@ class RelationalDRLNet(nn.Module):
                                 )
 
     def forward(self, x):
-        # input: (N, C, H, W)
-        (N, C, H, W) = x.shape
-        assert_equal(C, self.input_channels)
+        with warnings.catch_warnings():
+            # UserWarning: Using padding='same' with even kernel lengths and odd
+            # dilation may require a zero-padded copy of the input be created
+            # ^^ those are annoying
+            warnings.filterwarnings("ignore",category=UserWarning)
 
-        x = self.conv1(x)
-        # x = self.conv1_batchnorm(x)
-        x = self.conv2(x)
-        # x = self.conv2_batchnorm(x)
-        x = F.relu(x)
-        assert_equal(x.shape[-2:], (H, W))
+            # input: (N, C, H, W)
+            (N, C, H, W) = x.shape
+            assert_equal(C, self.input_channels)
 
-        x = self.add_positions(x)
-        x = einops.rearrange(x, 'n c h w -> n (h w) c')
-        x = self.pre_attn_linear(x)
-        assert_equal(x.shape, (N, H*W, self.d))
+            x = self.conv1(x)
+            # x = self.conv1_batchnorm(x)
+            x = self.conv2(x)
+            # x = self.conv2_batchnorm(x)
+            x = F.relu(x)
+            assert_equal(x.shape[-2:], (H, W))
 
-        for _ in range(self.num_attn_blocks):
-            x = x + self.attn_block(x, x, x, need_weights=False)[0]
-            x = F.layer_norm(x, (self.d,))
+            x = self.add_positions(x)
+            x = einops.rearrange(x, 'n c h w -> n (h w) c')
+            x = self.pre_attn_linear(x)
             assert_equal(x.shape, (N, H*W, self.d))
 
-        x = einops.reduce(x, 'n l d -> n d', 'max')
-        x = self.fc(x)
+            for _ in range(self.num_attn_blocks):
+                x = x + self.attn_block(x, x, x, need_weights=False)[0]
+                x = F.layer_norm(x, (self.d,))
+                assert_equal(x.shape, (N, H*W, self.d))
 
-        return x
+            x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = self.fc(x)
+
+            return x
 
     def add_positions(self, inp):
         # input shape: (N, C, H, W)
