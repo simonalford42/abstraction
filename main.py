@@ -5,10 +5,9 @@ import torch.nn as nn
 import random
 import utils
 from utils import Timing, DEVICE
-from abstract import HomoController, boxworld_controller, HeteroController
+from abstract import boxworld_controller, boxworld_homocontroller
 from hmm import CausalNet, TrajNet, HmmNet, viterbi
 import time
-from modules import FC, RelationalDRLNet, abstract_out_dim
 import box_world
 import mlflow
 
@@ -52,7 +51,7 @@ def boxworld_outer_sv(
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
-        print_every = epochs / 5
+        print_every = 1 #epochs / 5
         save_every = 1
         params = dict(epochs=epochs, lr=lr, n=n)
         print(f"params: {params}")
@@ -123,7 +122,7 @@ def boxworld_main():
     utils.print_torch_device()
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 50
+    n = 500
     epochs = 100
     num_test = 200
     lr = 8E-4
@@ -131,30 +130,19 @@ def boxworld_main():
     fix_seed = False
     b = 10
     batch_size = 10
+    net = 'hmm'
 
-    net = 'causal'
-
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                      num_attn_blocks=2,
-                                      num_heads=4,
-                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
-    control_net = HomoController(
-        a=4,
-        b=b,
-        net=relational_net,
-        batched=True,
-    )
 
     if net == 'causal':
         batch_size = 1
         control_net = boxworld_controller(b=b)
         net = CausalNet(control_net)
-    elif net == 'hmm':
-        batched = False
-        net = HmmNet(control_net, batched=batched).to(DEVICE)
-        utils.load_mlflow_model(net, run_id='d66d14463f2041d6928f93f48ee26cc6', model_name='round-19')
     else:
-        net = TrajNet(control_net).to(DEVICE)
+        homo_controller = boxworld_homocontroller(b=b)
+        if net == 'hmm':
+            net = HmmNet(homo_controller).to(DEVICE)
+        else:
+            net = TrajNet(homo_controller).to(DEVICE)
 
     env = box_world.BoxWorldEnv(seed=1)
 

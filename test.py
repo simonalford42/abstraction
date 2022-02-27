@@ -502,11 +502,29 @@ def test_cc6():
 
 
 def test_hmm_and_cc():
+    import abstract
+    import hmm
+    import box_world
+    control_net = abstract.boxworld_controller(b=3)
 
+    net = hmm.CausalNet(control_net, cc_weight=0.)
+    net2 = hmm.HmmNet(control_net)
+
+    env = box_world.BoxWorldEnv()
+    dataloader = box_world.box_world_dataloader(env=env, n=10, traj=True, batch_size=1)
+
+    net.to(DEVICE)
+    net2.to(DEVICE)
+
+    for s_i, actions, lengths in dataloader:
+        s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
+        loss = net(s_i, actions, lengths)
+        loss2 = net2(s_i, actions, lengths)
+        assert torch.isclose(loss, loss2)
 
 
 if __name__ == '__main__':
-    pass
+    test_hmm_and_cc()
     # test_cc2()
     # test_cc3()
     # test_cc4()

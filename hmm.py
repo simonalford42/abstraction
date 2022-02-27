@@ -176,9 +176,8 @@ class CausalNet(nn.Module):
     net.
     """
 
-    def __init__(self, controller, cc_weight=1, batched: bool = False):
+    def __init__(self, controller, cc_weight=1):
         super().__init__()
-        assert not batched, 'not yet implemented'
         self.controller = controller
         self.b = controller.b
         self.cc_weight = cc_weight
@@ -189,7 +188,7 @@ class CausalNet(nn.Module):
         s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.controller(s_i)
+        action_logps, stop_logps, start_logps, causal_pens = self.controller(s_i, batched=False)
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
@@ -207,7 +206,6 @@ class TrajNet(nn.Module):
     def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
-        assert control_net.batched
         self.b = control_net.b
 
     def eval_obs(self, s_i):
@@ -216,7 +214,7 @@ class TrajNet(nn.Module):
         returns: (4, ) of action log probabilities
         """
         # (1, b, 4)
-        action_logps, _, _, = self.control_net.unbatched_forward(s_i.unsqueeze(0))
+        action_logps, _, _, = self.control_net(s_i.unsqueeze(0), batched=False)
         action_logps = action_logps[0, 0]
         assert_shape(action_logps, (4, ))
         return action_logps
@@ -233,7 +231,7 @@ class TrajNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=False)
 
         total_logp = 0
         total_correct = 0
@@ -253,20 +251,13 @@ class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """
-    def __init__(self, control_net, batched: bool = True):
+    def __init__(self, control_net):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
-        self.batched = batched
 
     def forward(self, s_i_batch, actions_batch, lengths):
-        if self.batched:
-            return self.logp_loss(s_i_batch, actions_batch, lengths)
-        else:
-            assert s_i_batch.shape[0] == 1
-            T = lengths[0]
-            s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
-            return self.logp_loss_ub(s_i, actions)
+        return self.logp_loss(s_i_batch, actions_batch, lengths)
 
     def logp_loss(self, s_i_batch, actions_batch, lengths):
         """
@@ -281,7 +272,7 @@ class HmmNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps = self.control_net(s_i_batch)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
 
         f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
         f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
@@ -309,7 +300,7 @@ class HmmNet(nn.Module):
         T = actions.shape[0]
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
-        action_logps, stop_logps, start_logps = self.control_net(s_i)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i)
         # (T+1, b)
         action_logps = action_logps[range(T), :, actions]
 
@@ -364,7 +355,7 @@ def viterbi(hmm: HmmNet, s_i, actions):
     b = hmm.b
     assert_equal(s_i.shape[0], T + 1)
     # (T+1, b, n), (T+1, b, 2), (T+1, b)
-    action_logps, stop_logps, start_logps = hmm.control_net(s_i)
+    action_logps, stop_logps, start_logps, _ = hmm.control_net(s_i)
 
     f_matrix = torch.zeros((T, b))
     f_matrix[0] = start_logps[0] + action_logps[0, :, actions[0]]

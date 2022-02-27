@@ -2,14 +2,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from einops import rearrange, repeat
-from utils import assert_equal, assert_shape
-from modules import MicroNet, RelationalDRLNet, FC
+from utils import assert_equal, assert_shape, DEVICE
+from modules import MicroNet, RelationalDRLNet, FC, abstract_out_dim
 import box_world
 
 
 class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, batched: bool = False):
+                 macro_transition_net):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -19,10 +19,9 @@ class HeteroController(nn.Module):
         self.micro_net = micro_net  # s -> (b * a +  2 * b)
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
-        self.batched = batched
 
-    def forward(self, s_i_batch):
-        if self.batched:
+    def forward(self, s_i_batch, batched=False):
+        if batched:
             return self.forward_b(s_i_batch)
         else:
             return self.forward_ub(s_i_batch)
@@ -76,7 +75,7 @@ class HeteroController(nn.Module):
 
         start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
 
-        consistency_penalty = self.calc_consistency_penalty_batched(t_i)  # (B, T, T, b)
+        consistency_penalty = self.calc_consistency_penalty_b(t_i)  # (B, T, T, b)
 
         action_logps = F.log_softmax(action_logps, dim=3)
         stop_logps = F.log_softmax(stop_logps, dim=3)
@@ -153,8 +152,8 @@ class HeteroController(nn.Module):
         """
         T = t_i.shape[0]
         # apply each action at each timestep.
-        macro_trans = self.macro_transitions(t_i, torch.arange(self.b))
-        macro_trans2 = self.macro_transitions2(t_i, torch.arange(self.b))
+        macro_trans = self.macro_transitions(t_i, torch.arange(self.b, device=DEVICE))
+        macro_trans2 = self.macro_transitions2(t_i, torch.arange(self.b, device=DEVICE))
         assert torch.all(macro_trans == macro_trans2)
 
         macro_trans1 = macro_trans.reshape(T, 1, self.b, self.t)
@@ -185,7 +184,7 @@ class HeteroController(nn.Module):
 
         t_i_flat = rearrange(t_i_batch, 'B T t -> (B T) t')
         macro_trans = self.macro_transitions2(t_i_flat,
-                                              torch.arange(self.b))
+                                              torch.arange(self.b, device=DEVICE))
         macro_trans = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
         t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
@@ -208,7 +207,7 @@ class HeteroController(nn.Module):
             (b, ) tensor of start logps
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.unbatched_forward(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps, causal_pens = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
 
 
@@ -219,15 +218,17 @@ class HomoController(nn.Module):
     Given the state, we give action logps, start logps, stop logps, etc.
     """
 
-    def __init__(self, a, b, net, batched: bool = False):
+    def __init__(self, a, b, net):
         super().__init__()
         self.a = a
         self.b = b
         self.net = net
-        self.batched = batched
 
-    def forward(self, s_i_batch):
-        return self.forward_b(s_i_batch)
+    def forward(self, s_i_batch, batched=True):
+        if batched:
+            return self.forward_b(s_i_batch)
+        else:
+            return self.forward_ub(s_i_batch)
 
     def forward_b(self, s_i_batch):
         """
@@ -237,9 +238,8 @@ class HomoController(nn.Module):
             (B, T, b, a) tensor of action logps,
             (B, T, b, 2) tensor of stop logps,
             (B, T, b) tensor of start logps,
+            None as causal pens placeholder
         """
-        if not self.batched:
-            return self.unbatched_forward(s_i_batch)
 
         B, T, *s = s_i_batch.shape
         out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
@@ -252,7 +252,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=3)
         start_logps = F.log_softmax(start_logits, dim=2)
 
-        return action_logps, stop_logps, start_logps
+        return action_logps, stop_logps, start_logps, None
 
     def forward_ub(self, s_i):
         """
@@ -261,6 +261,7 @@ class HomoController(nn.Module):
             (T, b, a) tensor of action logps
             (T, b, 2) tensor of stop logps,
             (T, b) tensor of start logps
+            None as causal pen placeholder
         """
         T = s_i.shape[0]
         out = self.net(s_i)
@@ -274,7 +275,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=2)
         start_logps = F.log_softmax(start_logits, dim=1)
 
-        return action_logps, stop_logps, start_logps
+        return action_logps, stop_logps, start_logps, None
 
     def eval_obs(self, s_i):
         """
@@ -288,7 +289,7 @@ class HomoController(nn.Module):
             (b, ) tensor of start logps
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps = self.unbatched_forward(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
 
 
@@ -298,6 +299,18 @@ def boxworld_relational_net(out_dim: int = 4):
                             num_heads=4,
                             out_dim=out_dim)
 
+
+def boxworld_homocontroller(b):
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                      num_attn_blocks=2,
+                                      num_heads=4,
+                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
+    control_net = HomoController(
+        a=4,
+        b=b,
+        net=relational_net,
+    )
+    return control_net
 
 def boxworld_controller(b, t=16):
     a = 4
