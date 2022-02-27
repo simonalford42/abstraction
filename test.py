@@ -1,13 +1,16 @@
-import math
-from einops import rearrange
-import einops
+import random
 import numpy as np
+import abstract
 import torch
 import torch.nn.functional as F
 from torch import tensor
+from torch.utils.data import DataLoader
+import torch.nn as nn
 
-from abstract2 import Controller, HMMTrajNet, cc_loss, cc_loss_brute
+from abstract2 import Controller, HMMTrajNet, TrajNet, UnbatchedTrajNet, cc_loss, cc_loss_brute
+import box_world
 from box_world import CONTINUE_IX, STOP_IX
+from modules import RelationalDRLNet
 from utils import DEVICE, assert_equal, assert_shape
 
 import hypothesis
@@ -50,125 +53,125 @@ def cc_input(draw):
     return tuple([b, action_logps, stop_logps, start_logps, causal_pens])
 
 
-# @example(args=(1,
-#          tensor([[0.]]),  # action_logps
-#          tensor([[[0., 0.]],  # stop_logps
-#                  [[0., 0.]]]),
-#          tensor([[0.], [0.]]),  # start logps
-#          tensor([[[0.], [1.]],  # cc pens
-#                  [[0.], [0.]]])),)
-# @example(args=(1,
-#          tensor([[0.]]),  # action logps
-#          tensor([[[0., 0.]],  # stop logps
-#                  [[0., 0.]]]),
-#          tensor([[1.],  # start logps
-#                  [1.]]),
-#          tensor([[[0.], [0.]],  # cc
-#                  [[0.], [0.]]])),)
-# @example(args=(1,
-#          tensor([[0.], [0.]]),  # action logps
-#          tensor([[[0., 0.]],  # stop_logps
-#                  [[0., 0.]],
-#                  [[0., 0.]]]),
-#          tensor([[0.], [0.], [0.]]),  # start logps
-#          tensor([[[0.], [0.], [0.]],  # cc pen
-#                  [[0.], [0.], [0.]],
-#                  [[0.], [0.], [0.]]])),)
-# @example(args=(2,
-#          tensor([[0., 0.],
-#                  [0., 0.]]),
-#          tensor([[[0., 0.],
-#                  [0., 0.]],
-#                  [[0., 0.],
-#                  [0., 0.]],
-#                  [[0., 0.],
-#                  [0., 0.]]]),
-#          tensor([[0., 0.],
-#                  [0., 0.],
-#                  [0., 0.]]),
-#          tensor([[[1., 1.],
-#                  [1., 1.],
-#                  [1., 1.]],
-#                  [[1., 1.],
-#                  [1., 1.],
-#                  [1., 1.]],
-#                  [[1., 1.],
-#                  [1., 1.],
-#                  [1., 1.]]])),)
-# @example(args=(2,
-#          tensor([[0., 0.],
-#                  [0., 0.]]),
-#          tensor([[[0., 0.],
-#                   [0., 0.]],
-#                  [[0., 0.],
-#                   [0., 0.]],
-#                  [[0., 0.],
-#                   [0., 0.]]]),
-#          tensor([[0., 0.],
-#                  [0., 0.],
-#                  [0., 0.]]),
-#          tensor([[[0., 0.],
-#                   [0., 0.],
-#                   [1., 0.]],  # start at 0, stop at 3, b = 0.
-#                  [[0., 0.],
-#                   [0., 0.],
-#                   [0., 0.]],
-#                  [[0., 0.],
-#                   [0., 0.],
-#                   [0., 0.]]])),)
-# @example(args=(2,
-#          tensor([[0., 0.]]),
-#          tensor([[[0.0000, -3.4967],
-#                   [-2.7204, 0.0000]],
-#                  [[-2.1027, -0.5299],
-#                   [-4.1779, 0.0000]]]),
-#          tensor([[0.0000, -3.1113],
-#                  [0.0000, 0.0000]]),
-#          tensor([[[4., 7.],
-#                   [6., 6.]],
-#                  [[6., 4.],
-#                   [1., 10.]]])),)
-# @example(args=(1,  # b = 1
-#          tensor([[0.],  # T = 3; action logps
-#                  [0.],
-#                  [0.]]),
-#          tensor([[[0., 0.]],  # stop logps
-#                  [[0., 0.]],
-#                  [[0., 0.]],
-#                  [[0., 0.]]]),
-#          tensor([[0.0000],  # start logps
-#                  [-1.6095],  # force an indexing error for the probability?
-#                  [0.0000],
-#                  [0.0000]]),
-#          tensor([[[3.], [3.], [3.], [3.]],
-#                  [[3.], [3.], [3.], [0.]],  # start = 1, stop = end
-#                  [[3.], [3.], [3.], [3.]],
-#                  [[3.], [3.], [3.], [3.]]])),)
-# @example(args=(3,
-#          tensor([[0.0000, -10, -10],
-#                  [-10, -10, -10],
-#                  [-10, -10, -10],
-#                  [-10, -10, -10],
-#                  [-10, -10, -10]]),
-#          tensor([[[0., 0.], [0., 0.], [0., 0.]],
-#                  [[0., 0.], [0., 0.], [0., 0.]],
-#                  [[0., 0.], [0., 0.], [0., 0.]],
-#                  [[0., 0.], [0., 0.], [0., 0.]],
-#                  [[0., 0.], [0., 0.], [0., 0.]],
-#                  [[0., 0.], [0., 0.], [0., 0.]]]),
-#          tensor([[0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.]]),
-#          tensor([[[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
-#                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
-#                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
-#                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
-#                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
-#                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]]])),)
+@example(args=(1,
+         tensor([[0.]]),  # action_logps
+         tensor([[[0., 0.]],  # stop_logps
+                 [[0., 0.]]]),
+         tensor([[0.], [0.]]),  # start logps
+         tensor([[[0.], [1.]],  # cc pens
+                 [[0.], [0.]]])),)
+@example(args=(1,
+         tensor([[0.]]),  # action logps
+         tensor([[[0., 0.]],  # stop logps
+                 [[0., 0.]]]),
+         tensor([[1.],  # start logps
+                 [1.]]),
+         tensor([[[0.], [0.]],  # cc
+                 [[0.], [0.]]])),)
+@example(args=(1,
+         tensor([[0.], [0.]]),  # action logps
+         tensor([[[0., 0.]],  # stop_logps
+                 [[0., 0.]],
+                 [[0., 0.]]]),
+         tensor([[0.], [0.], [0.]]),  # start logps
+         tensor([[[0.], [0.], [0.]],  # cc pen
+                 [[0.], [0.], [0.]],
+                 [[0.], [0.], [0.]]])),)
+@example(args=(2,
+         tensor([[0., 0.],
+                 [0., 0.]]),
+         tensor([[[0., 0.],
+                 [0., 0.]],
+                 [[0., 0.],
+                 [0., 0.]],
+                 [[0., 0.],
+                 [0., 0.]]]),
+         tensor([[0., 0.],
+                 [0., 0.],
+                 [0., 0.]]),
+         tensor([[[1., 1.],
+                 [1., 1.],
+                 [1., 1.]],
+                 [[1., 1.],
+                 [1., 1.],
+                 [1., 1.]],
+                 [[1., 1.],
+                 [1., 1.],
+                 [1., 1.]]])),)
+@example(args=(2,
+         tensor([[0., 0.],
+                 [0., 0.]]),
+         tensor([[[0., 0.],
+                  [0., 0.]],
+                 [[0., 0.],
+                  [0., 0.]],
+                 [[0., 0.],
+                  [0., 0.]]]),
+         tensor([[0., 0.],
+                 [0., 0.],
+                 [0., 0.]]),
+         tensor([[[0., 0.],
+                  [0., 0.],
+                  [1., 0.]],  # start at 0, stop at 3, b = 0.
+                 [[0., 0.],
+                  [0., 0.],
+                  [0., 0.]],
+                 [[0., 0.],
+                  [0., 0.],
+                  [0., 0.]]])),)
+@example(args=(2,
+         tensor([[0., 0.]]),
+         tensor([[[0.0000, -3.4967],
+                  [-2.7204, 0.0000]],
+                 [[-2.1027, -0.5299],
+                  [-4.1779, 0.0000]]]),
+         tensor([[0.0000, -3.1113],
+                 [0.0000, 0.0000]]),
+         tensor([[[4., 7.],
+                  [6., 6.]],
+                 [[6., 4.],
+                  [1., 10.]]])),)
+@example(args=(1,  # b = 1
+         tensor([[0.],  # T = 3; action logps
+                 [0.],
+                 [0.]]),
+         tensor([[[0., 0.]],  # stop logps
+                 [[0., 0.]],
+                 [[0., 0.]],
+                 [[0., 0.]]]),
+         tensor([[0.0000],  # start logps
+                 [-1.6095],  # force an indexing error for the probability?
+                 [0.0000],
+                 [0.0000]]),
+         tensor([[[3.], [3.], [3.], [3.]],
+                 [[3.], [3.], [3.], [0.]],  # start = 1, stop = end
+                 [[3.], [3.], [3.], [3.]],
+                 [[3.], [3.], [3.], [3.]]])),)
+@example(args=(3,
+         tensor([[0.0000, -10, -10],
+                 [-10, -10, -10],
+                 [-10, -10, -10],
+                 [-10, -10, -10],
+                 [-10, -10, -10]]),
+         tensor([[[0., 0.], [0., 0.], [0., 0.]],
+                 [[0., 0.], [0., 0.], [0., 0.]],
+                 [[0., 0.], [0., 0.], [0., 0.]],
+                 [[0., 0.], [0., 0.], [0., 0.]],
+                 [[0., 0.], [0., 0.], [0., 0.]],
+                 [[0., 0.], [0., 0.], [0., 0.]]]),
+         tensor([[0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.], [0., 0., 0.]]),
+         tensor([[[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
+                 [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
+                 [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
+                 [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
+                 [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
+                 [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]]])),)
 @given(cc_input())
 @settings(
     verbosity=hypothesis.Verbosity.verbose,
     # phases=[hypothesis.Phase.explicit],
     # phases=[hypothesis.Phase.explicit, hypothesis.Phase.reuse],
-    max_examples=50000,
+    # max_examples=50,
 )
 def test_brute_vs_hmm_cc_loss(args):
     b, action_logps, stop_logps, start_logps, causal_pens = args
@@ -180,11 +183,7 @@ def test_brute_vs_hmm_cc_loss(args):
     assert torch.isclose(hmm_out, brute_out, rtol=5E-4), f'hmm: {hmm_out}, brute: {brute_out}'
 
 
-def test_brute_vs_hmm_logp(args):
-    b, action_logps, stop_logps, start_logps, causal_pens = args
-
-
-def cc_test():
+def test_cc():
     # a = 2
     b = 2
     T = 3
@@ -235,7 +234,7 @@ def cc_test():
     np.testing.assert_approx_equal(cc2, cc, significant=6)
 
 
-def cc_test2():
+def test_cc2():
     # a = 2
     b = 1
     T = 1
@@ -291,7 +290,7 @@ def cc_test2():
     # print('passed cc test2')
 
 
-def cc_test3():
+def test_cc3():
     # a = 2
     b = 1
     T = 5
@@ -347,7 +346,7 @@ def cc_test3():
     # print('passed cc test3')
 
 
-def cc_test4():
+def test_cc4():
     # a = 2
     b = 2
     T = 2
@@ -403,7 +402,7 @@ def cc_test4():
     # print('passed cc test4')
 
 
-def cc_test5():
+def test_cc5():
     # a = 2
     b = 2
     T = 1
@@ -467,7 +466,7 @@ def cc_test5():
     # print('passed cc test5')
 
 
-def cc_test6():
+def test_cc6():
     # a = 2
     b = 3
     T = 5
@@ -506,46 +505,7 @@ def cc_test6():
     assert torch.isclose(cc, cc2, rtol=1E-5)
 
 
-def forward_test():
-    b = 2
-    s = 2
-
-    s_i = torch.tensor([0, 0, 1, 1])
-    actions = torch.tensor([0, 0, 0])
-    action_probs = torch.tensor([[0.5, 0.5], [0, 1]])
-    action_probs = einops.repeat(action_probs, 'b a -> 3 b a')
-
-    # b, s
-    stop_probs = torch.tensor([[0, 0.2], [0.5, 0.5]])
-    one_minus_stop_probs = 1 - stop_probs
-    # stop goes first when concatenating
-    assert STOP_IX == 0
-    stop_probs = torch.stack((stop_probs, one_minus_stop_probs))
-    assert_equal(stop_probs.shape, (2, s, b))
-    stop_probs = rearrange(stop_probs, 't b s -> s b t')
-    stop_probs = torch.stack([stop_probs[s] for s in s_i])
-    assert_equal(stop_probs.shape, (4, b, 2))
-
-    start_probs = torch.tensor([[0.5, 0.4], [0.5, 0.6]])
-    start_probs = rearrange(start_probs, 'b s -> s b')
-    start_probs = torch.stack([start_probs[s] for s in s_i])
-    assert_equal(start_probs.shape, (4, b))
-
-    class APN():
-        def __init__(self):
-            self.a = 2
-            self.b = 2
-            self.t = 10
-
-        def __call__(self, s_i):
-            return torch.log(action_probs), torch.log(stop_probs), torch.log(start_probs)
-
-    hmmnet = HMMTrajNet(APN())
-    negative_logp = hmmnet.forward_old2(s_i, actions)
-    assert math.isclose(torch.exp(-negative_logp), 0.2 * 0.88 / 16, abs_tol=1E-7)
-
-
-def forward_test2():
+def test_forward():
     torch.manual_seed(1)
     import box_world
     from modules import RelationalDRLNet, abstract_out_dim
@@ -573,23 +533,138 @@ def forward_test2():
     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
     for s_i_batch, actions_batch, lengths in dataloader:
         with Timing('loss1'):
-            for _ in range(10):
-                loss1 = net.forward(s_i_batch, actions_batch, lengths)
+            loss1 = net.logp(s_i_batch, actions_batch, lengths)
         with Timing('loss2'):
-            for _ in range(10):
-                loss2 = net.forward2(s_i_batch, actions_batch, lengths)
+            loss2 = net.logp2(s_i_batch, actions_batch, lengths)
         # they should be equal
         print(f'loss1: {loss1}')
         print(f'loss2: {loss2}')
 
 
+def batched_comparison():
+    random.seed(0)
+    torch.manual_seed(0)
+
+    a = 4
+    b = 1
+    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                      num_attn_blocks=4,
+                                      num_heads=4,
+                                      out_dim=a * b + 2 * b + b).to(DEVICE)
+
+    control_net = Controller(
+        a=4,
+        b=1,
+        net=relational_net,
+        batched=False,
+    )
+    unbatched_traj_net = UnbatchedTrajNet(control_net)
+
+    control_net = Controller(
+        a=4,
+        b=1,
+        net=relational_net,
+        batched=True,
+    )
+    traj_net = TrajNet(control_net)
+
+    env = box_world.BoxWorldEnv()
+    dataloader = box_world.box_world_dataloader(env, n=3, traj=True, batch_size=2)
+    data = box_world.BoxWorldDataset(env, n=3, traj=True)
+    dataloader = DataLoader(data, batch_size=2, shuffle=False, collate_fn=box_world.traj_collate)
+
+    total = 0
+    for d in dataloader:
+        negative_logp = traj_net(*d)
+        total += negative_logp
+
+    print(f'total0: {total}')
+
+    total2 = 0
+    for s_i, actions in zip(data.traj_states, data.traj_moves):
+        negative_logp = unbatched_traj_net(s_i, actions)
+        total2 += negative_logp
+
+    print(f'total2: {total2}')
+
+    data.traj = False
+    dataloader = DataLoader(data, batch_size=1, shuffle=False)
+    criterion = nn.CrossEntropyLoss(reduction='sum')
+    total3 = 0
+    for s_i, actions in dataloader:
+        pred = relational_net(s_i)
+        loss = criterion(pred[:, :4], actions)
+        total3 += loss
+    print(f'total3: {total3}')
+
+    total4 = 0
+    for s_i, actions in dataloader:
+        pred = relational_net(s_i)
+        logps = torch.log_softmax(pred[:, :4], dim=1)
+        loss = -torch.sum(logps[range(len(actions)), actions])
+        total4 += loss
+    print(f'total4: {total4}')
+
+
+def batched_comparison2():
+    random.seed(1)
+    torch.manual_seed(2)
+
+    a = 4
+    b = 10
+    t = 50
+    env = box_world.BoxWorldEnv()
+    data = box_world.BoxWorldDataset(env, n=10, traj=True)
+    dataloader = DataLoader(data, batch_size=1, shuffle=False, collate_fn=box_world.traj_collate)
+
+    apn = abstract.attention_apn(b, t)
+    t1, a1, s1, st1, cc1 = [], [], [], [], []
+
+    for s_i_batch, actions_batch, lengths in dataloader:
+        t_i, a, s, st, cc = apn(s_i_batch[0])
+        t1.append(t_i)
+        a1.append(a)
+        s1.append(s)
+        st1.append(st)
+        cc1.append(cc)
+
+    t1 = torch.cat(t1)
+    a1 = torch.cat(a1)
+    s1 = torch.cat(s1)
+    st1 = torch.cat(st1)
+
+    dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
+    t2, a2, s2, st2, cc2 = [], [], [], [], []
+
+    for s_i_batch, actions_batch, lengths in dataloader:
+        t_i, a, s, st, cc = apn.forward_batched(s_i_batch)
+        for i, max_T in enumerate(lengths):
+            print(max_T)
+            t2.append(t_i[i, :max_T+1])
+            a2.append(a[i, :max_T+1])
+            s2.append(s[i, :max_T+1])
+            st2.append(st[i, :max_T+1])
+            cc2.append(cc[i, :max_T+1, :max_T+1])
+
+    t2 = torch.cat(t2)
+    a2 = torch.cat(a2)
+    s2 = torch.cat(s2)
+    st2 = torch.cat(st2)
+
+    torch.testing.assert_allclose(t1, t2)
+    torch.testing.assert_allclose(a1, a2)
+    torch.testing.assert_allclose(s1, s2)
+    torch.testing.assert_allclose(st1, st2)
+    for c1, c2 in zip(cc1, cc2):
+        torch.testing.assert_allclose(c1, c2)
+    print('all good')
+
+
 if __name__ == '__main__':
     pass
-    # forward_test()
-    # forward_test2()
-    cc_test2()
-    cc_test3()
-    cc_test4()
-    cc_test5()
-    cc_test()
-    cc_test6()
+    # test_cc2()
+    # test_cc3()
+    # test_cc4()
+    # test_cc5()
+    # test_cc()
+    # test_cc6()

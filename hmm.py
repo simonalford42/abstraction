@@ -1,9 +1,21 @@
 import math
+from main import up_right_main
 from utils import assert_equal
 from scipy.special import logsumexp
 import unittest
 import numpy as np
 from einops import rearrange
+import abstract2
+
+
+def eval_viterbi(net: abstract2.HMMTrajNet, data: up_right_main.TrajData):
+    for i, s_i, actions, points in zip(range(len(data.traj_states)), data.traj_states, data.traj_moves, data.points):
+        (x, y, x_goal, y_goal) = points[0][0]
+        moves = ''.join(data.trajs[i])
+        print(f'{moves}')
+        path = abstract2.viterbi(net, s_i, actions)
+        print(''.join(map(str, path)))
+        print('-'*10)
 
 
 def forward(init_dist, trans_fn, obs_dist, obs):

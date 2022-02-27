@@ -498,6 +498,9 @@ class HMMTrajNet(nn.Module):
         self.b = control_net.b
 
     def forward(self, s_i_batch, actions_batch, lengths):
+        return self.logp(s_i_batch, actions_batch, lengths)
+
+    def logp(self, s_i_batch, actions_batch, lengths):
         """
         batched, inefficient.
 
@@ -534,7 +537,7 @@ class HMMTrajNet(nn.Module):
         total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
         return -torch.sum(total_logps)
 
-    def forward2(self, s_i_batch, actions_batch, lengths):
+    def logp2(self, s_i_batch, actions_batch, lengths):
         """
         batched, efficient.
 
@@ -570,7 +573,7 @@ class HMMTrajNet(nn.Module):
         total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
         return -torch.sum(total_logps)
 
-    def forward_unatched_inefficient(self, s_i, actions):
+    def logp3(self, s_i, actions):
         """
         returns: negative logp of all trajs in batch
         """
@@ -596,7 +599,7 @@ class HMMTrajNet(nn.Module):
         total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
         return -total_logp
 
-    def forward_unbatched_efficient(self, s_i, actions):
+    def logp4(self, s_i, actions):
         """
         returns: negative logp of all trajs in batch
         """
