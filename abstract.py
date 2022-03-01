@@ -289,7 +289,7 @@ class HomoController(nn.Module):
             (b, ) tensor of start logps
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps = self.forward_ub(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps, _ = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
 
 

@@ -441,7 +441,7 @@ def eval_options_model(control_net, env, n=100):
     option_map = {i: [] for i in range(control_net.b)}
 
     for i in range(n):
-        print(f'i: {i}')
+        # print(f'i: {i}')
         obs = env.reset()
         done, solved = False, False
         t = 0
@@ -478,7 +478,7 @@ def eval_options_model(control_net, env, n=100):
                 moves_without_moving = 0
                 prev_pos = pos
             if moves_without_moving >= 5:
-                print('Quitting due to 5 repeated moves')
+                # print('Quitting due to 5 repeated moves')
                 done = True
 
             # title = f'option={current_option}'

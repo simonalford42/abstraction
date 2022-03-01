@@ -1,4 +1,5 @@
 import up_right
+import argparse
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -51,7 +52,7 @@ def boxworld_outer_sv(
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
-        print_every = 1 #epochs / 5
+        print_every = epochs / 5
         save_every = 1
         params = dict(epochs=epochs, lr=lr, n=n)
         print(f"params: {params}")
@@ -121,8 +122,12 @@ def boxworld_main():
     torch.manual_seed(1)
     utils.print_torch_device()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cc', type=float, default=1)
+    args = parser.parse_args()
+
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 500
+    n = 5000
     epochs = 100
     num_test = 200
     lr = 8E-4
@@ -130,13 +135,17 @@ def boxworld_main():
     fix_seed = False
     b = 10
     batch_size = 10
-    net = 'hmm'
+    net = 'causal'
+    cc_weight = args.cc
 
+    print('homo controller')
+    print(f"net: {net}")
+    print(f"cc_weight: {cc_weight}")
 
     if net == 'causal':
         batch_size = 1
         control_net = boxworld_controller(b=b)
-        net = CausalNet(control_net)
+        net = CausalNet(control_net).to(DEVICE)
     else:
         homo_controller = boxworld_homocontroller(b=b)
         if net == 'hmm':

@@ -6,6 +6,96 @@ import torch
 from box_world import STOP_IX, CONTINUE_IX
 
 
+def cc_fw_b(b, action_logps, stop_logps, start_logps, lengths):
+    """
+    The forward calculation (batched).
+        action_logps: [B, max_T, b]
+        stop_logps: [B, max_T+1, b, 2]
+        start_logps: [B, max_T+1, b]
+
+        Due to a change in indexing, the relationship is:
+        P(a_t | b_t, s_{t-1} = action_logps[t-1]
+        P(e_t | s_t, b_t) = stop_logps[t]
+        P(b_{t+1} | s_t ) = start_logps[t]
+        The easy way to think of this is that t denotes where s_t is.
+
+        Assumes stop_logps are arranged so that 0 is continue, 1 is stop.
+        cc_loss which calls this should preprocess it to make it so.
+    """
+    T = action_logps.shape[0]
+    # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
+    f = [torch.full((b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
+    f[0][0, 0, 1] = 0
+
+    for t in range(1, T+1):
+        # e_prev = 0; options stay same
+        f[t][:, :t-1, :] = (f[t-1][:, :, 0:1]
+                            + action_logps[t-1, :, None, None]
+                            + stop_logps[t, :, None, :])
+        # e_prev = 1; options new, c mass fixed at t-1
+        f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1:2], dim=(0, 1), keepdim=True)
+                            + start_logps[t-1, :, None]
+                            + action_logps[t-1, :, None]
+                            + stop_logps[t, :, :])
+
+    total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
+    return f, total_logp
+
+
+def cc_bw_b(b, action_logps, stop_logps, start_logps, lengths):
+    """
+    The backward calculation.
+    """
+    T = action_logps.shape[0]
+    # f[0] is P(s[1:T], a[1:T] | Z0, s0)
+    f = torch.full((T+1, b, 2), float('-inf'), device=DEVICE)
+    # P(-) = 1[eT = 1]
+    f[-1, :, 1] = 0
+
+    for t in range(T-1, -1, -1):
+        # e = 0; continue option
+        f[t, :, 0] = (action_logps[t]  # this is really p(a_{t+1})
+                      + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
+
+        # e = 1; stop option
+        f[t, :, 1] = torch.logsumexp(start_logps[t, :, None]
+                                     + action_logps[t, :, None]
+                                     + stop_logps[t+1]
+                                     + f[t+1],
+                                     dim=(0, 1))
+
+    total_logp = f[0, 0, 1]
+    return f, total_logp
+
+
+def cc_loss_b(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
+    B, max_T = action_logps.shape[0:2]
+
+    assert_shape(action_logps, (B, max_T, b))
+    assert_shape(stop_logps, (B, max_T+1, b, 2))
+    assert_shape(start_logps, (B, max_T+1, b))
+    assert_shape(causal_pens, (B, max_T+1, max_T+1, b))
+
+    if STOP_IX == 0:
+        # e_t = 1 means stop, so 'stop_ix' must be 1
+        stop_logps = stop_logps.flip(dims=(3, ))
+
+    fw_logps, total_logp = cc_fw_b(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, c, e)
+    bw_logps, total_logp2 = cc_bw_b(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, e)
+    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+
+    total_cc_loss = 0
+    # t is when we stop
+    for t in range(1, T+1):
+        marginal = fw_logps[t] + bw_logps[t, :, None, :]  # (b, c, e)
+        assert_shape(marginal, (b, t, 2))
+        causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
+        cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
+        total_cc_loss += cc_loss
+
+    return total_logp, total_cc_loss
+
+
 def cc_fw(b, action_logps, stop_logps, start_logps):
     """
     The forward calculation.
@@ -89,7 +179,13 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens):
 
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps)  # (T+1, b, c, e)
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps)  # (T+1, b, e)
-    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+    dist = abs(total_logp - total_logp2)
+    if dist > 1E-5:
+        print(f'warning: fw and bw disagree by {dist}')
+        total_logp3 = hmm_fw_ub(action_logps, stop_logps, start_logps)
+        print(f"fw: {total_logp}, bw: {total_logp2}, hmm_fw: {total_logp3}")
+
+    # assert torch.allclose(total_logp, total_logp2, atol=1E-4), f'fw: {total_logp}, bw: {total_logp2}'
 
     total_cc_loss = 0
     # t is when we stop
@@ -168,6 +264,25 @@ def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens):
     return total_logp, total_cc_loss
 
 
+def hmm_fw_ub(action_logps, stop_logps, start_logps):
+    T = action_logps.shape[0]
+
+    f_0 = start_logps[0] + action_logps[0]
+    f_prev = f_0
+    for i in range(1, T):
+        beta = stop_logps[i, :, STOP_IX]  # (b,)
+        one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+        f = (torch.logaddexp(f_prev + one_minus_beta,
+                             torch.logsumexp(f_prev + beta, dim=0) + start_logps[i])
+             + action_logps[i])
+        f_prev = f
+
+    assert_equal(T+1, stop_logps.shape[0])
+    total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+    return total_logp
+
+
 class CausalNet(nn.Module):
     """
     Uses AbstractPolicyNet instead of Controller for getting action logps, etc.
@@ -176,10 +291,10 @@ class CausalNet(nn.Module):
     net.
     """
 
-    def __init__(self, controller, cc_weight=1):
+    def __init__(self, control_net, cc_weight=1):
         super().__init__()
-        self.controller = controller
-        self.b = controller.b
+        self.control_net = control_net
+        self.b = control_net.b
         self.cc_weight = cc_weight
 
     def forward(self, s_i_batch, actions_batch, lengths):
@@ -188,7 +303,7 @@ class CausalNet(nn.Module):
         s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.controller(s_i, batched=False)
+        action_logps, stop_logps, start_logps, causal_pens = self.control_net(s_i, batched=False)
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
@@ -301,22 +416,10 @@ class HmmNet(nn.Module):
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i)
-        # (T+1, b)
+        # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
-        f_0 = start_logps[0] + action_logps[0]
-        f_prev = f_0
-        for i in range(1, T):
-            beta = stop_logps[i, :, STOP_IX]  # (b,)
-            one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
-
-            f = (torch.logaddexp(f_prev + one_minus_beta,
-                                 torch.logsumexp(f_prev + beta, dim=0) + start_logps[i])
-                 + action_logps[i])
-            f_prev = f
-
-        assert_equal(T+1, stop_logps.shape[0])
-        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+        total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
         return -total_logp
 
 
