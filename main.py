@@ -1,3 +1,4 @@
+from modules import FC
 import up_right
 import argparse
 import torch
@@ -6,7 +7,7 @@ import torch.nn as nn
 import random
 import utils
 from utils import Timing, DEVICE
-from abstract import boxworld_controller, boxworld_homocontroller
+from abstract import HeteroController, boxworld_controller, boxworld_homocontroller
 from hmm import CausalNet, TrajNet, HmmNet, viterbi
 import time
 import box_world
