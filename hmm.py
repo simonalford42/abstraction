@@ -105,12 +105,15 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
 
     total_cc_loss = 0
     # t is when we stop
-    for t in range(1, max_T+1):
-        marginal = fw_logps[t] + bw_logps[t, :, None, :]  # (b, c, e)
-        assert_shape(marginal, (B, b, t, 2))
-        causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
-        cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
-        total_cc_loss += cc_loss
+    for i, T in enumerate(lengths):
+        # bw results are left-padded
+        shift = max_T - T
+        for t in range(1, T+1):
+            marginal = fw_logps[i, t] + bw_logps[i, t + shift, :, None, :]  # (b, c, e)
+            assert_shape(marginal, (b, t, 2))
+            causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
+            cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
+            total_cc_loss += cc_loss
 
     return total_logp, total_cc_loss
 

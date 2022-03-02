@@ -615,7 +615,7 @@ def test_actions_batch():
         assert torch.equal(action_logps2, action_logps[0])
 
 
-def test_cc_batched():
+def test_cc_batched2():
     b = 4
     B = 5
     control_net = abstract.boxworld_controller(b=b)
@@ -639,11 +639,11 @@ def test_cc_batched():
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]
 
-        f, total_logp = hmm.cc_fw(b, action_logps, stop_logps, start_logps, lengths)
-        total_logp = total_logp.sum()
+        total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, lengths)
 
         total_logp2 = 0
         total_logp3 = 0
+        total_cc_loss2 = 0
         for s_i, action, T in zip(s_i, actions, lengths):
             s_i = s_i[0:T+1]
             action = action[0:T]
@@ -651,11 +651,15 @@ def test_cc_batched():
             action_logps = action_logps[range(T), :, action]
             f2, logp2 = hmm.cc_fw_ub(b, action_logps, stop_logps, start_logps)
             b2, logp3 = hmm.cc_bw_ub(b, action_logps, stop_logps, start_logps)
+            _, cc_loss = hmm.cc_loss_ub(b, action_logps, stop_logps, start_logps)
             total_logp2 += logp2
             total_logp3 += logp3
+            total_cc_loss2 += cc_loss
 
         assert torch.isclose(total_logp, total_logp2), f'{total_logp=}, {total_logp2=}'
         assert torch.isclose(total_logp, total_logp3), f'{total_logp=}, {total_logp3=}'
+        assert torch.isclose(total_cc_loss, total_cc_loss2), f'{total_cc_loss=}, {total_cc_loss2=}'
+
 
 
 if __name__ == '__main__':
