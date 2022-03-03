@@ -53,7 +53,8 @@ def boxworld_outer_sv(
     mlflow.set_experiment("Boxworld sv train")
     with mlflow.start_run():
         env = box_world.BoxWorldEnv()
-        print_every = epochs / 5
+        # print_every = epochs / 5
+        print_every = 1
         save_every = 1
         params = dict(epochs=epochs, lr=lr, n=n)
         print(f"params: {params}")
@@ -136,7 +137,7 @@ def boxworld_main():
     fix_seed = False
     b = 10
     batch_size = 10
-    net = 'hmm'
+    net = 'causal'
     cc_weight = args.cc
 
     print('homo controller')
@@ -144,7 +145,6 @@ def boxworld_main():
     print(f"cc_weight: {cc_weight}")
 
     if net == 'causal':
-        batch_size = 1
         control_net = boxworld_controller(b=b)
         net = CausalNet(control_net).to(DEVICE)
     else:
@@ -160,7 +160,7 @@ def boxworld_main():
         net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
         lr=lr, batch_size=batch_size, fix_seed=fix_seed)
 
-    box_world.eval_options_model(net.control_net, env, n=200)
+    # box_world.eval_options_model(net.control_net, env, n=200)
 
 
 if __name__ == '__main__':

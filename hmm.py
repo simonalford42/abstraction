@@ -53,9 +53,9 @@ def cc_bw(b, action_logps, stop_logps, start_logps, lengths):
     start_logps: [B, T+1, b]
     """
     # move padding from end of tensor to the front
-    action_logps2 = torch.full(action_logps.shape, float('-inf'))
-    stop_logps2 = torch.full(stop_logps.shape, float('-inf'))
-    start_logps2 = torch.full(start_logps.shape, float('-inf'))
+    action_logps2 = torch.full(action_logps.shape, float('-inf'), device=DEVICE)
+    stop_logps2 = torch.full(stop_logps.shape, float('-inf'), device=DEVICE)
+    start_logps2 = torch.full(start_logps.shape, float('-inf'), device=DEVICE)
     for i, T in enumerate(lengths):
         action_logps2[i, -T:] = action_logps[i, :T]
         stop_logps2[i, -T-1:] = stop_logps[i, :T+1]
@@ -209,7 +209,7 @@ def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
     fw_logps, total_logp = cc_fw_ub(b, action_logps, stop_logps, start_logps)  # (T+1, b, c, e)
     bw_logps, total_logp2 = cc_bw_ub(b, action_logps, stop_logps, start_logps)  # (T+1, b, e)
     dist = abs(total_logp - total_logp2)
-    if dist > 1E-5:
+    if dist > 1E-4:
         print(f'warning: fw and bw disagree by {dist}')
         # need to unflip stop lps lol
         if STOP_IX == 0:
