@@ -135,7 +135,7 @@ def boxworld_main():
     fix_seed = False
     b = 10
     batch_size = 10
-    net = 'causal'
+    net = 'hmm'
     cc_weight = args.cc
 
     print('homo controller')

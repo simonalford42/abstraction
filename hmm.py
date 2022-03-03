@@ -145,7 +145,7 @@ def cc_bw(b, action_logps, stop_logps, start_logps):
 
     for t in range(T-1, -1, -1):
         # e = 0; continue option
-        f[t, :, 0] = (action_logps[t]  # this is really p(a_{t+1})
+        f[t, :, 0] = (action_logps[t]  # this is really p(a_{t+1}), see cc_fw docstring
                       + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
 
         # e = 1; stop option
@@ -155,6 +155,7 @@ def cc_bw(b, action_logps, stop_logps, start_logps):
                                      + f[t+1],
                                      dim=(0, 1))
 
+    assert torch.all(f[0, :, 1] == f[0, 0, 1])
     total_logp = f[0, 0, 1]
     return f, total_logp
 
@@ -182,8 +183,12 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens):
     dist = abs(total_logp - total_logp2)
     if dist > 1E-5:
         print(f'warning: fw and bw disagree by {dist}')
+        # need to unflip stop lps lol
+        if STOP_IX == 0:
+            stop_logps = stop_logps.flip(dims=(2, ))
         total_logp3 = hmm_fw_ub(action_logps, stop_logps, start_logps)
         print(f"fw: {total_logp}, bw: {total_logp2}, hmm_fw: {total_logp3}")
+        print(f"a: {total_logp3 - total_logp}, b: {total_logp3 - total_logp}, hmm_fw: {total_logp3}")
 
     # assert torch.allclose(total_logp, total_logp2, atol=1E-4), f'fw: {total_logp}, bw: {total_logp2}'
 
