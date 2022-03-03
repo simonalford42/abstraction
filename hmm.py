@@ -40,9 +40,8 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths):
                               + action_logps[:, t-1, :, None]
                               + stop_logps[:, t, :, :])
 
-    total_logp = 0
-    for i, T in enumerate(lengths):
-        total_logp += torch.logsumexp(f[T][i, :, :, 1], dim=(0,1))
+    total_logp = [torch.logsumexp(f[T][i, :, :, 1], dim=(0,1))
+                  for i, T in enumerate(lengths)]
     return f, total_logp
 
 
@@ -59,11 +58,11 @@ def cc_bw(b, action_logps, stop_logps, start_logps, lengths):
     start_logps2 = torch.full(start_logps.shape, float('-inf'))
     for i, T in enumerate(lengths):
         action_logps2[i, -T:] = action_logps[i, :T]
-        stop_logps2[i, -T:] = stop_logps[i, :T]
-        start_logps2[i, -T:] = start_logps[i, :T]
+        stop_logps2[i, -T-1:] = stop_logps[i, :T+1]
+        start_logps2[i, -T-1:] = start_logps[i, :T+1]
 
     B, max_T = action_logps.shape[0:2]
-    # f[0] is P(s[1:T], a[1:T] | Z0, s0)
+    # f[0] is P(s[1:T], a[1:T] | Z0, s0) (this comment is for unbatched, not batched, so incorrect)
     f = torch.full((B, max_T+1, b, 2), float('-inf'), device=DEVICE)
     # P(-) = 1[e_maxT = 1]
     f[:, -1, :, 1] = 0
@@ -71,23 +70,26 @@ def cc_bw(b, action_logps, stop_logps, start_logps, lengths):
     for t in range(max_T-1, -1, -1):
         # e = 0; continue option
         # (B, b)
-        f[:, t, :, 0] = (action_logps[:, t]  # this is really p(a_{t+1})
-                         + torch.logsumexp(stop_logps[:, t+1] + f[:, t+1], dim=2))
+        f[:, t, :, 0] = (action_logps2[:, t]  # this is really p(a_{t+1})
+                         + torch.logsumexp(stop_logps2[:, t+1] + f[:, t+1], dim=2))
 
         # e = 1; stop option
-        f[:, t, :, 1] = torch.logsumexp(start_logps[:, t, :, None]
-                                        + action_logps[:, t, :, None]
-                                        + stop_logps[:, t+1]
+        # (B, b)                        B, b, e summed to (B, )
+        f[:, t, :, 1] = torch.logsumexp(start_logps2[:, t, :, None]
+                                        + action_logps2[:, t, :, None]
+                                        + stop_logps2[:, t+1]
                                         + f[:, t+1],
-                                        dim=(1, 2))
+                                        dim=(1, 2))[:, None]
 
-    total_logp = 0
-    for i, T in enumerate(lengths):
-        total_logp += f[i, max_T - T, 0, 1]
+    total_logp = [f[i, max_T - T, 0, 1] for i, T in enumerate(lengths)]
+
     return f, total_logp
 
 
 def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
+    """
+    batched!
+    """
     B, max_T = action_logps.shape[0:2]
 
     assert_shape(action_logps, (B, max_T, b))
@@ -101,7 +103,8 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
 
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, c, e)
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, e)
-    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+    total_logp_sum = sum(total_logp)
+    assert torch.allclose(total_logp_sum, sum(total_logp2), rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
 
     total_cc_loss = 0
     # t is when we stop
@@ -109,13 +112,13 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
         # bw results are left-padded
         shift = max_T - T
         for t in range(1, T+1):
-            marginal = fw_logps[i, t] + bw_logps[i, t + shift, :, None, :]  # (b, c, e)
+            marginal = fw_logps[t][i] + bw_logps[i, t + shift, :, None, :]  # (b, c, e)
             assert_shape(marginal, (b, t, 2))
-            causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
-            cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
+            causal_pen = rearrange(causal_pens[i], 'start stop b -> b stop start')[:, t, :t]
+            cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp[i]) * causal_pen)
             total_cc_loss += cc_loss
 
-    return total_logp, total_cc_loss
+    return total_logp_sum, total_cc_loss
 
 
 def cc_fw_ub(b, action_logps, stop_logps, start_logps):
@@ -173,6 +176,7 @@ def cc_bw_ub(b, action_logps, stop_logps, start_logps):
                       + torch.logsumexp(stop_logps[t+1] + f[t+1], dim=1))
 
         # e = 1; stop option
+        # (b, )                      (b, e) summed to (, )
         f[t, :, 1] = torch.logsumexp(start_logps[t, :, None]
                                      + action_logps[t, :, None]
                                      + stop_logps[t+1]
@@ -333,6 +337,15 @@ class CausalNet(nn.Module):
     def cc_loss(self, s_i_batch, actions_batch, lengths):
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b)
         action_logps, stop_logps, start_logps, causal_pens = self.control_net(s_i_batch, batched=True)
+
+        B = len(lengths)
+        max_T = action_logps.shape[1] - 1
+        action_logps = action_logps[torch.arange(B)[:, None],
+                                    torch.arange(max_T)[None, :],
+                                    :,
+                                    actions_batch[None, :]]
+        # not sure why there's this extra singleton axis, but this passes the test so go for it
+        action_logps = action_logps[0]
 
         logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens, lengths)
         loss = -logp + self.cc_weight * cc

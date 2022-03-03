@@ -630,36 +630,39 @@ def test_cc_batched2():
         # (B, max_T+1, b, n)
         action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=True)
 
-        T = action_logps.shape[1] - 1
+        max_T = action_logps.shape[1] - 1
 
         action_logps = action_logps[torch.arange(B)[:, None],
-                                    torch.arange(T)[None, :],
+                                    torch.arange(max_T)[None, :],
                                     :,
                                     actions[None, :]]
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]
 
-        total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, lengths)
+        fw_logps, total_logp_fw = hmm.cc_fw(b, action_logps, stop_logps, start_logps, lengths)
+        total_logp_fw = sum(total_logp_fw)
+        bw_logps, total_logp_bw = hmm.cc_bw(b, action_logps, stop_logps, start_logps, lengths)
+        total_logp_bw = sum(total_logp_bw)
+        total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths)
 
-        total_logp2 = 0
-        total_logp3 = 0
-        total_cc_loss2 = 0
+        total_logp_ub = 0
+        total_cc_loss_ub = 0
+        i = 0
         for s_i, action, T in zip(s_i, actions, lengths):
             s_i = s_i[0:T+1]
             action = action[0:T]
             action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=False)
             action_logps = action_logps[range(T), :, action]
-            f2, logp2 = hmm.cc_fw_ub(b, action_logps, stop_logps, start_logps)
-            b2, logp3 = hmm.cc_bw_ub(b, action_logps, stop_logps, start_logps)
-            _, cc_loss = hmm.cc_loss_ub(b, action_logps, stop_logps, start_logps)
-            total_logp2 += logp2
-            total_logp3 += logp3
-            total_cc_loss2 += cc_loss
+            f2, logp_ub = hmm.cc_fw_ub(b, action_logps, stop_logps, start_logps)
+            b2, logp_ub2 = hmm.cc_bw_ub(b, action_logps, stop_logps, start_logps)
+            _, cc_loss_ub = hmm.cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens)
+            total_logp_ub += logp_ub
+            total_cc_loss_ub += cc_loss_ub
+            i += 1
 
-        assert torch.isclose(total_logp, total_logp2), f'{total_logp=}, {total_logp2=}'
-        assert torch.isclose(total_logp, total_logp3), f'{total_logp=}, {total_logp3=}'
-        assert torch.isclose(total_cc_loss, total_cc_loss2), f'{total_cc_loss=}, {total_cc_loss2=}'
-
+        assert torch.isclose(total_logp_fw, total_logp_ub), f'{total_logp_fw=}, {total_logp_ub=}'
+        assert torch.isclose(total_logp_bw, total_logp_ub), f'{total_logp_bw=}, {total_logp_ub=}'
+        assert torch.isclose(total_cc_loss, total_cc_loss_ub), f'{total_cc_loss=}, {total_cc_loss_ub=}'
 
 
 if __name__ == '__main__':
