@@ -560,26 +560,40 @@ def test_hmm_batched():
 
 
 def test_cc_batched():
-    control_net = abstract.boxworld_controller(b=3)
+    b = 10
+    B = 8
+    control_net = abstract.boxworld_controller(b=b)
 
-    net = hmm.CausalNet(control_net)
+    net = hmm.CausalNet(control_net, cc_weight=0.)
 
     env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=5)
+    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     net.to(DEVICE)
 
-    for s_i, actions, lengths in dataloader:
-        s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
-        total_loss = net(s_i, actions, lengths, batched=True)
+    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
 
-        total_loss2 = 0
-        for s_i, action, T in zip(s_i, actions, lengths):
-            s_i = s_i[0:T+1]
-            action = action[0:T]
-            loss = net.cc_loss_ub(s_i, action)
-            total_loss2 += loss
-        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+    from torch import autograd
+    with autograd.detect_anomaly():
+        for s_i, actions, lengths in dataloader:
+            optimizer.zero_grad()
+            s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
+            total_loss = net(s_i, actions, lengths, batched=True)
+
+            total_loss2 = 0
+            for s_i, action, T in zip(s_i, actions, lengths):
+                s_i = s_i[0:T+1]
+                action = action[0:T]
+                loss = net.cc_loss_ub(s_i, action)
+                total_loss2 += loss
+            assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+
+            # loss = total_loss2
+            loss = total_loss
+            print(f'unbatch loss:\t{total_loss2}')
+            print(f'batch loss:\t{total_loss}')
+            loss.backward()
+            optimizer.step()
 
 
 def test_actions_batch():
@@ -616,8 +630,8 @@ def test_actions_batch():
 
 
 def test_cc_batched2():
-    b = 4
-    B = 5
+    b = 10
+    B = 10
     control_net = abstract.boxworld_controller(b=b)
 
     env = box_world.BoxWorldEnv()
@@ -641,6 +655,7 @@ def test_cc_batched2():
 
         fw_logps, total_logp_fw = hmm.cc_fw(b, action_logps, stop_logps, start_logps, lengths)
         total_logp_fw = sum(total_logp_fw)
+        print(f'total_logp_fw: {total_logp_fw}')
         bw_logps, total_logp_bw = hmm.cc_bw(b, action_logps, stop_logps, start_logps, lengths)
         total_logp_bw = sum(total_logp_bw)
         total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths)
@@ -668,6 +683,7 @@ def test_cc_batched2():
 if __name__ == '__main__':
     # test_actions_batch()
     test_cc_batched()
+    # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()
     # test_cc2()
     # test_cc3()

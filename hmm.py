@@ -42,6 +42,7 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths):
 
     total_logp = [torch.logsumexp(f[T][i, :, :, 1], dim=(0,1))
                   for i, T in enumerate(lengths)]
+    print(f'fw total_logp: {total_logp}')
     return f, total_logp
 
 
@@ -104,7 +105,7 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, c, e)
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths)  # (B, max_T+1, b, e)
     total_logp_sum = sum(total_logp)
-    assert torch.allclose(total_logp_sum, sum(total_logp2), rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+    assert torch.allclose(total_logp_sum, sum(total_logp2), rtol=1E-2), f'fw: {total_logp_sum}, bw: {sum(total_logp2)}'
 
     total_cc_loss = 0
     # t is when we stop
@@ -118,6 +119,7 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths):
             cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp[i]) * causal_pen)
             total_cc_loss += cc_loss
 
+    print(f'total_logp_sum: {total_logp_sum}')
     return total_logp_sum, total_cc_loss
 
 
@@ -354,6 +356,7 @@ class CausalNet(nn.Module):
 
         logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens, lengths)
         loss = -logp + self.cc_weight * cc
+        print(f'cc_loss loss: {loss}')
         return loss
 
     def cc_loss_ub(self, s_i, actions):
