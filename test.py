@@ -561,7 +561,7 @@ def test_hmm_batched():
 
         # loss = total_loss2
         loss = total_loss
-        print(loss)
+        print(f'loss: {loss}')
         loss.backward()
         optimizer.step()
 
@@ -690,8 +690,8 @@ def test_cc_batched2():
 
 if __name__ == '__main__':
     # test_actions_batch()
-    test_cc_batched()
-    # test_hmm_batched()
+    # test_cc_batched()
+    test_hmm_batched()
     # test_hmm_and_cc()
     # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()

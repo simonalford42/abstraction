@@ -102,15 +102,18 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (max_T+1, B, b, c, e), (B, )
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (B, max_T+1, b, e), (B, )
 
-    dist = sum(abs(total_logp - total_logp2))
-    if dist > 1E-4:
-        print(f'warning: fw and bw disagree by {dist}')
+    dist = torch.abs(total_logp - total_logp2)
+    threshold = 1E-4
+    if max(dist) > threshold:
         # need to unflip stop lps lol
         if STOP_IX == 0:
             stop_logps = stop_logps.flip(dims=(3, ))
-        total_logp3 = hmm_fw_ub(action_logps, stop_logps, start_logps)
-        print(f"fw: {total_logp}, bw: {total_logp2}, hmm_fw: {total_logp3}")
-        print(f"a: {total_logp3 - total_logp}, b: {total_logp3 - total_logp}, hmm_fw: {total_logp3}")
+        total_logp3 = hmm_fw(b, action_logps, stop_logps, start_logps, lengths)
+        for i in torch.where(dist > threshold):
+            print(f'{i=}')
+            print(f"fw: {total_logp[i]}, bw: {total_logp2[i]}, hmm_fw: {total_logp3[i]}")
+            print(f"a: {total_logp3[i] - total_logp[i]}, b: {total_logp3[i] - total_logp[i]}, hmm_fw: {total_logp3[i]}")
+
     total_logp_sum = sum(total_logp)
     assert torch.allclose(total_logp, total_logp2), f'fw: {total_logp}, bw: {total_logp2}'
 
@@ -319,6 +322,28 @@ def hmm_fw_ub(action_logps, stop_logps, start_logps):
     return total_logp
 
 
+def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
+    B, max_T = action_logps.shape[0:2]
+    f = torch.zeros((max_T, B, b, ), device=DEVICE)
+    f[0] = start_logps[:, 0] + action_logps[:, 0, :]
+    for i in range(1, max_T):
+        beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+        one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+
+        f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
+                                torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
+                + action_logps[:, i, :])
+
+    # max_T length would be out of bounds since we zero-index
+    x0 = f[lengths-1, range(B)]
+    assert_shape(x0, (B, b))
+    # max_T will give last element of (max_T + 1) axis
+    x1 = stop_logps[range(B), lengths, :, STOP_IX]
+    assert_shape(x1, (B, b))
+    total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+    return total_logps
+
+
 class CausalNet(nn.Module):
     """
     Uses AbstractPolicyNet instead of Controller for getting action logps, etc.
@@ -448,23 +473,14 @@ class HmmNet(nn.Module):
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
 
-        f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
-        f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
-        for i in range(1, max_T):
-            beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
-            one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+        action_logps = action_logps[torch.arange(B)[:, None],
+                                    torch.arange(max_T)[None, :],
+                                    :,
+                                    actions_batch[None, :]]
+        # not sure why there's this extra singleton axis, but this passes the test so go for it
+        action_logps = action_logps[0]  # (B, max_T, b) now
 
-            f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
-                                    torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
-                      + action_logps[range(B), i, :, actions_batch[:, i]])
-
-        # max_T length would be out of bounds since we zero-index
-        x0 = f[lengths-1, range(B)]
-        assert_shape(x0, (B, self.b))
-        # max_T will give last element of (max_T + 1) axis
-        x1 = stop_logps[range(B), lengths, :, STOP_IX]
-        assert_shape(x1, (B, self.b))
-        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
         return -torch.sum(total_logps)
 
     def logp_loss_ub(self, s_i, actions):
