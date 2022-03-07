@@ -101,6 +101,18 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
 
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (max_T+1, B, b, c, e), (B, )
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (B, max_T+1, b, e), (B, )
+    dist = torch.abs(total_logp - total_logp2)
+    threshold = 1E-4
+    if max(dist) > threshold:
+        # need to unflip stop lps lol
+        if STOP_IX == 0:
+            stop_logps = stop_logps.flip(dims=(3, ))
+        total_logp3 = hmm_fw(b, action_logps, stop_logps, start_logps, lengths)
+        for i in torch.where(dist > threshold):
+            print(f'{i=}')
+            print(f"fw: {total_logp[i]}, bw: {total_logp2[i]}, hmm_fw: {total_logp3[i]}")
+            print(f"a: {total_logp3[i] - total_logp[i]}, b: {total_logp3[i] - total_logp[i]}, hmm_fw: {total_logp3[i]}")
+
     total_logp_sum = sum(total_logp)
     assert torch.allclose(total_logp, total_logp2), f'fw: {total_logp}, bw: {total_logp2}'
 

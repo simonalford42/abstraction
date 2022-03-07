@@ -128,7 +128,7 @@ def boxworld_main():
     args = parser.parse_args()
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 5000
+    n = 50
     epochs = 100
     num_test = 200
     lr = 8E-4
