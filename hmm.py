@@ -313,6 +313,28 @@ def hmm_fw_ub(action_logps, stop_logps, start_logps):
     return total_logp
 
 
+def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
+    B, max_T = action_logps.shape[0:2]
+    f = torch.zeros((max_T, B, b, ), device=DEVICE)
+    f[0] = start_logps[:, 0] + action_logps[:, 0, :]
+    for i in range(1, max_T):
+        beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+        one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+
+        f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
+                                torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
+                + action_logps[:, i, :])
+
+    # max_T length would be out of bounds since we zero-index
+    x0 = f[lengths-1, range(B)]
+    assert_shape(x0, (B, b))
+    # max_T will give last element of (max_T + 1) axis
+    x1 = stop_logps[range(B), lengths, :, STOP_IX]
+    assert_shape(x1, (B, b))
+    total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+    return total_logps
+
+
 class CausalNet(nn.Module):
     """
     Uses AbstractPolicyNet instead of Controller for getting action logps, etc.
@@ -449,23 +471,7 @@ class HmmNet(nn.Module):
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]  # (B, max_T, b) now
 
-        f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
-        f[0] = start_logps[:, 0] + action_logps[:, 0, :]
-        for i in range(1, max_T):
-            beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
-            one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
-
-            f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
-                                    torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
-                    + action_logps[:, i, :])
-
-        # max_T length would be out of bounds since we zero-index
-        x0 = f[lengths-1, range(B)]
-        assert_shape(x0, (B, self.b))
-        # max_T will give last element of (max_T + 1) axis
-        x1 = stop_logps[range(B), lengths, :, STOP_IX]
-        assert_shape(x1, (B, self.b))
-        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
         return -torch.sum(total_logps)
 
     def logp_loss_ub(self, s_i, actions):
