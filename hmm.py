@@ -101,6 +101,16 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
 
     fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (max_T+1, B, b, c, e), (B, )
     bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (B, max_T+1, b, e), (B, )
+
+    dist = sum(abs(total_logp - total_logp2))
+    if dist > 1E-4:
+        print(f'warning: fw and bw disagree by {dist}')
+        # need to unflip stop lps lol
+        if STOP_IX == 0:
+            stop_logps = stop_logps.flip(dims=(3, ))
+        total_logp3 = hmm_fw_ub(action_logps, stop_logps, start_logps)
+        print(f"fw: {total_logp}, bw: {total_logp2}, hmm_fw: {total_logp3}")
+        print(f"a: {total_logp3 - total_logp}, b: {total_logp3 - total_logp}, hmm_fw: {total_logp3}")
     total_logp_sum = sum(total_logp)
     assert torch.allclose(total_logp, total_logp2), f'fw: {total_logp}, bw: {total_logp2}'
 
@@ -204,7 +214,6 @@ def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
 
     fw_logps, total_logp = cc_fw_ub(b, action_logps, stop_logps, start_logps)  # (T+1, b, c, e)
     bw_logps, total_logp2 = cc_bw_ub(b, action_logps, stop_logps, start_logps)  # (T+1, b, e)
-    # print(f'ub bw logp: {total_logp2}')
     dist = abs(total_logp - total_logp2)
     if dist > 1E-4:
         print(f'warning: fw and bw disagree by {dist}')
@@ -215,15 +224,12 @@ def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
         print(f"fw: {total_logp}, bw: {total_logp2}, hmm_fw: {total_logp3}")
         print(f"a: {total_logp3 - total_logp}, b: {total_logp3 - total_logp}, hmm_fw: {total_logp3}")
 
-    # assert torch.allclose(total_logp, total_logp2, atol=1E-4), f'fw: {total_logp}, bw: {total_logp2}'
-
     total_cc_loss = 0
     # t is when we stop
     for t in range(1, T+1):
         marginal = fw_logps[t] + bw_logps[t, :, None, :]  # (b, c, e)
         causal_pen = rearrange(causal_pens, 'start stop b -> b stop start')[:, t, :t]
         cc_loss = torch.sum(torch.exp(marginal[:, :, 1] - total_logp) * causal_pen)
-        # print(f'{t=} ub cc_loss: {cc_loss}')
         total_cc_loss += cc_loss
 
     return total_logp, total_cc_loss
