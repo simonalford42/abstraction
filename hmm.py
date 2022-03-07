@@ -350,9 +350,8 @@ class CausalNet(nn.Module):
         action_logps = action_logps[0]
 
         logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens, lengths, masks)
-        return cc
-        # loss = -logp + self.cc_weight * cc
-        # return loss
+        loss = -logp + self.cc_weight * cc
+        return loss
 
     def cc_loss_ub(self, s_i, actions):
         T = actions.shape[0]
@@ -362,9 +361,8 @@ class CausalNet(nn.Module):
         action_logps = action_logps[range(T), :, actions]
 
         logp, cc = cc_loss_ub(self.b, action_logps, stop_logps, start_logps, causal_pens)
-        return cc
-        # loss = -logp + self.cc_weight * cc
-        # return loss
+        loss = -logp + self.cc_weight * cc
+        return loss
 
 
 class TrajNet(nn.Module):
