@@ -17,7 +17,7 @@ from hypothesis import example, given, settings, strategies as st
 from hypothesis.strategies import composite
 from hypothesis.extra import numpy as np_st
 
-# mlflow gives a shit ton of warnings from its dependencies
+# mlflow gives a lot of warnings from its dependencies, ignore them
 import warnings
 warnings.filterwarnings("module", category=DeprecationWarning)
 
@@ -170,7 +170,6 @@ def cc_input(draw, max_b, max_T):
     # phases=[hypothesis.Phase.explicit, hypothesis.Phase.reuse],
     max_examples=200,
 )
-
 def test_brute_vs_hmm_cc_loss(args):
     b, action_logps, stop_logps, start_logps, causal_pens = args
     hmm_logp, hmm_out = cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens)
@@ -520,20 +519,20 @@ def test_cc6():
 def test_hmm_and_cc():
     control_net = abstract.boxworld_controller(b=3)
 
-    net = hmm.CausalNet(control_net, cc_weight=0.)
-    net2 = hmm.HmmNet(control_net)
+    causal_net = hmm.CausalNet(control_net, cc_weight=0.)
+    hmm_net = hmm.HmmNet(control_net)
 
     env = box_world.BoxWorldEnv()
     dataloader = box_world.box_world_dataloader(env=env, n=20, traj=True, batch_size=1)
 
-    net.to(DEVICE)
-    net2.to(DEVICE)
+    causal_net.to(DEVICE)
+    hmm_net.to(DEVICE)
 
-    for s_i, actions, lengths in dataloader:
+    for s_i, actions, lengths, masks in dataloader:
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
-        loss = net(s_i, actions, lengths)
-        loss2 = net2(s_i, actions, lengths)
-        assert torch.isclose(loss, loss2)
+        causal_loss = causal_net(s_i, actions, lengths)
+        hmm_loss = hmm_net(s_i, actions, lengths)
+        assert torch.isclose(causal_loss, hmm_loss)
 
 
 def test_hmm_batched():
@@ -544,8 +543,10 @@ def test_hmm_batched():
     dataloader = box_world.box_world_dataloader(env=env, n=100, traj=True, batch_size=10)
 
     net.to(DEVICE)
+    optimizer = torch.optim.Adam(net.parameters(), lr=1E-4)
 
-    for s_i, actions, lengths in dataloader:
+    for s_i, actions, lengths, _ in dataloader:
+        optimizer.zero_grad()
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
         total_loss = net(s_i, actions, lengths)
 
@@ -558,42 +559,50 @@ def test_hmm_batched():
 
         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
 
+        # loss = total_loss2
+        loss = total_loss
+        print(loss)
+        loss.backward()
+        optimizer.step()
+
 
 def test_cc_batched():
-    b = 10
-    B = 8
+    b = 3
+    B = 5
+    random.seed(1)
+    torch.manual_seed(1)
+    np.random.seed(1)
+
     control_net = abstract.boxworld_controller(b=b)
 
-    net = hmm.CausalNet(control_net, cc_weight=0.)
+    net = hmm.CausalNet(control_net, cc_weight=1.)
 
-    env = box_world.BoxWorldEnv()
+    env = box_world.BoxWorldEnv(seed=1)
     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     net.to(DEVICE)
 
     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
 
-    from torch import autograd
-    with autograd.detect_anomaly():
-        for s_i, actions, lengths in dataloader:
-            optimizer.zero_grad()
-            s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
-            total_loss = net(s_i, actions, lengths, batched=True)
+    for s_i, actions, lengths, masks in dataloader:
+        optimizer.zero_grad()
+        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+        total_loss2 = 0
+        for s, action, T in zip(s_i, actions, lengths):
+            s = s[0:T+1]
+            action = action[0:T]
+            loss = net.cc_loss_ub(s, action)
+            # print(f'ub loss: {loss}')
+            total_loss2 += loss
 
-            total_loss2 = 0
-            for s_i, action, T in zip(s_i, actions, lengths):
-                s_i = s_i[0:T+1]
-                action = action[0:T]
-                loss = net.cc_loss_ub(s_i, action)
-                total_loss2 += loss
-            assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+        total_loss = net(s_i, actions, lengths, masks, batched=True)
+        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
 
-            # loss = total_loss2
-            loss = total_loss
-            print(f'unbatch loss:\t{total_loss2}')
-            print(f'batch loss:\t{total_loss}')
-            loss.backward()
-            optimizer.step()
+        # loss = total_loss2
+        loss = total_loss
+        print(loss)
+        loss.backward()
+        optimizer.step()
 
 
 def test_actions_batch():
@@ -639,8 +648,8 @@ def test_cc_batched2():
 
     control_net.to(DEVICE)
 
-    for s_i, actions, lengths in dataloader:
-        s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
+    for s_i, actions, lengths, masks in dataloader:
+        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
         # (B, max_T+1, b, n)
         action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=True)
 
@@ -653,12 +662,11 @@ def test_cc_batched2():
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]
 
-        fw_logps, total_logp_fw = hmm.cc_fw(b, action_logps, stop_logps, start_logps, lengths)
+        fw_logps, total_logp_fw = hmm.cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)
         total_logp_fw = sum(total_logp_fw)
-        print(f'total_logp_fw: {total_logp_fw}')
-        bw_logps, total_logp_bw = hmm.cc_bw(b, action_logps, stop_logps, start_logps, lengths)
+        bw_logps, total_logp_bw = hmm.cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)
         total_logp_bw = sum(total_logp_bw)
-        total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths)
+        total_logp, total_cc_loss = hmm.cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, masks)
 
         total_logp_ub = 0
         total_cc_loss_ub = 0
@@ -683,6 +691,8 @@ def test_cc_batched2():
 if __name__ == '__main__':
     # test_actions_batch()
     test_cc_batched()
+    # test_hmm_batched()
+    # test_hmm_and_cc()
     # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()
     # test_cc2()

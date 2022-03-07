@@ -21,10 +21,10 @@ def sv_train(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, prin
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
-        for s_i_batch, actions_batch, lengths in dataloader:
+        for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
             s_i_batch, actions_batch = s_i_batch.to(DEVICE), actions_batch.to(DEVICE)
-            loss = net(s_i_batch, actions_batch, lengths)
+            loss = net(s_i_batch, actions_batch, lengths, masks)
 
             train_loss += loss
             # reduce just like cross entropy so batch size doesn't affect LR
@@ -71,8 +71,7 @@ def boxworld_outer_sv(
                 with Timing("Generated trajectories"):
                     dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
 
-                sv_train(dataloader, net, epochs=epochs, lr=lr,
-                                   print_every=print_every)
+                sv_train(dataloader, net, epochs=epochs, lr=lr, print_every=print_every)
 
                 if test_every and round % test_every == 0:
                     if fix_seed:
@@ -129,7 +128,7 @@ def boxworld_main():
     args = parser.parse_args()
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 50
+    n = 5000
     epochs = 100
     num_test = 200
     lr = 8E-4
@@ -154,12 +153,11 @@ def boxworld_main():
         else:
             net = TrajNet(homo_controller).to(DEVICE)
 
-    env = box_world.BoxWorldEnv(seed=1)
-
     boxworld_outer_sv(
         net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
         lr=lr, batch_size=batch_size, fix_seed=fix_seed)
 
+    # env = box_world.BoxWorldEnv(seed=1)
     # box_world.eval_options_model(net.control_net, env, n=200)
 
 

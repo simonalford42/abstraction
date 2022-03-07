@@ -549,12 +549,13 @@ def obs_to_tensor(obs) -> torch.Tensor:
 
 def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
     """
-    batch is a list of (states, moves, length) tuples.
+    batch is a list of (states, moves, length, masks) tuples.
     """
     max_T = max([length for _, _, length in batch])
     states_batch = []
     moves_batch = []
     lengths = []
+    masks = []
     for states, moves, length in batch:
         _, *s = states.shape
         T = moves.shape[0]
@@ -566,8 +567,11 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
         states_batch.append(states2)
         moves_batch.append(moves2)
         lengths.append(length)
+        mask = torch.zeros(max_T, dtype=int)
+        mask[:T] = 1
+        masks.append(mask)
 
-    return torch.stack(states_batch), torch.stack(moves_batch), torch.tensor(lengths)
+    return torch.stack(states_batch), torch.stack(moves_batch), torch.tensor(lengths), torch.stack(masks)
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
