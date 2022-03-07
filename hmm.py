@@ -442,15 +442,22 @@ class HmmNet(nn.Module):
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
 
+        action_logps = action_logps[torch.arange(B)[:, None],
+                                    torch.arange(max_T)[None, :],
+                                    :,
+                                    actions_batch[None, :]]
+        # not sure why there's this extra singleton axis, but this passes the test so go for it
+        action_logps = action_logps[0]  # (B, max_T, b) now
+
         f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
-        f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
+        f[0] = start_logps[:, 0] + action_logps[:, 0, :]
         for i in range(1, max_T):
             beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
             one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
 
             f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
                                     torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
-                      + action_logps[range(B), i, :, actions_batch[:, i]])
+                    + action_logps[:, i, :])
 
         # max_T length would be out of bounds since we zero-index
         x0 = f[lengths-1, range(B)]
