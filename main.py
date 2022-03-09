@@ -23,7 +23,7 @@ def sv_train(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, prin
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
-            s_i_batch, actions_batch = s_i_batch.to(DEVICE), actions_batch.to(DEVICE)
+            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths, masks)
 
             train_loss += loss
@@ -125,21 +125,21 @@ def boxworld_main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--cc', type=float, default=1)
+    parser.add_argument('--hmm', action='store_true')
     args = parser.parse_args()
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 50
+    n = 5000
     epochs = 100
     num_test = 200
     lr = 8E-4
     rounds = 20
     fix_seed = False
     b = 10
-    batch_size = 10
-    net = 'causal'
+    batch_size = 40
+    net = 'hmm' if args.hmm else 'causal'
     cc_weight = args.cc
 
-    print('homo controller')
     print(f"net: {net}")
     print(f"cc_weight: {cc_weight}")
 
@@ -153,9 +153,10 @@ def boxworld_main():
         else:
             net = TrajNet(homo_controller).to(DEVICE)
 
-    boxworld_outer_sv(
-        net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
-        lr=lr, batch_size=batch_size, fix_seed=fix_seed)
+    with Timing('Completed training'):
+        boxworld_outer_sv(
+            net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
+            lr=lr, batch_size=batch_size, fix_seed=fix_seed)
 
     # env = box_world.BoxWorldEnv(seed=1)
     # box_world.eval_options_model(net.control_net, env, n=200)

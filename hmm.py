@@ -75,7 +75,7 @@ def cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks):
                                         dim=(1, 2))[:, None]
 
         # if mask is zero, resets the answer to -inf, else stays the same.
-        choices = torch.tensor([[float('-inf'), 0], [1, 1]])  # (mask, e)
+        choices = torch.tensor([[float('-inf'), 0], [1, 1]], device=DEVICE)  # (mask, e)
         mask = masks[:, t][:, None, None]  # (B, 1, 1)
         choice = choices[masks[:, t]][:, None, :]  # (B, 1, e)
         f[:, t, :, :] = f[:, t, :, :] * mask + choice * (1 - mask)
@@ -115,7 +115,6 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
             print(f"a: {total_logp3[i] - total_logp[i]}, b: {total_logp3[i] - total_logp[i]}, hmm_fw: {total_logp3[i]}")
 
     total_logp_sum = sum(total_logp)
-    assert torch.allclose(total_logp, total_logp2), f'fw: {total_logp}, bw: {total_logp2}'
 
     total_cc_loss = torch.zeros(B, device=DEVICE)
     # t is when we stop
@@ -455,7 +454,7 @@ class HmmNet(nn.Module):
         self.control_net = control_net
         self.b = control_net.b
 
-    def forward(self, s_i_batch, actions_batch, lengths):
+    def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths)
 
     def logp_loss(self, s_i_batch, actions_batch, lengths):
