@@ -124,7 +124,8 @@ def boxworld_main():
     utils.print_torch_device()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cc', type=float, default=1)
+    parser.add_argument('--cc', type=float, default=1.0)
+    parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--hmm', action='store_true')
     args = parser.parse_args()
 
@@ -139,17 +140,19 @@ def boxworld_main():
     batch_size = 40
     net = 'hmm' if args.hmm else 'causal'
     cc_weight = args.cc
+    abstract_pen = args.abstract_pen
 
     print(f"net: {net}")
     print(f"cc_weight: {cc_weight}")
+    print(f'abstract_pen: {abstract_pen}')
 
     if net == 'causal':
         control_net = boxworld_controller(b=b)
-        net = CausalNet(control_net, cc_weight=cc_weight).to(DEVICE)
+        net = CausalNet(control_net, cc_weight=cc_weight, abstract_pen=abstract_pen).to(DEVICE)
     else:
         homo_controller = boxworld_homocontroller(b=b)
         if net == 'hmm':
-            net = HmmNet(homo_controller).to(DEVICE)
+            net = HmmNet(homo_controller, abstract_pen=abstract_pen).to(DEVICE)
         else:
             net = SVNet(homo_controller).to(DEVICE)
 

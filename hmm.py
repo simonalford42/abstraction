@@ -351,18 +351,12 @@ def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
 
 
 class CausalNet(nn.Module):
-    """
-    Uses AbstractPolicyNet instead of Controller for getting action logps, etc.
-    The difference is that here these come from separate nets which can be
-    different sizes, instead of simply slicing the output of one big Relational
-    net.
-    """
-
-    def __init__(self, control_net, cc_weight=1):
+    def __init__(self, control_net, cc_weight=1.0, abstract_pen=0.0):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
         self.cc_weight = cc_weight
+        self.abstract_pen = abstract_pen
 
     def forward(self, s_i_batch, actions_batch, lengths, masks, batched=True):
         if batched:
@@ -386,7 +380,8 @@ class CausalNet(nn.Module):
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]
 
-        logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens, lengths, masks)
+        logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps,
+                           causal_pens, lengths, masks, self.abstract_pen)
         loss = -logp + self.cc_weight * cc
         return loss
 
@@ -397,7 +392,8 @@ class CausalNet(nn.Module):
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
-        logp, cc = cc_loss_ub(self.b, action_logps, stop_logps, start_logps, causal_pens)
+        logp, cc = cc_loss_ub(self.b, action_logps, stop_logps, start_logps,
+                              causal_pens, self.abstract_pen)
         loss = -logp + self.cc_weight * cc
         return loss
 
@@ -445,10 +441,11 @@ class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """
-    def __init__(self, control_net):
+    def __init__(self, control_net, abstract_pen=0.0):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
+        self.abstract_pen = abstract_pen
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths)
@@ -467,6 +464,7 @@ class HmmNet(nn.Module):
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
+        start_logps = start_logps - self.abstract_pen
 
         action_logps = action_logps[torch.arange(B)[:, None],
                                     torch.arange(max_T)[None, :],
@@ -486,6 +484,7 @@ class HmmNet(nn.Module):
 
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
+        start_logps = start_logps - self.abstract_pen
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
