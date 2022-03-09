@@ -202,6 +202,9 @@ def test_cc_logp_vs_hmm_logp(args):
     logp, cc = cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens)
     hmm_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
     assert torch.isclose(logp, hmm_logp), f'cc: {logp}, hmm: {hmm_logp}'
+    logp, cc = cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=2.5)
+    hmm_logp = hmm_fw_ub(action_logps, stop_logps, start_logps - 2.5)
+    assert torch.isclose(logp, hmm_logp), f'cc: {logp}, hmm: {hmm_logp}'
 
 
 def test_cc():
