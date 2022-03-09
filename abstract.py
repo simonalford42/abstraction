@@ -1,3 +1,4 @@
+from collections import namedtuple
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
@@ -43,13 +44,13 @@ class HeteroController(nn.Module):
         stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
 
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
-        consistency_penalty = self.calc_consistency_penalty(t_i)  # (T, T, b)
+        causal_pens = self.calc_causal_pens_ub(t_i)  # (T, T, b)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
 
-        return action_logps, stop_logps, start_logps, consistency_penalty
+        return action_logps, stop_logps, start_logps, causal_pens
 
     def forward_b(self, s_i_batch):
         """
@@ -75,13 +76,13 @@ class HeteroController(nn.Module):
 
         start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
 
-        consistency_penalty = self.calc_consistency_penalty_b(t_i)  # (B, T, T, b)
+        causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
 
         action_logps = F.log_softmax(action_logps, dim=3)
         stop_logps = F.log_softmax(stop_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, consistency_penalty
+        return action_logps, stop_logps, start_logps, causal_pens, t_i
 
     def new_option_logps(self, t):
         """
@@ -97,29 +98,13 @@ class HeteroController(nn.Module):
         return self.macro_transitions(t.unsqueeze(0),
                                       torch.tensor([b])).reshape(self.t)
 
-    def macro_transitions(self, t_i, bs):
+    def tau_embed(self, s):
         """
-        input: t_i: (T, t) batch of abstract states.
-               bs: 1D tensor of actions to try
-        returns: (T, |bs|, self.t) batch of new abstract states for each
-            option applied.
+        Calculate the embedding of a single state. Returns (t, ) tensor.
         """
-        # TODO: recalculate with einops, compare calculations
-        T = t_i.shape[0]
-        nb = bs.shape[0]
-        # calculate transition for each t_i + b pair
-        t_i2 = t_i.repeat_interleave(nb, dim=0)  # (T*nb, t)
-        assert_equal(t_i2.shape, (T * nb, self.t))
-        b_onehots = F.one_hot(bs, num_classes=self.b).repeat(T, 1)  # (T*nb, b)
-        assert_equal(b_onehots.shape, (T * nb, self.b))
-        # b is "less significant', changes in 'inner loop'
-        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
-        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
-        # (T * nb, t + b) -> (T * nb, t)
-        t_i2 = self.macro_transition_net(t_i2)
-        return t_i2.reshape(T, nb, self.t)
+        return self.tau_net(s.unsqueeze(0))[0]
 
-    def macro_transitions2(self, t_i, bs):
+    def macro_transitions(self, t_i, bs):
         """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
 
         Args:
@@ -141,7 +126,7 @@ class HeteroController(nn.Module):
         t_i2 = self.macro_transition_net(t_i2)
         return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
 
-    def calc_consistency_penalty(self, t_i):
+    def calc_causal_pens_ub(self, t_i):
         """For each pair of indices and each option, calculates (t - alpha(b, t))^2
 
         Args:
@@ -153,17 +138,8 @@ class HeteroController(nn.Module):
         T = t_i.shape[0]
         # apply each action at each timestep.
         macro_trans = self.macro_transitions(t_i, torch.arange(self.b, device=DEVICE))
-        macro_trans2 = self.macro_transitions2(t_i, torch.arange(self.b, device=DEVICE))
-        assert torch.all(macro_trans == macro_trans2)
-
-        macro_trans1 = macro_trans.reshape(T, 1, self.b, self.t)
-        macro_trans2 = rearrange(macro_trans, 'T nb t -> T 1 nb t')
-        assert torch.all(macro_trans1 == macro_trans2)
-
-        t_i2 = t_i.reshape(1, T, 1, self.t)
-        t_i3 = rearrange(t_i, 'T t -> 1 T 1 t')
-        assert torch.all(t_i2 == t_i3)
-
+        macro_trans1 = rearrange(macro_trans, 'T nb t -> T 1 nb t')
+        t_i2 = rearrange(t_i, 'T t -> 1 T 1 t')
         # (start, end, action, t value)
         penalty = (t_i2 - macro_trans1)**2
         assert_equal(penalty.shape, (T, T, self.b, self.t))
@@ -171,7 +147,7 @@ class HeteroController(nn.Module):
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
 
-    def calc_consistency_penalty_b(self, t_i_batch):
+    def calc_causal_pens_b(self, t_i_batch):
         """For each pair of indices and each option, calculates (t - alpha(b, t))^2
 
         Args:
@@ -183,7 +159,7 @@ class HeteroController(nn.Module):
         B, T = t_i_batch.shape[0:2]
 
         t_i_flat = rearrange(t_i_batch, 'B T t -> (B T) t')
-        macro_trans = self.macro_transitions2(t_i_flat,
+        macro_trans = self.macro_transitions(t_i_flat,
                                               torch.arange(self.b, device=DEVICE))
         macro_trans = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
@@ -206,8 +182,8 @@ class HeteroController(nn.Module):
             (b, 2) tensor of stop logps
             (b, ) tensor of start logps
         """
-        # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.forward_ub(s_i.unsqueeze(0))
+        # (1, b, a), (1, b, 2), (1, b), (1, 1, b)
+        action_logps, stop_logps, start_logps, _ = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
 
 
@@ -289,7 +265,7 @@ class HomoController(nn.Module):
             (b, ) tensor of start logps
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps, _ = self.forward_ub(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps, _, = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
 
 
@@ -311,6 +287,7 @@ def boxworld_homocontroller(b):
         net=relational_net,
     )
     return control_net
+
 
 def boxworld_controller(b, t=16):
     a = 4

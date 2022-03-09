@@ -8,7 +8,7 @@ import random
 import utils
 from utils import Timing, DEVICE
 from abstract import HeteroController, boxworld_controller, boxworld_homocontroller
-from hmm import CausalNet, TrajNet, HmmNet, viterbi
+from hmm import CausalNet, SVNet, HmmNet, viterbi
 import time
 import box_world
 import mlflow
@@ -145,21 +145,27 @@ def boxworld_main():
 
     if net == 'causal':
         control_net = boxworld_controller(b=b)
-        net = CausalNet(control_net).to(DEVICE)
+        net = CausalNet(control_net, cc_weight=cc_weight).to(DEVICE)
     else:
         homo_controller = boxworld_homocontroller(b=b)
         if net == 'hmm':
             net = HmmNet(homo_controller).to(DEVICE)
         else:
-            net = TrajNet(homo_controller).to(DEVICE)
+            net = SVNet(homo_controller).to(DEVICE)
 
-    with Timing('Completed training'):
-        boxworld_outer_sv(
-            net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
-            lr=lr, batch_size=batch_size, fix_seed=fix_seed)
+    # with Timing('Completed training'):
+    #     boxworld_outer_sv(
+    #         net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
+    #         lr=lr, batch_size=batch_size, fix_seed=fix_seed)
+    run_id = "5ba29de160934f16910023ff39507702"  # cc weight = 1
+    # run_id = "0df0a52aea7b493baf72a2804aa9d622"  # cc weight = 0.1
+    # run_id = "401585e1c032428894848bdaac632e49"  # cc weight = 0
+    # run_id = "1c9328d7fa6e4d09a8dcc319f124967e"  # hmm
+    model_name = 'round-19'
+    utils.load_mlflow_model(net, run_id, model_name)
 
-    # env = box_world.BoxWorldEnv(seed=1)
-    # box_world.eval_options_model(net.control_net, env, n=200)
+    env = box_world.BoxWorldEnv(seed=1)
+    box_world.eval_options_model(net.control_net, env, n=200, option='verbose')
 
 
 if __name__ == '__main__':

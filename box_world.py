@@ -366,7 +366,7 @@ def make_move_graph(obs, goal_pos) -> Tuple[set[POS], dict[POS, dict[POS, int]]]
     return nodes, adj_matrix
 
 
-def player_pos(obs):
+def player_pos(obs) -> tuple[int, int]:
     return tuple(np.argwhere(obs == bw.PLAYER)[0])
 
 
@@ -426,30 +426,41 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-def eval_options_model(control_net, env, n=100):
+def eval_options_model(control_net, env, n=100, option='silent'):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
         (b, a) action logps
         (b, 2) stop logps
         (b, ) start logps
+
+    option:
+        - 'silent': evals without any printing
+        -
     """
     print(f'Evaluating model on {n} episodes')
     control_net.eval()
     num_solved = 0
+    avg_total = 0
 
+    verbose = option != 'silent'
+    check_cc = hasattr(control_net, 'tau_net')
     option_map = {i: [] for i in range(control_net.b)}
 
     for i in range(n):
-        # print(f'i: {i}')
+        if verbose:
+            print(f'i: {i}')
         obs = env.reset()
+        obs_record = obs
         done, solved = False, False
         t = 0
-        # options = []
+        options = []
         moves_without_moving = 0
         prev_pos = (-1, -1)
 
         current_option = None
+        cc_losses = []
+        tau_goal = None
 
         while not (done or solved):
             t += 1
@@ -462,8 +473,17 @@ def eval_options_model(control_net, env, n=100):
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
             new_option = current_option is None or stop == STOP_IX
             if new_option:
+                tau = control_net.tau_embed(obs)
+                if current_option is not None:
+                    if check_cc:
+                        cc_loss = ((tau_goal - tau)**2).sum()
+                        cc_losses.append(cc_loss.item())
+                    obs_record[prev_pos] = 'e'
                 current_option = Categorical(logits=start_logps).sample().item()
-            # options.append(current_option)
+                tau_goal = control_net.macro_transition(tau, current_option)
+            else:
+                obs_record[prev_pos] = 'm'
+            options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
             option_map[current_option].append(a)
@@ -478,21 +498,38 @@ def eval_options_model(control_net, env, n=100):
                 moves_without_moving = 0
                 prev_pos = pos
             if moves_without_moving >= 5:
-                # print('Quitting due to 5 repeated moves')
+                if verbose:
+                    print('Quitting due to 5 repeated moves')
                 done = True
 
-            # title = f'option={current_option}'
-            # pause = 0.2
-            # if new_option:
-            #     title += ' (new)'
-            #     pause = 0.5
-            # option_map[current_option].append((obs, title, pause))
-            # render_obs(obs, title=title, pause=pause)
+            # if verbose:
+            #     title = f'option={current_option}'
+            #     pause = 0.1
+            #     if new_option:
+            #         title += ' (new)'
+            #     option_map[current_option].append((obs, title, pause))
+            #     render_obs(obs, title=title, pause=pause)
 
         if solved:
+            # add cc loss from last action.
+            if check_cc:
+                obs = obs_to_tensor(obs)
+                obs = obs.to(DEVICE)
+                tau = control_net.tau_embed(obs)
+                cc_loss = ((tau_goal - tau)**2).sum()
+                cc_losses.append(cc_loss.item())
             num_solved += 1
+            # print(f'{cc_losses=}')
+            avg = sum(cc_losses) / len(cc_losses)
+            print(avg)
+            avg_total += avg
+
+        # if verbose:
+            # render_obs(obs_record, title=f'{solved=}', pause=3)
+
 
     print(f'Solved {num_solved}/{n} episodes')
+    print(avg_total / n)
     # for i in option_map:
     #     # print(i, Counter(option_map[i]))
     #     # if i < 3:
