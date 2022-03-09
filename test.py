@@ -549,15 +549,21 @@ def test_hmm_batched():
         optimizer.zero_grad()
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
         total_loss = net(s_i, actions, lengths)
+        total_loss3 = net.logp(s_i, actions, lengths)
 
         total_loss2 = 0
+        total_loss4 = 0
         for s_i, action, T in zip(s_i, actions, lengths):
             s_i = s_i[0:T+1]
             action = action[0:T]
             loss = net.logp_loss_ub(s_i, action)
+            loss4 = net.logp4(s_i, action)
             total_loss2 += loss
+            total_loss4 += loss4
 
         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+        assert torch.isclose(total_loss, total_loss3), f'{total_loss=}, {total_loss2=}'
+        assert torch.isclose(total_loss, total_loss4), f'{total_loss=}, {total_loss2=}'
 
         # loss = total_loss2
         loss = total_loss

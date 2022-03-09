@@ -445,6 +445,49 @@ class TrajNet(nn.Module):
         return -total_logp
 
 
+def calc_trans_fn_batched(stop_logps, start_logps, i):
+    """
+    stop_logps: (B, T+1, b, 2) output from control_net
+    start_logps: (B, T+1, b) output from control_net
+    i: current time step
+    output: (B, b, b) matrix whose k, i,j'th entry is the probability of transitioning
+            from option i to option j for trajectory k in the batch.
+    """
+    (B, _, b) = start_logps.shape
+    # for each b' -> b
+    beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+    one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+
+    continue_trans_fn = torch.full((B, b, b), float('-inf'), device=DEVICE)
+    continue_trans_fn[:, torch.arange(b), torch.arange(b)] = one_minus_beta
+    # (B, b, b)
+    trans_fn = torch.logaddexp(rearrange(beta, 'B b -> B b 1') + rearrange(start_logps[:, i], 'B b -> B 1 b'),
+                               continue_trans_fn)
+    assert torch.allclose(torch.logsumexp(trans_fn, axis=2), torch.zeros((B, b,), device=DEVICE), atol=1E-6)
+    return trans_fn
+
+
+def calc_trans_fn(stop_logps, start_logps, i):
+    """
+    stop_logps: (T+1, b, 2) output from control_net
+    start_logps: (T+1, b) output from control_net
+    i: current time step
+    output: (b, b) matrix whose i,j'th entry is the probability of transitioning
+            from option i to option j.
+    """
+    b = start_logps.shape[1]
+    # for each b' -> b
+    beta = stop_logps[i, :, STOP_IX]  # (b,)
+    one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+    continue_trans_fn = torch.full((b, b), float('-inf'), device=DEVICE)
+    continue_trans_fn[torch.arange(b), torch.arange(b)] = one_minus_beta
+    trans_fn = torch.logaddexp(rearrange(beta, 'b -> b 1') + rearrange(start_logps[i], 'b -> 1 b'),
+                               continue_trans_fn)
+    assert torch.allclose(torch.logsumexp(trans_fn, axis=1), torch.zeros(b, device=DEVICE), atol=1E-6)
+    return trans_fn
+
+
 class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
@@ -456,6 +499,127 @@ class HmmNet(nn.Module):
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths)
+
+    def logp(self, s_i_batch, actions_batch, lengths):
+        """
+        batched, inefficient.
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+        returns: negative logp of all trajs in batch
+        """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch)
+
+        f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
+        f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
+        for i in range(1, max_T):
+            # (B, b, b)
+            trans_fn = calc_trans_fn_batched(stop_logps, start_logps, i)
+
+            f_unsummed = (rearrange(f[i-1], 'B b -> B b 1')
+                          + trans_fn
+                          + rearrange(action_logps[range(B), i, :, actions_batch[:, i]], 'B b -> B 1 b'))
+            f[i] = torch.logsumexp(f_unsummed, axis=1)
+
+        # max_T length would be out of bounds since we zero-index
+        x0 = f[lengths-1, range(B)]
+        assert_shape(x0, (B, self.b))
+        # max_T will give last element of (max_T + 1) axis
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
+        assert_shape(x1, (B, self.b))
+        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        return -torch.sum(total_logps)
+
+    def logp2(self, s_i_batch, actions_batch, lengths):
+        """
+        batched, efficient.
+        s_i: (B, max_T+1, s) tensor
+        actions: (B, max_T,) tensor of ints
+        lengths: T for each traj in the batch
+        returns: negative logp of all trajs in batch
+        """
+        # return self.forward_old(s_i_batch, actions_batch, lengths)
+        B, max_T = actions_batch.shape[0:2]
+        assert_equal((B, max_T+1), s_i_batch.shape[0:2])
+
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch)
+
+        f = torch.zeros((max_T, B, self.b, ), device=DEVICE)
+        f[0] = start_logps[:, 0] + action_logps[range(B), 0, :, actions_batch[:, 0]]
+        for i in range(1, max_T):
+            beta = stop_logps[:, i, :, STOP_IX]  # (B, b,)
+            one_minus_beta = stop_logps[:, i, :, CONTINUE_IX]  # (B, b,)
+
+            f[i] = (torch.logaddexp(f[i-1] + one_minus_beta,
+                                      torch.logsumexp(f[i-1] + beta, dim=1, keepdim=True) + start_logps[:, i])
+                      + action_logps[range(B), i, :, actions_batch[:, i]])
+
+        # max_T length would be out of bounds since we zero-index
+        x0 = f[lengths-1, range(B)]
+        assert_shape(x0, (B, self.b))
+        # max_T will give last element of (max_T + 1) axis
+        x1 = stop_logps[range(B), lengths, :, STOP_IX]
+        assert_shape(x1, (B, self.b))
+        total_logps = torch.logsumexp(x0 + x1, axis=1)  # (B, )
+        return -torch.sum(total_logps)
+
+    def logp3(self, s_i, actions):
+        """
+        returns: negative logp of all trajs in batch
+        """
+        T = actions.shape[0]
+
+        # (T+1, b, n), (T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
+
+        f_0 = start_logps[0] + action_logps[0, :, actions[0]]
+        f_prev = f_0
+        for i in range(1, T):
+            action = actions[i]
+            trans_fn = calc_trans_fn(stop_logps, start_logps, i)
+
+            f_unsummed = (rearrange(f_prev, 'b -> b 1')
+                          + trans_fn
+                          + rearrange(action_logps[i, :, action], 'b -> 1 b'))
+            f = torch.logsumexp(f_unsummed, axis=0)
+            assert_equal(f.shape, (self.b, ))
+            f_prev = f
+
+        assert_equal(T+1, stop_logps.shape[0])
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+        return -total_logp
+
+    def logp4(self, s_i, actions):
+        """
+        returns: negative logp of all trajs in batch
+        """
+        T = actions.shape[0]
+
+        # (T+1, b, n), (T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
+        # (T+1, b)
+        action_logps = action_logps[range(T), :, actions]
+
+        f_0 = start_logps[0] + action_logps[0]
+        f_prev = f_0
+        for i in range(1, T):
+            beta = stop_logps[i, :, STOP_IX]  # (b,)
+            one_minus_beta = stop_logps[i, :, CONTINUE_IX]  # (b,)
+
+            f = (torch.logaddexp(f_prev + one_minus_beta,
+                                 torch.logsumexp(f_prev + beta, dim=0) + start_logps[i])
+                 + action_logps[i])
+            f_prev = f
+
+        assert_equal(T+1, stop_logps.shape[0])
+        total_logp = torch.logsumexp(f + stop_logps[T, :, STOP_IX], dim=0)
+        return -total_logp
 
     def logp_loss(self, s_i_batch, actions_batch, lengths):
         """
