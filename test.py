@@ -186,6 +186,16 @@ def test_brute_vs_hmm_cc_loss(args):
     # assert torch.isclose(hmm_out, batch_out, rtol=5E-4), f'hmm: {hmm_out}, brute: {batch_out}'
 
 
+@given(cc_input(max_b=3, max_T=5))
+def test_brute_vs_hmm_cc_loss2(args):
+    b, action_logps, stop_logps, start_logps, causal_pens = args
+    hmm_logp, hmm_out = cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=2.5)
+    brute_logp, brute_out = cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=2.5)
+    hmm_logp, hmm_out = cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=0)
+    brute_logp, brute_out = cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=0)
+    assert torch.isclose(hmm_logp, brute_logp), f'hmm: {hmm_logp}, brute: {brute_logp}'
+
+
 @given(cc_input(max_b=10, max_T=70))
 def test_cc_logp_vs_hmm_logp(args):
     b, action_logps, stop_logps, start_logps, causal_pens = args
@@ -530,46 +540,9 @@ def test_hmm_and_cc():
 
     for s_i, actions, lengths, masks in dataloader:
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
-        causal_loss = causal_net(s_i, actions, lengths)
+        causal_loss = causal_net(s_i, actions, lengths, masks)
         hmm_loss = hmm_net(s_i, actions, lengths)
         assert torch.isclose(causal_loss, hmm_loss)
-
-
-def test_hmm_batched():
-    control_net = abstract.boxworld_homocontroller(b=3)
-    net = hmm.HmmNet(control_net)
-
-    env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=100, traj=True, batch_size=10)
-
-    net.to(DEVICE)
-    optimizer = torch.optim.Adam(net.parameters(), lr=1E-4)
-
-    for s_i, actions, lengths, _ in dataloader:
-        optimizer.zero_grad()
-        s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
-        total_loss = net(s_i, actions, lengths)
-        total_loss3 = net.logp(s_i, actions, lengths)
-
-        total_loss2 = 0
-        total_loss4 = 0
-        for s_i, action, T in zip(s_i, actions, lengths):
-            s_i = s_i[0:T+1]
-            action = action[0:T]
-            loss = net.logp_loss_ub(s_i, action)
-            loss4 = net.logp4(s_i, action)
-            total_loss2 += loss
-            total_loss4 += loss4
-
-        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
-        assert torch.isclose(total_loss, total_loss3), f'{total_loss=}, {total_loss2=}'
-        assert torch.isclose(total_loss, total_loss4), f'{total_loss=}, {total_loss2=}'
-
-        # loss = total_loss2
-        loss = total_loss
-        print(f'loss: {loss}')
-        loss.backward()
-        optimizer.step()
 
 
 def test_cc_batched():
@@ -621,7 +594,7 @@ def test_actions_batch():
 
     control_net.to(DEVICE)
 
-    for s_i, actions, lengths in dataloader:
+    for s_i, actions, lengths, _ in dataloader:
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
         # (B, max_T+1, b, n)
         action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=True)

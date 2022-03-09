@@ -82,7 +82,7 @@ class HeteroController(nn.Module):
         stop_logps = F.log_softmax(stop_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, causal_pens, t_i
+        return action_logps, stop_logps, start_logps, causal_pens
 
     def new_option_logps(self, t):
         """
