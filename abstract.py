@@ -82,7 +82,7 @@ class HeteroController(nn.Module):
         stop_logps = F.log_softmax(stop_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, causal_pens, t_i
+        return action_logps, stop_logps, start_logps, causal_pens
 
     def new_option_logps(self, t):
         """
@@ -96,7 +96,7 @@ class HeteroController(nn.Module):
         Calculate a single abstract transition. Useful for test-time.
         """
         return self.macro_transitions(t.unsqueeze(0),
-                                      torch.tensor([b])).reshape(self.t)
+                                      torch.tensor([b], device=DEVICE)).reshape(self.t)
 
     def tau_embed(self, s):
         """
