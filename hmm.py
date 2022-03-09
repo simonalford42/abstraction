@@ -12,6 +12,8 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
         action_logps: [B, max_T, b]
         stop_logps: [B, max_T+1, b, 2]
         start_logps: [B, max_T+1, b]
+        lengths
+        masks
 
         Due to a change in indexing, the relationship is:
         P(a_t | b_t, s_{t-1} = action_logps[t-1]
@@ -20,7 +22,6 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
         The easy way to think of this is that t denotes where s_t is.
 
         Assumes stop_logps are arranged so that 0 is continue, 1 is stop.
-        cc_loss which calls this should preprocess it to make it so.
     """
     B, max_T = action_logps.shape[0:2]
     # (t, B, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
@@ -42,7 +43,7 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
 
     total_logp = torch.empty(B, device=DEVICE)
     for i, T in enumerate(lengths):
-        total_logp[i] = torch.logsumexp(f[T][i, :, :, 1], dim=(0,1))
+        total_logp[i] = torch.logsumexp(f[T][i, :, :, 1], dim=(0, 1))
 
     return f, total_logp
 
@@ -84,7 +85,7 @@ def cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks):
     return f, total_logp
 
 
-def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, masks):
+def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, masks, abstract_pen=0.0):
     """
     batched!
     """
@@ -94,6 +95,8 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
     assert_shape(stop_logps, (B, max_T+1, b, 2))
     assert_shape(start_logps, (B, max_T+1, b))
     assert_shape(causal_pens, (B, max_T+1, max_T+1, b))
+    # penalize starting a new option
+    start_logps = start_logps - abstract_pen
 
     if STOP_IX == 0:
         # e_t = 1 means stop, so 'stop_ix' must be 1
@@ -196,7 +199,7 @@ def cc_bw_ub(b, action_logps, stop_logps, start_logps):
     return f, total_logp
 
 
-def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
+def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=0.0):
     """
         action_logps (T, b)
         stop_logps (T+1, b, 2)
@@ -209,6 +212,8 @@ def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
     assert_shape(stop_logps, (T+1, b, 2))
     assert_shape(start_logps, (T+1, b))
     assert_shape(causal_pens, (T+1, T+1, b))
+    # penalize starting a new option
+    start_logps = start_logps - abstract_pen
 
     if STOP_IX == 0:
         # e_t = 1 means stop, so 'stop_ix' must be 1
@@ -237,7 +242,7 @@ def cc_loss_ub(b, action_logps, stop_logps, start_logps, causal_pens):
     return total_logp, total_cc_loss
 
 
-def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens):
+def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens, abstract_pen=0.0):
     """
         action_logps (T, b)
         stop_logps (T+1, b, 2)
@@ -260,11 +265,13 @@ def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens):
         stop_or_continue_here = [STOP_IX if s else CONTINUE_IX for s in stops]
         start_ixs = [0] + [i+1 for i in range(T-1) if stops[i]]
         b_i_starts = [b_i[i] for i in start_ixs]
+        num_options = len(start_ixs)
+        length_pen = abstract_pen * num_options
         seq_starts_logp = torch.sum(start_logps[start_ixs, b_i_starts])
         seq_stops_and_continues_logp = torch.sum(stop_logps[range(1, T+1), b_i, stop_or_continue_here])
         seq_actions_logp = torch.sum(action_logps[range(T), b_i])
         seq_logp = seq_starts_logp + seq_stops_and_continues_logp + seq_actions_logp
-        return seq_logp
+        return seq_logp - length_pen
 
     # b_i is started based on s_{i-1}, gives action a_i which yields state s_i
     # ranges from 1 to T, so b_i[0] is really b_1, sorry
