@@ -473,14 +473,16 @@ def eval_options_model(control_net, env, n=100, option='silent'):
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
             new_option = current_option is None or stop == STOP_IX
             if new_option:
-                tau = control_net.tau_embed(obs)
+                if check_cc:
+                    tau = control_net.tau_embed(obs)
                 if current_option is not None:
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
                         cc_losses.append(cc_loss.item())
                     obs_record[prev_pos] = 'e'
                 current_option = Categorical(logits=start_logps).sample().item()
-                tau_goal = control_net.macro_transition(tau, current_option)
+                if check_cc:
+                    tau_goal = control_net.macro_transition(tau, current_option)
             else:
                 obs_record[prev_pos] = 'm'
             options.append(current_option)
@@ -518,11 +520,11 @@ def eval_options_model(control_net, env, n=100, option='silent'):
                 tau = control_net.tau_embed(obs)
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
+                # print(f'{cc_losses=}')
+                avg = sum(cc_losses) / len(cc_losses)
+                print(f'cc loss avg = {avg}')
+                avg_total += avg
             num_solved += 1
-            # print(f'{cc_losses=}')
-            avg = sum(cc_losses) / len(cc_losses)
-            print(avg)
-            avg_total += avg
 
         # if verbose:
             # render_obs(obs_record, title=f'{solved=}', pause=3)
