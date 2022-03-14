@@ -54,13 +54,14 @@ def save_mlflow_model(model: nn.Module, model_name='model', overwrite=False):
     """
     If overwrite=True, will overwrite. Otherwise, raises RuntimeException.
     """
-    run_id = mlflow.active_run().info.run_id
+    # run_id = mlflow.active_run().info.run_id
+    run_id = 'X'
     path = mlflow_model_path(run_id, model_name)
     if not overwrite:
         path = next_unused_path(path)
     torch.save(model.state_dict(), path)
-    print(f"Saved model for run\n{mlflow.active_run().info.run_id}",
-          f"with name {model_name}")
+    print(f"Saved model for run\n{run_id}",
+          f"with name {model_name} at path {path}")
 
 
 def load_mlflow_model(model: nn.Module, run_id: str, model_name: str = 'model') -> None:

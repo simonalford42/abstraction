@@ -1,4 +1,6 @@
 import queue
+import os
+
 from typing import Any, Optional, List, Tuple, Callable
 import gym
 import argparse
@@ -614,7 +616,9 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
-    data = BoxWorldDataset(env, n, traj)
+    # data = BoxWorldDataset(env, n, traj)
+    # data = DiskData(name='test4', n=1000)
+    data = DiskData(name='default', n=1000000)
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:
@@ -658,6 +662,54 @@ class BoxWorldDataset(Dataset):
             return self.traj_states[i], self.traj_moves[i], len(self.traj_moves[i])
         else:
             return self.states[i], self.moves[i]
+
+
+def data_path(name, i):
+    return f'data/{name}/{i}.pt'
+
+
+def compress_state(state):
+    compressed = '\n'.join([''.join(r) for r in state])
+    # decompressed = decompress_state(compressed)
+    # assert np.all(decompressed == state)
+    return compressed
+
+
+def decompress_state(state):
+    return np.array([list(r) for r in state.split('\n')])
+
+
+def generate_data(env, name, n, overwrite=False):
+    if os.path.isdir(f'data/{name}'):
+        if not overwrite:
+            raise RuntimeError(f'data path {name} already exists')
+    else:
+        os.mkdir(f'data/{name}')
+    for i in range(n):
+        if i % 1000 == 0:
+            print(i)
+        states, moves = generate_traj(env)
+        states = [compress_state(s) for s in states]
+        torch.save((states, moves), data_path(name, i))
+
+
+class DiskData(Dataset):
+    def __init__(self, name, n):
+        self.name = name
+        self.n = n
+
+    def __len__(self):
+        return self.n
+
+    def __getitem__(self, ix):
+        states, moves = torch.load(data_path(self.name, ix))
+        # return len(moves)
+        states = [decompress_state(s) for s in states]
+        states = [obs_to_tensor(s) for s in states]
+        moves = [torch.tensor(m) for m in moves]
+        traj_states = torch.stack(states)
+        traj_moves = torch.stack(moves)
+        return traj_states, traj_moves, len(traj_moves)
 
 
 @profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)
