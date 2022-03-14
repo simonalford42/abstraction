@@ -132,32 +132,31 @@ def boxworld_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     n = 5000
-    epochs = 1
+    epochs = 5
     num_test = 200
-    lr = 4E-4
-    rounds = 10
+    lr = 8E-4
+    rounds = 20
     fix_seed = False
     b = 10
     batch_size = 40
-    net = 'hmm' if args.hmm else 'causal'
     cc_weight = args.cc
     abstract_pen = args.abstract_pen
 
-    print(f"net: {net}")
+    print(f"hmm?: {args.hmm}")
     print(f"cc_weight: {cc_weight}")
     print(f'abstract_pen: {abstract_pen}')
 
-    control_net = boxworld_controller(b=b)
-    if net == 'causal':
-        net = CausalNet(control_net, cc_weight=cc_weight, abstract_pen=abstract_pen).to(DEVICE)
+    if args.homo:
+        control_net = boxworld_homocontroller(b=b)
+        assert args.hmm
     else:
-        if args.homo:
-            control_net = boxworld_homocontroller(b=b)
-        if net == 'hmm':
-            net = HmmNet(control_net, abstract_pen=abstract_pen).to(DEVICE)
-            net = HmmNet(control_net, abstract_pen=abstract_pen).to(DEVICE)
-        else:
-            net = SVNet(homo_controller).to(DEVICE)
+        control_net = boxworld_controller(b=b)
+
+    if args.hmm:
+        net = HmmNet(control_net, abstract_pen=abstract_pen).to(DEVICE)
+        # net = SVNet(homo_controller).to(DEVICE)
+    else:
+        net = CausalNet(control_net, cc_weight=cc_weight, abstract_pen=abstract_pen).to(DEVICE)
 
     with Timing('Completed training'):
         boxworld_outer_sv(
@@ -199,21 +198,21 @@ def sort_data():
 
 
 if __name__ == '__main__':
-    data = box_world.DiskData('default100k', n=100000)
-    seen = []
-    for i in range(len(data)-1, 0, -1):
-        s, m, l = data[i]
-        s = box_world.decompress_state(s[0])
-        box_world.render_obs(s, ascii=True)
-        s = input()
-        # if l not in seen:
-            # print(l, i)
-            # seen.append(l)
+    # data = box_world.DiskData('default100k', n=100000)
+    # seen = []
+    # for i in range(len(data)-1, 0, -1):
+    #     s, m, l = data[i]
+    #     s = box_world.decompress_state(s[0])
+    #     box_world.render_obs(s, ascii=True)
+    #     s = input()
+    #     # if l not in seen:
+    #         # print(l, i)
+    #         # seen.append(l)
 
 
     # sort_data()
 
-    # boxworld_main()
+    boxworld_main()
 
     # env = box_world.BoxWorldEnv()
     # box_world.generate_data(env, 'default100k', n=100000)
