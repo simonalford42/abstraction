@@ -21,11 +21,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     net.train()
 
     for epoch in range(params['epochs']):
-        print(f'epoch: {epoch}')
         train_loss = 0
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
-            print('batch')
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths, masks)
@@ -33,26 +31,26 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             train_loss += loss
             # reduce just like cross entropy so batch size doesn't affect LR
             loss = loss / sum(lengths)
+            run['batch/loss'].log(loss.item())
             loss.backward()
             optimizer.step()
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             env = box_world.BoxWorldEnv(seed=epoch)
             test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'])
-            run["test/accuracy"].log(test_acc)
+            run['test/accuracy'].log(test_acc)
 
-        # metrics = dict(
-        #     epoch=epoch,
-        #     loss=loss.item(),
-        # )
-        # tb.add_scalars('main_tag', metrics)
+        run['epoch'].log(epoch)
+        run['loss'].log(loss.item())
 
         if params['print_every'] and epoch % params['print_every'] == 0:
             print(f"epoch: {epoch}\t"
                   + f"train loss: {train_loss}\t"
                   + f"({time.time() - start:.1f}s)")
         if params['save_every'] and epoch % params['save_every'] == 0:
-            utils.save_model(net, 'models/temp_save.pt')
+            path = utils.save_model(net, 'models/model.pt')
+            path = path[len('models/'):-3]
+            run['model path'] = path
 
 
 def sv_train(tb, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -184,12 +182,14 @@ def boxworld_main():
     args = parser.parse_args()
 
     params = dict(
-        lr=8E-4, num_test=10, epochs=20, b=10, batch_size=5,
+        lr=8E-4, num_test=10, epochs=10, b=10, batch_size=5,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo,
         data='default10', n=10,
         print_every=1, save_every=1, test_every=5,
     )
+
+    run['params'] = params
 
     if args.homo:
         assert args.hmm

@@ -109,6 +109,7 @@ def save_model(model, path):
     path2 = next_unused_path(path)
     torch.save(model.state_dict(), path2)
     print('Saved model at ' + path2)
+    return path2
 
 
 def load_model(model, path):
