@@ -617,9 +617,7 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
-    # data = BoxWorldDataset(env, n, traj)
-    # data = DiskData(name='test4', n=1000)
-    data = DiskData(name='default100k', n=100000)
+    data = BoxWorldDataset(env, n, traj)
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:

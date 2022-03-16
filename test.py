@@ -548,6 +548,45 @@ def test_hmm_and_cc():
         assert torch.isclose(causal_loss, hmm_loss)
 
 
+def test_ccts1_batched():
+    b = 3
+    B = 5
+    random.seed(1)
+    torch.manual_seed(1)
+    np.random.seed(1)
+
+    control_net = abstract.boxworld_controller(b=b, typ='ccts1')
+
+    net = hmm.HmmNet(control_net)
+
+    env = box_world.BoxWorldEnv(seed=1)
+    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+
+    net.to(DEVICE)
+
+    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+
+    for s_i, actions, lengths, masks in dataloader:
+        optimizer.zero_grad()
+        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+        total_loss2 = 0
+        for s, action, T in zip(s_i, actions, lengths):
+            s = s[0:T+1]
+            action = action[0:T]
+            loss = net.logp_loss_ub(s, action)
+            # print(f'ub loss: {loss}')
+            total_loss2 += loss
+
+        total_loss = net.logp_loss(s_i, actions, lengths)
+        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+
+        # loss = total_loss2
+        loss = total_loss
+        print(loss)
+        loss.backward()
+        optimizer.step()
+
+
 def test_cc_batched():
     b = 3
     B = 5
@@ -673,7 +712,7 @@ def test_cc_batched2():
 if __name__ == '__main__':
     # test_actions_batch()
     # test_cc_batched()
-    test_hmm_batched()
+    test_ccts1_batched()
     # test_hmm_and_cc()
     # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()

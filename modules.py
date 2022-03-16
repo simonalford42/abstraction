@@ -20,11 +20,6 @@ class Print(nn.Module):
         return self.layer(x)
 
 
-def abstract_out_dim(a, b):
-    # a * b for action probs, 2 * b for stop probs, b for start probs
-    return a * b + 2 * b + b
-
-
 class MicroNet(nn.Module):
     def __init__(self, input_shape, input_channels=3, d=32, out_dim=4):
         super().__init__()
