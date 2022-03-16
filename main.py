@@ -186,23 +186,28 @@ def boxworld_main():
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo,
         data='default10', n=10,
-        print_every=1, save_every=1, test_every=5,
+        print_every=1, save_every=None, test_every=5,
+        model_load_path='models/temp_save__23.pt',
     )
 
     run['params'] = params
 
-    if args.homo:
-        assert args.hmm
-        control_net = boxworld_homocontroller(b=params['b'])
+    if params['model_load_path']:
+        net = utils.load_model(params['model_load_path'])
     else:
-        control_net = boxworld_controller(b=params['b'])
+        if args.homo:
+            assert args.hmm
+            control_net = boxworld_homocontroller(b=params['b'])
+        else:
+            control_net = boxworld_controller(b=params['b'])
 
-    if args.hmm:
-        net = HmmNet(control_net, abstract_pen=params['abstract_pen']).to(DEVICE)
-        # net = SVNet(homo_controller).to(DEVICE)
-    else:
-        net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen']).to(DEVICE)
+        if args.hmm:
+            net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
+            # net = SVNet(homo_controller)
+        else:
+            net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen'])
 
+    net = net.to(DEVICE)
     data = box_world.DiskData(name=params['data'], n=params['n'])
     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
     with Timing('Completed training'):

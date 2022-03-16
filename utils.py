@@ -107,14 +107,15 @@ def num_params(model):
 
 def save_model(model, path):
     path2 = next_unused_path(path)
-    torch.save(model.state_dict(), path2)
+    torch.save(model, path2)
     print('Saved model at ' + path2)
     return path2
 
 
-def load_model(model, path):
-    model.load_state_dict(torch.load(path))
+def load_model(path):
+    model = torch.load(path)
     print('Loaded model from ' + path)
+    return model
 
 
 def next_unused_path(path):
