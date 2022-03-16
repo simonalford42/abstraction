@@ -19,8 +19,11 @@ import neptune.new as neptune
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
     net.train()
+    model_id = utils.generate_uuid()
 
     for epoch in range(params['epochs']):
+        run['mem'].log(utils.get_memory_usage())
+        print('Mem: ', utils.get_memory_usage())
         train_loss = 0
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
@@ -28,29 +31,32 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths, masks)
 
-            train_loss += loss
+            train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR
             loss = loss / sum(lengths)
             run['batch/loss'].log(loss.item())
+            run['batch/avg length'].log(sum(lengths) / len(lengths))
+            run['batch/mem'].log(utils.get_memory_usage())
+            print('batch mem: ', utils.get_memory_usage())
             loss.backward()
             optimizer.step()
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             env = box_world.BoxWorldEnv(seed=epoch)
-            test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'])
+            test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'], run=run, epoch=epoch)
             run['test/accuracy'].log(test_acc)
 
         run['epoch'].log(epoch)
-        run['loss'].log(loss.item())
+        run['loss'].log(train_loss.item())
+        run['time'].log(time.time() - start)
 
-        if params['print_every'] and epoch % params['print_every'] == 0:
-            print(f"epoch: {epoch}\t"
-                  + f"train loss: {train_loss}\t"
-                  + f"({time.time() - start:.1f}s)")
-        if params['save_every'] and epoch % params['save_every'] == 0:
-            path = utils.save_model(net, 'models/model.pt')
-            path = path[len('models/'):-3]
-            run['model path'] = path
+        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0:
+            path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
+            run['models'].log(path)
+
+    if not params['no_log']:
+        path = utils.save_model(net, f'models/{model_id}.pt')
+        run['model'] = path
 
 
 def sv_train(tb, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -165,34 +171,39 @@ def eval_models():
 
 
 def boxworld_main():
-
-    run = neptune.init(
-        project="simonalford42/abstraction",
-        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
-    )
-    random.seed(1)
-    torch.manual_seed(1)
-    utils.print_torch_device()
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--cc', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--hmm', action='store_true')
     parser.add_argument('--homo', action='store_true')
+    parser.add_argument('--no_log', action='store_true')
     args = parser.parse_args()
 
+    random.seed(1)
+    torch.manual_seed(1)
+
+    if args.no_log:
+        run = utils.NoLogRun()
+    else:
+        run = neptune.init(
+            project="simonalford42/abstraction",
+            api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
+        )
+
     params = dict(
-        lr=8E-4, num_test=10, epochs=10, b=10, batch_size=5,
+        lr=8E-4, num_test=200, epochs=100, b=10, batch_size=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo,
-        data='default10', n=10,
-        print_every=1, save_every=None, test_every=5,
-        model_load_path='models/temp_save__23.pt',
+        data='default100k', n=100*1000,
+        save_every=10, test_every=5,
+        no_log=args.no_log,
+        # model_load_path='models/temp_save__23.pt',
     )
 
     run['params'] = params
+    run['device'] = torch.cuda.get_device_name(DEVICE)
 
-    if params['model_load_path']:
+    if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
     else:
         if args.homo:
@@ -218,4 +229,4 @@ def boxworld_main():
 
 if __name__ == '__main__':
     boxworld_main()
-    # box_world.generate_data(box_world.BoxWorldEnv(), 'default10', n=10, overwrite=True)
+    # box_world.generate_data(box_world.BoxWorldEnv(), 'default100', n=100, overwrite=True)
