@@ -1,9 +1,10 @@
+from typing import Any
 from modules import FC
 import up_right
 import argparse
 import torch
-from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader, Dataset
+from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
@@ -12,10 +13,49 @@ from abstract import HeteroController, boxworld_controller, boxworld_homocontrol
 from hmm import CausalNet, SVNet, HmmNet, viterbi
 import time
 import box_world
-import mlflow
+import neptune.new as neptune
 
 
-def sv_train(tb: SummaryWriter, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
+def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
+    optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
+    net.train()
+
+    for epoch in range(params['epochs']):
+        print(f'epoch: {epoch}')
+        train_loss = 0
+        start = time.time()
+        for s_i_batch, actions_batch, lengths, masks in dataloader:
+            print('batch')
+            optimizer.zero_grad()
+            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+            loss = net(s_i_batch, actions_batch, lengths, masks)
+
+            train_loss += loss
+            # reduce just like cross entropy so batch size doesn't affect LR
+            loss = loss / sum(lengths)
+            loss.backward()
+            optimizer.step()
+
+        if params['test_every'] and epoch % params['test_every'] == 0:
+            env = box_world.BoxWorldEnv(seed=epoch)
+            test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'])
+            run["test/accuracy"].log(test_acc)
+
+        # metrics = dict(
+        #     epoch=epoch,
+        #     loss=loss.item(),
+        # )
+        # tb.add_scalars('main_tag', metrics)
+
+        if params['print_every'] and epoch % params['print_every'] == 0:
+            print(f"epoch: {epoch}\t"
+                  + f"train loss: {train_loss}\t"
+                  + f"({time.time() - start:.1f}s)")
+        if params['save_every'] and epoch % params['save_every'] == 0:
+            utils.save_model(net, 'models/temp_save.pt')
+
+
+def sv_train(tb, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     net.train()
 
@@ -89,7 +129,7 @@ def boxworld_outer_sv(
                 round += 1
         except KeyboardInterrupt:
             utils.save_mlflow_model(net, overwrite=False)
-    
+
 
 def up_right_main():
     scale = 3
@@ -118,7 +158,20 @@ def up_right_main():
     viterbi(net, eval_data,)
 
 
+def eval_models():
+    run_id = None
+    utils.load_mlflow_model(net, run_id, model_name)
+
+    env = box_world.BoxWorldEnv(seed=1)
+    box_world.eval_options_model(net.control_net, env, n=200, option='verbose')
+
+
 def boxworld_main():
+
+    run = neptune.init(
+        project="simonalford42/abstraction",
+        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
+    )
     random.seed(1)
     torch.manual_seed(1)
     utils.print_torch_device()
@@ -130,96 +183,34 @@ def boxworld_main():
     parser.add_argument('--homo', action='store_true')
     args = parser.parse_args()
 
-    # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
-    n = 5000
-    epochs = 5
-    num_test = 200
-    lr = 8E-4
-    rounds = 20
-    fix_seed = False
-    b = 10
-    batch_size = 40
-    cc_weight = args.cc
-    abstract_pen = args.abstract_pen
-
-    print(f"hmm?: {args.hmm}")
-    print(f"cc_weight: {cc_weight}")
-    print(f'abstract_pen: {abstract_pen}')
+    params = dict(
+        lr=8E-4, num_test=10, epochs=20, b=10, batch_size=5,
+        cc_weight=args.cc, abstract_pen=args.abstract_pen,
+        hmm=args.hmm, homo=args.homo,
+        data='default10', n=10,
+        print_every=1, save_every=1, test_every=5,
+    )
 
     if args.homo:
-        control_net = boxworld_homocontroller(b=b)
         assert args.hmm
+        control_net = boxworld_homocontroller(b=params['b'])
     else:
-        control_net = boxworld_controller(b=b)
+        control_net = boxworld_controller(b=params['b'])
 
     if args.hmm:
-        net = HmmNet(control_net, abstract_pen=abstract_pen).to(DEVICE)
+        net = HmmNet(control_net, abstract_pen=params['abstract_pen']).to(DEVICE)
         # net = SVNet(homo_controller).to(DEVICE)
     else:
-        net = CausalNet(control_net, cc_weight=cc_weight, abstract_pen=abstract_pen).to(DEVICE)
+        net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen']).to(DEVICE)
 
+    data = box_world.DiskData(name=params['data'], n=params['n'])
+    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
     with Timing('Completed training'):
-        boxworld_outer_sv(
-            net, n=n, epochs=epochs, num_test=num_test, test_every=1, rounds=rounds,
-            lr=lr, batch_size=batch_size, fix_seed=fix_seed)
-    # run_id = "5ba29de160934f16910023ff39507702"  # cc weight = 1
-    # run_id = "0df0a52aea7b493baf72a2804aa9d622"  # cc weight = 0.1
-    # run_id = "401585e1c032428894848bdaac632e49"  # cc weight = 0
-    # run_id = "1c9328d7fa6e4d09a8dcc319f124967e"  # hmm
-    # model_name = 'round-19'
-    # utils.load_mlflow_model(net, run_id, model_name)
+        train(run, dataloader, net, params)
 
-    # env = box_world.BoxWorldEnv(seed=1)
-    # box_world.eval_options_model(net.control_net, env, n=200, option='verbose')
-
-
-def sort_data():
-    import os
-    n = int(1E5)
-    data = box_world.DiskData('defaulttemp', n=n)
-    len_to_ids = {}
-    for i in range(n):
-        if i % 1000 == 0:
-            print(i)
-        length = data[i]
-        if length not in len_to_ids:
-            len_to_ids[length] = [i]
-        else:
-            len_to_ids[length].append(i)
-
-    i = 0
-    for l, ids in sorted(len_to_ids.items()):
-        print(l)
-        for id in ids:
-            os.rename(f'data/defaulttemp/{id}.pt', f'data/default100k/{i}.pt')
-            i += 1
-    assert i == n
-
+    run.stop()
 
 
 if __name__ == '__main__':
-    # data = box_world.DiskData('default100k', n=100000)
-    # seen = []
-    # for i in range(len(data)-1, 0, -1):
-    #     s, m, l = data[i]
-    #     s = box_world.decompress_state(s[0])
-    #     box_world.render_obs(s, ascii=True)
-    #     s = input()
-    #     # if l not in seen:
-    #         # print(l, i)
-    #         # seen.append(l)
-
-
-    # sort_data()
-
     boxworld_main()
-
-    # env = box_world.BoxWorldEnv()
-    # box_world.generate_data(env, 'default100k', n=100000)
-    # box_world.generate_data(env, 'test4', n=1000, overwrite=True)
-    # with Timing('loaded data in'):
-    #     data = box_world.DiskData('test4', n=1000)
-
-    #     dataloader = DataLoader(data, batch_size=250, shuffle=False, collate_fn=box_world.traj_collate)
-    #     for _ in dataloader:
-    #         pass
+    # box_world.generate_data(box_world.BoxWorldEnv(), 'default10', n=10, overwrite=True)

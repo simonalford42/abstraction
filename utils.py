@@ -127,3 +127,13 @@ def next_unused_path(path):
         i += 1
 
     return path
+
+
+def logaddexp(tensor, other, mask=None):
+    if mask is None:
+        mask = torch.tensor([1, 1])
+    else:
+        assert mask.shape == (2, ), 'Invalid mask shape'
+
+    a = torch.max(tensor, other)
+    return a + ((tensor - a).exp()*mask[0] + (other - a).exp()*mask[1]).log()

@@ -3,9 +3,73 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from einops import rearrange, repeat
-from utils import assert_equal, assert_shape, DEVICE
+from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC, abstract_out_dim
 import box_world
+
+
+class ConsistencyStopController1(nn.Module):
+    def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
+                 macro_transition_net):
+        super().__init__()
+        self.a = a  # number of actions
+        self.b = b  # number of options
+        # self.s = s  # state dim; not actually used
+        self.t = t  # abstract state dim
+        self.tau_net = tau_net  # s -> t
+        self.micro_net = micro_net  # s -> (b * a)
+        self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
+        self.macro_transition_net = macro_transition_net  # b_i one hot -> t abstract transition
+        self.b_input = F.one_hot(torch.arange(self.b), dtype=float).to(DEVICE)
+
+    def forward(self, s_i_batch, batched=False):
+        if batched:
+            return self.forward_b(s_i_batch)
+        else:
+            return self.forward_ub(s_i_batch)
+
+    def forward_ub(self, s_i):
+        """
+        s_i: (T, s) tensor of states
+        outputs:
+           (T, b, a) tensor of action logps
+           (T, b, 2) tensor of stop logps
+              the index corresponding to stop/continue are in
+              box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
+           (T, b) tensor of start logps
+           None causal consistency placeholder
+        """
+        t_i = self.tau_net(s_i)  # (T, t)
+        micro_out = self.micro_net(s_i)
+        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
+        start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
+        stop_logps = self.calc_stop_logps(t_i)
+
+        action_logps = F.log_softmax(action_logps, dim=2)
+        start_logps = F.log_softmax(start_logps, dim=1)
+        return action_logps, stop_logps, start_logps, None
+
+    def calc_stop_logps(self, t_i):
+        T = t_i.shape[0]
+        goal_states = self.macro_transition_net(self.b_input)  # (b, t)
+        assert_shape(goal_states, (self.b, self.t))
+        assert_shape(t_i, (T, self.t))
+        # (T, t, b) - (T, t, b), sum over t axis to get (T, b)
+        stop_logps = -(rearrange(t_i, 'T t -> T t 1')
+                       - rearrange(goal_states, 'b t -> 1 t b')) ** 2
+        stop_logps = stop_logps.sum(dim=1)
+        assert_shape(stop_logps, (T, self.b))
+        one_minus_stop_logps = logaddexp(torch.ones_like(stop_logps),
+                                         stop_logps,
+                                         mask=torch.tensor([1, -1]))
+        assert_shape(one_minus_stop_logps, (T, self.b))
+        if box_world.STOP_IX == 0:
+            stack = (stop_logps, one_minus_stop_logps)
+        else:
+            stack = (one_minus_stop_logps, stop_logps)
+        stop_logps = torch.stack(stack, dim=2)
+        assert_shape(stop_logps, (T, self.b, 2))
+        return stop_logps
 
 
 class HeteroController(nn.Module):

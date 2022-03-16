@@ -530,6 +530,7 @@ def eval_options_model(control_net, env, n=100, option='silent'):
 
         # if verbose:
             # render_obs(obs_record, title=f'{solved=}', pause=3)
+    return num_solved / n
 
 
     print(f'Solved {num_solved}/{n} episodes')
@@ -664,10 +665,6 @@ class BoxWorldDataset(Dataset):
             return self.states[i], self.moves[i]
 
 
-def data_path(name, i):
-    return f'data/{name}/{i}.pt'
-
-
 def compress_state(state):
     compressed = '\n'.join([''.join(r) for r in state])
     # decompressed = decompress_state(compressed)
@@ -680,17 +677,42 @@ def decompress_state(state):
 
 
 def generate_data(env, name, n, overwrite=False):
+    print('Generating data...')
     if os.path.isdir(f'data/{name}'):
         if not overwrite:
             raise RuntimeError(f'data path {name} already exists')
     else:
         os.mkdir(f'data/{name}')
+
+    if not os.path.isdir(f'data/temp/'):
+        os.mkdir('data/temp/')
+
     for i in range(n):
         if i % 1000 == 0:
-            print(i)
+            print(f'{i} generated')
         states, moves = generate_traj(env)
         states = [compress_state(s) for s in states]
-        torch.save((states, moves), data_path(name, i))
+        torch.save((states, moves), f'data/temp/{i}.pt')
+
+    print('Sorting data')
+    data = DiskData('temp', n=n)
+    len_to_ids = {}
+    for i in range(n):
+        if i % 1000 == 0:
+            print(f'{i} examples logged')
+        _, _, length = data[i]
+        if length not in len_to_ids:
+            len_to_ids[length] = [i]
+        else:
+            len_to_ids[length].append(i)
+
+    i = 0
+    for length, ids in sorted(len_to_ids.items()):
+        print(f'{length} length reordered')
+        for id in ids:
+            os.rename(f'data/temp/{id}.pt', f'data/{name}/{i}.pt')
+            i += 1
+    assert i == n
 
 
 class DiskData(Dataset):
@@ -702,7 +724,7 @@ class DiskData(Dataset):
         return self.n
 
     def __getitem__(self, ix):
-        states, moves = torch.load(data_path(self.name, ix))
+        states, moves = torch.load(f'data/{self.name}/{ix}.pt')
         # return len(moves)
         states = [decompress_state(s) for s in states]
         states = [obs_to_tensor(s) for s in states]
