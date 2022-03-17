@@ -435,7 +435,7 @@ class SVNet(nn.Module):
         self.control_net = control_net
         self.b = control_net.b
 
-    def forward(self, s_i_batch, actions_batch, lengths):
+    def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -447,7 +447,7 @@ class SVNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=False)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
 
         total_logp = 0
         total_correct = 0

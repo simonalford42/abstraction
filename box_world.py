@@ -140,25 +140,32 @@ def to_color_obs(obs):
     return np.array([[ascii_to_color(a) for a in row] for row in obs])
 
 
-def render_obs(obs, title=None, ascii=False, pause=0.0001):
+def print_obs(obs):
+    for row in obs:
+        print (''.join(row))
+
+
+def obs_figure(obs):
+    color_array = to_color_obs(obs)
+    fig = plt.figure(0)
+    plt.clf()
+    plt.imshow(color_array / 255)
+    return fig
+
+
+def render_obs(obs, title=None, pause=0.0001):
     """
-    With ascii=True, prints ascii to command line.
     Pause tells how long to wait between frames.
     """
-    if not ascii:
-        color_array = to_color_obs(obs)
+    color_array = to_color_obs(obs)
 
-        fig = plt.figure(0)
-        plt.clf()
-        plt.imshow(color_array / 255)
-        if title:
-            plt.title(title)
-        fig.canvas.draw()
-        plt.pause(pause)
-    else:
-        print(title)
-        for row in obs:
-            print(''.join(row))
+    fig = plt.figure(0)
+    plt.clf()
+    plt.imshow(color_array / 255)
+    if title:
+        plt.title(title)
+    fig.canvas.draw()
+    plt.pause(pause)
 
 
 def run_deepmind_ui(**args):
@@ -429,7 +436,7 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
-def eval_options_model(control_net, env, n=100, option='silent'):
+def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -441,20 +448,21 @@ def eval_options_model(control_net, env, n=100, option='silent'):
         - 'silent': evals without any printing
         -
     """
-    print(f'Evaluating model on {n} episodes')
     control_net.eval()
     num_solved = 0
-    avg_total = 0
-
+    check_cc = hasattr(control_net, 'tau_net')
     verbose = option != 'silent'
-    check_cc = isinstance(control_net, HeteroController)
-    option_map = {i: [] for i in range(control_net.b)}
+    if verbose:
+        print(f'Evaluating model on {n} episodes')
+    cc_losses = []
 
     for i in range(n):
-        if verbose:
-            print(f'i: {i}')
+        if verbose: print(f'i: {i}')
         obs = env.reset()
-        obs_record = obs
+        if run and i < 10:
+            run[f'test/epoch {epoch}/obs'].log(obs_figure(obs), name='obs')
+        options_trace = obs
+        option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
         t = 0
         options = []
@@ -462,7 +470,6 @@ def eval_options_model(control_net, env, n=100, option='silent'):
         prev_pos = (-1, -1)
 
         current_option = None
-        cc_losses = []
         tau_goal = None
 
         while not (done or solved):
@@ -482,12 +489,12 @@ def eval_options_model(control_net, env, n=100, option='silent'):
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
                         cc_losses.append(cc_loss.item())
-                    obs_record[prev_pos] = 'e'
+                    options_trace[prev_pos] = 'e'
                 current_option = Categorical(logits=start_logps).sample().item()
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
             else:
-                obs_record[prev_pos] = 'm'
+                options_trace[prev_pos] = 'm'
             options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
@@ -523,19 +530,22 @@ def eval_options_model(control_net, env, n=100, option='silent'):
                 tau = control_net.tau_embed(obs)
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
-                # print(f'{cc_losses=}')
-                avg = sum(cc_losses) / len(cc_losses)
-                print(f'cc loss avg = {avg}')
-                avg_total += avg
             num_solved += 1
 
         # if verbose:
-            # render_obs(obs_record, title=f'{solved=}', pause=3)
+            # render_obs(options_trace, title=f'{solved=}', pause=3)
+        if run and i < 10:
+            run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
+                                                   name='orange=new option')
+
+    if run and check_cc:
+        cc_loss_avg = sum(cc_losses) / len(cc_losses)
+        run[f'test/cc loss avg'].log(cc_loss_avg)
+
     return num_solved / n
 
 
     print(f'Solved {num_solved}/{n} episodes')
-    print(avg_total / n)
     # for i in option_map:
     #     # print(i, Counter(option_map[i]))
     #     # if i < 3:
@@ -618,9 +628,15 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
+<<<<<<< HEAD
     data = BoxWorldDataset(env, n, traj)
+=======
+    # data = BoxWorldDataset(env, n, traj)
+    # data = DiskData(name='test4', n=1000)
+    data = DiskData(name='default10k', n=10000)
+>>>>>>> f36c5476acdbad694d031b1db199f7f47d766fd5
     if traj:
-        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
+        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate, num_workers=4)
     else:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj)
 

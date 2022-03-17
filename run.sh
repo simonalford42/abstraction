@@ -4,15 +4,15 @@
  # job name
 #SBATCH -J sv
  # output file (%j expands to jobID)
-#SBATCH -o out/bw7_%A.out
+#SBATCH -o out/bw8_%A.out
  # total nodes
 #SBATCH -N 1
  # total cores
 #SBATCH -n 1
  # total limit (hh:mm:ss)
 #SBATCH -t 48:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=8G
 #SBATCH --gres=gpu:1
-#SBATCH --partition=ellis
 #xSBATCH --partition=gpu
+#SBATCH --partition=ellis
 python -u main.py "$@"
