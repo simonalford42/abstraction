@@ -228,8 +228,15 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
-    net = SVNet(boxworld_homocontroller(b=10))
-    boxworld_outer_sv(net, n=10000, epochs=100, rounds=20, num_test=100,
-                      test_every=1, lr=8E-4, batch_size=10, fix_seed=False)
+    # net = SVNet(boxworld_homocontroller(b=10))
+    # boxworld_outer_sv(net, n=10000, epochs=100, rounds=20, num_test=100,
+                    #   test_every=1, lr=8E-4, batch_size=10, fix_seed=False)
     # boxworld_main()
-    # box_world.generate_data(box_world.BoxWorldEnv(), 'default10k', n=10000, overwrite=True)
+    from ffcv.fields import BytesField, IntField
+    data = box_world.DiskData('default100', n=100)
+    writer = DatasetWriter('data/default100_ffcv', {
+        'traj': BytesField(),
+        'moves': BytesField(),
+        'length': IntField(),
+    })
+    # box_world.generate_data(box_world.BoxWorldEnv(), 'default100', n=100, overwrite=True)

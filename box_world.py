@@ -12,7 +12,6 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
-from abstract import HeteroController
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
@@ -628,13 +627,9 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
-<<<<<<< HEAD
-    data = BoxWorldDataset(env, n, traj)
-=======
     # data = BoxWorldDataset(env, n, traj)
     # data = DiskData(name='test4', n=1000)
     data = DiskData(name='default10k', n=10000)
->>>>>>> f36c5476acdbad694d031b1db199f7f47d766fd5
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate, num_workers=4)
     else:
@@ -678,6 +673,14 @@ class BoxWorldDataset(Dataset):
             return self.traj_states[i], self.traj_moves[i], len(self.traj_moves[i])
         else:
             return self.states[i], self.moves[i]
+
+
+def to_byte_array(a: torch.Tensor):
+    s = a.shape
+    assert torch.all(a.flatten().reshape(*s) == a), f'{a.flatten().reshape(*a)}\n{a}'
+    assert torch.min(a) >= 0, str(torch.min(a))
+    assert torch.max(a) <= 255, str(torch.max(a))
+    return a.numpy().astype(np.uint8).flatten()
 
 
 def compress_state(state):
