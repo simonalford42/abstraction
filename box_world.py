@@ -537,7 +537,7 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                    name='orange=new option')
 
-    if run:
+    if run and check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
 
@@ -629,9 +629,9 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
     # data = BoxWorldDataset(env, n, traj)
     # data = DiskData(name='test4', n=1000)
-    data = DiskData(name='default100k', n=100000)
+    data = DiskData(name='default10k', n=10000)
     if traj:
-        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
+        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate, num_workers=4)
     else:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj)
 
