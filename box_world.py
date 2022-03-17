@@ -12,6 +12,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
+from abstract import HeteroController
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
@@ -446,7 +447,7 @@ def eval_options_model(control_net, env, n=100, option='silent'):
     avg_total = 0
 
     verbose = option != 'silent'
-    check_cc = hasattr(control_net, 'tau_net')
+    check_cc = isinstance(control_net, HeteroController)
     option_map = {i: [] for i in range(control_net.b)}
 
     for i in range(n):

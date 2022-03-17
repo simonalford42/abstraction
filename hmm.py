@@ -350,6 +350,32 @@ def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
     return total_logps
 
 
+def ccts2_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
+    """
+    stop_logps is now (T+1, T+1, b, 2) i.e. (start, stop, b, 2)
+    """
+    T = action_logps.shape[0]
+    # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
+    f = [torch.full((b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(T+1)]
+    f[0][0, 0, 1] = 0
+
+    for t in range(1, T+1):
+        # e_prev = 0; options stay same
+        # b, c, e
+        f[t][:, :t-1, :] = (f[t-1][:, :, 0:1]
+                            + action_logps[t-1, :, None, None]
+                            + rearrange(stop_logps[:t-1, t], 'c b e -> b c e'))
+        # e_prev = 1; options new, c mass fixed at t-1
+        # b, e
+        f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1], dim=(0, 1))
+                            + start_logps[t-1, :, None]
+                            + action_logps[t-1, :, None]
+                            + stop_logps[t-1, t, :, :])
+
+    total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
+    return total_logp
+
+
 class CausalNet(nn.Module):
     def __init__(self, control_net, cc_weight=1.0, abstract_pen=0.0):
         super().__init__()
@@ -481,7 +507,6 @@ class HmmNet(nn.Module):
         returns: negative logp of all trajs in batch
         """
         T = actions.shape[0]
-
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
         start_logps = start_logps - self.abstract_pen
@@ -489,6 +514,20 @@ class HmmNet(nn.Module):
         action_logps = action_logps[range(T), :, actions]
 
         total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
+        return -total_logp
+
+    def ccts2_logp_loss_ub(self, s_i, actions):
+        """
+        For the case where stop logps depend on the state action began on.
+        """
+        T = actions.shape[0]
+        # (T+1, b, n), (T+1, T+1, b, 2), (T+1, b)
+        action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
+        start_logps = start_logps - self.abstract_pen
+        # (T, b)
+        action_logps = action_logps[range(T), :, actions]
+
+        total_logp = ccts2_hmm_fw_ub(self.b, action_logps, stop_logps, start_logps)
         return -total_logp
 
 
