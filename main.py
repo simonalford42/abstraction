@@ -27,7 +27,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
-            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+            # s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+            B = s_i_batch.shape[0]
+            s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
+
             loss = net(s_i_batch, actions_batch, lengths, masks)
 
             train_loss += loss.item()
@@ -232,11 +235,15 @@ if __name__ == '__main__':
     # boxworld_outer_sv(net, n=10000, epochs=100, rounds=20, num_test=100,
                     #   test_every=1, lr=8E-4, batch_size=10, fix_seed=False)
     # boxworld_main()
-    from ffcv.fields import BytesField, IntField
-    data = box_world.DiskData('default100', n=100)
-    writer = DatasetWriter('data/default100_ffcv', {
-        'traj': BytesField(),
-        'moves': BytesField(),
-        'length': IntField(),
-    })
+    # from ffcv.fields import BytesField, IntField
+    # data = box_world.DiskData('default100', n=100)
+    # writer = DatasetWriter('data/default100_ffcv', {
+    #     'traj': BytesField(),
+    #     'moves': BytesField(),
+    #     'length': IntField(),
+    # })
     # box_world.generate_data(box_world.BoxWorldEnv(), 'default100', n=100, overwrite=True)
+    data = box_world.DiskData('default100', n=100)
+    for i in range(len(data)):
+        traj, moves, lengths = data[i]
+        print(traj.shape, moves.shape, lengths.shape)

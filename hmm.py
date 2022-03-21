@@ -352,7 +352,7 @@ def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
 
 def ccts2_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
     """
-    stop_logps is now (T+1, T+1, b, 2) i.e. (start, stop, b, 2)
+    Like cc_fw but now stop_logps is now (T+1, T+1, b, 2) i.e. (start, stop, b, 2)
     """
     T = action_logps.shape[0]
     # (t, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
@@ -374,6 +374,36 @@ def ccts2_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
 
     total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
     return total_logp
+
+
+def ccts2_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
+    """
+    like cc_fw but stop_logps is now (B, T+1, T+1, b, 2) i.e. (start, stop, b, 2)
+    """
+    B, max_T = action_logps.shape[0:2]
+    # (t, B, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
+    f = [torch.full((B, b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(max_T+1)]
+    f[0][:, 0, 0, 1] = 0
+
+    for t in range(1, max_T+1):
+        # e_prev = 0; options stay same
+        # (B, b, c, e)
+        f[t][:, :, :t-1, :] = (f[t-1][:, :, :, 0:1]
+                               + action_logps[:, t-1, :, None, None]
+                               + rearrange(stop_logps[:, :t-1:, t], 'B c b e -> B b c e'))
+        # e_prev = 1; options new, c mass fixed at t-1
+        # (B, b, e)
+        f[t][:, :, t-1, :] = (torch.logsumexp(f[t-1][:, :, :, 1], dim=(1, 2))[:, None, None]
+                              + start_logps[:, t-1, :, None]
+                              + action_logps[:, t-1, :, None]
+                              + stop_logps[:, t-1, t, :, :])
+
+    total_logp = torch.empty(B, device=DEVICE)
+    for i, T in enumerate(lengths):
+        total_logp[i] = torch.logsumexp(f[T][i, :, :, 1], dim=(0, 1))
+
+    return f, total_logp
+
 
 
 class CausalNet(nn.Module):
@@ -476,7 +506,7 @@ class HmmNet(nn.Module):
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, ccts2=False):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -499,10 +529,14 @@ class HmmNet(nn.Module):
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]  # (B, max_T, b) now
 
-        total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
+        if ccts2:
+            total_logps = ccts2_hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
+        else:
+            total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
+
         return -torch.sum(total_logps)
 
-    def logp_loss_ub(self, s_i, actions):
+    def logp_loss_ub(self, s_i, actions, ccts2=False):
         """
         returns: negative logp of all trajs in batch
         """
@@ -513,21 +547,11 @@ class HmmNet(nn.Module):
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
-        total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
-        return -total_logp
+        if ccts2:
+            total_logp = ccts2_hmm_fw_ub(self.b, action_logps, stop_logps, start_logps)
+        else:
+            total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
 
-    def ccts2_logp_loss_ub(self, s_i, actions):
-        """
-        For the case where stop logps depend on the state action began on.
-        """
-        T = actions.shape[0]
-        # (T+1, b, n), (T+1, T+1, b, 2), (T+1, b)
-        action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
-        start_logps = start_logps - self.abstract_pen
-        # (T, b)
-        action_logps = action_logps[range(T), :, actions]
-
-        total_logp = ccts2_hmm_fw_ub(self.b, action_logps, stop_logps, start_logps)
         return -total_logp
 
 

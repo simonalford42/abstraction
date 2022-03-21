@@ -182,13 +182,35 @@ class ConsistencyStopController2(nn.Module):
         start_logps = F.log_softmax(start_logps, dim=1)
         return action_logps, stop_logps, start_logps, None
 
+    def macro_transitions(self, t_i, bs):
+        """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+
+        Args:
+            t_i: (T, t) batch of abstract states
+            bs: 1D tensor of actions to try
+        """
+        T = t_i.shape[0]
+        nb = bs.shape[0]
+        # calculate transition for each t_i + b pair
+        t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
+        b_onehots0 = F.one_hot(bs, num_classes=self.b)
+        b_onehots = b_onehots0.repeat(T, 1)
+        b_onehots2 = repeat(b_onehots0, 'nb b -> (repeat nb) b', repeat=T)
+        assert torch.all(b_onehots == b_onehots2)
+        # b is 'less significant', changes in 'inner loop'
+        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
+        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
+        # (T * nb, t + b) -> (T * nb, t)
+        t_i2 = self.macro_transition_net(t_i2)
+        return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
+
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
-        alpha_out = self.macro_transition_net(self.b_input)  # (b, t)
+        alpha_out = self.macro_transitions(t_i, torch.arange(self.b, device=DEVICE))
         assert_shape(alpha_out, (self.T, self.b, self.t))
         assert_shape(t_i, (T, self.t))
         # (T, T, b, t) - (T, T, b, t), sum over t axis to get (T, T, b)
-        stop_logps = -(rearrange(t_i, 'T t -> 1 T 1 t')
+        stop_logps = -(rearrange(t_i,           'T t -> 1 T 1 t')
                        - rearrange(alpha_out, 'T b t -> T 1 b t')) ** 2
         stop_logps = stop_logps.sum(dim=3)
         assert_shape(stop_logps, (T, T, self.b))
@@ -237,12 +259,14 @@ class ConsistencyStopController2(nn.Module):
 
     def calc_stop_logps_b(self, t_i):
         B, T = t_i.shape[0:2]
-        goal_states = self.macro_transition_net(self.b_input)  # (b, t)
-        assert_shape(goal_states, (self.b, self.t))
+
+        t_i_flat = rearrange(t_i, 'B T t -> (B T) t')
+        alpha_out = self.macro_transitions(t_i_flat, torch.arange(self.b, device=DEVICE))
+        assert_shape(alpha_out, (B * T, self.b, self.t))
         assert_shape(t_i, (B, T, self.t))
-        # (B, T, t, b) - (B, T, t, b), sum over t axis to get (T, b)
-        stop_logps = -(rearrange(t_i, 'B T t -> B T t 1')
-                       - rearrange(goal_states, 'b t -> 1 1 t b')) ** 2
+        # (B, T, T, b, t) - (B, T, T, b, t), sum over t axis to get (B, T, T, b)
+        stop_logps = -(rearrange(t_i,             'B T t -> B 1 T 1 t')
+                       - rearrange(alpha_out, '(B T) b t -> B T 1 b t', B=B)) ** 2
         stop_logps = stop_logps.sum(dim=2)
         assert_shape(stop_logps, (B, T, self.b))
         one_minus_stop_logps = logaddexp(torch.zeros_like(stop_logps),
