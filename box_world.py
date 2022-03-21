@@ -15,7 +15,14 @@ from einops import rearrange
 from utils import assert_equal, POS, DEVICE
 from profiler import profile
 from torch.distributions import Categorical
+import torch.nn as nn
 from pycolab.examples.research.box_world import box_world as bw
+MAX_LEN = 63
+from ffcv.loader import Loader, OrderOption
+from ffcv.fields import NDArrayField, FloatField, IntField
+from ffcv.fields.decoders import BytesDecoder, IntDecoder, NDArrayDecoder
+from ffcv.transforms import ToTensor, ToDevice
+from ffcv.writer import DatasetWriter
 
 
 NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
@@ -141,7 +148,7 @@ def to_color_obs(obs):
 
 def print_obs(obs):
     for row in obs:
-        print (''.join(row))
+        print(''.join(row))
 
 
 def obs_figure(obs):
@@ -283,7 +290,7 @@ def get_tree(domino_pos_map: dict[str, POS],
             continue
         key = n[0]  # works for domino or lone key, even for the GEM
         adj_matrix[n] = {n2: 1 for n2 in nodes
-                            if len(n2) == 2 and n2[1].lower() == key}
+                               if len(n2) == 2 and n2[1].lower() == key}
 
     return nodes, adj_matrix
 
@@ -432,6 +439,8 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
             moves.append(bw.ACTION_WEST)
 
     assert done, 'uh oh, our path solver didnt actually solve'
+    if len(moves) > MAX_LEN:
+        raise RuntimeError(f'Bigger length found: {len(moves)}')
     return states, moves
 
 
@@ -541,10 +550,10 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
 
+    control_net.train()
+    print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
-
-    print(f'Solved {num_solved}/{n} episodes')
     # for i in option_map:
     #     # print(i, Counter(option_map[i]))
     #     # if i < 3:
@@ -554,8 +563,6 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
     #         if k > 10:
     #             break
     #         render_obs(obs, title=title, pause=0.5)
-    control_net.train()
-    return solved
 
 
 def eval_model(net, env, n=100, renderer: Callable = None):
@@ -577,7 +584,8 @@ def eval_model(net, env, n=100, renderer: Callable = None):
                 renderer(obs)
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
-            action_logps = net.eval_obs(obs)
+            action_logps, _, _ = net.eval_obs(obs)
+            action_logps = action_logps[0]
             a = Categorical(logits=action_logps).sample().item()
             obs, rew, done, info = env.step(a)
             solved = rew == bw.REWARD_GOAL
@@ -604,6 +612,7 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
     batch is a list of (states, moves, length, masks) tuples.
     """
     max_T = max([length for _, _, length in batch])
+    # max_T = MAX_LEN
     states_batch = []
     moves_batch = []
     lengths = []
@@ -627,11 +636,12 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
-    # data = BoxWorldDataset(env, n, traj)
+    data = BoxWorldDataset(env, n, traj)
     # data = DiskData(name='test4', n=1000)
-    data = DiskData(name='default10k', n=10000)
+    # assert n == 5000
+    # data = DiskData(name='default5k', n=5000)
     if traj:
-        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate, num_workers=4)
+        return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj)
 
@@ -675,14 +685,6 @@ class BoxWorldDataset(Dataset):
             return self.states[i], self.moves[i]
 
 
-def to_byte_array(a: torch.Tensor):
-    s = a.shape
-    assert torch.all(a.flatten().reshape(*s) == a), f'{a.flatten().reshape(*a)}\n{a}'
-    assert torch.min(a) >= 0, str(torch.min(a))
-    assert torch.max(a) <= 255, str(torch.max(a))
-    return a.numpy().astype(np.uint8).flatten()
-
-
 def compress_state(state):
     compressed = '\n'.join([''.join(r) for r in state])
     # decompressed = decompress_state(compressed)
@@ -709,6 +711,9 @@ def generate_data(env, name, n, overwrite=False):
         if i % 1000 == 0:
             print(f'{i} generated')
         states, moves = generate_traj(env)
+        for s, m in zip(states, moves):
+            print(f'move: {m}')
+            render_obs(s, pause=1)
         states = [compress_state(s) for s in states]
         torch.save((states, moves), f'data/temp/{i}.pt')
 
@@ -750,6 +755,65 @@ class DiskData(Dataset):
         traj_states = torch.stack(states)
         traj_moves = torch.stack(moves)
         return traj_states, traj_moves, len(traj_moves)
+
+
+class FFCVDiskData(Dataset):
+    def __init__(self, disk_data: DiskData):
+        self.disk_data = disk_data
+
+    def __len__(self):
+        return len(self.disk_data)
+
+    def __getitem__(self, i):
+        states, moves, length = self.disk_data[i]
+        s = states[0].shape
+        T = moves.shape[0]
+        to_add = MAX_LEN - T
+        states2 = torch.cat((states, torch.zeros((to_add, *s))))
+        moves2 = torch.cat((moves, torch.zeros(to_add, dtype=int)))
+        assert_equal(states2.shape, (MAX_LEN + 1, *s))
+        assert_equal(moves2.shape, (MAX_LEN, ))
+        mask = torch.zeros(MAX_LEN, dtype=int)
+        mask[:T] = 1
+        return states2.numpy(), moves2.numpy(), length, mask.numpy()
+
+
+class FinishTransform(nn.Module):
+    def __init__(self, batch_size):
+        super().__init__()
+        self.batch_size = batch_size
+
+    def forward(self, x):
+        return x.reshape(self.batch_size, -1, 24, 14, 14)
+
+
+def write_ffcv_data(name, n):
+    disk_data = DiskData(name, n=n)
+    data = FFCVDiskData(disk_data)
+
+    writer = DatasetWriter(f'data/{name}_ffcv.beton', {
+        'traj': NDArrayField(shape=(MAX_LEN+1, 24, 14, 14), dtype=np.dtype('float32')),
+        'moves': NDArrayField(shape=(MAX_LEN, ), dtype=np.dtype('int64')),
+        'length': IntField(),
+        'mask': NDArrayField(shape=(MAX_LEN, ), dtype=np.dtype('int64')),
+    }, num_workers=16)
+
+    writer.from_indexed_dataset(data)
+
+
+def ffcv_dataloader(name, batch_size):
+    loader = Loader(f'data/{name}_ffcv.beton',
+                    batch_size=batch_size,
+                    num_workers=16,
+                    os_cache=True,
+                    order=OrderOption.RANDOM,
+                    pipelines={
+                        'traj': [NDArrayDecoder(), ToTensor(), FinishTransform(batch_size), ToDevice(0)],
+                        'moves': [NDArrayDecoder(), ToTensor(), ToDevice(0)],
+                        'length': [IntDecoder(), ToTensor(), ToDevice(0)],
+                        'mask': [NDArrayDecoder(), ToTensor(), ToDevice(0)],
+                    })
+    return loader
 
 
 @profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)

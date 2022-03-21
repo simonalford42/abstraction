@@ -9,6 +9,7 @@
 #SBATCH -N 1
  # total cores
 #SBATCH -n 1
+#SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
 #SBATCH -t 48:00:00
 #SBATCH --mem=8G
