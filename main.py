@@ -196,10 +196,10 @@ def boxworld_main():
         )
 
     params = dict(
-        lr=8E-4, num_test=200, epochs=100, b=10, batch_size=10,
+        lr=8E-4, num_test=200, epochs=5, b=10, batch_size=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        data='default100k', n=5000,
+        data='default100', n=5000,
         save_every=10, test_every=5,
         no_log=args.no_log,
         # model_load_path='models/temp_save__23.pt',
@@ -216,7 +216,6 @@ def boxworld_main():
             control_net = boxworld_homocontroller(b=params['b'])
         else:
             control_net = boxworld_controller(b=params['b'])
-
         if args.hmm:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
             model_type = 'hmm '
@@ -229,16 +228,16 @@ def boxworld_main():
 
     run['params/model type'] = model_type
     net = net.to(DEVICE)
-    data = box_world.DiskData(name=params['data'], n=params['n'])
-    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False,
-                            collate_fn=box_world.traj_collate, num_workers=4)
+    # data = box_world.DiskData(name=params['data'], n=params['n'])
+    # dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False,
+                            # collate_fn=box_world.traj_collate, num_workers=4)
     # dataloader = box_world.ffcv_dataloader(name=params['data'],
                                            # batch_size=params['batch_size'])
     with Timing('Completed training'):
         # train(run, dataloader, net, params)
         boxworld_outer_sv(
             run,
-            net, n=params['n'], epochs=params['epochs'], rounds=20, num_test=200,
+            net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
             test_every=1, lr=params['lr'], batch_size=params['batch_size']
         )
 
@@ -250,10 +249,10 @@ if __name__ == '__main__':
     # boxworld_outer_sv(net, n=10000, epochs=100, rounds=20, num_test=100,
                       # test_every=1, lr=8E-4, batch_size=10, fix_seed=False)
     # box_world.write_ffcv_data(name='default10k', n=10000)
-    # boxworld_main()
-    # box_world.generate_data(box_world.BoxWorldEnv(), 'default1', n=1, overwrite=True)
-    data = box_world.DiskData('default1', n=1)
-    states, moves = data.get_raw(0)
-    for s, m in zip(states, moves):
-        print(f'move: {m}')
-        box_world.render_obs(s, pause=2)
+    boxworld_main()
+    # box_world.generate_data(box_world.BoxWorldEnv(), 'default100', n=100, overwrite=True)
+    # data = box_world.DiskData('default1', n=1)
+    # states, moves, lengths = data[0]
+    # for s, m in zip(states, moves):
+    #     print(f'move: {m}')
+    #     box_world.render_obs(s, pause=2)
