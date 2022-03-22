@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
 #SBATCH -t 48:00:00
-#SBATCH --mem=8G
+#SBATCH --mem=16G
 #SBATCH --gres=gpu:1
 #xSBATCH --partition=gpu
 #SBATCH --partition=ellis

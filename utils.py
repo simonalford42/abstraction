@@ -21,9 +21,11 @@ def log(s: str):
         f.write(s)
 
 
-def get_memory_usage():
+def get_memory_usage(prnt=False):
     # https://stackoverflow.com/a/21632554/4383594
     mem = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
+    if prnt:
+        print(f'Using {mem} MB')
     return mem
 
 

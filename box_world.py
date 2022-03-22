@@ -636,10 +636,11 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
+    print('Non-disk data')
     data = BoxWorldDataset(env, n, traj)
-    # data = DiskData(name='test4', n=1000)
+    # data = DiskData(name='default5k', n=n)
     # assert n == 5000
-    # data = DiskData(name='default5k', n=5000)
+    # print(f'Disk data, n={n}')
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:
@@ -711,9 +712,9 @@ def generate_data(env, name, n, overwrite=False):
         if i % 1000 == 0:
             print(f'{i} generated')
         states, moves = generate_traj(env)
-        for s, m in zip(states, moves):
-            print(f'move: {m}')
-            render_obs(s, pause=1)
+        # for s, m in zip(states, moves):
+            # print(f'move: {m}')
+            # render_obs(s, pause=1)
         states = [compress_state(s) for s in states]
         torch.save((states, moves), f'data/temp/{i}.pt')
 
