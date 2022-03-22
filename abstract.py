@@ -580,7 +580,7 @@ def boxworld_controller(b, t=16, typ='hetero'):
         # both P(a | s, b) and beta(s, b)
         micro_out_dim = a * b + 2 * b
         macro_trans_in_dim = b + t
-        model = HetroController
+        model = HeteroController
 
     tau_net = boxworld_relational_net(out_dim=t)
     input_shape = (14, 14)  # assume default box world grid size
