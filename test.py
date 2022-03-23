@@ -1,3 +1,4 @@
+import math
 import random
 import numpy as np
 import torch
@@ -11,6 +12,7 @@ import box_world
 from hmm import HmmNet, cc_loss, cc_loss_brute, cc_loss_ub, hmm_fw_ub
 from box_world import CONTINUE_IX, STOP_IX
 from utils import DEVICE, assert_equal, assert_shape
+import planning
 
 import hypothesis
 from hypothesis import example, given, settings, strategies as st
@@ -748,11 +750,41 @@ def test_cc_batched2():
         assert torch.isclose(total_cc_loss, total_cc_loss_ub), f'{total_cc_loss=}, {total_cc_loss_ub=}'
 
 
+def test_bfs():
+    # searching a grid. different directions have different logps
+    start = (0, 0)
+    goal = (2, 1)
+
+    class Controller():
+        def __init__(self, goal):
+            self.goal = goal
+            self.b = 4
+
+        def tau_embed(self, s):
+            return s
+
+        def solved_logp(self, t):
+            return torch.log(torch.tensor(max(0, 1 - math.sqrt((self.goal[0] - t[0])**2 + (self.goal[1] - t[1])**2))))
+
+        def eval_abstract_policy(self, t):
+            action_logps = torch.tensor([-1, -2, -3, -4])
+            dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+            new_taus = torch.tensor([[t[0] + d[0], t[1] + d[1]] for d in dirs])
+            solved_logps = torch.tensor([self.solved_logp(t) for t in new_taus])
+            return action_logps, new_taus, solved_logps
+
+    controller = Controller(goal)
+    states, actions, logp, solved_logp = planning.hlc_bfs(start, controller, solved_threshold=1.0)
+    print(f'states: {states}')
+    print(f'actions: {actions}')
+
+
 if __name__ == '__main__':
+    test_bfs()
     # test_actions_batch()
     # test_cc_batched()
     # test_ccts1_batched()
-    test_ccts2_batched()
+    # test_ccts2_batched()
     # test_hmm_and_cc()
     # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()

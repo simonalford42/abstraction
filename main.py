@@ -15,6 +15,7 @@ from hmm import CausalNet, SVNet, HmmNet, viterbi
 import time
 import box_world
 import neptune.new as neptune
+import mlflow
 
 
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
@@ -52,18 +53,23 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             else:
                 test_acc = box_world.eval_model(net.control_net, test_env, n=params['num_test'])
             run['test/accuracy'].log(test_acc)
+            mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
 
         run['epoch'].log(epoch)
         run['loss'].log(train_loss)
         run['time'].log(time.time() - start)
+        mlflow.log_metrics({'epoch': epoch,
+                            'loss': train_loss,
+                            'time': time.time() - start}, step=epoch)
 
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0:
+        if params['save_every'] and epoch % params['save_every'] == 0:
             path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
             run['models'].log(path)
+            mlflow.log_metrics({'epoch': epoch, f'model epoch {epoch}': path})
 
-    if not params['no_log']:
-        path = utils.save_model(net, f'models/{model_id}.pt')
-        run['model'] = path
+    path = utils.save_model(net, f'models/{model_id}.pt')
+    run['model'] = path
+    mlflow.log_metrics({f'final model path': path})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -185,6 +191,7 @@ def eval_models():
 
 
 def boxworld_main():
+    mlflow.set_experiment('Boxworld 3/22')
     parser = argparse.ArgumentParser()
     parser.add_argument('--cc', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
@@ -208,19 +215,16 @@ def boxworld_main():
         )
 
     params = dict(
-        n=5000,
-        lr=8E-4, epochs=200, batch_size=10, b=10,
+        n=50000,
+        lr=8E-4, epochs=400, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        save_every=10, test_every=10, num_test=200,
+        save_every=False, test_every=10, num_test=200,
         no_log=args.no_log,
-        # model_load_path='models/temp_save__23.pt',
+        # model_load_path='models/3cf26b5acfac4f009e526e399a9a5966.pt',
         disk_data=args.disk,
         no_outer=args.no_outer,
     )
-
-    run['params'] = params
-    run['device'] = torch.cuda.get_device_name(DEVICE)
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -239,8 +243,9 @@ def boxworld_main():
         else:
             net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen'])
             model_type = 'causal'
+    params['model_type'] = model_type
+    params['device'] = torch.cuda.get_device_name(DEVICE)
 
-    run['params/model type'] = model_type
     net = net.to(DEVICE)
     if params['disk_data']:
         data = 'default' + str(int(params['n']/1000)) + 'k'
@@ -251,15 +256,20 @@ def boxworld_main():
     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
 
     with Timing('Completed training'):
-        if params['no_outer']:
-            train(run, dataloader, net, params)
-        else:
-            rounds = params['epochs'] // params['test_every']
-            boxworld_outer_sv(
-                run, dataloader,
-                net, n=params['n'], epochs=params['epochs'] // rounds, rounds=rounds, num_test=200,
-                test_every=1, lr=params['lr'], batch_size=params['batch_size']
-            )
+        with mlflow.start_run():
+            run['params'] = params
+            mlflow.log_params(params)
+            mlflow.log_params(dict(id=mlflow.active_run().info.run_id))
+            print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+
+            if params['no_outer']:
+                train(run, dataloader, net, params)
+            else:
+                boxworld_outer_sv(
+                    run,
+                    net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
+                    test_every=1, lr=params['lr'], batch_size=params['batch_size']
+                )
 
     run.stop()
 
