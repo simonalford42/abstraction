@@ -26,6 +26,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     test_env = box_world.BoxWorldEnv()
 
     for epoch in range(params['epochs']):
+        if hasattr(dataloader.dataset, 'shuffle'):
+            print('shuffling')
+            dataloader.dataset.shuffle()
+
         train_loss = 0
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
@@ -219,7 +223,12 @@ def boxworld_main():
         lr=8E-4, epochs=400, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
+<<<<<<< HEAD
         save_every=False, test_every=10, num_test=200,
+=======
+        data='default100', n=50,
+        save_every=10, test_every=5,
+>>>>>>> 05f6eb8dd48fe7a89f74ff3dd277763b479d6aba
         no_log=args.no_log,
         # model_load_path='models/3cf26b5acfac4f009e526e399a9a5966.pt',
         disk_data=args.disk,
