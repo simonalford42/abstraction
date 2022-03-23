@@ -1,5 +1,6 @@
 import queue
 import os
+import random
 
 from typing import Any, Optional, List, Tuple, Callable
 import gym
@@ -684,6 +685,19 @@ class BoxWorldDataset(Dataset):
             return self.traj_states[i], self.traj_moves[i], len(self.traj_moves[i])
         else:
             return self.states[i], self.moves[i]
+
+    def shuffle(self):
+        """
+        Shuffle trajs which share the same length, while still keeping the overall order the same.
+        """
+        ixs = list(range(len(self.traj_states)))
+        random.shuffle(ixs)
+        traj_states2 = [self.traj_states[i] for i in ixs]
+        traj_moves2 = [self.traj_moves[i] for i in ixs]
+        traj_states2, traj_moves2 = zip(*sorted(zip(traj_states2, traj_moves2),
+                                                key=lambda t: t[0].shape[0]))
+        self.traj_states, self.traj_moves = traj_states2, traj_moves2
+
 
 
 def compress_state(state):
