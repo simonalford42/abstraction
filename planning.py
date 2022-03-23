@@ -7,18 +7,21 @@ from collections import namedtuple
 from dataclasses import dataclass, field
 from typing import Any, Union
 
+
 @dataclass(order=True)
 class PrioritizedItem:
     priority: float
-    item: Any=field(compare=False)
+    item: Any = field(compare=False)
 
-def hlc_bfs(s0, controller, solved_threshold=0.5) -> tuple[list, list[int], float, float]:
+
+def hlc_bfs(s0, controller, solved_threshold=0.5, timeout=None) -> tuple[list, list[int], float, float]:
     """
     Best first search with the abstract policy.
     solved threshold: probability that we solved the task needed to return something
     Returns:
         (states, actions, logp, solved_logp)
     """
+    start = time.time()
     Node = namedtuple("Node", "t prev b logp solved_logp")
     solved_logp_threshold = math.log(solved_threshold)
     print(f'solved_logp_threshold: {solved_logp_threshold}')
@@ -38,12 +41,11 @@ def hlc_bfs(s0, controller, solved_threshold=0.5) -> tuple[list, list[int], floa
                  in zip(new_taus, range(num_actions), logps, solved_logps)]
 
         for node in nodes:
-            print(f'\tnode Node({node.t=}, {node.logp=}, {node.solved_logp=})')
+            # print(f'\tnode Node({node.t=}, {node.logp=}, {node.solved_logp=})')
             if node.solved_logp >= solved_logp_threshold:
                 states, actions = get_path(node)
                 return states, actions, node.logp, node.solved_logp
             expand_queue.put(PrioritizedItem(-node.logp, node))
-        s = input()
         return False
 
     def get_path(node: Node):
@@ -56,11 +58,14 @@ def hlc_bfs(s0, controller, solved_threshold=0.5) -> tuple[list, list[int], floa
         return states[::-1], actions[:-1][::-1]
 
     while True:
+        if (time.time() - start) > timeout:
+
         node = expand_queue.get().item
-        print(f'expanding node Node({node.t=}, {node.logp=}, {node.solved_logp=})')
+        # print(f'expanding node Node({node.t=}, {node.logp=}, {node.solved_logp=})')
         out = expand(node)
         if out is not False:
             return out
+
 
 
 def hlc_sampler(s0, controller) -> tuple[list, list[int], list[float], float]:

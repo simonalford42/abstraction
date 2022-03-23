@@ -15,6 +15,7 @@ from hmm import CausalNet, SVNet, HmmNet, viterbi
 import time
 import box_world
 import neptune.new as neptune
+import mlflow
 
 
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
@@ -45,18 +46,23 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             env = box_world.BoxWorldEnv(seed=epoch)
             test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'], run=run, epoch=epoch)
             run['test/accuracy'].log(test_acc)
+            mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
 
         run['epoch'].log(epoch)
         run['loss'].log(train_loss)
         run['time'].log(time.time() - start)
+        mlflow.log_metrics({'epoch': epoch,
+                            'loss': train_loss,
+                            'time': time.time() - start}, step=epoch)
 
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0:
+        if params['save_every'] and epoch % params['save_every'] == 0:
             path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
             run['models'].log(path)
+            mlflow.log_metrics({'epoch': epoch, f'model epoch {epoch}': path})
 
-    if not params['no_log']:
-        path = utils.save_model(net, f'models/{model_id}.pt')
-        run['model'] = path
+    path = utils.save_model(net, f'models/{model_id}.pt')
+    run['model'] = path
+    mlflow.log_metrics({f'final model path': path})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -175,6 +181,7 @@ def eval_models():
 
 
 def boxworld_main():
+    mlflow.set_experiment('Boxworld 3/22')
     parser = argparse.ArgumentParser()
     parser.add_argument('--cc', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
@@ -205,9 +212,6 @@ def boxworld_main():
         # model_load_path='models/temp_save__23.pt',
     )
 
-    run['params'] = params
-    run['device'] = torch.cuda.get_device_name(DEVICE)
-
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
     else:
@@ -225,8 +229,9 @@ def boxworld_main():
         else:
             net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen'])
             model_type = 'causal'
+    params['model_type'] = model_type
+    params['device'] = torch.cuda.get_device_name(DEVICE)
 
-    run['params/model type'] = model_type
     net = net.to(DEVICE)
     # data = box_world.DiskData(name=params['data'], n=params['n'])
     # dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False,
@@ -234,12 +239,18 @@ def boxworld_main():
     # dataloader = box_world.ffcv_dataloader(name=params['data'],
                                            # batch_size=params['batch_size'])
     with Timing('Completed training'):
-        # train(run, dataloader, net, params)
-        boxworld_outer_sv(
-            run,
-            net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
-            test_every=1, lr=params['lr'], batch_size=params['batch_size']
-        )
+        with mlflow.start_run():
+            # train(run, dataloader, net, params)
+            run['params'] = params
+            mlflow.log_params(params)
+            mlflow.log_params(dict(id=mlflow.active_run().info.run_id))
+            print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+
+            boxworld_outer_sv(
+                run,
+                net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
+                test_every=1, lr=params['lr'], batch_size=params['batch_size']
+            )
 
     run.stop()
 
