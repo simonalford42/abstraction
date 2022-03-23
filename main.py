@@ -18,18 +18,22 @@ import neptune.new as neptune
 
 
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
+    print('train')
     optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
     net.train()
     model_id = utils.generate_uuid()
+    test_env = box_world.BoxWorldEnv()
 
     for epoch in range(params['epochs']):
         train_loss = 0
         start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
-            # s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
-            B = s_i_batch.shape[0]
-            s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
+            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+
+            # for ffcv
+            # B = s_i_batch.shape[0]
+            # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
 
             loss = net(s_i_batch, actions_batch, lengths, masks)
 
@@ -38,12 +42,15 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             loss = loss / sum(lengths)
             run['batch/loss'].log(loss.item())
             run['batch/avg length'].log(sum(lengths) / len(lengths))
+            run['batch/mem'].log(utils.get_memory_usage())
             loss.backward()
             optimizer.step()
 
         if params['test_every'] and epoch % params['test_every'] == 0:
-            env = box_world.BoxWorldEnv(seed=epoch)
-            test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'], run=run, epoch=epoch)
+            if net.b != 1:
+                test_acc = box_world.eval_options_model(net.control_net, test_env, n=params['num_test'], run=run, epoch=epoch)
+            else:
+                test_acc = box_world.eval_model(net.control_net, test_env, n=params['num_test'])
             run['test/accuracy'].log(test_acc)
 
         run['epoch'].log(epoch)
@@ -96,10 +103,11 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
 
 
 def boxworld_outer_sv(
-    run,
+    run, dataloader,
     net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4,
     batch_size=10, fix_seed: bool = False,
 ):
+    print('outer sv')
     env = box_world.BoxWorldEnv()
     # print_every = epochs / 5
     print_every = 10
@@ -112,23 +120,25 @@ def boxworld_outer_sv(
         round = 0
         while round != rounds:
             print(f'Round {round}')
-            if fix_seed:
-                env = box_world.BoxWorldEnv(seed=round)
+            # if fix_seed:
+                # env = box_world.BoxWorldEnv(seed=round)
 
-            with Timing("Generated trajectories"):
-                dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
+            # with Timing("Generated trajectories"):
+                # dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
 
             sv_train(run, dataloader, net, epochs=epochs, lr=lr, print_every=print_every)
 
             if test_every and round % test_every == 0:
-                if fix_seed:
-                    env = box_world.BoxWorldEnv(seed=round)
-                    print('fixed seed so eval trajs = train trajs')
+                # if fix_seed:
+                    # env = box_world.BoxWorldEnv(seed=round)
+                    # print('fixed seed so eval trajs = train trajs')
                 with Timing("Evaluated model"):
                     if net.b != 1:
-                        box_world.eval_options_model(net.control_net, env, n=num_test)
+                        acc = box_world.eval_options_model(net.control_net, env, n=num_test)
                     else:
-                        box_world.eval_model(net.control_net, env, n=num_test)
+                        acc = box_world.eval_model(net.control_net, env, n=num_test)
+                    run['test/accuracy'].log(acc)
+
 
             # if save_every and round % save_every == 0:
                 # utils.save_mlflow_model(net, model_name=f'round-{round}', overwrite=False)
@@ -180,8 +190,10 @@ def boxworld_main():
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--hmm', action='store_true')
     parser.add_argument('--sv', action='store_true')
+    parser.add_argument('--disk', action='store_true')
     parser.add_argument('--homo', action='store_true')
     parser.add_argument('--no_log', action='store_true')
+    parser.add_argument('--no_outer', action='store_true')
     args = parser.parse_args()
 
     random.seed(1)
@@ -196,13 +208,15 @@ def boxworld_main():
         )
 
     params = dict(
-        lr=8E-4, num_test=200, epochs=5, b=10, batch_size=10,
+        n=5000,
+        lr=8E-4, epochs=200, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        data='default100', n=5000,
-        save_every=10, test_every=5,
+        save_every=10, test_every=10, num_test=200,
         no_log=args.no_log,
         # model_load_path='models/temp_save__23.pt',
+        disk_data=args.disk,
+        no_outer=args.no_outer,
     )
 
     run['params'] = params
@@ -218,7 +232,7 @@ def boxworld_main():
             control_net = boxworld_controller(b=params['b'])
         if args.hmm:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
-            model_type = 'hmm '
+            model_type = 'hmm'
         if args.sv:
             net = SVNet(boxworld_homocontroller(b=1))
             model_type = 'sv'
@@ -228,31 +242,27 @@ def boxworld_main():
 
     run['params/model type'] = model_type
     net = net.to(DEVICE)
-    # data = box_world.DiskData(name=params['data'], n=params['n'])
-    # dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False,
-                            # collate_fn=box_world.traj_collate, num_workers=4)
-    # dataloader = box_world.ffcv_dataloader(name=params['data'],
-                                           # batch_size=params['batch_size'])
+    if params['disk_data']:
+        data = 'default' + str(int(params['n']/1000)) + 'k'
+        params['data'] = data
+        data = box_world.DiskData(name=params['data'], n=params['n'])
+    else:
+        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
+    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+
     with Timing('Completed training'):
-        # train(run, dataloader, net, params)
-        boxworld_outer_sv(
-            run,
-            net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
-            test_every=1, lr=params['lr'], batch_size=params['batch_size']
-        )
+        if params['no_outer']:
+            train(run, dataloader, net, params)
+        else:
+            rounds = params['epochs'] // params['test_every']
+            boxworld_outer_sv(
+                run, dataloader,
+                net, n=params['n'], epochs=params['epochs'] // rounds, rounds=rounds, num_test=200,
+                test_every=1, lr=params['lr'], batch_size=params['batch_size']
+            )
 
     run.stop()
 
 
 if __name__ == '__main__':
-    # net = SVNet(boxworld_homocontroller(b=10))
-    # boxworld_outer_sv(net, n=10000, epochs=100, rounds=20, num_test=100,
-                      # test_every=1, lr=8E-4, batch_size=10, fix_seed=False)
-    # box_world.write_ffcv_data(name='default10k', n=10000)
     boxworld_main()
-    # box_world.generate_data(box_world.BoxWorldEnv(), 'default100', n=100, overwrite=True)
-    # data = box_world.DiskData('default1', n=1)
-    # states, moves, lengths = data[0]
-    # for s, m in zip(states, moves):
-    #     print(f'move: {m}')
-    #     box_world.render_obs(s, pause=2)

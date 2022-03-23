@@ -595,7 +595,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
 
     print(f'Solved {num_solved}/{n} episodes')
     net.train()
-    return solved
+    return num_solved/n
 
 
 def obs_to_tensor(obs) -> torch.Tensor:
@@ -648,7 +648,7 @@ def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = False):
+    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
