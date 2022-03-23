@@ -7,6 +7,92 @@ from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC
 import box_world
 
+# for tensor typing
+T = torch.Tensor
+
+
+class Controller(nn.Module):
+    def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
+                 macro_transition_net):
+        """
+        Note: Homocontroller subclass won't use these exactly.
+        """
+        super().__init__()
+        self.a = a  # number of actions
+        self.b = b  # number of options
+        self.t = t  # abstract state dim
+        self.tau_net = tau_net  # s -> t
+        self.micro_net = micro_net  # s -> (depends on subclass)
+        self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
+        self.macro_transition_net = macro_transition_net  # b_i one hot -> t abstract transition
+
+    def forward(self, s_i_batch, batched=False):
+        if batched:
+            return self.forward_b(s_i_batch)
+        else:
+            return self.forward_ub(s_i_batch)
+
+    def forward_b(self, s_i_batch):
+        """
+        s_i: (B, T, s) tensor of states
+        outputs:
+           (B, T, b, a) tensor of action logps
+           (B, T, b, 2) tensor of stop logps
+              the index corresponding to stop/continue are in
+              STOP_IX, CONTINUE_IX
+           (B, T, b) tensor of start logps
+           None CC placeholder
+        """
+        raise NotImplementedError()
+
+    def forward_ub(self, s_i):
+        """
+        s_i: (T, s) tensor of states
+        outputs:
+           (T, b, a) tensor of action logps
+           (T, b, 2) tensor of stop logps
+              the index corresponding to stop/continue are in
+              box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
+           (T, b) tensor of start logps
+           None causal consistency placeholder
+        """
+        raise NotImplementedError()
+
+    def macro_transitions(self, t_i, bs):
+        """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+
+        Args:
+            t_i: (T, t) batch of abstract states
+            bs: 1D tensor of actions to try
+        """
+        T = t_i.shape[0]
+        nb = bs.shape[0]
+        # calculate transition for each t_i + b pair
+        t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
+        b_onehots0 = F.one_hot(bs, num_classes=self.b)
+        b_onehots = b_onehots0.repeat(T, 1)
+        b_onehots2 = repeat(b_onehots0, 'nb b -> (repeat nb) b', repeat=T)
+        assert torch.all(b_onehots == b_onehots2)
+        # b is 'less significant', changes in 'inner loop'
+        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
+        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
+        # (T * nb, t + b) -> (T * nb, t)
+        t_i2 = self.macro_transition_net(t_i2)
+        return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
+
+    def macro_transition(self, t, b):
+        """
+        Calculate a single abstract transition. Useful for test-time.
+        """
+        return self.macro_transitions(t.unsqueeze(0),
+                                      torch.tensor([b], device=DEVICE)).reshape(self.t)
+
+    def tau_embed(self, s):
+        """
+        Calculate the embedding of a single state. Returns (t, ) tensor.
+        """
+        return self.tau_net(s.unsqueeze(0))[0]
+
 
 class ConsistencyStopController1(nn.Module):
     """
@@ -452,6 +538,30 @@ class HeteroController(nn.Module):
         # (1, b, a), (1, b, 2), (1, b), (1, 1, b)
         action_logps, stop_logps, start_logps, _ = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0]
+
+    def eval_abstract_policy(self, t_i):
+        """
+        t_i: (t, ) tensor
+        Returns:
+            (b, ) tensor of logp for each abstract action
+            (b, t) tensor of new tau for each abstract action
+            (b, ) tensor of logp new tau is solved
+        """
+        b, t = self.b, self.t
+        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))
+        new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
+                                                   torch.arange(self.b, device=DEVICE))[0]
+        assert_shape(new_taus, (b, t))
+        solveds = self.solved_net(new_taus)
+        assert_shape(solveds, (b, t))
+        return start_logps, new_taus, solveds
+
+    def solved_logp(self, t_i):
+        """
+        t_i: (t, ) tensor
+        Returns: logp of probability solved
+        """
+        return self.solved_net(t_i.unsqueeze(0))
 
 
 class HomoController(nn.Module):
