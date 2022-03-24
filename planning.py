@@ -59,6 +59,7 @@ def hlc_bfs(s0, controller, solved_threshold=0.5, timeout=None) -> tuple[list, l
 
     while True:
         if (time.time() - start) > timeout:
+            return None
 
         node = expand_queue.get().item
         # print(f'expanding node Node({node.t=}, {node.logp=}, {node.solved_logp=})')
@@ -74,11 +75,14 @@ def hlc_sampler(s0, controller) -> tuple[list, list[int], list[float], float]:
     pass
 
 
+def llc_sampler(abstract_states, abstract_actions):
+
+
 def llc_plan(abstract_states, abstract_actions):
     """
     for each (state, action) -> new state in the seq, try to find
     """
-    env = BoxWorldEnv()
+    pass
 
 
 
