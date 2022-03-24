@@ -33,25 +33,24 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
 
         train_loss = 0
         start = time.time()
-        with Timing('Completed epoch'):
-            for s_i_batch, actions_batch, lengths, masks in dataloader:
-                optimizer.zero_grad()
-                s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+        for s_i_batch, actions_batch, lengths, masks in dataloader:
+            optimizer.zero_grad()
+            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
 
-                # for ffcv
-                # B = s_i_batch.shape[0]
-                # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
+            # for ffcv
+            # B = s_i_batch.shape[0]
+            # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
 
-                loss = net(s_i_batch, actions_batch, lengths, masks)
+            loss = net(s_i_batch, actions_batch, lengths, masks)
 
-                train_loss += loss.item()
-                # reduce just like cross entropy so batch size doesn't affect LR
-                loss = loss / sum(lengths)
-                run['batch/loss'].log(loss.item())
-                run['batch/avg length'].log(sum(lengths) / len(lengths))
-                run['batch/mem'].log(utils.get_memory_usage())
-                loss.backward()
-                optimizer.step()
+            train_loss += loss.item()
+            # reduce just like cross entropy so batch size doesn't affect LR
+            loss = loss / sum(lengths)
+            run['batch/loss'].log(loss.item())
+            run['batch/avg length'].log(sum(lengths) / len(lengths))
+            run['batch/mem'].log(utils.get_memory_usage())
+            loss.backward()
+            optimizer.step()
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             if net.b != 1:
@@ -229,11 +228,11 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=1000,
-        lr=8E-4, epochs=1, batch_size=10, b=10,
+        n=10000,
+        lr=8E-4, epochs=600, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        save_every=False, test_every=10, num_test=1,
+        save_every=False, test_every=20, num_test=200,
         no_log=args.no_log,
         # model_load_path='models/3cf26b5acfac4f009e526e399a9a5966.pt',
         disk_data=args.disk,
@@ -251,7 +250,7 @@ def boxworld_main():
         if args.hmm:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
             model_type = 'hmm'
-        if args.sv:
+        elif args.sv:
             net = SVNet(boxworld_homocontroller(b=1))
             model_type = 'sv'
         else:
