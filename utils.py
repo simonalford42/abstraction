@@ -7,7 +7,8 @@ from typing import Tuple
 import numpy as np
 import uuid
 import psutil
-
+from contextlib import nullcontext
+from collections import namedtuple
 
 POS = Tuple[int, int]
 
@@ -128,4 +129,26 @@ class NoLogRun():
         return NoLogRunInner()
 
     def stop(self):
+        pass
+
+
+class NoMlflowRun():
+    def start_run(self):
+        return nullcontext()
+
+    def log_params(self, *args, **kwargs):
+        pass
+
+    def log_metrics(self, *args, **kwargs):
+        pass
+
+    def active_run(self):
+        Out = namedtuple('Out', 'info')
+        Out2 = namedtuple('Out2', 'run_id')
+        out = Out(info=Out2(run_id=generate_uuid()))
+        print(out.info)
+        print(out.info.run_id)
+        return out
+
+    def set_experiment(self, *args, **kwargs):
         pass

@@ -552,7 +552,7 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
         run[f'test/cc loss avg'].log(cc_loss_avg)
 
     control_net.train()
-    print(f'Solved {num_solved}/{n} episodes')
+    # print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
     # for i in option_map:
@@ -570,7 +570,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
     """
     renderer is a callable that takes in obs.
     """
-    print(f'Evaluating model on {n} episodes')
+    # print(f'Evaluating model on {n} episodes')
     net.eval()
     num_solved = 0
 

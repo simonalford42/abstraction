@@ -22,34 +22,36 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     print('train')
     optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
     net.train()
-    model_id = utils.generate_uuid()
+    model_id = mlflow.active_run().info.run_id
+    run['model_id'] = model_id
     test_env = box_world.BoxWorldEnv()
+    print(f"Net has {utils.num_params(net)} parameters")
 
     for epoch in range(params['epochs']):
         if hasattr(dataloader.dataset, 'shuffle'):
-            print('shuffling')
             dataloader.dataset.shuffle()
 
         train_loss = 0
         start = time.time()
-        for s_i_batch, actions_batch, lengths, masks in dataloader:
-            optimizer.zero_grad()
-            s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+        with Timing('Completed epoch'):
+            for s_i_batch, actions_batch, lengths, masks in dataloader:
+                optimizer.zero_grad()
+                s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
 
-            # for ffcv
-            # B = s_i_batch.shape[0]
-            # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
+                # for ffcv
+                # B = s_i_batch.shape[0]
+                # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
 
-            loss = net(s_i_batch, actions_batch, lengths, masks)
+                loss = net(s_i_batch, actions_batch, lengths, masks)
 
-            train_loss += loss.item()
-            # reduce just like cross entropy so batch size doesn't affect LR
-            loss = loss / sum(lengths)
-            run['batch/loss'].log(loss.item())
-            run['batch/avg length'].log(sum(lengths) / len(lengths))
-            run['batch/mem'].log(utils.get_memory_usage())
-            loss.backward()
-            optimizer.step()
+                train_loss += loss.item()
+                # reduce just like cross entropy so batch size doesn't affect LR
+                loss = loss / sum(lengths)
+                run['batch/loss'].log(loss.item())
+                run['batch/avg length'].log(sum(lengths) / len(lengths))
+                run['batch/mem'].log(utils.get_memory_usage())
+                loss.backward()
+                optimizer.step()
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             if net.b != 1:
@@ -57,6 +59,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             else:
                 test_acc = box_world.eval_model(net.control_net, test_env, n=params['num_test'])
             run['test/accuracy'].log(test_acc)
+            print(f'Epoch {epoch}\t test acc {test_acc}')
             mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
 
         run['epoch'].log(epoch)
@@ -73,7 +76,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
 
     path = utils.save_model(net, f'models/{model_id}.pt')
     run['model'] = path
-    mlflow.log_metrics({f'final model path': path})
+    mlflow.log_params({f'final model path': path})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -112,43 +115,42 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
-def boxworld_outer_sv(
-    run, dataloader,
-    net, n=1000, epochs=100, rounds=-1, num_test=100, test_every=1, lr=1E-4,
-    batch_size=10, fix_seed: bool = False,
-):
+def boxworld_outer_sv(run, dataloader, net, params, epochs=100, rounds=-1):
     print('outer sv')
     env = box_world.BoxWorldEnv()
     # print_every = epochs / 5
     print_every = 10
     save_every = 1
-    params = dict(epochs=epochs, lr=lr, n=n, batch_size=batch_size)
-    print(f"params: {params}")
     print(f"Net has {utils.num_params(net)} parameters")
+    model_id = mlflow.active_run().info.run_id
+    run['model_id'] = model_id
 
     try:
         round = 0
+        test_acc = 0
         while round != rounds:
+            start = time.time()
             print(f'Round {round}')
-            # if fix_seed:
-                # env = box_world.BoxWorldEnv(seed=round)
 
-            # with Timing("Generated trajectories"):
-                # dataloader = box_world.box_world_dataloader(env=env, n=n, traj=True, batch_size=batch_size)
+            with Timing("Generated trajectories"):
+                dataloader = box_world.box_world_dataloader(env=env, n=params['n'], traj=True, batch_size=params['batch_size'])
 
-            sv_train(run, dataloader, net, epochs=epochs, lr=lr, print_every=print_every)
+            sv_train(run, dataloader, net, epochs=epochs, lr=params['lr'], print_every=print_every)
+            mlflow.log_metrics({'epoch': round,
+                                'loss': round,
+                                'time': time.time() - start}, step=round)
 
             if test_every and round % test_every == 0:
-                # if fix_seed:
-                    # env = box_world.BoxWorldEnv(seed=round)
-                    # print('fixed seed so eval trajs = train trajs')
                 with Timing("Evaluated model"):
                     if net.b != 1:
-                        acc = box_world.eval_options_model(net.control_net, env, n=num_test)
+                        test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'])
                     else:
-                        acc = box_world.eval_model(net.control_net, env, n=num_test)
-                    run['test/accuracy'].log(acc)
-
+                        test_acc = box_world.eval_model(net.control_net, env, n=params['num_test'])
+                    run['test/accuracy'].log(test_acc)
+                    print(f'Epoch {epoch}\t test acc {test_acc}')
+                    mlflow.log_metrics({'epoch': round, 'test acc': test_acc}, step=round)
+            else:
+                mlflow.log_metrics({'epoch': round, 'test acc': test_acc}, step=round)
 
             # if save_every and round % save_every == 0:
                 # utils.save_mlflow_model(net, model_name=f'round-{round}', overwrite=False)
@@ -156,7 +158,10 @@ def boxworld_outer_sv(
             round += 1
     except KeyboardInterrupt:
         pass
-        # utils.save_mlflow_model(net, overwrite=False)
+
+    path = utils.save_model(net, f'models/{model_id}.pt')
+    run['model'] = path
+    mlflow.log_params({f'final model path': path})
 
 
 def up_right_main():
@@ -195,7 +200,6 @@ def eval_models():
 
 
 def boxworld_main():
-    mlflow.set_experiment('Boxworld 3/22')
     parser = argparse.ArgumentParser()
     parser.add_argument('--cc', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
@@ -203,36 +207,37 @@ def boxworld_main():
     parser.add_argument('--sv', action='store_true')
     parser.add_argument('--disk', action='store_true')
     parser.add_argument('--homo', action='store_true')
+    parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--no_outer', action='store_true')
+    parser.add_argument('--outer', action='store_true')
     args = parser.parse_args()
 
     random.seed(1)
     torch.manual_seed(1)
 
-    if args.no_log:
-        run = utils.NoLogRun()
-    else:
+    if args.neptune:
         run = neptune.init(
             project="simonalford42/abstraction",
             api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
         )
+    else:
+        run = utils.NoLogRun()
+    if args.no_log:
+        global mlflow
+        mlflow = utils.NoMlflowRun()
+    else:
+        mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=50000,
-        lr=8E-4, epochs=400, batch_size=10, b=10,
+        n=1000,
+        lr=8E-4, epochs=1, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-<<<<<<< HEAD
-        save_every=False, test_every=10, num_test=200,
-=======
-        data='default100', n=50,
-        save_every=10, test_every=5,
->>>>>>> 05f6eb8dd48fe7a89f74ff3dd277763b479d6aba
+        save_every=False, test_every=10, num_test=1,
         no_log=args.no_log,
         # model_load_path='models/3cf26b5acfac4f009e526e399a9a5966.pt',
         disk_data=args.disk,
-        no_outer=args.no_outer,
+        outer=args.outer,
     )
 
     if 'model_load_path' in params:
@@ -266,19 +271,18 @@ def boxworld_main():
 
     with Timing('Completed training'):
         with mlflow.start_run():
+            params['id'] = mlflow.active_run().info.run_id
             run['params'] = params
             mlflow.log_params(params)
-            mlflow.log_params(dict(id=mlflow.active_run().info.run_id))
             print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+            print(f"params: {params}")
 
-            if params['no_outer']:
-                train(run, dataloader, net, params)
+            if params['outer']:
+                rounds = params['epochs'] // params['test_every']
+                epochs = params['epochs'] // rounds
+                boxworld_outer_sv(run, dataloader, net, params, epochs=epochs, rounds=rounds)
             else:
-                boxworld_outer_sv(
-                    run,
-                    net, n=params['n'], epochs=params['epochs'], rounds=50, num_test=200,
-                    test_every=1, lr=params['lr'], batch_size=params['batch_size']
-                )
+                train(run, dataloader, net, params)
 
     run.stop()
 
