@@ -552,7 +552,7 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
         run[f'test/cc loss avg'].log(cc_loss_avg)
 
     control_net.train()
-    print(f'Solved {num_solved}/{n} episodes')
+    # print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
     # for i in option_map:
@@ -570,7 +570,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
     """
     renderer is a callable that takes in obs.
     """
-    print(f'Evaluating model on {n} episodes')
+    # print(f'Evaluating model on {n} episodes')
     net.eval()
     num_solved = 0
 
@@ -596,7 +596,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
 
     print(f'Solved {num_solved}/{n} episodes')
     net.train()
-    return solved
+    return num_solved/n
 
 
 def obs_to_tensor(obs) -> torch.Tensor:
@@ -649,7 +649,7 @@ def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = False):
+    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
