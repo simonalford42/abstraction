@@ -234,7 +234,7 @@ def boxworld_main():
         hmm=args.hmm, homo=args.homo, sv=args.sv,
         save_every=False, test_every=20, num_test=200,
         no_log=args.no_log,
-        # model_load_path='models/3cf26b5acfac4f009e526e399a9a5966.pt',
+        # model_load_path='models/6956b627.pt',
         disk_data=args.disk,
         outer=args.outer,
     )
@@ -287,4 +287,8 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
-    boxworld_main()
+    # boxworld_main()
+    model_load_path = 'models/6956b627.pt',
+    net = utils.load_model(model_load_path)
+    env = box_world.BoxWorldEnv()
+    box_world.eval_options_model(net, env, n=50)
