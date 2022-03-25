@@ -14,14 +14,14 @@ class PrioritizedItem:
     item: Any = field(compare=False)
 
 
-def hlc_bfs(s0, controller, solved_threshold=0.5, timeout=None) -> tuple[list, list[int], float, float]:
+def hlc_bfs(s0, controller, solved_threshold=0.5, timeout=float('inf')) -> tuple[list, list[int], float, float]:
     """
     Best first search with the abstract policy.
     solved threshold: probability that we solved the task needed to return something
     Returns:
         (states, actions, logp, solved_logp)
     """
-    start = time.time()
+    start_time = time.time()
     Node = namedtuple("Node", "t prev b logp solved_logp")
     solved_logp_threshold = math.log(solved_threshold)
     print(f'solved_logp_threshold: {solved_logp_threshold}')
@@ -58,7 +58,7 @@ def hlc_bfs(s0, controller, solved_threshold=0.5, timeout=None) -> tuple[list, l
         return states[::-1], actions[:-1][::-1]
 
     while True:
-        if (time.time() - start) > timeout:
+        if (time.time() - start_time) > timeout:
             return None
 
         node = expand_queue.get().item
@@ -76,6 +76,7 @@ def hlc_sampler(s0, controller) -> tuple[list, list[int], list[float], float]:
 
 
 def llc_sampler(abstract_states, abstract_actions):
+    pass
 
 
 def llc_plan(abstract_states, abstract_actions):

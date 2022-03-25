@@ -9,89 +9,10 @@ import box_world
 
 # for tensor typing
 T = torch.Tensor
-
-
-class Controller(nn.Module):
-    def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net):
-        """
-        Note: Homocontroller subclass won't use these exactly.
-        """
-        super().__init__()
-        self.a = a  # number of actions
-        self.b = b  # number of options
-        self.t = t  # abstract state dim
-        self.tau_net = tau_net  # s -> t
-        self.micro_net = micro_net  # s -> (depends on subclass)
-        self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
-        self.macro_transition_net = macro_transition_net  # b_i one hot -> t abstract transition
-
-    def forward(self, s_i_batch, batched=False):
-        if batched:
-            return self.forward_b(s_i_batch)
-        else:
-            return self.forward_ub(s_i_batch)
-
-    def forward_b(self, s_i_batch):
-        """
-        s_i: (B, T, s) tensor of states
-        outputs:
-           (B, T, b, a) tensor of action logps
-           (B, T, b, 2) tensor of stop logps
-              the index corresponding to stop/continue are in
-              STOP_IX, CONTINUE_IX
-           (B, T, b) tensor of start logps
-           None CC placeholder
-        """
-        raise NotImplementedError()
-
-    def forward_ub(self, s_i):
-        """
-        s_i: (T, s) tensor of states
-        outputs:
-           (T, b, a) tensor of action logps
-           (T, b, 2) tensor of stop logps
-              the index corresponding to stop/continue are in
-              box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
-           (T, b) tensor of start logps
-           None causal consistency placeholder
-        """
-        raise NotImplementedError()
-
-    def macro_transitions(self, t_i, bs):
-        """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
-
-        Args:
-            t_i: (T, t) batch of abstract states
-            bs: 1D tensor of actions to try
-        """
-        T = t_i.shape[0]
-        nb = bs.shape[0]
-        # calculate transition for each t_i + b pair
-        t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
-        b_onehots0 = F.one_hot(bs, num_classes=self.b)
-        b_onehots = b_onehots0.repeat(T, 1)
-        b_onehots2 = repeat(b_onehots0, 'nb b -> (repeat nb) b', repeat=T)
-        assert torch.all(b_onehots == b_onehots2)
-        # b is 'less significant', changes in 'inner loop'
-        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
-        assert_equal(t_i2.shape, (T * nb, self.t + self.b))
-        # (T * nb, t + b) -> (T * nb, t)
-        t_i2 = self.macro_transition_net(t_i2)
-        return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
-
-    def macro_transition(self, t, b):
-        """
-        Calculate a single abstract transition. Useful for test-time.
-        """
-        return self.macro_transitions(t.unsqueeze(0),
-                                      torch.tensor([b], device=DEVICE)).reshape(self.t)
-
-    def tau_embed(self, s):
-        """
-        Calculate the embedding of a single state. Returns (t, ) tensor.
-        """
-        return self.tau_net(s.unsqueeze(0))[0]
+"""
+Note: T used for length of sequence i.e. s_i.shape = (T, *s) etc. is not the same
+T as that used in hmm.py, where the number of states is T+1 or max_T +1.
+"""
 
 
 class ConsistencyStopController1(nn.Module):
@@ -99,7 +20,7 @@ class ConsistencyStopController1(nn.Module):
     alpha(b), beta(s), options take you to different states._
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net):
+                 macro_transition_net, solved_net, tau_lp_norm=1):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -109,7 +30,9 @@ class ConsistencyStopController1(nn.Module):
         self.micro_net = micro_net  # s -> (b * a)
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # b_i one hot -> t abstract transition
+        self.solved_net = solved_net  # t -> 2
         self.b_input = F.one_hot(torch.arange(self.b)).float().to(DEVICE)  # (b, b)
+        self.tau_lp_norm = tau_lp_norm
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -127,9 +50,12 @@ class ConsistencyStopController1(nn.Module):
               box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
            (T, b) tensor of start logps
            None causal consistency placeholder
+           solved: (T, 2)
         """
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
+                                   torch.ones(T))
         micro_out = self.micro_net(s_i)
         assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
@@ -141,7 +67,8 @@ class ConsistencyStopController1(nn.Module):
 
         action_logps = F.log_softmax(action_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
-        return action_logps, stop_logps, start_logps, None
+        solved = self.solved_net(t_i)
+        return action_logps, stop_logps, start_logps, None, solved
 
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
@@ -175,26 +102,30 @@ class ConsistencyStopController1(nn.Module):
               STOP_IX, CONTINUE_IX
            (B, T, b) tensor of start logps
            None CC placeholder
+           solved: (B, T, 2)
         """
         B, T, *s = s_i_batch.shape
+        s_i_flattened = s_i_batch.reshape(B * T, *s)
 
-        t_i = self.tau_net(s_i_batch.reshape(B * T, *s))
-        t_i = t_i.reshape(B, T, -1)
+        t_i_flattened = self.tau_net(s_i_flattened)
+        t_i = t_i_flattened.reshape(B, T, self.t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
+                                   torch.ones(B, T))
 
-        assert_shape(t_i, (B, T, self.t))
-        micro_out = self.micro_net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a))
         action_logps = rearrange(micro_out, 'B T (b a) -> B T b a', a=self.a)
         stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, b, 2)
         assert torch.allclose(torch.logsumexp(stop_logps, dim=3),
                               torch.zeros((B, T, self.b), device=DEVICE),
                               atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
-        start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
+        start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
+        solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
         action_logps = F.log_softmax(action_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, None
+        return action_logps, stop_logps, start_logps, None, solved
 
     def calc_stop_logps_b(self, t_i):
         B, T = t_i.shape[0:2]
@@ -224,7 +155,7 @@ class ConsistencyStopController2(nn.Module):
     alpha(b, tau(s)), beta(s_c, s_t). full abstract model, not markov
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net):
+                 macro_transition_net, solved_net, tau_lp_norm=1):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -234,6 +165,8 @@ class ConsistencyStopController2(nn.Module):
         self.micro_net = micro_net  # s -> (b * a)
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
+        self.solved_net = solved_net  # t -> 2
+        self.tau_lp_norm = tau_lp_norm
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -252,9 +185,12 @@ class ConsistencyStopController2(nn.Module):
               box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
            (T, b) tensor of start logps
            None causal consistency placeholder
+           solved: (T, 2)
         """
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
+                                   torch.ones(T))
         micro_out = self.micro_net(s_i)
         assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
@@ -266,7 +202,8 @@ class ConsistencyStopController2(nn.Module):
 
         action_logps = F.log_softmax(action_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
-        return action_logps, stop_logps, start_logps, None
+        solved = self.solved_net(t_i)
+        return action_logps, stop_logps, start_logps, None, solved
 
     def macro_transitions(self, t_i, bs):
         """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
@@ -288,7 +225,8 @@ class ConsistencyStopController2(nn.Module):
         assert_equal(t_i2.shape, (T * nb, self.t + self.b))
         # (T * nb, t + b) -> (T * nb, t)
         t_i2 = self.macro_transition_net(t_i2)
-        return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
+        new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
+        return new_t_i
 
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
@@ -322,26 +260,30 @@ class ConsistencyStopController2(nn.Module):
               STOP_IX, CONTINUE_IX
            (B, T, b) tensor of start logps
            None CC placeholder
+           solved: (B, T, 2)
         """
         B, T, *s = s_i_batch.shape
+        s_i_flattened = s_i_batch.reshape(B * T, *s)
 
-        t_i = self.tau_net(s_i_batch.reshape(B * T, *s))
-        t_i = t_i.reshape(B, T, -1)
+        t_i_flattened = self.tau_net(s_i_flattened)
+        t_i = t_i_flattened.reshape(B, T, self.t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
+                                   torch.ones(B, T))
 
-        assert_shape(t_i, (B, T, self.t))
-        micro_out = self.micro_net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a))
         action_logps = rearrange(micro_out, 'B T (b a) -> B T b a', a=self.a)
         stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, b, 2)
         assert torch.allclose(torch.logsumexp(stop_logps, dim=3),
                               torch.zeros((B, T, self.b), device=DEVICE),
                               atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
-        start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
+        start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
+        solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
         action_logps = F.log_softmax(action_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, None
+        return action_logps, stop_logps, start_logps, None, solved
 
     def calc_stop_logps_b(self, t_i):
         B, T = t_i.shape[0:2]
@@ -370,7 +312,7 @@ class ConsistencyStopController2(nn.Module):
 
 class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net):
+                 macro_transition_net, solved_net, tau_lp_norm: float = 1):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -380,6 +322,8 @@ class HeteroController(nn.Module):
         self.micro_net = micro_net  # s -> (b * a +  2 * b)
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
+        self.tau_lp_norm = tau_lp_norm
+        self.solved_net = solved_net  # t -> 2
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -397,20 +341,25 @@ class HeteroController(nn.Module):
               box_world.STOP_IX (0), box_world.CONTINUE_IX (1)
            (T, b) tensor of start logps
            (T, T, b) tensor of causal consistency penalties
+           solved: (T, 2)
         """
+        T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
+                                   torch.ones(T))
         micro_out = self.micro_net(s_i)
         action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
         stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
 
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
         causal_pens = self.calc_causal_pens_ub(t_i)  # (T, T, b)
+        solved = self.solved_net(t_i)
 
         action_logps = F.log_softmax(action_logps, dim=2)
         stop_logps = F.log_softmax(stop_logps, dim=2)
         start_logps = F.log_softmax(start_logps, dim=1)
 
-        return action_logps, stop_logps, start_logps, causal_pens
+        return action_logps, stop_logps, start_logps, causal_pens, solved
 
     def forward_b(self, s_i_batch):
         """
@@ -422,19 +371,23 @@ class HeteroController(nn.Module):
               STOP_IX, CONTINUE_IX
            (B, T, b) tensor of start logps
            (B, T, T, b) tensor of causal consistency penalties
+           solved: (B, T, 2)
         """
         B, T, *s = s_i_batch.shape
+        s_i_flattened = s_i_batch.reshape(B * T, *s)
 
-        t_i = self.tau_net(s_i_batch.reshape(B * T, *s))
-        t_i = t_i.reshape(B, T, -1)
+        t_i_flattened = self.tau_net(s_i_flattened)
+        t_i = t_i_flattened.reshape(B, T, self.t)
+        torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
+                                   torch.ones(B, T))
 
-        assert_shape(t_i, (B, T, self.t))
-        micro_out = self.micro_net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+        micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a + self.b * 2))
         action_logps = rearrange(micro_out[:, :, :self.b * self.a], 'B T (b a) -> B T b a', a=self.a)
         stop_logps = rearrange(micro_out[:, :, self.b * self.a:], 'B T (b two) -> B T b two', b=self.b)
 
-        start_logps = self.macro_policy_net(t_i.reshape(B * T, self.t)).reshape(B, T, self.b)
+        start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
+        solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
         causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
 
@@ -442,7 +395,7 @@ class HeteroController(nn.Module):
         stop_logps = F.log_softmax(stop_logps, dim=3)
         start_logps = F.log_softmax(start_logps, dim=2)
 
-        return action_logps, stop_logps, start_logps, causal_pens
+        return action_logps, stop_logps, start_logps, causal_pens, solved
 
     def macro_transition(self, t, b):
         """
@@ -459,6 +412,7 @@ class HeteroController(nn.Module):
 
     def macro_transitions(self, t_i, bs):
         """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+
 
         Args:
             t_i: (T, t) batch of abstract states
@@ -477,7 +431,9 @@ class HeteroController(nn.Module):
         assert_equal(t_i2.shape, (T * nb, self.t + self.b))
         # (T * nb, t + b) -> (T * nb, t)
         t_i2 = self.macro_transition_net(t_i2)
-        return rearrange(t_i2, '(T nb) t -> T nb t', T=T)
+        # more stable for alpha to compute Delta, then add original t
+        new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
+        return new_t_i
 
     def calc_causal_pens_ub(self, t_i):
         """For each pair of indices and each option, calculates (t - alpha(b, t))^2
@@ -669,7 +625,7 @@ def boxworld_homocontroller(b):
     return control_net
 
 
-def boxworld_controller(b, t=16, typ='hetero'):
+def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     """
     type: hetero, homo, ccts1, or ccts2
     """
@@ -692,11 +648,21 @@ def boxworld_controller(b, t=16, typ='hetero'):
         macro_trans_in_dim = b + t
         model = HeteroController
 
-    tau_net = boxworld_relational_net(out_dim=t)
+    class NormNet(nn.Module):
+        def __init__(self, p):
+            super().__init__()
+            self.p = p
+
+        def forward(self, x):
+            return F.normalize(x, dim=-1, p=self.p)
+
+    tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
+                            NormNet(p=tau_lp_norm))
     input_shape = (14, 14)  # assume default box world grid size
     micro_net = MicroNet(input_shape=input_shape,
                          input_channels=box_world.NUM_ASCII,
                          out_dim=micro_out_dim)
     macro_policy_net = FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32)
+    solved_net = FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32)
     macro_transition_net = FC(input_dim=macro_trans_in_dim, output_dim=t, num_hidden=2, hidden_dim=32)
-    return model(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net)
+    return model(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net, solved_net)

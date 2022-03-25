@@ -165,6 +165,17 @@ def cc_input(draw, max_b, max_T):
                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]],
                  [[1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.], [1., 1., 1.]]])),)
+@example(args=(1,
+         tensor([[0.], [0.], [0.]]),
+         tensor([[[-6.9315e-01, -6.9315e-01]],
+             [[-6.9315e-01, -6.9315e-01]],
+             [[-6.9315e-01, -6.9315e-01]],
+             [[-3.6024e-03, -5.6279e+00]]]),
+         tensor([[0.], [0.], [0.], [0.]]),
+         tensor([[[0.], [0.], [0.], [0.]],
+                 [[0.], [0.], [0.], [0.]],
+                 [[0.], [0.], [0.], [0.]],
+                 [[0.], [0.], [0.], [0.]]])),)
 @given(cc_input(max_b=3, max_T=5))
 @settings(
     # verbosity=hypothesis.Verbosity.verbose,
@@ -182,8 +193,8 @@ def test_brute_vs_hmm_cc_loss(args):
     # start_logps = start_logps.unsqueeze(0)
     # causal_pens = causal_pens.unsqueeze(0)
     # batch_logp, batch_out = cc_loss(b, action_logps, stop_logps, start_logps, causal_pens)
-    assert torch.isclose(hmm_logp, brute_logp, rtol=1E-4), f'hmm: {hmm_logp}, brute: {brute_logp}'
-    assert torch.isclose(hmm_out, brute_out, rtol=1E-4), f'hmm: {hmm_out}, brute: {brute_out}'
+    assert torch.isclose(hmm_logp, brute_logp, rtol=1E-4, atol=1E-6), f'hmm: {hmm_logp}, brute: {brute_logp}'
+    assert torch.isclose(hmm_out, brute_out, rtol=1E-4, atol=1E-6), f'hmm: {hmm_out}, brute: {brute_out}'
     # assert torch.isclose(hmm_logp, batch_logp, rtol=5E-4), f'hmm: {hmm_logp}, brute: {batch_logp}'
     # assert torch.isclose(hmm_out, batch_out, rtol=5E-4), f'hmm: {hmm_out}, brute: {batch_out}'
 
@@ -550,16 +561,94 @@ def test_hmm_and_cc():
         assert torch.isclose(causal_loss, hmm_loss)
 
 
-def test_ccts1_batched():
+# def test_ccts1_batched():
+#     b = 3
+#     B = 5
+#     random.seed(1)
+#     torch.manual_seed(1)
+#     np.random.seed(1)
+
+#     control_net = abstract.boxworld_controller(b=b, typ='ccts1')
+
+#     net = hmm.HmmNet(control_net)
+
+#     env = box_world.BoxWorldEnv(seed=1)
+#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+
+#     net.to(DEVICE)
+
+#     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+
+#     for s_i, actions, lengths, masks in dataloader:
+#         optimizer.zero_grad()
+#         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+#         total_loss2 = 0
+#         for s, action, T in zip(s_i, actions, lengths):
+#             s = s[0:T+1]
+#             action = action[0:T]
+#             loss = net.logp_loss_ub(s, action)
+#             # print(f'ub loss: {loss}')
+#             total_loss2 += loss
+
+#         total_loss = net.logp_loss(s_i, actions, lengths)
+#         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+
+#         # loss = total_loss2
+#         loss = total_loss
+#         print(loss)
+#         loss.backward()
+#         optimizer.step()
+
+
+# def test_ccts2_batched():
+#     b = 3
+#     B = 5
+#     random.seed(1)
+#     torch.manual_seed(1)
+#     np.random.seed(1)
+
+#     control_net = abstract.boxworld_controller(b=b, typ='ccts2')
+
+#     net = hmm.HmmNet(control_net)
+
+#     env = box_world.BoxWorldEnv(seed=1)
+#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+
+#     net.to(DEVICE)
+
+#     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+
+#     for s_i, actions, lengths, masks in dataloader:
+#         optimizer.zero_grad()
+#         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+#         total_loss2 = 0
+#         for s, action, T in zip(s_i, actions, lengths):
+#             s = s[0:T+1]
+#             action = action[0:T]
+#             loss = net.logp_loss_ub(s, action, ccts2=True)
+#             # print(f'ub loss: {loss}')
+#             total_loss2 += loss
+
+#         total_loss = net.logp_loss(s_i, actions, lengths, ccts2=True)
+#         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+
+#         # loss = total_loss2
+#         loss = total_loss
+#         print(loss)
+#         loss.backward()
+#         optimizer.step()
+
+
+def test_solved_batched():
     b = 3
-    B = 5
+    B = 6
     random.seed(1)
     torch.manual_seed(1)
     np.random.seed(1)
 
-    control_net = abstract.boxworld_controller(b=b, typ='ccts1')
+    control_net = abstract.boxworld_controller(b=b)
 
-    net = hmm.HmmNet(control_net)
+    net = hmm.CausalNet(control_net, cc_weight=1.)
 
     env = box_world.BoxWorldEnv(seed=1)
     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
@@ -575,57 +664,17 @@ def test_ccts1_batched():
         for s, action, T in zip(s_i, actions, lengths):
             s = s[0:T+1]
             action = action[0:T]
-            loss = net.logp_loss_ub(s, action)
+            loss = net.cc_loss_ub(s, action)
+            # action_logps, stop_logps, start_logps, causal_pens, solved = net.control_net(s, batched=False)
+            # loss = hmm.calc_solved_loss(solved)
             # print(f'ub loss: {loss}')
             total_loss2 += loss
 
-        total_loss = net.logp_loss(s_i, actions, lengths)
+        # action_logps, stop_logps, start_logps, causal_pens, solved = net.control_net(s_i, batched=True)
+        # total_loss = hmm.calc_solved_loss(solved, lengths)
+        print(f'lengths: {lengths}')
+        total_loss = net.cc_loss(s_i, actions, lengths, masks)
         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
-
-        # loss = total_loss2
-        loss = total_loss
-        print(loss)
-        loss.backward()
-        optimizer.step()
-
-
-def test_ccts2_batched():
-    b = 3
-    B = 5
-    random.seed(1)
-    torch.manual_seed(1)
-    np.random.seed(1)
-
-    control_net = abstract.boxworld_controller(b=b, typ='ccts2')
-
-    net = hmm.HmmNet(control_net)
-
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
-
-    net.to(DEVICE)
-
-    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
-
-    for s_i, actions, lengths, masks in dataloader:
-        optimizer.zero_grad()
-        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-        total_loss2 = 0
-        for s, action, T in zip(s_i, actions, lengths):
-            s = s[0:T+1]
-            action = action[0:T]
-            loss = net.logp_loss_ub(s, action, ccts2=True)
-            # print(f'ub loss: {loss}')
-            total_loss2 += loss
-
-        total_loss = net.logp_loss(s_i, actions, lengths, ccts2=True)
-        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
-
-        # loss = total_loss2
-        loss = total_loss
-        print(loss)
-        loss.backward()
-        optimizer.step()
 
 
 def test_cc_batched():
@@ -680,7 +729,7 @@ def test_actions_batch():
     for s_i, actions, lengths, _ in dataloader:
         s_i, actions, lengths = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE)
         # (B, max_T+1, b, n)
-        action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=True)
+        action_logps, stop_logps, start_logps, causal_pens, solveds = control_net(s_i, batched=True)
 
         T = action_logps.shape[1] - 1
 
@@ -713,7 +762,7 @@ def test_cc_batched2():
     for s_i, actions, lengths, masks in dataloader:
         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
         # (B, max_T+1, b, n)
-        action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=True)
+        action_logps, stop_logps, start_logps, causal_pens, solveds = control_net(s_i, batched=True)
 
         max_T = action_logps.shape[1] - 1
 
@@ -736,7 +785,7 @@ def test_cc_batched2():
         for s_i, action, T in zip(s_i, actions, lengths):
             s_i = s_i[0:T+1]
             action = action[0:T]
-            action_logps, stop_logps, start_logps, causal_pens = control_net(s_i, batched=False)
+            action_logps, stop_logps, start_logps, causal_pens, solveds = control_net(s_i, batched=False)
             action_logps = action_logps[range(T), :, action]
             f2, logp_ub = hmm.cc_fw_ub(b, action_logps, stop_logps, start_logps)
             b2, logp_ub2 = hmm.cc_bw_ub(b, action_logps, stop_logps, start_logps)
@@ -780,7 +829,9 @@ def test_bfs():
 
 
 if __name__ == '__main__':
-    test_bfs()
+    pass
+    # test_bfs()
+    # test_solved_batched()
     # test_actions_batch()
     # test_cc_batched()
     # test_ccts1_batched()
