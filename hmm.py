@@ -535,9 +535,9 @@ class HmmNet(nn.Module):
         self.abstract_pen = abstract_pen
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
-        return self.logp_loss(s_i_batch, actions_batch, lengths)
+        return self.logp_loss(s_i_batch, actions_batch, lengths, masks)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths, ccts2=False):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts2=False):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -565,8 +565,12 @@ class HmmNet(nn.Module):
         else:
             total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
 
-        solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
+        if solved == 'None':
+            solved_loss = 0
+        else:
+            solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
         return -torch.sum(total_logps) + solved_loss
+
 
     def logp_loss_ub(self, s_i, actions, ccts2=False):
         """
@@ -584,7 +588,10 @@ class HmmNet(nn.Module):
         else:
             total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
 
-        solved_loss = calc_solved_loss(solved)
+        if solved == 'None':
+            solved_loss = 0
+        else:
+            solved_loss = calc_solved_loss(solved)
         return -total_logp + solved_loss
 
 

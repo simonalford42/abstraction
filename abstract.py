@@ -548,6 +548,7 @@ class HomoController(nn.Module):
             (B, T, b, 2) tensor of stop logps,
             (B, T, b) tensor of start logps,
             None as causal pens placeholder
+            None as solveds placeholder
         """
 
         B, T, *s = s_i_batch.shape
@@ -561,7 +562,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=3)
         start_logps = F.log_softmax(start_logits, dim=2)
 
-        return action_logps, stop_logps, start_logps, None
+        return action_logps, stop_logps, start_logps, None, 'None'
 
     def forward_ub(self, s_i):
         """
@@ -571,6 +572,7 @@ class HomoController(nn.Module):
             (T, b, 2) tensor of stop logps,
             (T, b) tensor of start logps
             None as causal pen placeholder
+            'None' as solveds placeholder
         """
         T = s_i.shape[0]
         out = self.net(s_i)
@@ -584,7 +586,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=2)
         start_logps = F.log_softmax(start_logits, dim=1)
 
-        return action_logps, stop_logps, start_logps, None
+        return action_logps, stop_logps, start_logps, None, 'None'
 
     def eval_obs(self, s_i):
         """
