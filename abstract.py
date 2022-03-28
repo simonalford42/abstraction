@@ -9,6 +9,7 @@ import box_world
 
 # for tensor typing
 T = torch.Tensor
+
 """
 Note: T used for length of sequence i.e. s_i.shape = (T, *s) etc. is not the same
 T as that used in hmm.py, where the number of states is T+1 or max_T +1.
@@ -55,7 +56,7 @@ class ConsistencyStopController1(nn.Module):
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-                                   torch.ones(T))
+                                   torch.ones(T, device=DEVICE))
         micro_out = self.micro_net(s_i)
         assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
@@ -110,7 +111,7 @@ class ConsistencyStopController1(nn.Module):
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-                                   torch.ones(B, T))
+                                   torch.ones(B, T, device=DEVICE))
 
         micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a))
@@ -190,7 +191,7 @@ class ConsistencyStopController2(nn.Module):
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-                                   torch.ones(T))
+                                   torch.ones(T, device=DEVICE))
         micro_out = self.micro_net(s_i)
         assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
@@ -268,7 +269,7 @@ class ConsistencyStopController2(nn.Module):
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-                                   torch.ones(B, T))
+                                   torch.ones(B, T, device=DEVICE))
 
         micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a))
@@ -346,7 +347,7 @@ class HeteroController(nn.Module):
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-                                   torch.ones(T))
+                                   torch.ones(T, device=DEVICE))
         micro_out = self.micro_net(s_i)
         action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
         stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
@@ -379,7 +380,7 @@ class HeteroController(nn.Module):
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-                                   torch.ones(B, T))
+                                   torch.ones(B, T, device=DEVICE))
 
         micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a + self.b * 2))
@@ -490,10 +491,12 @@ class HeteroController(nn.Module):
             (b, a) tensor of action logps
             (b, 2) tensor of stop logps
             (b, ) tensor of start logps
+            (2, ) solved logits (solved is at abstract.SOLVED_IX)
         """
-        # (1, b, a), (1, b, 2), (1, b), (1, 1, b)
-        action_logps, stop_logps, start_logps, _ = self.forward_ub(s_i.unsqueeze(0))
-        return action_logps[0], stop_logps[0], start_logps[0]
+        # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
+        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(s_i.unsqueeze(0))
+
+        return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
 
     def eval_abstract_policy(self, t_i):
         """
@@ -627,6 +630,15 @@ def boxworld_homocontroller(b):
     return control_net
 
 
+class NormNet(nn.Module):
+    def __init__(self, p):
+        super().__init__()
+        self.p = p
+
+    def forward(self, x):
+        return F.normalize(x, dim=-1, p=self.p)
+
+
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     """
     type: hetero, homo, ccts1, or ccts2
@@ -649,14 +661,6 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
         micro_out_dim = a * b + 2 * b
         macro_trans_in_dim = b + t
         model = HeteroController
-
-    class NormNet(nn.Module):
-        def __init__(self, p):
-            super().__init__()
-            self.p = p
-
-        def forward(self, x):
-            return F.normalize(x, dim=-1, p=self.p)
 
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             NormNet(p=tau_lp_norm))

@@ -30,6 +30,7 @@ NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
 
 STOP_IX = 0
 CONTINUE_IX = 1 - STOP_IX
+UNSOLVED_IX, SOLVED_IX = 0, 1
 
 
 class BoxWorldEnv(gym.Env):
@@ -450,7 +451,7 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
         (b, a) action logps
-        (b, 2) stop logps
+j       (b, 2) stop logps
         (b, ) start logps
 
     option:
@@ -460,10 +461,16 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
     control_net.eval()
     num_solved = 0
     check_cc = hasattr(control_net, 'tau_net')
+    check_solved = hasattr(control_net, 'solved_net')
+    assert check_solved
     verbose = option != 'silent'
     if verbose:
         print(f'Evaluating model on {n} episodes')
     cc_losses = []
+    solved_false_pos = 0
+    false_pos_denom = 0
+    solved_false_neg = 0
+    false_neg_denom = 0
 
     for i in range(n):
         obs = env.reset()
@@ -484,8 +491,14 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
             t += 1
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
-            # (b, a), (b, 2), (b, )
-            action_logps, stop_logps, start_logps = control_net.eval_obs(obs)
+            # (b, a), (b, 2), (b, ), (2, )
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
+
+            if check_solved:
+                is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+                false_pos_denom += 1
+                if is_solved_pred:
+                    solved_false_pos += 1
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
@@ -505,6 +518,7 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
                 # dont overwrite red dot
                 if options_trace[prev_pos] != 'e':
                     options_trace[prev_pos] = 'm'
+
             options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
@@ -533,10 +547,20 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
                 render_obs(obs, title=title, pause=pause)
 
         if solved:
+            obs = obs_to_tensor(obs)
+            obs = obs.to(DEVICE)
+
+            if check_solved:
+                # check that we predicted that we solved
+                _, _, _, solved_logits = control_net.eval_obs(obs)
+                is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+
+                false_neg_denom += 1
+                if not is_solved_pred:
+                    solved_false_neg += 1
+
             # add cc loss from last action.
             if check_cc:
-                obs = obs_to_tensor(obs)
-                obs = obs.to(DEVICE)
                 tau = control_net.tau_embed(obs)
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
@@ -551,6 +575,9 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
     if run and check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
+    # if check_solved:
+        # print(f'Early solved %: {solved_false_pos/false_pos_denom:.2f}')
+        # print(f'Missed solved %: {solved_false_neg/false_neg_denom:.2f}')
 
     control_net.train()
     # print(f'Solved {num_solved}/{n} episodes')

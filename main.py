@@ -225,13 +225,13 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=50000,
-        lr=8E-4, epochs=400, batch_size=10, b=1,
+        n=1000,
+        lr=8E-4, epochs=10, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        save_every=100, test_every=20, num_test=200,
+        save_every=100, test_every=1, num_test=50,
         no_log=args.no_log,
-        # model_load_path='models/6956b627.pt',
+        # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
         disk_data=False,
         outer=args.outer,
     )
@@ -255,6 +255,19 @@ def boxworld_main():
             model_type = 'causal'
     params['model_type'] = model_type
     params['device'] = torch.cuda.get_device_name(DEVICE)
+
+    model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
+    model = utils.load_model(model_load_path)
+    state_dict = model.state_dict()
+    state_dict2 = {}
+    for k, v in state_dict.items():
+        if 'tau_net' in k:
+            x = len('control_net.tau_net.')
+            k2 = k[:x] + '0.' + k[x:]
+            state_dict2[k2] = v
+        else:
+            state_dict2[k] = v
+    net.load_state_dict(state_dict2, strict=False)
 
     net = net.to(DEVICE)
     if params['disk_data']:
