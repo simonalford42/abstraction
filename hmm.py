@@ -405,6 +405,35 @@ def ccts2_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
     return f, total_logp
 
 
+SOLVED_LOSS_UB = nn.CrossEntropyLoss(reduction='sum')
+SOLVED_LOSS_B = nn.CrossEntropyLoss(reduction='none')
+UNSOLVED_IX, SOLVED_IX = 0, 1
+
+
+def calc_solved_loss(solved, lengths=None, masks=None):
+    batched = len(solved.shape) == 3
+    print(f'solved: {solved}')
+    if batched:
+        B, T = solved.shape[:-1]
+        # mask is 1 up to second to last. (for reasons that have to do with how
+        # its used in cc_loss, and cc_loss is too fragile to make this worth
+        # changing)
+        assert_shape(masks, (B, T-1))
+        # (B, T, 2)
+        targets = torch.full((B, T), UNSOLVED_IX, device=DEVICE)
+        targets[range(B), lengths] = SOLVED_IX
+        print(f'targets: {targets}')
+        loss = SOLVED_LOSS_B(solved.reshape(B * T, 2), targets.reshape((B * T, ))).reshape(B, T)
+        loss = (loss[:, :-1] * masks).sum() + loss[range(B), lengths].sum()
+        return loss
+    else:
+        # (T, 2)
+        T = solved.shape[0]
+        target = torch.full((T, ), UNSOLVED_IX, device=DEVICE)
+        target[-1] = SOLVED_IX
+        print(f'target: {target}')
+        return SOLVED_LOSS_UB(solved, target)
+
 
 class CausalNet(nn.Module):
     def __init__(self, control_net, cc_weight=1.0, abstract_pen=0.0):
@@ -424,8 +453,8 @@ class CausalNet(nn.Module):
             return self.cc_loss_ub(s_i, actions)
 
     def cc_loss(self, s_i_batch, actions_batch, lengths, masks):
-        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.control_net(s_i_batch, batched=True)
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
+        action_logps, stop_logps, start_logps, causal_pens, solved = self.control_net(s_i_batch, batched=True)
 
         B = len(lengths)
         max_T = action_logps.shape[1] - 1
@@ -438,19 +467,21 @@ class CausalNet(nn.Module):
 
         logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps,
                            causal_pens, lengths, masks, self.abstract_pen)
-        loss = -logp + self.cc_weight * cc
+        solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
+        loss = -logp + self.cc_weight * cc + solved_loss
         return loss
 
     def cc_loss_ub(self, s_i, actions):
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        action_logps, stop_logps, start_logps, causal_pens = self.control_net(s_i, batched=False)
+        action_logps, stop_logps, start_logps, causal_pens, solved = self.control_net(s_i, batched=False)
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
         logp, cc = cc_loss_ub(self.b, action_logps, stop_logps, start_logps,
                               causal_pens, self.abstract_pen)
-        loss = -logp + self.cc_weight * cc
+        solved_loss = calc_solved_loss(solved)
+        loss = -logp + self.cc_weight * cc + solved_loss
         return loss
 
 
@@ -504,9 +535,9 @@ class HmmNet(nn.Module):
         self.abstract_pen = abstract_pen
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
-        return self.logp_loss(s_i_batch, actions_batch, lengths)
+        return self.logp_loss(s_i_batch, actions_batch, lengths, masks)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths, ccts2=False):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts2=False):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -519,7 +550,7 @@ class HmmNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
+        action_logps, stop_logps, start_logps, _, solved = self.control_net(s_i_batch, batched=True)
         start_logps = start_logps - self.abstract_pen
 
         action_logps = action_logps[torch.arange(B)[:, None],
@@ -534,7 +565,12 @@ class HmmNet(nn.Module):
         else:
             total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
 
-        return -torch.sum(total_logps)
+        if solved == 'None':
+            solved_loss = 0
+        else:
+            solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
+        return -torch.sum(total_logps) + solved_loss
+
 
     def logp_loss_ub(self, s_i, actions, ccts2=False):
         """
@@ -542,7 +578,7 @@ class HmmNet(nn.Module):
         """
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
-        action_logps, stop_logps, start_logps, _ = self.control_net(s_i, batched=False)
+        action_logps, stop_logps, start_logps, _, solved = self.control_net(s_i, batched=False)
         start_logps = start_logps - self.abstract_pen
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
@@ -552,7 +588,11 @@ class HmmNet(nn.Module):
         else:
             total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
 
-        return -total_logp
+        if solved == 'None':
+            solved_loss = 0
+        else:
+            solved_loss = calc_solved_loss(solved)
+        return -total_logp + solved_loss
 
 
 # don't delete, viterbi still needs it

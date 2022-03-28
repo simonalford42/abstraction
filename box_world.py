@@ -466,7 +466,6 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
     cc_losses = []
 
     for i in range(n):
-        if verbose: print(f'i: {i}')
         obs = env.reset()
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(obs), name='obs')
@@ -503,7 +502,9 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
             else:
-                options_trace[prev_pos] = 'm'
+                # dont overwrite red dot
+                if options_trace[prev_pos] != 'e':
+                    options_trace[prev_pos] = 'm'
             options.append(current_option)
 
             a = Categorical(logits=action_logps[current_option]).sample().item()
@@ -523,13 +524,13 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
                     print('Quitting due to 5 repeated moves')
                 done = True
 
-            # if verbose:
-            #     title = f'option={current_option}'
-            #     pause = 0.1
-            #     if new_option:
-            #         title += ' (new)'
-            #     option_map[current_option].append((obs, title, pause))
-            #     render_obs(obs, title=title, pause=pause)
+            if verbose:
+                title = f'option={current_option}'
+                pause = 1 if new_option else 0.1
+                if new_option:
+                    title += ' (new)'
+                option_map[current_option].append((obs, title, pause))
+                render_obs(obs, title=title, pause=pause)
 
         if solved:
             # add cc loss from last action.
@@ -541,8 +542,8 @@ def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch
                 cc_losses.append(cc_loss.item())
             num_solved += 1
 
-        # if verbose:
-            # render_obs(options_trace, title=f'{solved=}', pause=3)
+        if verbose:
+            render_obs(options_trace, title=f'{solved=}', pause=3)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                    name='orange=new option')

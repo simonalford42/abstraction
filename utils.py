@@ -80,7 +80,7 @@ def save_model(model, path, assert_clear=False):
 
 
 def load_model(path):
-    model = torch.load(path)
+    model = torch.load(path, map_location=DEVICE)
     print('Loaded model from ' + path)
     return model
 

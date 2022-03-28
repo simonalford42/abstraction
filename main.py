@@ -285,7 +285,7 @@ def boxworld_main():
 
 if __name__ == '__main__':
     boxworld_main()
-    # model_load_path = 'models/6956b627.pt'
+    # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'
     # net = utils.load_model(model_load_path)
-    # env = box_world.BoxWorldEnv()
-    # box_world.eval_options_model(net, env, n=50)
+    # env = box_world.BoxWorldEnv(max_num_steps=70)
+    # env = box_world.BoxWorldEnv(max_num_steps=70, solution_length=(4, ), num_forward=(1, 2, 3, 4), branch_length=2)
