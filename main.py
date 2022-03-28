@@ -28,6 +28,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     print(f"Net has {utils.num_params(net)} parameters")
 
     for epoch in range(params['epochs']):
+        # if epoch % 100 == 0:
+            # data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
+            # dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle()
 
@@ -36,10 +40,6 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
-
-            # for ffcv
-            # B = s_i_batch.shape[0]
-            # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
 
             loss = net(s_i_batch, actions_batch, lengths, masks)
 
@@ -71,11 +71,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         if params['save_every'] and epoch % params['save_every'] == 0:
             path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
             run['models'].log(path)
-            mlflow.log_metrics({'epoch': epoch, f'model epoch {epoch}': path})
 
     path = utils.save_model(net, f'models/{model_id}.pt')
     run['model'] = path
-    mlflow.log_params({f'final model path': path})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -160,7 +158,6 @@ def boxworld_outer_sv(run, dataloader, net, params, epochs=100, rounds=-1):
 
     path = utils.save_model(net, f'models/{model_id}.pt')
     run['model'] = path
-    mlflow.log_params({f'final model path': path})
 
 
 def up_right_main():
@@ -204,7 +201,7 @@ def boxworld_main():
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--hmm', action='store_true')
     parser.add_argument('--sv', action='store_true')
-    parser.add_argument('--disk', action='store_true')
+    # parser.add_argument('--disk', action='store_true')
     parser.add_argument('--homo', action='store_true')
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
@@ -228,14 +225,14 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=10000,
-        lr=8E-4, epochs=600, batch_size=10, b=10,
+        n=50000,
+        lr=8E-4, epochs=400, batch_size=10, b=1,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        save_every=False, test_every=20, num_test=200,
+        save_every=100, test_every=20, num_test=200,
         no_log=args.no_log,
         # model_load_path='models/6956b627.pt',
-        disk_data=args.disk,
+        disk_data=False,
         outer=args.outer,
     )
 
@@ -287,8 +284,8 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
-    # boxworld_main()
-    model_load_path = 'models/6956b627.pt',
-    net = utils.load_model(model_load_path)
-    env = box_world.BoxWorldEnv()
-    box_world.eval_options_model(net, env, n=50)
+    boxworld_main()
+    # model_load_path = 'models/6956b627.pt'
+    # net = utils.load_model(model_load_path)
+    # env = box_world.BoxWorldEnv()
+    # box_world.eval_options_model(net, env, n=50)
