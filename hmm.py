@@ -3,7 +3,7 @@ import torch.nn as nn
 from einops import rearrange
 from utils import assert_equal, DEVICE, assert_shape
 import torch
-from box_world import STOP_IX, CONTINUE_IX
+from box_world import STOP_IX, CONTINUE_IX, UNSOLVED_IX, SOLVED_IX
 
 
 def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
@@ -413,11 +413,11 @@ def ccts_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
 
 SOLVED_LOSS_UB = nn.CrossEntropyLoss(reduction='sum')
 SOLVED_LOSS_B = nn.CrossEntropyLoss(reduction='none')
-UNSOLVED_IX, SOLVED_IX = 0, 1
 
 
 def calc_solved_loss(solved, lengths=None, masks=None):
     batched = len(solved.shape) == 3
+    # print(f'solved: {solved}')
     if batched:
         B, T = solved.shape[:-1]
         # mask is 1 up to second to last. (for reasons that have to do with how
@@ -427,6 +427,7 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         # (B, T, 2)
         targets = torch.full((B, T), UNSOLVED_IX, device=DEVICE)
         targets[range(B), lengths] = SOLVED_IX
+        # print(f'targets: {targets}')
         loss = SOLVED_LOSS_B(solved.reshape(B * T, 2), targets.reshape((B * T, ))).reshape(B, T)
         loss = (loss[:, :-1] * masks).sum() + loss[range(B), lengths].sum()
         return loss
@@ -435,6 +436,7 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         T = solved.shape[0]
         target = torch.full((T, ), UNSOLVED_IX, device=DEVICE)
         target[-1] = SOLVED_IX
+        # print(f'target: {target}')
         return SOLVED_LOSS_UB(solved, target)
 
 
