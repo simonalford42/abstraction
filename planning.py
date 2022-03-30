@@ -1,8 +1,13 @@
 import time
+from matplotlib import pyplot as plt
 from queue import PriorityQueue
-from utils import assert_equal, assert_shape
+
+import torch
+from abstract import HeteroController
+from utils import DEVICE, assert_equal, assert_shape
 import math
 from collections import namedtuple
+import box_world
 
 from dataclasses import dataclass, field
 from typing import Any, Union
@@ -75,17 +80,66 @@ def hlc_sampler(s0, controller) -> tuple[list, list[int], list[float], float]:
     pass
 
 
-def llc_sampler(abstract_states, abstract_actions):
-    pass
+def llc_sampler(s: torch.Tensor, b, controller: HeteroController, env) -> tuple[list[int], torch.Tensor]:
+    actions = []
+
+    while True:
+        action_logps, stop_logps = controller.micro_policy(s)
+        a = torch.distributions.Categorical(logits=action_logps).sample()
+        stop = torch.distributions.Categorical(logits=stop_logps).sample() == box_world.STOP_IX
+        if stop:
+            break
+        actions.append(a)
+        s, rew, done, info = env.step(a)
+        s = box_world.obs_to_tensor(s).to(DEVICE)
+
+    return actions, s
 
 
-def llc_plan(abstract_states, abstract_actions):
-    """
-    for each (state, action) -> new state in the seq, try to find
-    """
-    pass
+def llc_plan(s: torch.Tensor, abstract_actions, controller, env):
+    all_actions = []
+    for b in abstract_actions:
+        actions, s = llc_sampler(s, b, controller, env)
+        all_actions.append(actions)
+
+    return env.done
 
 
+def multiple_plan(env, controller, timeout, n):
+    num_solved = 0
+    solve_times = []
+    for i in range(n):
+        solved, time = plan(env, controller, timeout)
+        if solved:
+            num_solved += 1
+            solve_times.append(time)
+
+    solve_times = sorted(solve_times)
+    return solve_times
 
 
+def plot_times(solve_times, n):
+    plt.plot(solve_times, [i/n for i in range(len(solve_times))])
+    plt.xlabel('Time (s)')
+    plt.ylabel(f'Percent of tasks solved, out of {n}')
+    plt.ylim(top=1.0)
+    plt.show()
 
+
+def plan(env, controller, timeout):
+    start = time.time()
+    while (time.time() - start) < timeout:
+        s = box_world.obs_to_tensor(env.reset()).to(DEVICE)
+        (states, actions, logp, solved_logp) = hlc_bfs(s, controller, timeout=10)
+        done = llc_plan(s, actions, controller, env)
+        if done:
+            return True, time.time()
+
+    return False, timeout
+
+
+if __name__ == '__main__':
+    env = box_world.BoxWorldEnv()
+    n = 50
+    solve_times = multiple_plan(env, None, timeout=60, n=n)
+    plot_times(solve_times, n=n)

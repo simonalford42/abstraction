@@ -81,9 +81,7 @@ class BoxWorldEnv(gym.Env):
     def process_obs(self, obs) -> np.ndarray:
         return np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
 
-    def step(
-        self, action: int
-    ) -> Tuple[Any, float, bool, dict]:
+    def step(self, action: int) -> Tuple[Any, float, bool, dict]:
         """
         Applies action to the box world environment.
 
@@ -201,7 +199,7 @@ def play_game(env):
     done = False
     print('Enter wasd to move, q to quit')
     while not done:
-        render_obs(obs, color=False)
+        render_obs(obs)
         key = input()
         if key.lower() == 'q':
             return False
@@ -219,6 +217,8 @@ def play_game(env):
             action = bw.ACTION_EAST
 
         obs, rew, done, info = env.step(action)
+
+    render_obs(obs, pause=5)
 
 
 def get_dominoes(obs) -> dict[str, POS]:
@@ -700,7 +700,6 @@ class BoxWorldDataset(Dataset):
         self.traj_states, self.traj_moves = traj_states2, traj_moves2
 
 
-
 def compress_state(state):
     compressed = '\n'.join([''.join(r) for r in state])
     # decompressed = decompress_state(compressed)
@@ -728,8 +727,8 @@ def generate_data(env, name, n, overwrite=False):
             print(f'{i} generated')
         states, moves = generate_traj(env)
         # for s, m in zip(states, moves):
-            # print(f'move: {m}')
-            # render_obs(s, pause=1)
+        #     print(f'move: {m}')
+        #     render_obs(s, pause=1)
         states = [compress_state(s) for s in states]
         torch.save((states, moves), f'data/temp/{i}.pt')
 
@@ -766,7 +765,6 @@ class DiskData(Dataset):
         states, moves = torch.load(f'data/{self.name}/{ix}.pt')
         states = [decompress_state(s) for s in states]
         return states, moves
-
 
     def __getitem__(self, ix):
         states, moves = torch.load(f'data/{self.name}/{ix}.pt')
@@ -883,7 +881,8 @@ if __name__ == '__main__':
         help='random seed')
     FLAGS = parser.parse_args()
     # while True:
-    #     run_deepmind_ui(**vars(FLAGS))
+        # run_deepmind_ui(**vars(FLAGS))
 
     env = BoxWorldEnv(**vars(FLAGS))
-    profile_traj_generation2(env)
+    play_game(env)
+    # profile_traj_generation2(env)

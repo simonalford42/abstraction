@@ -15,9 +15,10 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 """
 
 
-class ConsistencyStopController1(nn.Module):
+class ConsistencyStopControllerReduced(nn.Module):
     """
     alpha(b), beta(s), options take you to different states._
+    (reduced compared to full abstract model)
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
                  macro_transition_net, solved_net, tau_lp_norm=1):
@@ -150,7 +151,7 @@ class ConsistencyStopController1(nn.Module):
         return stop_logps
 
 
-class ConsistencyStopController2(nn.Module):
+class ConsistencyStopController(nn.Module):
     """
     alpha(b, tau(s)), beta(s_c, s_t). full abstract model, not markov
     """
@@ -197,7 +198,7 @@ class ConsistencyStopController2(nn.Module):
         stop_logps = self.calc_stop_logps_ub(t_i)  # (T, T, b, 2)
         assert torch.allclose(torch.logsumexp(stop_logps, dim=3),
                               torch.zeros((T, T, self.b), device=DEVICE),
-                              atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
+                              atol=1E-6), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
 
         action_logps = F.log_softmax(action_logps, dim=2)
@@ -231,7 +232,7 @@ class ConsistencyStopController2(nn.Module):
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
         alpha_out = self.macro_transitions(t_i, torch.arange(self.b, device=DEVICE))
-        assert_shape(alpha_out, (self.T, self.b, self.t))
+        assert_shape(alpha_out, (T, self.b, self.t))
         assert_shape(t_i, (T, self.t))
         # (T, T, b, t) - (T, T, b, t), sum over t axis to get (T, T, b)
         stop_logps = -(rearrange(t_i,           'T t -> 1 T 1 t')
@@ -255,7 +256,7 @@ class ConsistencyStopController2(nn.Module):
         s_i: (B, T, s) tensor of states
         outputs:
            (B, T, b, a) tensor of action logps
-           (B, T, b, 2) tensor of stop logps
+           (B, T, T, b, 2) tensor of stop logps
               the index corresponding to stop/continue are in
               STOP_IX, CONTINUE_IX
            (B, T, b) tensor of start logps
@@ -273,10 +274,13 @@ class ConsistencyStopController2(nn.Module):
         micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         assert_shape(micro_out, (B, T, self.b * self.a))
         action_logps = rearrange(micro_out, 'B T (b a) -> B T b a', a=self.a)
-        stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, b, 2)
-        assert torch.allclose(torch.logsumexp(stop_logps, dim=3),
-                              torch.zeros((B, T, self.b), device=DEVICE),
-                              atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
+        stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, T, b, 2)
+
+        assert torch.allclose(torch.logsumexp(stop_logps, dim=4),
+                              torch.zeros((B, T, T, self.b), device=DEVICE),
+                              atol=1E-6), \
+               f'{stop_logps, torch.logsumexp(stop_logps, dim=4)}'
+
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
@@ -295,18 +299,18 @@ class ConsistencyStopController2(nn.Module):
         # (B, T, T, b, t) - (B, T, T, b, t), sum over t axis to get (B, T, T, b)
         stop_logps = -(rearrange(t_i,             'B T t -> B 1 T 1 t')
                        - rearrange(alpha_out, '(B T) b t -> B T 1 b t', B=B)) ** 2
-        stop_logps = stop_logps.sum(dim=2)
-        assert_shape(stop_logps, (B, T, self.b))
+        stop_logps = stop_logps.sum(dim=-1)
+        assert_shape(stop_logps, (B, T, T, self.b))
         one_minus_stop_logps = logaddexp(torch.zeros_like(stop_logps),
                                          stop_logps,
                                          mask=torch.tensor([1, -1]))
-        assert_shape(one_minus_stop_logps, (B, T, self.b))
+        assert_shape(one_minus_stop_logps, (B, T, T, self.b))
         if box_world.STOP_IX == 0:
             stack = (stop_logps, one_minus_stop_logps)
         else:
             stack = (one_minus_stop_logps, stop_logps)
-        stop_logps = torch.stack(stack, dim=3)
-        assert_shape(stop_logps, (B, T, self.b, 2))
+        stop_logps = torch.stack(stack, dim=4)
+        assert_shape(stop_logps, (B, T, T, self.b, 2))
         return stop_logps
 
 
@@ -519,6 +523,20 @@ class HeteroController(nn.Module):
         """
         return self.solved_net(t_i.unsqueeze(0))
 
+    def micro_policy(self, s_i, b):
+        """
+        s_i: single state
+        outputs:
+            (a,) action logps,)
+            (2,) stop logps
+        """
+        micro_out = self.micro_net(s_i.unsqueeze(0))
+        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
+        stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
+        action_logps = action_logps[0, b]
+        stop_logps = stop_logps[0, b]
+        return action_logps, stop_logps
+
 
 class HomoController(nn.Module):
     """Controller as in microcontroller and macrocontroller.
@@ -629,20 +647,20 @@ def boxworld_homocontroller(b):
 
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     """
-    type: hetero, homo, ccts1, or ccts2
+    type: hetero, homo, ccts, or ccts-reduced
     """
     a = 4
-    assert typ in ['hetero', 'homo', 'ccts1', 'ccts2']
+    assert typ in ['hetero', 'homo', 'ccts', 'ccts-reduced']
     if typ == 'homo':
         return boxworld_homocontroller(b)
-    if typ == 'ccts1':
+    if typ == 'ccts-reduced':
         micro_out_dim = a * b
         macro_trans_in_dim = b
-        model = ConsistencyStopController1
-    elif typ == 'ccts2':
+        model = ConsistencyStopControllerReduced
+    elif typ == 'ccts':
         micro_out_dim = a * b
-        macro_trans_in_dim = b
-        model = ConsistencyStopController2
+        macro_trans_in_dim = b + t
+        model = ConsistencyStopController
     else:
         assert typ == 'hetero'
         # both P(a | s, b) and beta(s, b)

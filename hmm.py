@@ -22,10 +22,16 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
         The easy way to think of this is that t denotes where s_t is.
 
         Assumes stop_logps are arranged so that 0 is continue, 1 is stop.
+        More info on derivation on Notion page
+
+        It would be nice to use named tensors to type check the axes, but
+        unfortunately unsqueezing is not allowed for them.
     """
     B, max_T = action_logps.shape[0:2]
     # (t, B, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
-    f = [torch.full((B, b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(max_T+1)]
+    f = [torch.full((B, b, max(1, t), 2), float('-inf'), device=DEVICE,
+                    names=('B', 'b', 'c', 'e'))
+         for t in range(max_T+1)]
     f[0][:, 0, 0, 1] = 0
 
     for t in range(1, max_T+1):
@@ -350,7 +356,7 @@ def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
     return total_logps
 
 
-def ccts2_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
+def ccts_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
     """
     Like cc_fw but now stop_logps is now (T+1, T+1, b, 2) i.e. (start, stop, b, 2)
     """
@@ -376,9 +382,9 @@ def ccts2_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
     return total_logp
 
 
-def ccts2_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
+def ccts_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
     """
-    like cc_fw but stop_logps is now (B, T+1, T+1, b, 2) i.e. (start, stop, b, 2)
+    like cc_fw but stop_logps is now (B, T+1, T+1, b, 2) i.e. (B, c, t, b, e)
     """
     B, max_T = action_logps.shape[0:2]
     # (t, B, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
@@ -390,7 +396,7 @@ def ccts2_hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
         # (B, b, c, e)
         f[t][:, :, :t-1, :] = (f[t-1][:, :, :, 0:1]
                                + action_logps[:, t-1, :, None, None]
-                               + rearrange(stop_logps[:, :t-1:, t], 'B c b e -> B b c e'))
+                               + rearrange(stop_logps[:, :t-1, t, :, :], 'B c b e -> B b c e'))
         # e_prev = 1; options new, c mass fixed at t-1
         # (B, b, e)
         f[t][:, :, t-1, :] = (torch.logsumexp(f[t-1][:, :, :, 1], dim=(1, 2))[:, None, None]
@@ -412,7 +418,6 @@ UNSOLVED_IX, SOLVED_IX = 0, 1
 
 def calc_solved_loss(solved, lengths=None, masks=None):
     batched = len(solved.shape) == 3
-    print(f'solved: {solved}')
     if batched:
         B, T = solved.shape[:-1]
         # mask is 1 up to second to last. (for reasons that have to do with how
@@ -422,7 +427,6 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         # (B, T, 2)
         targets = torch.full((B, T), UNSOLVED_IX, device=DEVICE)
         targets[range(B), lengths] = SOLVED_IX
-        print(f'targets: {targets}')
         loss = SOLVED_LOSS_B(solved.reshape(B * T, 2), targets.reshape((B * T, ))).reshape(B, T)
         loss = (loss[:, :-1] * masks).sum() + loss[range(B), lengths].sum()
         return loss
@@ -431,7 +435,6 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         T = solved.shape[0]
         target = torch.full((T, ), UNSOLVED_IX, device=DEVICE)
         target[-1] = SOLVED_IX
-        print(f'target: {target}')
         return SOLVED_LOSS_UB(solved, target)
 
 
@@ -537,7 +540,7 @@ class HmmNet(nn.Module):
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths, masks)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts2=False):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts=False):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -560,8 +563,8 @@ class HmmNet(nn.Module):
         # not sure why there's this extra singleton axis, but this passes the test so go for it
         action_logps = action_logps[0]  # (B, max_T, b) now
 
-        if ccts2:
-            total_logps = ccts2_hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
+        if ccts:
+            _, total_logps = ccts_hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
         else:
             total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
 
@@ -572,7 +575,7 @@ class HmmNet(nn.Module):
         return -torch.sum(total_logps) + solved_loss
 
 
-    def logp_loss_ub(self, s_i, actions, ccts2=False):
+    def logp_loss_ub(self, s_i, actions, ccts=False):
         """
         returns: negative logp of all trajs in batch
         """
@@ -583,8 +586,8 @@ class HmmNet(nn.Module):
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
-        if ccts2:
-            total_logp = ccts2_hmm_fw_ub(self.b, action_logps, stop_logps, start_logps)
+        if ccts:
+            total_logp = ccts_hmm_fw_ub(self.b, action_logps, stop_logps, start_logps)
         else:
             total_logp = hmm_fw_ub(action_logps, stop_logps, start_logps)
 

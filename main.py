@@ -36,15 +36,12 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         with Timing('Completed epoch'):
             for s_i_batch, actions_batch, lengths, masks in dataloader:
                 optimizer.zero_grad()
+
                 s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
 
-                # for ffcv
-                # B = s_i_batch.shape[0]
-                # s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
-
                 loss = net(s_i_batch, actions_batch, lengths, masks)
-
                 train_loss += loss.item()
+
                 # reduce just like cross entropy so batch size doesn't affect LR
                 loss = loss / sum(lengths)
                 run['batch/loss'].log(loss.item())

@@ -587,82 +587,82 @@ def test_hmm_batched():
         optimizer.step()
 
 
-# def test_ccts1_batched():
-#     b = 3
-#     B = 5
-#     random.seed(1)
-#     torch.manual_seed(1)
-#     np.random.seed(1)
+def test_ccts_reduced_batched():
+    b = 3
+    B = 5
+    random.seed(1)
+    torch.manual_seed(1)
+    np.random.seed(1)
 
-#     control_net = abstract.boxworld_controller(b=b, typ='ccts1')
+    control_net = abstract.boxworld_controller(b=b, typ='ccts-reduced')
 
-#     net = hmm.HmmNet(control_net)
+    net = hmm.HmmNet(control_net)
 
-#     env = box_world.BoxWorldEnv(seed=1)
-#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = box_world.BoxWorldEnv(seed=1)
+    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
-#     net.to(DEVICE)
+    net.to(DEVICE)
 
-#     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
 
-#     for s_i, actions, lengths, masks in dataloader:
-#         optimizer.zero_grad()
-#         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-#         total_loss2 = 0
-#         for s, action, T in zip(s_i, actions, lengths):
-#             s = s[0:T+1]
-#             action = action[0:T]
-#             loss = net.logp_loss_ub(s, action)
-#             # print(f'ub loss: {loss}')
-#             total_loss2 += loss
+    for s_i, actions, lengths, masks in dataloader:
+        optimizer.zero_grad()
+        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+        total_loss2 = 0
+        for s, action, T in zip(s_i, actions, lengths):
+            s = s[0:T+1]
+            action = action[0:T]
+            loss = net.logp_loss_ub(s, action)
+            # print(f'ub loss: {loss}')
+            total_loss2 += loss
 
-#         total_loss = net.logp_loss(s_i, actions, lengths)
-#         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+        total_loss = net.logp_loss(s_i, actions, lengths, masks)
+        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
 
-#         # loss = total_loss2
-#         loss = total_loss
-#         print(loss)
-#         loss.backward()
-#         optimizer.step()
+        # loss = total_loss2
+        loss = total_loss
+        # print(loss)
+        loss.backward()
+        optimizer.step()
 
 
-# def test_ccts2_batched():
-#     b = 3
-#     B = 5
-#     random.seed(1)
-#     torch.manual_seed(1)
-#     np.random.seed(1)
+def test_ccts_batched():
+    b = 3
+    B = 5
+    random.seed(1)
+    torch.manual_seed(1)
+    np.random.seed(1)
 
-#     control_net = abstract.boxworld_controller(b=b, typ='ccts2')
+    control_net = abstract.boxworld_controller(b=b, typ='ccts')
 
-#     net = hmm.HmmNet(control_net)
+    net = hmm.HmmNet(control_net)
 
-#     env = box_world.BoxWorldEnv(seed=1)
-#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = box_world.BoxWorldEnv(seed=1)
+    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
-#     net.to(DEVICE)
+    net.to(DEVICE)
 
-#     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
 
-#     for s_i, actions, lengths, masks in dataloader:
-#         optimizer.zero_grad()
-#         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-#         total_loss2 = 0
-#         for s, action, T in zip(s_i, actions, lengths):
-#             s = s[0:T+1]
-#             action = action[0:T]
-#             loss = net.logp_loss_ub(s, action, ccts2=True)
-#             # print(f'ub loss: {loss}')
-#             total_loss2 += loss
+    for s_i, actions, lengths, masks in dataloader:
+        optimizer.zero_grad()
+        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+        total_loss2 = 0
+        for s, action, T in zip(s_i, actions, lengths):
+            s = s[0:T+1]
+            action = action[0:T]
+            loss = net.logp_loss_ub(s, action, ccts=True)
+            # print(f'ub loss: {loss}')
+            total_loss2 += loss
 
-#         total_loss = net.logp_loss(s_i, actions, lengths, ccts2=True)
-#         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+        total_loss = net.logp_loss(s_i, actions, lengths, masks, ccts=True)
+        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
 
-#         # loss = total_loss2
-#         loss = total_loss
-#         print(loss)
-#         loss.backward()
-#         optimizer.step()
+        # loss = total_loss2
+        loss = total_loss
+        print(loss)
+        loss.backward()
+        optimizer.step()
 
 
 def test_solved_batched():
@@ -855,13 +855,12 @@ def test_bfs():
 
 
 if __name__ == '__main__':
-    pass
     # test_bfs()
     # test_solved_batched()
     # test_actions_batch()
     # test_cc_batched()
-    # test_ccts1_batched()
-    # test_ccts2_batched()
+    # test_ccts_reduced_batched()
+    test_ccts_batched()
     # test_hmm_and_cc()
     # test_cc_batched2()
     # test_cc_logp_vs_hmm_logp()
