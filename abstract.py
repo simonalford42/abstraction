@@ -236,7 +236,7 @@ class ConsistencyStopController(nn.Module):
         assert_shape(alpha_out, (T, self.b, self.t))
         assert_shape(t_i, (T, self.t))
         # (T, T, b, t) - (T, T, b, t), sum over t axis to get (T, T, b)
-        stop_logps = -(rearrange(t_i,           'T t -> 1 T 1 t')
+        stop_logps = -(rearrange(t_i, 'T t -> 1 T 1 t')
                        - rearrange(alpha_out, 'T b t -> T 1 b t')) ** 2
         stop_logps = stop_logps.sum(dim=3)
         assert_shape(stop_logps, (T, T, self.b))
@@ -298,7 +298,7 @@ class ConsistencyStopController(nn.Module):
         assert_shape(alpha_out, (B * T, self.b, self.t))
         assert_shape(t_i, (B, T, self.t))
         # (B, T, T, b, t) - (B, T, T, b, t), sum over t axis to get (B, T, T, b)
-        stop_logps = -(rearrange(t_i,             'B T t -> B 1 T 1 t')
+        stop_logps = -(rearrange(t_i, 'B T t -> B 1 T 1 t')
                        - rearrange(alpha_out, '(B T) b t -> B T 1 b t', B=B)) ** 2
         stop_logps = stop_logps.sum(dim=-1)
         assert_shape(stop_logps, (B, T, T, self.b))

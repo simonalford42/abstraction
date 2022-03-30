@@ -108,8 +108,10 @@ def cc_loss(b, action_logps, stop_logps, start_logps, causal_pens, lengths, mask
         # e_t = 1 means stop, so 'stop_ix' must be 1
         stop_logps = stop_logps.flip(dims=(3, ))
 
-    fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (max_T+1, B, b, c, e), (B, )
-    bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)  # (B, max_T+1, b, e), (B, )
+    # (max_T+1, B, b, c, e), (B, )
+    fw_logps, total_logp = cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks)
+    # (B, max_T+1, b, e), (B, )
+    bw_logps, total_logp2 = cc_bw(b, action_logps, stop_logps, start_logps, lengths, masks)
 
     dist = torch.abs(total_logp - total_logp2)
     threshold = 1E-4
@@ -575,7 +577,6 @@ class HmmNet(nn.Module):
         else:
             solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
         return -torch.sum(total_logps) + solved_loss
-
 
     def logp_loss_ub(self, s_i, actions, ccts=False):
         """

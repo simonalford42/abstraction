@@ -734,6 +734,7 @@ class BoxWorldDataset(Dataset):
         self.traj_states[:n] = [self.traj_states[i] for i in ixs]
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
 
+
 def compress_state(state):
     compressed = '\n'.join([''.join(r) for r in state])
     # decompressed = decompress_state(compressed)
@@ -799,7 +800,7 @@ if __name__ == '__main__':
         help='random seed')
     FLAGS = parser.parse_args()
     # while True:
-        # run_deepmind_ui(**vars(FLAGS))
+    #     run_deepmind_ui(**vars(FLAGS))
 
     env = BoxWorldEnv(**vars(FLAGS))
     play_game(env)

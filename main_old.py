@@ -6,11 +6,10 @@ import random
 import utils
 from utils import Timing, DEVICE
 import abstract
-from abstract2 import UnbatchedTrajNet, Controller, TrajNet, HMMTrajNet
 import time
-from modules import FC, RelationalDRLNet, abstract_out_dim
+from hmm_old import HMMTrajNet, Controller, UnbatchedTrajNet, TrajNet
+from modules import FC, RelationalDRLNet
 import box_world
-import abstract2
 import mlflow
 
 
@@ -24,7 +23,7 @@ def train_abstractions(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=
         start = time.time()
         # total = 0
         # total_correct = 0
-        for s_i_batch, actions_batch, lengths in dataloader:
+        for s_i_batch, actions_batch, lengths, _ in dataloader:
             optimizer.zero_grad()
             s_i_batch = s_i_batch.to(DEVICE)
             actions_batch = actions_batch.to(DEVICE)
@@ -191,7 +190,7 @@ def traj_box_world_sv_train(
                             box_world.eval_model(net, env, n=num_test)
 
                 if save_every and round % save_every == 0:
-                    utils.save_mlflow_model(net, model_name=f'round-{round}', overwrite=False)
+                    utils.save_model(net, f'models/hmm-homo_round-{round}.pt', overwrite=False)
 
                 round += 1
         except KeyboardInterrupt:
@@ -219,21 +218,11 @@ def up_right_main():
     # utils.load_model(net, f'models/model_1-21__4.pt')
     train_abstractions(data, net, epochs=100, lr=1E-4)
     # utils.save_model(net, f'models/model_9-17.pt')
-    eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
+    _ = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
                                   max_coord=data.max_coord)
 
-    eval_viterbi(net, eval_data,)
+    # eval_viterbi(net, eval_data,)
     # abstract.sample_trajectories(net, eval_data, full_abstract=False)
-
-
-def eval_viterbi(net: HMMTrajNet, data: up_right.TrajData):
-    for i, s_i, actions, points in zip(range(len(data.traj_states)), data.traj_states, data.traj_moves, data.points):
-        (x, y, x_goal, y_goal) = points[0][0]
-        moves = ''.join(data.trajs[i])
-        print(f'{moves}')
-        path = abstract2.viterbi(net, s_i, actions)
-        print(''.join(map(str, path)))
-        print('-'*10)
 
 
 def box_world_main():
@@ -339,19 +328,21 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = True
-    n = 5000
-    epochs = 100
-    num_test = 200
+    n = 50
+    epochs = 10
+    num_test = 2
     lr = 8E-4
     rounds = 20
     fix_seed = False
     b = 30
     batch_size = 10
+    a = 4
+    out_dim = a * b + 2 * b + b
 
     relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                       num_attn_blocks=2,
                                       num_heads=4,
-                                      out_dim=abstract_out_dim(a=4, b=b)).to(DEVICE)
+                                      out_dim=out_dim).to(DEVICE)
     control_net = Controller(
         a=4,
         b=b,

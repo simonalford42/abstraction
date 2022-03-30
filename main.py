@@ -32,8 +32,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     while updates < params['traj_updates']:
         # if epoch and epoch % 100 == 0:
         #     print('reloading data')
-        #     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch), n=params['n'], traj=True)
-        #     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+        #     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch),
+        #                                      n=params['n'], traj=True)
+        #     dataloader = DataLoader(data, batch_size=params['batch_size'],
+        #                             shuffle=False, collate_fn=box_world.traj_collate)
 
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
@@ -57,7 +59,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             if net.b != 1:
-                test_acc = box_world.eval_options_model(net.control_net, test_env, n=params['num_test'], run=run, epoch=epoch)
+                test_acc = box_world.eval_options_model(
+                    net.control_net, test_env, n=params['num_test'],
+                    run=run, epoch=epoch)
             else:
                 test_acc = box_world.eval_model(net.control_net, test_env, n=params['num_test'])
             run['test/accuracy'].log(test_acc)
@@ -102,11 +106,6 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
             run[f'{epoch}batch/mem'].log(utils.get_memory_usage())
             loss.backward()
             optimizer.step()
-
-        metrics = dict(
-            epoch=epoch,
-            loss=train_loss,
-        )
 
         run['epoch'].log(epoch)
         run['loss'].log(train_loss)
@@ -158,11 +157,11 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=50000,
-        num_test=200,
-        traj_updates=1E7,  # default: 1E7
-        num_saves=20, num_tests=20,
+        n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
+        # n=50000,
+        # num_test=200,
+        # traj_updates=1E7,  # default: 1E7
+        # num_saves=20, num_tests=20,
         lr=8E-4, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,

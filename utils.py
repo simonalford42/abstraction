@@ -72,11 +72,12 @@ def num_params(model):
                 for p in list(model.parameters())])
 
 
-def save_model(model, path, assert_clear=False):
-    path2 = next_unused_path(path)
-    torch.save(model, path2)
-    print('Saved model at ' + path2)
-    return path2
+def save_model(model, path, overwrite=False):
+    if not overwrite:
+        path = next_unused_path(path)
+    torch.save(model, path)
+    print('Saved model at ' + path)
+    return path
 
 
 def load_model(path):
