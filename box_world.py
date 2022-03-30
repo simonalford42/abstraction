@@ -18,7 +18,7 @@ from profiler import profile
 from torch.distributions import Categorical
 import torch.nn as nn
 from pycolab.examples.research.box_world import box_world as bw
-MAX_LEN = 63
+MAX_LEN = 66
 # from ffcv.loader import Loader, OrderOption
 # from ffcv.fields import NDArrayField, FloatField, IntField
 # from ffcv.fields.decoders import BytesDecoder, IntDecoder, NDArrayDecoder
@@ -462,7 +462,6 @@ j       (b, 2) stop logps
     num_solved = 0
     check_cc = hasattr(control_net, 'tau_net')
     check_solved = hasattr(control_net, 'solved_net')
-    assert check_solved
     verbose = option != 'silent'
     if verbose:
         print(f'Evaluating model on {n} episodes')
@@ -665,11 +664,7 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
 
 
 def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
-    print('Non-disk data')
     data = BoxWorldDataset(env, n, traj)
-    # data = DiskData(name='default5k', n=n)
-    # assert n == 5000
-    # print(f'Disk data, n={n}')
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:
@@ -699,7 +694,8 @@ class BoxWorldDataset(Dataset):
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
 
         self.traj_states, self.traj_moves = zip(*sorted(zip(self.traj_states, self.traj_moves),
-                                                        key=lambda t: t[0].shape[0]))
+                                                key=lambda t: t[0].shape[0]))
+        self.traj_states, self.traj_moves = list(self.traj_states), list(self.traj_moves)
         assert_equal([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
     def __len__(self):
@@ -714,18 +710,29 @@ class BoxWorldDataset(Dataset):
         else:
             return self.states[i], self.moves[i]
 
-    def shuffle(self):
+    def shuffle(self, batch_size):
         """
         Shuffle trajs which share the same length, while still keeping the overall order the same.
+        Then shuffles among the batches.
         """
         ixs = list(range(len(self.traj_states)))
         random.shuffle(ixs)
-        traj_states2 = [self.traj_states[i] for i in ixs]
-        traj_moves2 = [self.traj_moves[i] for i in ixs]
-        traj_states2, traj_moves2 = zip(*sorted(zip(traj_states2, traj_moves2),
-                                                key=lambda t: t[0].shape[0]))
-        self.traj_states, self.traj_moves = traj_states2, traj_moves2
+        self.traj_states[:] = [self.traj_states[i] for i in ixs]
+        self.traj_moves[:] = [self.traj_moves[i] for i in ixs]
+        self.traj_states[:], self.traj_moves[:] = zip(*sorted(zip(self.traj_states, self.traj_moves),
+                                                      key=lambda t: t[0].shape[0]))
+        self.traj_states, self.traj_moves = list(self.traj_states), list(self.traj_moves)
 
+        # keep the last batch at the end
+        n = len(self.traj_states)
+        n = n - (n % batch_size)
+        ixs = list(range(n))
+        blocks = [ixs[i:i + batch_size] for i in range(0, n, batch_size)]
+        random.shuffle(blocks)
+        ixs = [b for bs in blocks for b in bs]
+        assert_equal(len(ixs), n)
+        self.traj_states[:n] = [self.traj_states[i] for i in ixs]
+        self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
 
 
 def compress_state(state):
@@ -739,94 +746,6 @@ def decompress_state(state):
     return np.array([list(r) for r in state.split('\n')])
 
 
-def generate_data(env, name, n, overwrite=False):
-    print('Generating data...')
-    if os.path.isdir(f'data/{name}'):
-        if not overwrite:
-            raise RuntimeError(f'data path {name} already exists')
-    else:
-        os.mkdir(f'data/{name}')
-
-    if not os.path.isdir(f'data/temp/'):
-        os.mkdir('data/temp/')
-
-    for i in range(n):
-        if i % 1000 == 0:
-            print(f'{i} generated')
-        states, moves = generate_traj(env)
-        # for s, m in zip(states, moves):
-            # print(f'move: {m}')
-            # render_obs(s, pause=1)
-        states = [compress_state(s) for s in states]
-        torch.save((states, moves), f'data/temp/{i}.pt')
-
-    print('Sorting data')
-    data = DiskData('temp', n=n)
-    len_to_ids = {}
-    for i in range(n):
-        if i % 1000 == 0:
-            print(f'{i} examples logged')
-        _, _, length = data[i]
-        if length not in len_to_ids:
-            len_to_ids[length] = [i]
-        else:
-            len_to_ids[length].append(i)
-
-    i = 0
-    for length, ids in sorted(len_to_ids.items()):
-        print(f'{length} length reordered')
-        for id in ids:
-            os.rename(f'data/temp/{id}.pt', f'data/{name}/{i}.pt')
-            i += 1
-    assert i == n
-
-
-class DiskData(Dataset):
-    def __init__(self, name, n):
-        self.name = name
-        self.n = n
-
-    def __len__(self):
-        return self.n
-
-    def get_raw(self, ix):
-        states, moves = torch.load(f'data/{self.name}/{ix}.pt')
-        states = [decompress_state(s) for s in states]
-        return states, moves
-
-
-    def __getitem__(self, ix):
-        states, moves = torch.load(f'data/{self.name}/{ix}.pt')
-        # return len(moves)
-        states = [decompress_state(s) for s in states]
-        states = [obs_to_tensor(s) for s in states]
-        moves = [torch.tensor(m) for m in moves]
-        traj_states = torch.stack(states)
-        traj_moves = torch.stack(moves)
-        return traj_states, traj_moves, len(traj_moves)
-
-
-# class FFCVDiskData(Dataset):
-#     def __init__(self, disk_data: DiskData):
-#         self.disk_data = disk_data
-
-#     def __len__(self):
-#         return len(self.disk_data)
-
-#     def __getitem__(self, i):
-#         states, moves, length = self.disk_data[i]
-#         s = states[0].shape
-#         T = moves.shape[0]
-#         to_add = MAX_LEN - T
-#         states2 = torch.cat((states, torch.zeros((to_add, *s))))
-#         moves2 = torch.cat((moves, torch.zeros(to_add, dtype=int)))
-#         assert_equal(states2.shape, (MAX_LEN + 1, *s))
-#         assert_equal(moves2.shape, (MAX_LEN, ))
-#         mask = torch.zeros(MAX_LEN, dtype=int)
-#         mask[:T] = 1
-#         return states2.numpy(), moves2.numpy(), length, mask.numpy()
-
-
 class FinishTransform(nn.Module):
     def __init__(self, batch_size):
         super().__init__()
@@ -834,35 +753,6 @@ class FinishTransform(nn.Module):
 
     def forward(self, x):
         return x.reshape(self.batch_size, -1, 24, 14, 14)
-
-
-# def write_ffcv_data(name, n):
-#     disk_data = DiskData(name, n=n)
-#     data = FFCVDiskData(disk_data)
-
-#     writer = DatasetWriter(f'data/{name}_ffcv.beton', {
-#         'traj': NDArrayField(shape=(MAX_LEN+1, 24, 14, 14), dtype=np.dtype('float32')),
-#         'moves': NDArrayField(shape=(MAX_LEN, ), dtype=np.dtype('int64')),
-#         'length': IntField(),
-#         'mask': NDArrayField(shape=(MAX_LEN, ), dtype=np.dtype('int64')),
-#     }, num_workers=16)
-
-#     writer.from_indexed_dataset(data)
-
-
-# def ffcv_dataloader(name, batch_size):
-#     loader = Loader(f'data/{name}_ffcv.beton',
-#                     batch_size=batch_size,
-#                     num_workers=16,
-#                     os_cache=True,
-#                     order=OrderOption.RANDOM,
-#                     pipelines={
-#                         'traj': [NDArrayDecoder(), ToTensor(), FinishTransform(batch_size), ToDevice(0)],
-#                         'moves': [NDArrayDecoder(), ToTensor(), ToDevice(0)],
-#                         'length': [IntDecoder(), ToTensor(), ToDevice(0)],
-#                         'mask': [NDArrayDecoder(), ToTensor(), ToDevice(0)],
-#                     })
-#     return loader
 
 
 @profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)

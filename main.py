@@ -27,13 +27,16 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     test_env = box_world.BoxWorldEnv()
     print(f"Net has {utils.num_params(net)} parameters")
 
-    for epoch in range(params['epochs']):
-        # if epoch % 100 == 0:
-            # data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
-            # dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+    updates = 0
+    epoch = 0
+    while updates < params['traj_updates']:
+        # if epoch and epoch % 100 == 0:
+        #     print('reloading data')
+        #     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch), n=params['n'], traj=True)
+        #     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
 
         if hasattr(dataloader.dataset, 'shuffle'):
-            dataloader.dataset.shuffle()
+            dataloader.dataset.shuffle(batch_size=params['batch_size'])
 
         train_loss = 0
         start = time.time()
@@ -71,6 +74,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         if params['save_every'] and epoch % params['save_every'] == 0:
             path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
             run['models'].log(path)
+
+        epoch += 1
+        updates += params['n']
 
     path = utils.save_model(net, f'models/{model_id}.pt')
     run['model'] = path
@@ -112,87 +118,16 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
-def boxworld_outer_sv(run, dataloader, net, params, epochs=100, rounds=-1):
-    print('outer sv')
-    env = box_world.BoxWorldEnv()
-    # print_every = epochs / 5
-    print_every = 10
-    save_every = 1
-    print(f"Net has {utils.num_params(net)} parameters")
-    model_id = mlflow.active_run().info.run_id
-    run['model_id'] = model_id
-
-    try:
-        round = 0
-        test_acc = 0
-        while round != rounds:
-            start = time.time()
-            print(f'Round {round}')
-
-            with Timing("Generated trajectories"):
-                dataloader = box_world.box_world_dataloader(env=env, n=params['n'], traj=True, batch_size=params['batch_size'])
-
-            sv_train(run, dataloader, net, epochs=epochs, lr=params['lr'], print_every=print_every)
-            mlflow.log_metrics({'epoch': round,
-                                'loss': round,
-                                'time': time.time() - start}, step=round)
-
-            if test_every and round % test_every == 0:
-                with Timing("Evaluated model"):
-                    if net.b != 1:
-                        test_acc = box_world.eval_options_model(net.control_net, env, n=params['num_test'])
-                    else:
-                        test_acc = box_world.eval_model(net.control_net, env, n=params['num_test'])
-                    run['test/accuracy'].log(test_acc)
-                    print(f'Epoch {epoch}\t test acc {test_acc}')
-                    mlflow.log_metrics({'epoch': round, 'test acc': test_acc}, step=round)
-            else:
-                mlflow.log_metrics({'epoch': round, 'test acc': test_acc}, step=round)
-
-            # if save_every and round % save_every == 0:
-                # utils.save_mlflow_model(net, model_name=f'round-{round}', overwrite=False)
-
-            round += 1
-    except KeyboardInterrupt:
-        pass
-
-    path = utils.save_model(net, f'models/{model_id}.pt')
-    run['model'] = path
-
-
-def up_right_main():
-    scale = 3
-    seq_len = 5
-    trajs = up_right.generate_data(scale, seq_len, n=100)
-
-    data = up_right.TrajData(trajs)
-
-    s = data.state_dim
-    abstract_policy_net = HeteroController(
-        a := 2, b := 2, t := 10,
-        tau_net=FC(s, t, hidden_dim=64, num_hidden=1),
-        micro_net=FC(s, b * a, hidden_dim=64, num_hidden=1),
-        stop_net=FC(s, b * 2, hidden_dim=64, num_hidden=1),
-        start_net=FC(t, b, hidden_dim=64, num_hidden=1),
-        alpha_net=FC(t + b, t, hidden_dim=64, num_hidden=1))
-    # net = Eq2Net(abstract_policy_net,
-    net = HmmNet(abstract_policy_net)
-
-    # utils.load_model(net, f'models/model_1-21__4.pt')
-    sv_train(data, net, epochs=100, lr=1E-4)
-    # utils.save_model(net, f'models/model_9-17.pt')
-    eval_data = up_right.TrajData(up_right.generate_data(scale, seq_len, n=10),
-                                  max_coord=data.max_coord)
-
-    viterbi(net, eval_data,)
-
-
-def eval_models():
-    run_id = None
-    utils.load_mlflow_model(net, run_id, model_name)
-
-    env = box_world.BoxWorldEnv(seed=1)
-    box_world.eval_options_model(net.control_net, env, n=200, option='verbose')
+def adjust_state_dict(state_dict):
+    state_dict2 = {}
+    for k, v in state_dict.items():
+        if 'tau_net' in k:
+            x = len('control_net.tau_net.')
+            k2 = k[:x] + '0.' + k[x:]
+            state_dict2[k2] = v
+        else:
+            state_dict2[k] = v
+    return state_dict2
 
 
 def boxworld_main():
@@ -201,11 +136,9 @@ def boxworld_main():
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--hmm', action='store_true')
     parser.add_argument('--sv', action='store_true')
-    # parser.add_argument('--disk', action='store_true')
     parser.add_argument('--homo', action='store_true')
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--outer', action='store_true')
     args = parser.parse_args()
 
     random.seed(1)
@@ -225,15 +158,16 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=1000,
-        lr=8E-4, epochs=10, batch_size=10, b=10,
+        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
+        n=50000,
+        num_test=200,
+        traj_updates=1E7,  # default: 1E7
+        num_saves=20, num_tests=20,
+        lr=8E-4, batch_size=10, b=10,
         cc_weight=args.cc, abstract_pen=args.abstract_pen,
         hmm=args.hmm, homo=args.homo, sv=args.sv,
-        save_every=100, test_every=1, num_test=50,
         no_log=args.no_log,
         # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
-        disk_data=False,
-        outer=args.outer,
     )
 
     if 'model_load_path' in params:
@@ -255,27 +189,23 @@ def boxworld_main():
             model_type = 'causal'
     params['model_type'] = model_type
     params['device'] = torch.cuda.get_device_name(DEVICE)
+    params['epochs'] = int(params['traj_updates'] / params['n'])
+    if params['num_tests'] == 0:
+        params['test_every'] = False
+    else:
+        params['test_every'] = params['epochs'] // params['num_tests']
+    if params['num_saves'] == 0:
+        params['save_every'] = False
+    else:
+        params['save_every'] = params['epochs'] // params['num_saves']
 
-    model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
-    model = utils.load_model(model_load_path)
-    state_dict = model.state_dict()
-    state_dict2 = {}
-    for k, v in state_dict.items():
-        if 'tau_net' in k:
-            x = len('control_net.tau_net.')
-            k2 = k[:x] + '0.' + k[x:]
-            state_dict2[k2] = v
-        else:
-            state_dict2[k] = v
-    net.load_state_dict(state_dict2, strict=False)
+    # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
+    # model = utils.load_model(model_load_path)
+    # state_dict = adjust_state_dict(model.state_dict())
+    # net.load_state_dict(state_dict, strict=False)
 
     net = net.to(DEVICE)
-    if params['disk_data']:
-        data = 'default' + str(int(params['n']/1000)) + 'k'
-        params['data'] = data
-        data = box_world.DiskData(name=params['data'], n=params['n'])
-    else:
-        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
+    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
 
     with Timing('Completed training'):
@@ -285,13 +215,7 @@ def boxworld_main():
             mlflow.log_params(params)
             print(f"Starting run:\n{mlflow.active_run().info.run_id}")
             print(f"params: {params}")
-
-            if params['outer']:
-                rounds = params['epochs'] // params['test_every']
-                epochs = params['epochs'] // rounds
-                boxworld_outer_sv(run, dataloader, net, params, epochs=epochs, rounds=rounds)
-            else:
-                train(run, dataloader, net, params)
+            train(run, dataloader, net, params)
 
     run.stop()
 

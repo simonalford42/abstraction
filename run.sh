@@ -18,3 +18,5 @@
 #SBATCH --partition=gpu
 #xSBATCH --partition=ellis
 python -u main.py "$@"
+# echo repeating
+# python -u main.py "$@"

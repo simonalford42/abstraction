@@ -601,10 +601,11 @@ class HomoController(nn.Module):
             (b, a) tensor of action logps
             (b, 2) tensor of stop logps
             (b, ) tensor of start logps
+            None solved placeholder
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps, _, = self.forward_ub(s_i.unsqueeze(0))
-        return action_logps[0], stop_logps[0], start_logps[0]
+        action_logps, stop_logps, start_logps, _, _ = self.forward_ub(s_i.unsqueeze(0))
+        return action_logps[0], stop_logps[0], start_logps[0], None
 
 
 def boxworld_relational_net(out_dim: int = 4):
