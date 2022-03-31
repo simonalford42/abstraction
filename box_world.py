@@ -470,6 +470,7 @@ j       (b, 2) stop logps
     false_pos_denom = 0
     solved_false_neg = 0
     false_neg_denom = 0
+    correct_solved_preds = 0
 
     for i in range(n):
         obs = env.reset()
@@ -478,6 +479,7 @@ j       (b, 2) stop logps
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
+        correct_solved_pred = True
         t = 0
         options = []
         moves_without_moving = 0
@@ -498,6 +500,7 @@ j       (b, 2) stop logps
                 false_pos_denom += 1
                 if is_solved_pred:
                     solved_false_pos += 1
+                    correct_solved_pred = False
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
@@ -557,6 +560,10 @@ j       (b, 2) stop logps
                 false_neg_denom += 1
                 if not is_solved_pred:
                     solved_false_neg += 1
+                    correct_solved_pred = False
+                else:
+                    if correct_solved_pred:
+                        correct_solved_preds += 1
 
             # add cc loss from last action.
             if check_cc:
@@ -574,9 +581,11 @@ j       (b, 2) stop logps
     if run and check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
-    # if check_solved:
-        # print(f'Early solved %: {solved_false_pos/false_pos_denom:.2f}')
-        # print(f'Missed solved %: {solved_false_neg/false_neg_denom:.2f}')
+    if check_solved:
+        solved_acc = correct_solved_preds / num_solved
+        print(f'Correct solved pred %: {solved_acc:.2f}')
+        run[f'test/solved pred acc'].log(solved_acc)
+
 
     control_net.train()
     # print(f'Solved {num_solved}/{n} episodes')

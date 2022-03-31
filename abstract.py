@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from einops import rearrange, repeat
+import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC
 import box_world
@@ -641,6 +642,7 @@ def boxworld_homocontroller(b):
                                       num_attn_blocks=2,
                                       num_heads=4,
                                       out_dim=out_dim).to(DEVICE)
+    print(f'relational net params={utils.num_params(relational_net)}')
     control_net = HomoController(
         a=4,
         b=b,

@@ -328,13 +328,13 @@ def traj_box_world_batched_main():
 
     # standard: n = 5000, epochs = 100, num_test = 200, lr = 8E-4, rounds = 10
     hmm = True
-    n = 50
-    epochs = 10
-    num_test = 2
+    n = 5000
+    epochs = 100
+    num_test = 200
     lr = 8E-4
     rounds = 20
     fix_seed = False
-    b = 30
+    b = 10
     batch_size = 10
     a = 4
     out_dim = a * b + 2 * b + b
@@ -343,6 +343,7 @@ def traj_box_world_batched_main():
                                       num_attn_blocks=2,
                                       num_heads=4,
                                       out_dim=out_dim).to(DEVICE)
+    print(f'relational net params={utils.num_params(relational_net)}')
     control_net = Controller(
         a=4,
         b=b,
