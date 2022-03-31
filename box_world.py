@@ -466,10 +466,6 @@ j       (b, 2) stop logps
     if verbose:
         print(f'Evaluating model on {n} episodes')
     cc_losses = []
-    solved_false_pos = 0
-    false_pos_denom = 0
-    solved_false_neg = 0
-    false_neg_denom = 0
 
     for i in range(n):
         obs = env.reset()
@@ -495,9 +491,6 @@ j       (b, 2) stop logps
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
-                false_pos_denom += 1
-                if is_solved_pred:
-                    solved_false_pos += 1
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()

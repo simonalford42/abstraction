@@ -508,23 +508,23 @@ class HeteroController(nn.Module):
         Returns:
             (b, ) tensor of logp for each abstract action
             (b, t) tensor of new tau for each abstract action
-            (b, ) tensor of logp new tau is solved
+            (b, 2) tensor of logp new tau is solved
         """
         b, t = self.b, self.t
-        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))
+        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
         new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
-        assert_shape(solveds, (b, t))
+        assert_shape(solveds, (b, 2))
         return start_logps, new_taus, solveds
 
     def solved_logp(self, t_i):
         """
         t_i: (t, ) tensor
-        Returns: logp of probability solved
+        Returns: (2, ) logps of probability solved/unsolved (use box_world.[UN]SOLVED_IX)
         """
-        return self.solved_net(t_i.unsqueeze(0))
+        return self.solved_net(t_i.unsqueeze(0))[0]
 
     def micro_policy(self, s_i, b):
         """
@@ -533,11 +533,11 @@ class HeteroController(nn.Module):
             (a,) action logps,)
             (2,) stop logps
         """
-        micro_out = self.micro_net(s_i.unsqueeze(0))
-        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
-        stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
-        action_logps = action_logps[0, b]
-        stop_logps = stop_logps[0, b]
+        micro_out = self.micro_net(s_i.unsqueeze(0))[0]
+        action_logps = rearrange(micro_out[:self.b * self.a], '(b a) -> b a', b=self.b)
+        stop_logps = rearrange(micro_out[self.b * self.a:], '(b two) -> b two', b=self.b)
+        action_logps = action_logps[b]
+        stop_logps = stop_logps[b]
         return action_logps, stop_logps
 
 
