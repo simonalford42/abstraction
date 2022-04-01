@@ -5,7 +5,7 @@ import torch
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC
+from modules import MicroNet, RelationalDRLNet, FC, FnModule, multi_head, tuple_module
 import box_world
 
 # for tensor typing
@@ -318,15 +318,15 @@ class ConsistencyStopController(nn.Module):
 
 class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm: float = 1):
+                 macro_transition_net, solved_net, tau_lp_norm):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
         # self.s = s  # state dim; not actually used
         self.t = t  # abstract state dim
         self.tau_net = tau_net  # s -> t
-        self.micro_net = micro_net  # s -> (b * a +  2 * b)
-        self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
+        self.micro_net = micro_net  # s -> ((a, b), (2*b,))
+        self.macro_policy_net = macro_policy_net  # t -> b aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
         self.tau_lp_norm = tau_lp_norm
         self.solved_net = solved_net  # t -> 2
@@ -353,17 +353,10 @@ class HeteroController(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
                                    torch.ones(T, device=DEVICE))
-        micro_out = self.micro_net(s_i)
-        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
-        stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
-
+        action_logps, stop_logps = self.micro_net(s_i)
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
         causal_pens = self.calc_causal_pens_ub(t_i)  # (T, T, b)
         solved = self.solved_net(t_i)
-
-        action_logps = F.log_softmax(action_logps, dim=2)
-        stop_logps = F.log_softmax(stop_logps, dim=2)
-        start_logps = F.log_softmax(start_logps, dim=1)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
 
@@ -381,25 +374,19 @@ class HeteroController(nn.Module):
         """
         B, T, *s = s_i_batch.shape
         s_i_flattened = s_i_batch.reshape(B * T, *s)
-
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
                                    torch.ones(B, T, device=DEVICE))
 
-        micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
-        assert_shape(micro_out, (B, T, self.b * self.a + self.b * 2))
-        action_logps = rearrange(micro_out[:, :, :self.b * self.a], 'B T (b a) -> B T b a', a=self.a)
-        stop_logps = rearrange(micro_out[:, :, self.b * self.a:], 'B T (b two) -> B T b two', b=self.b)
-
+        action_logps, stop_logps = self.micro_net(s_i_flattened)
+        action_logps = action_logps.reshape(B, T, self.b, self.a)
+        stop_logps = stop_logps.reshape(B, T, self.b, 2)
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
+        print('t_i sum', t_i.sum())
         causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
-
-        action_logps = F.log_softmax(action_logps, dim=3)
-        stop_logps = F.log_softmax(stop_logps, dim=3)
-        start_logps = F.log_softmax(start_logps, dim=2)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
 
@@ -475,7 +462,7 @@ class HeteroController(nn.Module):
 
         t_i_flat = rearrange(t_i_batch, 'B T t -> (B T) t')
         macro_trans = self.macro_transitions(t_i_flat,
-                                              torch.arange(self.b, device=DEVICE))
+                                             torch.arange(self.b, device=DEVICE))
         macro_trans = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
         t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
@@ -509,23 +496,27 @@ class HeteroController(nn.Module):
         Returns:
             (b, ) tensor of logp for each abstract action
             (b, t) tensor of new tau for each abstract action
-            (b, ) tensor of logp new tau is solved
+            (b, 2) tensor of logp new tau is solved
         """
         b, t = self.b, self.t
-        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))
+        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        start_logps = F.log_softmax(start_logps, dim=0)
         new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
-        assert_shape(solveds, (b, t))
+        solveds = F.log_softmax(solveds, dim=1)
+        assert_shape(solveds, (b, 2))
         return start_logps, new_taus, solveds
 
-    def solved_logp(self, t_i):
+    def solved_logps(self, t_i):
         """
         t_i: (t, ) tensor
-        Returns: logp of probability solved
+        Returns: (2, ) logps of probability solved/unsolved (use box_world.[UN]SOLVED_IX)
         """
-        return self.solved_net(t_i.unsqueeze(0))
+        solved_logps = self.solved_net(t_i.unsqueeze(0))[0]
+        solved_logps = F.softmax(solved_logps, dim=0)
+        return solved_logps
 
     def micro_policy(self, s_i, b):
         """
@@ -534,11 +525,11 @@ class HeteroController(nn.Module):
             (a,) action logps,)
             (2,) stop logps
         """
-        micro_out = self.micro_net(s_i.unsqueeze(0))
-        action_logps = rearrange(micro_out[:, :self.b * self.a], 'T (b a) -> T b a', b=self.b)
-        stop_logps = rearrange(micro_out[:, self.b * self.a:], 'T (b two) -> T b two', b=self.b)
-        action_logps = action_logps[0, b]
-        stop_logps = stop_logps[0, b]
+        micro_out = self.micro_net(s_i.unsqueeze(0))[0]
+        action_logps = rearrange(micro_out[:self.b * self.a], '(b a) -> b a', b=self.b)
+        stop_logps = rearrange(micro_out[self.b * self.a:], '(b two) -> b two', b=self.b)
+        action_logps = action_logps[b]
+        stop_logps = stop_logps[b]
         return action_logps, stop_logps
 
 
@@ -642,54 +633,78 @@ def boxworld_homocontroller(b):
                                       num_attn_blocks=2,
                                       num_heads=4,
                                       out_dim=out_dim).to(DEVICE)
-    print(f'relational net params={utils.num_params(relational_net)}')
-    control_net = HomoController(
-        a=4,
-        b=b,
-        net=relational_net,
-    )
+    control_net = HomoController(a=a, b=b, net=relational_net)
     return control_net
-
-
-class NormNet(nn.Module):
-    def __init__(self, p):
-        super().__init__()
-        self.p = p
-
-    def forward(self, x):
-        return F.normalize(x, dim=-1, p=self.p)
 
 
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     """
-    type: hetero, homo, ccts, or ccts-reduced
+    typ: hetero, homo, ccts, or ccts-reduced
+
+    I realize this attempt to combinator-ize the nn.Modules and reuse code
+    between the types is a mess and probably not good.
     """
     a = 4
+    if gumbel:
+        raise NotImplementedError()
+
     assert typ in ['hetero', 'homo', 'ccts', 'ccts-reduced']
+
     if typ == 'homo':
         return boxworld_homocontroller(b)
+
+    if typ in ['ccts', 'ccts-reduced']:
+        micro_net = nn.Sequential(
+            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                     input_channels=box_world.NUM_ASCII,
+                     out_dim=a * b),
+            FnModule(lambda x: rearrange(x, 'B (a b) -> B a b', a=a, b=b)),
+            nn.LogSoftmax(dim=-1),
+        )
+    else:
+        micro_net = nn.Sequential(
+            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                     input_channels=box_world.NUM_ASCII,
+                     # both P(a | s, b) and beta(s, b)
+                     out_dim=a * b + 2 * b),
+            multi_head(a * b + 2 * b, [a * b, 2 * b]),
+            FnModule(lambda x: (rearrange(x[0], 'B (b a) -> B b a', b=b),
+                                rearrange(x[1], 'B (b two) -> B b two', b=b))),
+            tuple_module((nn.LogSoftmax(dim=-1), nn.LogSoftmax(dim=-1))),
+        )
+
     if typ == 'ccts-reduced':
-        micro_out_dim = a * b
         macro_trans_in_dim = b
         model = ConsistencyStopControllerReduced
     elif typ == 'ccts':
-        micro_out_dim = a * b
         macro_trans_in_dim = b + t
         model = ConsistencyStopController
     else:
         assert typ == 'hetero'
-        # both P(a | s, b) and beta(s, b)
-        micro_out_dim = a * b + 2 * b
+        print('hello')
         macro_trans_in_dim = b + t
         model = HeteroController
 
+    tau_norm_module = FnModule(lambda x: F.normalize(x, dim=-1, p=tau_lp_norm))
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
-                            NormNet(p=tau_lp_norm))
-    input_shape = (14, 14)  # assume default box world grid size
-    micro_net = MicroNet(input_shape=input_shape,
-                         input_channels=box_world.NUM_ASCII,
-                         out_dim=micro_out_dim)
-    macro_policy_net = FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32)
-    solved_net = FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32)
-    macro_transition_net = FC(input_dim=macro_trans_in_dim, output_dim=t, num_hidden=2, hidden_dim=32)
-    return model(a, b, t, tau_net, micro_net, macro_policy_net, macro_transition_net, solved_net)
+                            tau_norm_module)
+
+    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32),
+                                     nn.LogSoftmax(dim=-1))
+
+    macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
+                                            output_dim=t,
+                                            num_hidden=2,
+                                            hidden_dim=32),
+                                         tau_norm_module)
+
+    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32),
+                               nn.LogSoftmax(dim=-1))
+
+    return model(a=a, b=b, t=t,
+                 tau_net=tau_net,
+                 micro_net=micro_net,
+                 macro_policy_net=macro_policy_net,
+                 macro_transition_net=macro_transition_net,
+                 solved_net=solved_net,
+                 tau_lp_norm=tau_lp_norm)

@@ -197,6 +197,7 @@ def boxworld_main():
     # 2c2dc9a899d34e7395f39ef51d215e12 AP=0, 80%
     # 119740d4f6d54480909834cfe7b713b9 AP=1, 69%
     # 6fede0b62bef4bf0a834ba09b32f1f97 AP=2, 50%
+
     # model_load_path='models/119740d4f6d54480909834cfe7b713b9.pt'
     # model = utils.load_model(model_load_path)
     # state_dict = adjust_state_dict(model.state_dict())
@@ -219,7 +220,21 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
-    boxworld_main()
+    random.seed(1)
+    torch.manual_seed(1)
+
+    control_net = boxworld_controller(b=5)
+    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=5, traj=True)
+    dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
+    for s_i_batch, actions_batch, lengths, masks in dataloader:
+        action_logps, stop_logps, start_logps, causal_pens, solved = control_net(s_i_batch, batched=True)
+        print(f'action_logps: {action_logps.sum()}')
+        print(f'stop_logps: {stop_logps.sum()}')
+        print(f'start_logps: {start_logps.sum()}')
+        print(f'causal_pens: {causal_pens.sum()}')
+        print(f'solved: {solved.sum()}')
+
+    # boxworld_main()
     # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'
     # net = utils.load_model(model_load_path)
     # env = box_world.BoxWorldEnv(max_num_steps=70)
