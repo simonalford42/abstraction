@@ -229,13 +229,13 @@ if __name__ == '__main__':
     control_net = boxworld_controller(b=5)
     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=5, traj=True)
     dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
-    total = 0
     for s_i_batch, actions_batch, lengths, masks in dataloader:
         action_logps, stop_logps, start_logps, causal_pens, solved = control_net(s_i_batch, batched=True)
-        total = action_logps.sum() + stop_logps.sum() + start_logps.sum() + causal_pens.sum() + solved.sum()
-
-    print(f'total: {total}')
-
+        print(action_logps.sum())
+        print(stop_logps.sum())
+        print(start_logps.sum())
+        print(causal_pens.sum())
+        print(solved.sum())
 
     # boxworld_main()
     # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'

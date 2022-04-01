@@ -32,6 +32,8 @@ STOP_IX = 0
 CONTINUE_IX = 1 - STOP_IX
 UNSOLVED_IX, SOLVED_IX = 0, 1
 
+DEFAULT_GRID_SIZE = (14, 14)
+
 
 class BoxWorldEnv(gym.Env):
     """
