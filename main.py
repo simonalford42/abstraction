@@ -231,11 +231,11 @@ if __name__ == '__main__':
     dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
     for s_i_batch, actions_batch, lengths, masks in dataloader:
         action_logps, stop_logps, start_logps, causal_pens, solved = control_net(s_i_batch, batched=True)
-        print(action_logps.sum())
-        print(stop_logps.sum())
-        print(start_logps.sum())
-        print(causal_pens.sum())
-        print(solved.sum())
+        print(f'action_logps: {action_logps.sum()}')
+        print(f'stop_logps: {stop_logps.sum()}')
+        print(f'start_logps: {start_logps.sum()}')
+        print(f'causal_pens: {causal_pens.sum()}')
+        print(f'solved: {solved.sum()}')
 
     # boxworld_main()
     # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'

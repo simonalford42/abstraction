@@ -374,7 +374,6 @@ class HeteroController(nn.Module):
         """
         B, T, *s = s_i_batch.shape
         s_i_flattened = s_i_batch.reshape(B * T, *s)
-
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
@@ -386,6 +385,7 @@ class HeteroController(nn.Module):
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
+        print('t_i sum', t_i.sum())
         causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
@@ -462,7 +462,7 @@ class HeteroController(nn.Module):
 
         t_i_flat = rearrange(t_i_batch, 'B T t -> (B T) t')
         macro_trans = self.macro_transitions(t_i_flat,
-                                              torch.arange(self.b, device=DEVICE))
+                                             torch.arange(self.b, device=DEVICE))
         macro_trans = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
         t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
@@ -653,50 +653,50 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     if typ == 'homo':
         return boxworld_homocontroller(b)
 
-    actions_micro_net = nn.Sequential(
-        MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                 input_channels=box_world.NUM_ASCII,
-                 out_dim=a * b),
-        FnModule(lambda x: rearrange(x, 'B (a b) -> B a b', a=a, b=b)),
-        nn.LogSoftmax(dim=-1),
-    )
-    actions_and_stop_micro_net = nn.Sequential(
-        MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                 input_channels=box_world.NUM_ASCII,
-                 # both P(a | s, b) and beta(s, b)
-                 out_dim=a * b + 2 * b),
-        multi_head(a * b + 2 * b, [a * b, 2 * b]),
-        FnModule(lambda x: (rearrange(x[0], 'B (a b) -> B a b', a=a, b=b),
-                            x[1])),
-        tuple_module((nn.LogSoftmax(dim=-1), nn.LogSoftmax(dim=-1))),
-    )
+    if typ in ['ccts', 'ccts-reduced']:
+        micro_net = nn.Sequential(
+            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                     input_channels=box_world.NUM_ASCII,
+                     out_dim=a * b),
+            FnModule(lambda x: rearrange(x, 'B (a b) -> B a b', a=a, b=b)),
+            nn.LogSoftmax(dim=-1),
+        )
+    else:
+        micro_net = nn.Sequential(
+            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                     input_channels=box_world.NUM_ASCII,
+                     # both P(a | s, b) and beta(s, b)
+                     out_dim=a * b + 2 * b),
+            multi_head(a * b + 2 * b, [a * b, 2 * b]),
+            FnModule(lambda x: (rearrange(x[0], 'B (b a) -> B b a', b=b),
+                                rearrange(x[1], 'B (b two) -> B b two', b=b))),
+            tuple_module((nn.LogSoftmax(dim=-1), nn.LogSoftmax(dim=-1))),
+        )
 
     if typ == 'ccts-reduced':
         macro_trans_in_dim = b
         model = ConsistencyStopControllerReduced
-        micro_net = actions_micro_net
     elif typ == 'ccts':
         macro_trans_in_dim = b + t
         model = ConsistencyStopController
-        micro_net = actions_micro_net
     else:
         assert typ == 'hetero'
+        print('hello')
         macro_trans_in_dim = b + t
         model = HeteroController
-        micro_net = actions_and_stop_micro_net
 
     tau_norm_module = FnModule(lambda x: F.normalize(x, dim=-1, p=tau_lp_norm))
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_norm_module)
+
+    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32),
+                                     nn.LogSoftmax(dim=-1))
 
     macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
                                             output_dim=t,
                                             num_hidden=2,
                                             hidden_dim=32),
                                          tau_norm_module)
-
-    macro_policy_net =nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32),
-                                    nn.LogSoftmax(dim=-1))
 
     solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32),
                                nn.LogSoftmax(dim=-1))

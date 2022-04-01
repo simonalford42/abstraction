@@ -56,6 +56,7 @@ class MicroNet(nn.Module):
 
             x = einops.rearrange(x, 'n c h w -> n (c h w)')
             x = self.fc(x)
+            print(f'sum: {x.sum()}')
             return x
 
 
