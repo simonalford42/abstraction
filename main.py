@@ -223,6 +223,9 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
+    random.seed(1)
+    torch.manual_seed(1)
+
     control_net = boxworld_controller(b=5)
     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=5, traj=True)
     dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
