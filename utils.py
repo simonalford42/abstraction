@@ -147,8 +147,6 @@ class NoMlflowRun():
         Out = namedtuple('Out', 'info')
         Out2 = namedtuple('Out2', 'run_id')
         out = Out(info=Out2(run_id=generate_uuid()))
-        print(out.info)
-        print(out.info.run_id)
         return out
 
     def set_experiment(self, *args, **kwargs):

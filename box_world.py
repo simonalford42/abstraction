@@ -77,10 +77,14 @@ class BoxWorldEnv(gym.Env):
         obs, reward, _ = self.game.its_showtime()
         assert reward is None
         obs = self.process_obs(obs)
+        self.done = False
+        self.solved = False
         return obs
 
     def process_obs(self, obs) -> np.ndarray:
-        return np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
+        obs = np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
+        self.obs = obs
+        return obs
 
     def step(self, action: int) -> Tuple[Any, float, bool, dict]:
         """
@@ -99,6 +103,8 @@ class BoxWorldEnv(gym.Env):
         obs = self.process_obs(obs)
         self.obs = obs
         done = self.game.game_over
+        self.done = done
+        self.solved = reward == bw.REWARD_GOAL
         return obs, reward, done, dict()
 
 
@@ -466,6 +472,7 @@ j       (b, 2) stop logps
     if verbose:
         print(f'Evaluating model on {n} episodes')
     cc_losses = []
+    correct_solved_preds = 0
 
     for i in range(n):
         obs = env.reset()
@@ -474,6 +481,7 @@ j       (b, 2) stop logps
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
+        correct_solved_pred = True
         t = 0
         options = []
         moves_without_moving = 0
@@ -491,6 +499,8 @@ j       (b, 2) stop logps
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+                if is_solved_pred:
+                    correct_solved_pred = False
 
             if current_option is not None:
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
@@ -547,9 +557,11 @@ j       (b, 2) stop logps
                 _, _, _, solved_logits = control_net.eval_obs(obs)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
 
-                false_neg_denom += 1
                 if not is_solved_pred:
-                    solved_false_neg += 1
+                    correct_solved_pred = False
+                else:
+                    if correct_solved_pred:
+                        correct_solved_preds += 1
 
             # add cc loss from last action.
             if check_cc:
@@ -562,14 +574,15 @@ j       (b, 2) stop logps
             render_obs(options_trace, title=f'{solved=}', pause=3)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
-                                                   name='orange=new option')
+                                               name='orange=new option')
 
     if run and check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
-    # if check_solved:
-        # print(f'Early solved %: {solved_false_pos/false_pos_denom:.2f}')
-        # print(f'Missed solved %: {solved_false_neg/false_neg_denom:.2f}')
+    if check_solved:
+        solved_acc = correct_solved_preds / num_solved
+        print(f'Correct solved pred %: {solved_acc:.2f}')
+        run[f'test/solved pred acc'].log(solved_acc)
 
     control_net.train()
     # print(f'Solved {num_solved}/{n} episodes')

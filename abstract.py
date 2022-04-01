@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from einops import rearrange, repeat
+import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC
 import box_world
@@ -512,19 +513,23 @@ class HeteroController(nn.Module):
         """
         b, t = self.b, self.t
         start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        start_logps = F.log_softmax(start_logps, dim=0)
         new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
+        solveds = F.log_softmax(solveds, dim=1)
         assert_shape(solveds, (b, 2))
         return start_logps, new_taus, solveds
 
-    def solved_logp(self, t_i):
+    def solved_logps(self, t_i):
         """
         t_i: (t, ) tensor
         Returns: (2, ) logps of probability solved/unsolved (use box_world.[UN]SOLVED_IX)
         """
-        return self.solved_net(t_i.unsqueeze(0))[0]
+        solved_logps = self.solved_net(t_i.unsqueeze(0))[0]
+        solved_logps = F.softmax(solved_logps, dim=0)
+        return solved_logps
 
     def micro_policy(self, s_i, b):
         """
@@ -641,6 +646,7 @@ def boxworld_homocontroller(b):
                                       num_attn_blocks=2,
                                       num_heads=4,
                                       out_dim=out_dim).to(DEVICE)
+    print(f'relational net params={utils.num_params(relational_net)}')
     control_net = HomoController(
         a=4,
         b=b,

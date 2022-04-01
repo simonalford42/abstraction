@@ -29,9 +29,7 @@ def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):
     """
     B, max_T = action_logps.shape[0:2]
     # (t, B, b, c, e), but dim 0 is a list, and dim 2 increases by one each step
-    f = [torch.full((B, b, max(1, t), 2), float('-inf'), device=DEVICE,
-                    names=('B', 'b', 'c', 'e'))
-         for t in range(max_T+1)]
+    f = [torch.full((B, b, max(1, t), 2), float('-inf'), device=DEVICE) for t in range(max_T+1)]
     f[0][:, 0, 0, 1] = 0
 
     for t in range(1, max_T+1):
