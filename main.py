@@ -32,7 +32,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     while updates < params['traj_updates']:
         if epoch and epoch % 100 == 0:
             print('reloading data')
-            data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch),
+            data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
                                              n=params['n'], traj=True)
             dataloader = DataLoader(data, batch_size=params['batch_size'],
                                     shuffle=False, collate_fn=box_world.traj_collate)
@@ -75,7 +75,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
                             'loss': train_loss,
                             'time': time.time() - start}, step=epoch)
 
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0:
+        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
             path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
             run['models'].log(path)
 
@@ -132,22 +132,20 @@ def adjust_state_dict(state_dict):
 
 def boxworld_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cc', type=float, default=1.0)
+    parser.add_argument('--cc_pen', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
-    parser.add_argument('--hmm', action='store_true')
-    parser.add_argument('--sv', action='store_true')
-    parser.add_argument('--homo', action='store_true')
+    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
+    parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     args = parser.parse_args()
 
-    random.seed(1)
-    torch.manual_seed(1)
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
 
     if args.neptune:
         run = neptune.init(
-            project="simonalford42/abstraction",
-            api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
+            project="simonalford42/abstraction", api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
         )
     else:
         run = utils.NoLogRun()
@@ -159,15 +157,13 @@ def boxworld_main():
 
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=10000, num_test=200, traj_updates=1E4, num_tests=2, num_saves=1,
-        # traj_updates=1E7,  # default: 1E7
-        # num_saves=20, num_tests=20,
+        n=20000,
+        traj_updates=1E7,  # default: 1E7
+        num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
-        cc_weight=args.cc, abstract_pen=args.abstract_pen,
-        hmm=args.hmm, homo=args.homo, sv=args.sv,
-        no_log=args.no_log,
         # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
     )
+    params.update(vars(args))
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -176,7 +172,7 @@ def boxworld_main():
             assert args.hmm
             control_net = boxworld_homocontroller(b=params['b'])
         else:
-            control_net = boxworld_controller(b=params['b'])
+            control_net = boxworld_controller(b=params['b'], )
         if args.hmm:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
             model_type = 'hmm'
@@ -201,13 +197,13 @@ def boxworld_main():
     # 2c2dc9a899d34e7395f39ef51d215e12 AP=0, 80%
     # 119740d4f6d54480909834cfe7b713b9 AP=1, 69%
     # 6fede0b62bef4bf0a834ba09b32f1f97 AP=2, 50%
-    model_load_path='models/119740d4f6d54480909834cfe7b713b9.pt'
-    model = utils.load_model(model_load_path)
-    state_dict = adjust_state_dict(model.state_dict())
-    net.load_state_dict(state_dict, strict=False)
+    # model_load_path='models/119740d4f6d54480909834cfe7b713b9.pt'
+    # model = utils.load_model(model_load_path)
+    # state_dict = adjust_state_dict(model.state_dict())
+    # net.load_state_dict(state_dict, strict=False)
 
     net = net.to(DEVICE)
-    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=params['n'], traj=True)
+    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
     dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
 
     with Timing('Completed training'):

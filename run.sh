@@ -13,11 +13,14 @@
  # total limit (hh:mm:ss)
 #SBATCH -t 72:00:00
 #xSBATCH --mem=65G
-#SBATCH --mem=20G
+#SBATCH --mem=40G
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu
 #xSBATCH --partition=ellis
-python -u main.py "$@"
-# python -u main_old.py
+python -u main.py --seed 1 "$@"
 echo repeating
-python -u main.py "$@"
+python -u main.py --seed 2 "$@"
+echo repeating
+python -u main.py --seed 3 "$@"
+echo repeating
+python -u main.py --seed 4 "$@"

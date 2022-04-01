@@ -582,7 +582,7 @@ j       (b, 2) stop logps
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         run[f'test/cc loss avg'].log(cc_loss_avg)
     if check_solved:
-        solved_acc = correct_solved_preds / num_solved
+        solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
         print(f'Correct solved pred %: {solved_acc:.2f}')
         run[f'test/solved pred acc'].log(solved_acc)
 
