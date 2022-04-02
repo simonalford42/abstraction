@@ -156,10 +156,10 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=20000,
-        traj_updates=1E7,  # default: 1E7
-        num_saves=20, num_tests=20, num_test=200,
+        n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
+        # n=5000,
+        # traj_updates=1E7,  # default: 1E7
+        # num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
         # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
     )
@@ -167,22 +167,21 @@ def boxworld_main():
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
+    elif args.model == 'sv':
+        net = SVNet(boxworld_homocontroller(b=1))
     else:
-        if args.homo:
-            assert args.hmm
+        if args.model == 'hmm-homo':
             control_net = boxworld_homocontroller(b=params['b'])
         else:
-            control_net = boxworld_controller(b=params['b'], )
-        if args.hmm:
+            typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
+            control_net = boxworld_controller(b=params['b'], typ=typ)
+        if args.model in ['hmm', 'hmm-homo']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
-            model_type = 'hmm'
-        elif args.sv:
-            net = SVNet(boxworld_homocontroller(b=1))
-            model_type = 'sv'
+        elif args.model == 'cc':
+            net = CausalNet(control_net, cc_weight=params['cc_pen'], abstract_pen=params['abstract_pen'])
         else:
-            net = CausalNet(control_net, cc_weight=params['cc_weight'], abstract_pen=params['abstract_pen'])
-            model_type = 'causal'
-    params['model_type'] = model_type
+            raise NotImplementedError()
+
     params['device'] = torch.cuda.get_device_name(DEVICE)
     params['epochs'] = int(params['traj_updates'] / params['n'])
     if params['num_tests'] == 0:
@@ -224,15 +223,18 @@ if __name__ == '__main__':
     torch.manual_seed(1)
 
     control_net = boxworld_controller(b=5)
+    control_net = control_net.to(DEVICE)
     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=5, traj=True)
     dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
     for s_i_batch, actions_batch, lengths, masks in dataloader:
+        s_i_batch = s_i_batch.to(DEVICE)
         action_logps, stop_logps, start_logps, causal_pens, solved = control_net(s_i_batch, batched=True)
         print(f'action_logps: {action_logps.sum()}')
         print(f'stop_logps: {stop_logps.sum()}')
         print(f'start_logps: {start_logps.sum()}')
         print(f'causal_pens: {causal_pens.sum()}')
         print(f'solved: {solved.sum()}')
+
 
     # boxworld_main()
     # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'

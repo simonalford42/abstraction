@@ -56,7 +56,6 @@ class MicroNet(nn.Module):
 
             x = einops.rearrange(x, 'n c h w -> n (c h w)')
             x = self.fc(x)
-            print(f'sum: {x.sum()}')
             return x
 
 
@@ -217,26 +216,6 @@ class FC(nn.Module):
     def forward(self, x):
         # x = self.tensor(x)
         return self.net(x)
-
-
-class FnModule(nn.Module):
-    def __init__(self, fn):
-        super().__init__()
-        self.fn = fn
-
-    def forward(self, x):
-        return self.fn(x)
-
-
-def multi_head(input_dim, output_dims) -> FnModule:
-    if sum(output_dims) != input_dim:
-        raise ValueError(f'Output dims {output_dims} do not sum to input dim {input_dim}')
-    fence_posts = np.concatenate(([0], np.cumsum(output_dims)))
-    return FnModule(lambda x: tuple(x[:, a:b] for (a, b) in zip(fence_posts, fence_posts[1:])))
-
-
-def tuple_module(modules):
-    return FnModule(lambda x: tuple(module(xi) for module, xi in zip(modules, x)))
 
 
 class AllConv(nn.Module):

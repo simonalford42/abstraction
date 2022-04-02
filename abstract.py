@@ -5,7 +5,7 @@ import torch
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC, FnModule, multi_head, tuple_module
+from modules import MicroNet, RelationalDRLNet, FC
 import box_world
 
 # for tensor typing
@@ -385,7 +385,6 @@ class HeteroController(nn.Module):
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
-        print('t_i sum', t_i.sum())
         causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
@@ -637,6 +636,50 @@ def boxworld_homocontroller(b):
     return control_net
 
 
+class ActionsMicroNet(nn.Module):
+    def __init__(self, a, b):
+        super().__init__()
+        self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                  input_channels=box_world.NUM_ASCII,
+                                  out_dim=a * b)
+        self.b = b
+
+    def forward(self, x):
+        x = self.micro_net(x)
+        x = rearrange(x, 'B (b a) -> B b a', b=self.b)
+        x = F.log_softmax(x, dim=-1)
+        return x
+
+
+class ActionsAndStopsMicroNet(nn.Module):
+    def __init__(self, a, b):
+        super().__init__()
+        self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                  input_channels=box_world.NUM_ASCII,
+                                  out_dim=a * b + 2 * b)
+        self.a = a
+        self.b = b
+
+    def forward(self, x):
+        x = self.micro_net(x)
+        action_logps = x[:, :self.a * self.b]
+        stop_logps = x[:, self.a * self.b:]
+        action_logps = rearrange(action_logps, 'B (b a) -> B b a', b=self.b)
+        stop_logps = rearrange(stop_logps, 'B (b two) -> B b two', b=self.b)
+        action_logps = F.log_softmax(action_logps, dim=-1)
+        stop_logps = F.log_softmax(stop_logps, dim=-1)
+        return action_logps, stop_logps
+
+
+class NormModule(nn.Module):
+    def __init__(self, p):
+        super().__init__()
+        self.p = p
+
+    def forward(self, x):
+        return F.normalize(x, dim=-1, p=self.p)
+
+
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
     """
     typ: hetero, homo, ccts, or ccts-reduced
@@ -654,24 +697,9 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
         return boxworld_homocontroller(b)
 
     if typ in ['ccts', 'ccts-reduced']:
-        micro_net = nn.Sequential(
-            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                     input_channels=box_world.NUM_ASCII,
-                     out_dim=a * b),
-            FnModule(lambda x: rearrange(x, 'B (a b) -> B a b', a=a, b=b)),
-            nn.LogSoftmax(dim=-1),
-        )
+        micro_net = ActionsMicroNet(a, b)
     else:
-        micro_net = nn.Sequential(
-            MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                     input_channels=box_world.NUM_ASCII,
-                     # both P(a | s, b) and beta(s, b)
-                     out_dim=a * b + 2 * b),
-            multi_head(a * b + 2 * b, [a * b, 2 * b]),
-            FnModule(lambda x: (rearrange(x[0], 'B (b a) -> B b a', b=b),
-                                rearrange(x[1], 'B (b two) -> B b two', b=b))),
-            tuple_module((nn.LogSoftmax(dim=-1), nn.LogSoftmax(dim=-1))),
-        )
+        micro_net = ActionsAndStopsMicroNet(a, b)
 
     if typ == 'ccts-reduced':
         macro_trans_in_dim = b
@@ -681,11 +709,11 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
         model = ConsistencyStopController
     else:
         assert typ == 'hetero'
-        print('hello')
         macro_trans_in_dim = b + t
         model = HeteroController
 
-    tau_norm_module = FnModule(lambda x: F.normalize(x, dim=-1, p=tau_lp_norm))
+
+    tau_norm_module = NormModule(p=tau_lp_norm)
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_norm_module)
 

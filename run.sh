@@ -18,9 +18,9 @@
 #SBATCH --partition=gpu
 #xSBATCH --partition=ellis
 python -u main.py --seed 1 "$@"
-echo repeating
-python -u main.py --seed 2 "$@"
-echo repeating
-python -u main.py --seed 3 "$@"
-echo repeating
-python -u main.py --seed 4 "$@"
+# echo repeating
+# python -u main.py --seed 2 "$@"
+# echo repeating
+# python -u main.py --seed 3 "$@"
+# echo repeating
+# python -u main.py --seed 4 "$@"
