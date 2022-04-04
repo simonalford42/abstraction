@@ -18,12 +18,6 @@ from profiler import profile
 from torch.distributions import Categorical
 import torch.nn as nn
 from pycolab.examples.research.box_world import box_world as bw
-MAX_LEN = 66
-# from ffcv.loader import Loader, OrderOption
-# from ffcv.fields import NDArrayField, FloatField, IntField
-# from ffcv.fields.decoders import BytesDecoder, IntDecoder, NDArrayDecoder
-# from ffcv.transforms import ToTensor, ToDevice
-# from ffcv.writer import DatasetWriter
 
 
 NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
@@ -449,8 +443,6 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
             moves.append(bw.ACTION_WEST)
 
     assert done, 'uh oh, our path solver didnt actually solve'
-    if len(moves) > MAX_LEN:
-        raise RuntimeError(f'Bigger length found: {len(moves)}')
     return states, moves
 
 

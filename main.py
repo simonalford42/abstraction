@@ -32,13 +32,14 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     while updates < params['traj_updates']:
         if epoch and epoch % 100 == 0:
             print('reloading data')
+            del dataloader
             data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
                                              n=params['n'], traj=True)
             dataloader = DataLoader(data, batch_size=params['batch_size'],
                                     shuffle=False, collate_fn=box_world.traj_collate)
 
-        # if hasattr(dataloader.dataset, 'shuffle'):
-            # dataloader.dataset.shuffle(batch_size=params['batch_size'])
+        if hasattr(dataloader.dataset, 'shuffle'):
+            dataloader.dataset.shuffle(batch_size=params['batch_size'])
 
         train_loss = 0
         start = time.time()
@@ -138,6 +139,7 @@ def boxworld_main():
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
+    parser.add_argument('--n', type=int, default=5000)
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -156,10 +158,10 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        # n=5000,
-        # traj_updates=1E7,  # default: 1E7
-        # num_saves=20, num_tests=20, num_test=200,
+        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
+        n=args.n,
+        traj_updates=1E7,  # default: 1E7
+        num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
         # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
     )
@@ -219,25 +221,4 @@ def boxworld_main():
 
 
 if __name__ == '__main__':
-    random.seed(1)
-    torch.manual_seed(1)
-
-    control_net = boxworld_controller(b=5)
-    control_net = control_net.to(DEVICE)
-    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(), n=5, traj=True)
-    dataloader = DataLoader(data, batch_size=5, shuffle=False, collate_fn=box_world.traj_collate)
-    for s_i_batch, actions_batch, lengths, masks in dataloader:
-        s_i_batch = s_i_batch.to(DEVICE)
-        action_logps, stop_logps, start_logps, causal_pens, solved = control_net(s_i_batch, batched=True)
-        print(f'action_logps: {action_logps.sum()}')
-        print(f'stop_logps: {stop_logps.sum()}')
-        print(f'start_logps: {start_logps.sum()}')
-        print(f'causal_pens: {causal_pens.sum()}')
-        print(f'solved: {solved.sum()}')
-
-
-    # boxworld_main()
-    # model_load_path = 'models/d1b71848613045649b9f9e3dd788978f.pt'
-    # net = utils.load_model(model_load_path)
-    # env = box_world.BoxWorldEnv(max_num_steps=70)
-    # env = box_world.BoxWorldEnv(max_num_steps=70, solution_length=(4, ), num_forward=(1, 2, 3, 4), branch_length=2)
+    boxworld_main()
