@@ -140,6 +140,7 @@ def boxworld_main():
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=5000)
+    parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -163,7 +164,7 @@ def boxworld_main():
         traj_updates=1E7,  # default: 1E7
         num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
-        # model_load_path='models/30025e8fdfa64768b7dcb86b194d60a1-epoch-2000.pt'
+        model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
     )
     params.update(vars(args))
 
@@ -184,7 +185,7 @@ def boxworld_main():
         else:
             raise NotImplementedError()
 
-    params['device'] = torch.cuda.get_device_name(DEVICE)
+    params['device'] = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
     params['epochs'] = int(params['traj_updates'] / params['n'])
     if params['num_tests'] == 0:
         params['test_every'] = False
@@ -204,18 +205,21 @@ def boxworld_main():
     # state_dict = adjust_state_dict(model.state_dict())
     # net.load_state_dict(state_dict, strict=False)
 
-    net = net.to(DEVICE)
-    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+    if args.eval:
+        box_world.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=10, option='verbose')
+    else:
+        net = net.to(DEVICE)
+        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
+        dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
 
-    with Timing('Completed training'):
-        with mlflow.start_run():
-            params['id'] = mlflow.active_run().info.run_id
-            run['params'] = params
-            mlflow.log_params(params)
-            print(f"Starting run:\n{mlflow.active_run().info.run_id}")
-            print(f"params: {params}")
-            train(run, dataloader, net, params)
+        with Timing('Completed training'):
+            with mlflow.start_run():
+                params['id'] = mlflow.active_run().info.run_id
+                run['params'] = params
+                mlflow.log_params(params)
+                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+                print(f"params: {params}")
+                train(run, dataloader, net, params)
 
     run.stop()
 

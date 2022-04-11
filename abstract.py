@@ -316,9 +316,13 @@ class ConsistencyStopController(nn.Module):
         return stop_logps
 
 
+def noisify_tau(t_i, noise_std):
+    return t_i + torch.normal(torch.zeros(t_i.shape), torch.tensor(noise_std, device=DEVICE))
+
+
 class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm):
+                 macro_transition_net, solved_net, tau_lp_norm, tau_noise_std):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -330,6 +334,7 @@ class HeteroController(nn.Module):
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
         self.tau_lp_norm = tau_lp_norm
         self.solved_net = solved_net  # t -> 2
+        self.tau_noise_std = tau_noise_std
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -353,10 +358,12 @@ class HeteroController(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
                                    torch.ones(T, device=DEVICE))
+        noised_t_i = noisify_tau(t_i, self.tau_noise_std)
+
         action_logps, stop_logps = self.micro_net(s_i)
-        start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
+        start_logps = self.macro_policy_net(noised_t_i)  # (T, b) aka P(b | t)
         causal_pens = self.calc_causal_pens_ub(t_i)  # (T, T, b)
-        solved = self.solved_net(t_i)
+        solved = self.solved_net(noised_t_i)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
 
@@ -375,15 +382,17 @@ class HeteroController(nn.Module):
         B, T, *s = s_i_batch.shape
         s_i_flattened = s_i_batch.reshape(B * T, *s)
         t_i_flattened = self.tau_net(s_i_flattened)
+        noised_t_i_flattened = noisify_tau(t_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
+        # noised_t_i = noised_t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
                                    torch.ones(B, T, device=DEVICE))
 
         action_logps, stop_logps = self.micro_net(s_i_flattened)
         action_logps = action_logps.reshape(B, T, self.b, self.a)
         stop_logps = stop_logps.reshape(B, T, self.b, 2)
-        start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
-        solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
+        start_logps = self.macro_policy_net(noised_t_i_flattened).reshape(B, T, self.b)
+        solved = self.solved_net(noised_t_i_flattened).reshape(B, T, 2)
 
         causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
 
@@ -392,6 +401,7 @@ class HeteroController(nn.Module):
     def macro_transition(self, t, b):
         """
         Calculate a single abstract transition. Useful for test-time.
+        Does not apply noise to abstract state.
         """
         return self.macro_transitions(t.unsqueeze(0),
                                       torch.tensor([b], device=DEVICE)).reshape(self.t)
@@ -399,11 +409,14 @@ class HeteroController(nn.Module):
     def tau_embed(self, s):
         """
         Calculate the embedding of a single state. Returns (t, ) tensor.
+        Does not apply noise to abstract state.
         """
         return self.tau_net(s.unsqueeze(0))[0]
 
     def macro_transitions(self, t_i, bs):
-        """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+        """
+        Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
+        Does not apply noise to abstract state.
 
 
         Args:
@@ -427,47 +440,49 @@ class HeteroController(nn.Module):
         new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
         return new_t_i
 
-    def calc_causal_pens_ub(self, t_i):
-        """For each pair of indices and each option, calculates (t - alpha(b, t))^2
+    def calc_causal_pens_ub(self, t_i, noised_t_i):
+        """
+        For each pair of indices and each option, calculates (t - alpha(b, t))^2
 
         Args:
             t_i: (T, t) tensor of abstract states
+            noised_t_i: (T, t) tensor of noisified abstract states
 
         Returns:
             (T, T, b) tensor of penalties
         """
         T = t_i.shape[0]
         # apply each action at each timestep.
-        macro_trans = self.macro_transitions(t_i, torch.arange(self.b, device=DEVICE))
-        macro_trans1 = rearrange(macro_trans, 'T nb t -> T 1 nb t')
+        macro_trans = self.macro_transitions(noised_t_i, torch.arange(self.b, device=DEVICE))
+        macro_trans2 = rearrange(macro_trans, 'T nb t -> T 1 nb t')
         t_i2 = rearrange(t_i, 'T t -> 1 T 1 t')
         # (start, end, action, t value)
-        penalty = (t_i2 - macro_trans1)**2
+        penalty = (t_i2 - macro_trans2)**2
         assert_equal(penalty.shape, (T, T, self.b, self.t))
         # L1 norm
         penalty = penalty.sum(dim=-1)  # (T, T, self.b)
         return penalty
 
-    def calc_causal_pens_b(self, t_i_batch):
+    def calc_causal_pens_b(self, t_i_batch, noised_t_i_flattened):
         """For each pair of indices and each option, calculates (t - alpha(b, t))^2
 
         Args:
             t_i_batch: (B, T, t) tensor of abstract states
+            noised_t_i_flattened: (B * T, t) tensor of abstract states
 
         Returns:
             (B, T, T, b) tensor of penalties
         """
         B, T = t_i_batch.shape[0:2]
 
-        t_i_flat = rearrange(t_i_batch, 'B T t -> (B T) t')
-        macro_trans = self.macro_transitions(t_i_flat,
+        macro_trans = self.macro_transitions(noised_t_i_flattened,
                                              torch.arange(self.b, device=DEVICE))
-        macro_trans = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
+        macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
         t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
 
         # (start, end, action, t value)
-        penalty = (t_i2 - macro_trans)**2
+        penalty = (t_i2 - macro_trans2)**2
         assert_shape(penalty, (B, T, T, self.b, self.t))
         penalty = penalty.sum(dim=-1)  # (B, T, T, b)
         return penalty
@@ -499,12 +514,10 @@ class HeteroController(nn.Module):
         """
         b, t = self.b, self.t
         start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
-        start_logps = F.log_softmax(start_logps, dim=0)
         new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
-        solveds = F.log_softmax(solveds, dim=1)
         assert_shape(solveds, (b, 2))
         return start_logps, new_taus, solveds
 
@@ -514,7 +527,6 @@ class HeteroController(nn.Module):
         Returns: (2, ) logps of probability solved/unsolved (use box_world.[UN]SOLVED_IX)
         """
         solved_logps = self.solved_net(t_i.unsqueeze(0))[0]
-        solved_logps = F.softmax(solved_logps, dim=0)
         return solved_logps
 
     def micro_policy(self, s_i, b):
@@ -524,12 +536,8 @@ class HeteroController(nn.Module):
             (a,) action logps,)
             (2,) stop logps
         """
-        micro_out = self.micro_net(s_i.unsqueeze(0))[0]
-        action_logps = rearrange(micro_out[:self.b * self.a], '(b a) -> b a', b=self.b)
-        stop_logps = rearrange(micro_out[self.b * self.a:], '(b two) -> b two', b=self.b)
-        action_logps = action_logps[b]
-        stop_logps = stop_logps[b]
-        return action_logps, stop_logps
+        action_logps, stop_logps = self.micro_net(s_i.unsqueeze(0))
+        return action_logps[0, b], stop_logps[0, b]
 
 
 class HomoController(nn.Module):
@@ -680,7 +688,7 @@ class NormModule(nn.Module):
         return F.normalize(x, dim=-1, p=self.p)
 
 
-def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
+def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
     """
     typ: hetero, homo, ccts, or ccts-reduced
 
@@ -712,10 +720,9 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
         macro_trans_in_dim = b + t
         model = HeteroController
 
-
-    tau_norm_module = NormModule(p=tau_lp_norm)
+    tau_module = NormModule(p=tau_lp_norm)
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
-                            tau_norm_module)
+                            tau_module)
 
     macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32),
                                      nn.LogSoftmax(dim=-1))
@@ -724,7 +731,7 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
                                             output_dim=t,
                                             num_hidden=2,
                                             hidden_dim=32),
-                                         tau_norm_module)
+                                         tau_module)
 
     solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32),
                                nn.LogSoftmax(dim=-1))
@@ -735,4 +742,5 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False):
                  macro_policy_net=macro_policy_net,
                  macro_transition_net=macro_transition_net,
                  solved_net=solved_net,
-                 tau_lp_norm=tau_lp_norm)
+                 tau_lp_norm=tau_lp_norm,
+                 tau_noise_std=tau_noise_std)

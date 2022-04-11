@@ -1,6 +1,7 @@
 import queue
 import os
 import random
+import copy
 
 from typing import Any, Optional, List, Tuple, Callable
 import gym
@@ -76,6 +77,11 @@ class BoxWorldEnv(gym.Env):
         self.done = False
         self.solved = False
         return obs
+
+
+    def copy(self):
+        return copy.deepcopy(self)
+
 
     def process_obs(self, obs) -> np.ndarray:
         obs = np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
@@ -493,6 +499,8 @@ j       (b, 2) stop logps
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+                print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
+                print(f'is_solved_pred: {is_solved_pred}')
                 if is_solved_pred:
                     correct_solved_pred = False
 
@@ -550,6 +558,8 @@ j       (b, 2) stop logps
                 # check that we predicted that we solved
                 _, _, _, solved_logits = control_net.eval_obs(obs)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+                print(f'END is_solved_pred: {is_solved_pred}')
+                print(f'solved_logits: {torch.exp(solved_logits)}')
 
                 if not is_solved_pred:
                     correct_solved_pred = False
@@ -566,6 +576,7 @@ j       (b, 2) stop logps
 
         if verbose:
             render_obs(options_trace, title=f'{solved=}', pause=3)
+            print(f'cc_losses: {cc_losses}')
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
@@ -575,11 +586,13 @@ j       (b, 2) stop logps
         run[f'test/cc loss avg'].log(cc_loss_avg)
     if check_solved:
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
-        print(f'Correct solved pred %: {solved_acc:.2f}')
-        run[f'test/solved pred acc'].log(solved_acc)
+        print(f'Correct solved pred: {solved_acc:.2f}')
+        print(f'correct_solved_preds: {correct_solved_preds}')
+        if run:
+            run[f'test/solved pred acc'].log(solved_acc)
 
     control_net.train()
-    # print(f'Solved {num_solved}/{n} episodes')
+    print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
     # for i in option_map:
@@ -733,32 +746,6 @@ class BoxWorldDataset(Dataset):
         assert_equal(len(ixs), n)
         self.traj_states[:n] = [self.traj_states[i] for i in ixs]
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
-
-
-def compress_state(state):
-    compressed = '\n'.join([''.join(r) for r in state])
-    # decompressed = decompress_state(compressed)
-    # assert np.all(decompressed == state)
-    return compressed
-
-
-def decompress_state(state):
-    return np.array([list(r) for r in state.split('\n')])
-
-
-class FinishTransform(nn.Module):
-    def __init__(self, batch_size):
-        super().__init__()
-        self.batch_size = batch_size
-
-    def forward(self, x):
-        return x.reshape(self.batch_size, -1, 24, 14, 14)
-
-
-@profile(sort_by='cumulative', lines_to_print=20, strip_dirs=True)
-def profile_traj_generation2(env):
-    for i in range(50):
-        generate_traj(env)
 
 
 if __name__ == '__main__':
