@@ -137,6 +137,7 @@ def boxworld_main():
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--noise', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=5000)
@@ -177,7 +178,7 @@ def boxworld_main():
             control_net = boxworld_homocontroller(b=params['b'])
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
-            control_net = boxworld_controller(b=params['b'], typ=typ)
+            control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.noise)
         if args.model in ['hmm', 'hmm-homo']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
         elif args.model == 'cc':
