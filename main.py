@@ -159,10 +159,10 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     params = dict(
-        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=args.n,
-        traj_updates=1E7,  # default: 1E7
-        num_saves=20, num_tests=20, num_test=200,
+        n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
+        # n=args.n,
+        # traj_updates=1E7,  # default: 1E7
+        # num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
         model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
     )
