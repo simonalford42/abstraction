@@ -136,13 +136,17 @@ def boxworld_main():
     parser.add_argument('--cc_pen', type=float, default=1.0)
     parser.add_argument('--abstract_pen', type=float, default=0.0)
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
-    parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--noise', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--n', type=int, default=5000)
+    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
     parser.add_argument('--eval', action='store_true')
     args = parser.parse_args()
+
+    if not args.seed:
+        seed = random.randint(0, 2**32 - 1)
+        args.seed = seed
 
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -161,11 +165,11 @@ def boxworld_main():
 
     params = dict(
         n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        # n=args.n,
+        # n=5000,
         # traj_updates=1E7,  # default: 1E7
         # num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
-        model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
+        # model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
     )
     params.update(vars(args))
 
@@ -179,7 +183,7 @@ def boxworld_main():
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.noise)
-        if args.model in ['hmm', 'hmm-homo']:
+        if args.model in ['hmm', 'hmm-homo', 'ccts']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
         elif args.model == 'cc':
             net = CausalNet(control_net, cc_weight=params['cc_pen'], abstract_pen=params['abstract_pen'])

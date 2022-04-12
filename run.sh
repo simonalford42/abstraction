@@ -4,7 +4,7 @@
  # job name
 #SBATCH -J sv
  # output file (%j expands to jobID)
-#SBATCH -o out/bw12_%A.out
+#SBATCH -o out/bw13_%A.out
  # total nodes
 #SBATCH -N 1
  # total cores
@@ -12,8 +12,8 @@
 #SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
 #SBATCH -t 72:00:00
-#SBATCH --mem=80G
-#xSBATCH --mem=40G
+#xSBATCH --mem=80G
+#SBATCH --mem=40G
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu
 #xSBATCH --partition=ellis

@@ -499,8 +499,9 @@ j       (b, 2) stop logps
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
-                print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
-                print(f'is_solved_pred: {is_solved_pred}')
+                if verbose:
+                    print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
+                    print(f'is_solved_pred: {is_solved_pred}')
                 if is_solved_pred:
                     correct_solved_pred = False
 
@@ -558,8 +559,9 @@ j       (b, 2) stop logps
                 # check that we predicted that we solved
                 _, _, _, solved_logits = control_net.eval_obs(obs)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
-                print(f'END is_solved_pred: {is_solved_pred}')
-                print(f'solved_logits: {torch.exp(solved_logits)}')
+                if verbose:
+                    print(f'END is_solved_pred: {is_solved_pred}')
+                    print(f'solved_logits: {torch.exp(solved_logits)}')
 
                 if not is_solved_pred:
                     correct_solved_pred = False

@@ -158,7 +158,7 @@ class ConsistencyStopController(nn.Module):
     alpha(b, tau(s)), beta(s_c, s_t). full abstract model, not markov
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm=1):
+                 macro_transition_net, solved_net, tau_lp_norm, tau_noise_std):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -170,6 +170,8 @@ class ConsistencyStopController(nn.Module):
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
         self.solved_net = solved_net  # t -> 2
         self.tau_lp_norm = tau_lp_norm
+        self.tau_noise_std = tau_noise_std
+        assert tau_noise_std == 0
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -317,7 +319,7 @@ class ConsistencyStopController(nn.Module):
 
 
 def noisify_tau(t_i, noise_std):
-    return t_i + torch.normal(torch.zeros(t_i.shape), torch.tensor(noise_std, device=DEVICE))
+    return t_i + torch.normal(torch.zeros_like(t_i), torch.tensor(noise_std, device=DEVICE))
 
 
 class HeteroController(nn.Module):
@@ -362,7 +364,7 @@ class HeteroController(nn.Module):
 
         action_logps, stop_logps = self.micro_net(s_i)
         start_logps = self.macro_policy_net(noised_t_i)  # (T, b) aka P(b | t)
-        causal_pens = self.calc_causal_pens_ub(t_i)  # (T, T, b)
+        causal_pens = self.calc_causal_pens_ub(t_i, noised_t_i)  # (T, T, b)
         solved = self.solved_net(noised_t_i)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
@@ -382,7 +384,7 @@ class HeteroController(nn.Module):
         B, T, *s = s_i_batch.shape
         s_i_flattened = s_i_batch.reshape(B * T, *s)
         t_i_flattened = self.tau_net(s_i_flattened)
-        noised_t_i_flattened = noisify_tau(t_i_flattened)
+        noised_t_i_flattened = noisify_tau(t_i_flattened, self.tau_noise_std)
         t_i = t_i_flattened.reshape(B, T, self.t)
         # noised_t_i = noised_t_i_flattened.reshape(B, T, self.t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
@@ -394,7 +396,7 @@ class HeteroController(nn.Module):
         start_logps = self.macro_policy_net(noised_t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(noised_t_i_flattened).reshape(B, T, 2)
 
-        causal_pens = self.calc_causal_pens_b(t_i)  # (B, T, T, b)
+        causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved
 
