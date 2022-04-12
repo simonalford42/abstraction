@@ -319,7 +319,9 @@ class ConsistencyStopController(nn.Module):
 
 
 def noisify_tau(t_i, noise_std):
-    return t_i + torch.normal(torch.zeros_like(t_i), torch.tensor(noise_std, device=DEVICE))
+    utils.warn('tau noise disabled')
+    return t_i
+    # return t_i + torch.normal(torch.zeros_like(t_i), torch.tensor(noise_std, device=DEVICE))
 
 
 class HeteroController(nn.Module):

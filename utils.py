@@ -13,8 +13,14 @@ from collections import namedtuple
 POS = Tuple[int, int]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# print('using cpu!!')
-# DEVICE = torch.device("cpu")
+
+WARNINGS = set()
+
+
+def warn(s):
+    if s not in WARNINGS:
+        print('WARNING:', s)
+    WARNINGS.add(s)
 
 
 def log(s: str):

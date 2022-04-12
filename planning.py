@@ -260,7 +260,6 @@ def full_sample_solve(env, obs, control_net, render=False):
         _, _, _, solved_logits = control_net.eval_obs(obs)
         print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
-
     if render:
         box_world.render_obs(options_trace, title=f'{solved=}', pause=3)
 
@@ -273,8 +272,9 @@ if __name__ == '__main__':
 
     env = box_world.BoxWorldEnv(seed=1, solution_length=(1, ))
     control_net = utils.load_model('models/30c815e66d0c45e996095efeba3c712d.pt').control_net
+    control_net.tau_noise_std = 0
 
-    box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
+    # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
-    # n = 2
-    # solve_times = multiple_plan(env, control_net, timeout=30, n=n)
+    n = 2
+    solve_times = multiple_plan(env, control_net, timeout=30, n=n)
