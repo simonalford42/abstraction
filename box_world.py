@@ -78,10 +78,8 @@ class BoxWorldEnv(gym.Env):
         self.solved = False
         return obs
 
-
     def copy(self):
         return copy.deepcopy(self)
-
 
     def process_obs(self, obs) -> np.ndarray:
         obs = np.array([list(row.tobytes().decode('ascii')) for row in obs.board])

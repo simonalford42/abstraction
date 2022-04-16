@@ -23,6 +23,10 @@ def warn(s):
     WARNINGS.add(s)
 
 
+def hash_tensor(t):
+    return (t * torch.arange(torch.numel(t)).reshape(t.shape)**2).sum() % 1000
+
+
 def log(s: str):
     with open('log.txt', 'r+') as f:
         f.write(s)
@@ -130,6 +134,7 @@ class NoLogRun():
         class NoLogRunInner():
             def log(self, *args, **kwargs):
                 pass
+
             def upload(self, *args, **kwards):
                 pass
 

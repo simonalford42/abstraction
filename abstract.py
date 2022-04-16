@@ -319,9 +319,9 @@ class ConsistencyStopController(nn.Module):
 
 
 def noisify_tau(t_i, noise_std):
-    utils.warn('tau noise disabled')
-    return t_i
-    # return t_i + torch.normal(torch.zeros_like(t_i), torch.tensor(noise_std, device=DEVICE))
+    # utils.warn('tau noise disabled')
+    # return t_i
+    return t_i + torch.normal(torch.zeros_like(t_i), torch.tensor(noise_std, device=DEVICE))
 
 
 class HeteroController(nn.Module):
@@ -339,6 +339,12 @@ class HeteroController(nn.Module):
         self.tau_lp_norm = tau_lp_norm
         self.solved_net = solved_net  # t -> 2
         self.tau_noise_std = tau_noise_std
+
+    def freeze_microcontroller(self):
+        self.micro_net.requires_grad_(False)
+
+    def unfreeze_microcontroller(self):
+        self.micro_net.requires_grad_(True)
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -537,7 +543,7 @@ class HeteroController(nn.Module):
         """
         s_i: single state
         outputs:
-            (a,) action logps,)
+            (a,) action logps
             (2,) stop logps
         """
         action_logps, stop_logps = self.micro_net(s_i.unsqueeze(0))

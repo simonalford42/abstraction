@@ -169,7 +169,7 @@ def boxworld_main():
         # traj_updates=1E7,  # default: 1E7
         # num_saves=20, num_tests=20, num_test=200,
         lr=8E-4, batch_size=10, b=10,
-        # model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
+        model_load_path='models/30c815e66d0c45e996095efeba3c712d.pt'
     )
     params.update(vars(args))
 

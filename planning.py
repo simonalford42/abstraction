@@ -1,4 +1,5 @@
 import time
+import numpy as np
 import torch.nn.functional as F
 import random
 from pycolab.examples.research.box_world import box_world as bw
@@ -47,13 +48,16 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
     expand_queue: PriorityQueue[Node] = PriorityQueue()
     expand_queue.put(PrioritizedItem(-start.logp, start))
 
-    def expand(node: Node) -> Union[bool, tuple[list, list[int], float, float]]:
+    def expand(node: Node):
         # for each b action, gives new output
         action_logps, new_taus, solved_logps = control_net.eval_abstract_policy(node.t)
         solved_logps = solved_logps[:, SOLVED_IX]
+        print(f'(start) action_logps: {action_logps}')
         print(f'solved probs: {torch.exp(solved_logps)}')
 
         logps = action_logps + node.logp
+        print(f'logps: {logps}')
+        print(f'probs: {torch.exp(logps)}')
 
         assert_shape(logps, (num_actions, ))
         nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp)
@@ -61,12 +65,7 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
                  in zip(new_taus, range(num_actions), logps, solved_logps)]
 
         for node in nodes:
-            if node.solved_logp >= solved_logp_threshold:
-                states, actions = get_path(node)
-                print(f'HLC solved with path {actions=}')
-                return states, actions, node.logp, node.solved_logp
             expand_queue.put(PrioritizedItem(-node.logp, node))
-        return False
 
     def get_path(node: Node):
         states, actions = [], []
@@ -81,10 +80,14 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
             yield
 
         node = expand_queue.get().item
-        # print(f'expanding node Node({node.t=}, {node.logp=}, {node.solved_logp=})')
-        out = expand(node)
-        if out is not False:
-            yield out
+
+        if node.solved_logp >= solved_logp_threshold:
+            states, actions = get_path(node)
+            print(f'HLC solved with path {actions=}')
+            yield states, actions, node.logp, node.solved_logp
+
+        # print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
+        expand(node)
 
 
 def hlc_sampler(s0, control_net) -> tuple[list, list[int], list[float], float]:
@@ -94,10 +97,9 @@ def hlc_sampler(s0, control_net) -> tuple[list, list[int], list[float], float]:
     pass
 
 
-def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env) -> tuple[list[int], torch.Tensor]:
+def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
     actions = []
-    # box_world.render_obs(env.obs, pause=1)
-    done = False
+    done = env.done
 
     while not done:
         action_logps, stop_logps = control_net.micro_policy(s, b)
@@ -105,16 +107,18 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env) -> tuple
         stop = torch.argmax(stop_logps) == box_world.STOP_IX
         if stop:
             break
-        actions.append(a)
-        s, rew, done, info = env.step(a)
-        solved = rew == bw.REWARD_GOAL
-        s = box_world.obs_to_tensor(s).to(DEVICE)
 
-    return actions, s, solved
+        actions.append(a)
+        obs, rew, done, info = env.step(a)
+        box_world.render_obs(obs, pause=0.01)
+        s = box_world.obs_to_tensor(obs).to(DEVICE)
+
+    return actions, s, done
 
 
 def llc_plan(s: torch.Tensor, abstract_actions, control_net, env) -> tuple[list, bool]:
     all_actions = []
+    print(f'LLC for plan: {abstract_actions}')
     for b in abstract_actions:
         actions, s, done = llc_sampler(s, b, control_net, env)
         print(f'LL plan for b={b}: {actions}')
@@ -137,19 +141,6 @@ def multiple_plan(env, control_net, timeout, n):
 
     solve_times = sorted(solve_times)
     return solve_times
-
-
-def plot_times(solve_times, n):
-    plt.plot(solve_times, [i/n for i in range(len(solve_times))])
-    plt.xlabel('Time (s)')
-    plt.ylabel(f'Percent of tasks solved, out of {n}')
-    plt.ylim(top=1.0)
-    plt.show()
-
-
-def fake_hl_planner(s, control_net):
-    for i in range(control_net.b):
-        yield (None, [i], 0, 0)
 
 
 def plan(env, control_net, timeout):
@@ -181,6 +172,28 @@ def plan(env, control_net, timeout):
             return True, time.time()
 
 
+def test_tau_solved(tau, tau2, control_net):
+    tau, tau2 = tau.detach().numpy(), tau2.detach().numpy()
+    n = 15
+    taus = [(1 - i/(n-1)) * tau + i/(n-1) * tau2 for i in range(n)]
+    solved_probs = [torch.exp(control_net.solved_logps(torch.tensor(t_i))[SOLVED_IX]).item() for t_i in taus]
+    ccs = [((t - tau)**2).sum() for t in taus]
+    taus = [np.concatenate((t, np.array([p, cc]))) for t, p, cc in zip(taus, solved_probs, ccs)]
+    taus = np.array(taus)
+    fig, ax = plt.subplots()
+    ax.imshow(taus)
+
+    # Loop over data dimensions and create text annotations.
+    for j in range(n):
+        for i in range(len(tau)):
+            ax.text(i, j, f'{taus[j][i].item():.2f}', ha="center", va="center", color="w", fontsize=6)
+        ax.text(len(tau), j, f'{np.log(solved_probs[j]):.2f}', ha="center", va="center", color="w", fontsize=6)
+        ax.text(len(tau)+1, j, f'{ccs[j]:.4f}', ha="center", va="center", color="w", fontsize=6)
+
+    plt.show()
+    input()
+
+
 def full_sample_solve(env, obs, control_net, render=False):
     options_trace = obs
     option_map = {i: [] for i in range(control_net.b)}
@@ -192,16 +205,17 @@ def full_sample_solve(env, obs, control_net, render=False):
     prev_pos = (-1, -1)
     op_new_tau = None
     op_new_tau_solved_prob = None
+    moves = []
 
     current_option = None
 
     while not (done or solved):
         t += 1
-        obs = box_world.obs_to_tensor(obs)
-        obs = obs.to(DEVICE)
+        obs = box_world.obs_to_tensor(obs).to(DEVICE)
         # (b, a), (b, 2), (b, ), (2, )
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
-        print(f'each step solved prob : {torch.exp(solved_logits[box_world.SOLVED_IX])}')
+        # print(f'stop_logps: {stop_logps[current_option]}')
+        print(f'each step solved prob: {torch.exp(solved_logits[box_world.SOLVED_IX])}')
 
         if current_option is not None:
             stop = Categorical(logits=stop_logps[current_option]).sample().item()
@@ -211,11 +225,13 @@ def full_sample_solve(env, obs, control_net, render=False):
             if current_option is not None:
                 causal_consistency = ((tau - op_new_tau)**2).sum()
                 print(f'causal_consistency: {causal_consistency}')
+                print(f'tau: {tau}')
+                print(f'op_new_tau: {op_new_tau}')
+                test_tau_solved(tau, op_new_tau, control_net)
                 print(f'op_new_tau_solved_prob from before: {op_new_tau_solved_prob}')
 
                 options_trace[prev_pos] = 'e'
-            else:
-                print(f'new option start_logps: {start_logps}')
+            print(f'start probs: {torch.exp(start_logps)}')
             current_option = Categorical(logits=start_logps).sample().item()
 
             op_start_logps, op_new_taus, op_solved_logps = control_net.eval_abstract_policy(tau)
@@ -232,15 +248,16 @@ def full_sample_solve(env, obs, control_net, render=False):
 
         a = Categorical(logits=action_logps[current_option]).sample().item()
         option_map[current_option].append(a)
+        moves.append(a)
 
         obs, rew, done, _ = env.step(a)
         if render:
             title = f'option={current_option}'
-            pause = 0.2 if new_option else 0.1
+            pause = 0.4 if new_option else 0.2
             if new_option:
                 title += ' (new)'
             option_map[current_option].append((obs, title, pause))
-            box_world.render_obs(obs, title=title, pause=pause)
+            # box_world.render_obs(obs, title=title, pause=pause)
         solved = rew == bw.REWARD_GOAL
 
         pos = box_world.player_pos(obs)
@@ -261,20 +278,35 @@ def full_sample_solve(env, obs, control_net, render=False):
         print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
-        box_world.render_obs(options_trace, title=f'{solved=}', pause=3)
+        box_world.render_obs(options_trace, title=f'{solved=}', pause=0.5)
 
+    print(f'moves:  {moves}')
+    print(f'options:{options}')
     return solved, options2
 
 
+def plot_times(solve_times, n):
+    plt.plot(solve_times, [i/n for i in range(len(solve_times))])
+    plt.xlabel('Time (s)')
+    plt.ylabel(f'Percent of tasks solved, out of {n}')
+    plt.ylim(top=1.0)
+    plt.show()
+
+
+def fake_hl_planner(s, control_net):
+    for i in range(control_net.b):
+        yield (None, [i], 0, 0)
+
+
 if __name__ == '__main__':
-    random.seed(1)
-    torch.manual_seed(1)
+    random.seed(0)
+    torch.manual_seed(0)
 
     env = box_world.BoxWorldEnv(seed=1, solution_length=(1, ))
-    control_net = utils.load_model('models/30c815e66d0c45e996095efeba3c712d.pt').control_net
-    control_net.tau_noise_std = 0
+    control_net = utils.load_model('models/724f7c53fb6549f094e118422788442c.pt').control_net
+    # control_net.tau_noise_std = 0
 
     # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
     n = 2
-    solve_times = multiple_plan(env, control_net, timeout=30, n=n)
+    solve_times = multiple_plan(env, control_net, timeout=600, n=n)
