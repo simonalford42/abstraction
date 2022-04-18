@@ -173,6 +173,12 @@ class ConsistencyStopController(nn.Module):
         self.tau_noise_std = tau_noise_std
         assert tau_noise_std == 0
 
+    def freeze_microcontroller(self):
+        self.micro_net.requires_grad_(False)
+
+    def unfreeze_microcontroller(self):
+        self.micro_net.requires_grad_(True)
+
     def forward(self, s_i_batch, batched=False):
         if batched:
             return self.forward_b(s_i_batch)
@@ -308,6 +314,65 @@ class ConsistencyStopController(nn.Module):
         stop_logps = torch.stack(stack, dim=4)
         assert_shape(stop_logps, (B, T, T, self.b, 2))
         return stop_logps
+
+    def tau_embed(self, s):
+        """
+        Calculate the embedding of a single state. Returns (t, ) tensor.
+        Does not apply noise to abstract state.
+        """
+        return self.tau_net(s.unsqueeze(0))[0]
+
+    def eval_obs(self, s_i):
+        """
+        For evaluation when we act for a single state.
+
+        s_i: (*s, ) tensor
+
+        Returns:
+            (b, a) tensor of action logps
+            (b, 2) tensor of stop logps
+            (b, ) tensor of start logps
+            (2, ) solved logits (solved is at abstract.SOLVED_IX)
+        """
+        # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
+        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(s_i.unsqueeze(0))
+
+        return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
+
+    def eval_abstract_policy(self, t_i):
+        """
+        t_i: (t, ) tensor
+        Returns:
+            (b, ) tensor of logp for each abstract action
+            (b, t) tensor of new tau for each abstract action
+            (b, 2) tensor of logp new tau is solved
+        """
+        b, t = self.b, self.t
+        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
+                                                   torch.arange(self.b, device=DEVICE))[0]
+        assert_shape(new_taus, (b, t))
+        solveds = self.solved_net(new_taus)
+        assert_shape(solveds, (b, 2))
+        return start_logps, new_taus, solveds
+
+    def solved_logps(self, t_i):
+        """
+        t_i: (t, ) tensor
+        Returns: (2, ) logps of probability solved/unsolved (use box_world.[UN]SOLVED_IX)
+        """
+        solved_logps = self.solved_net(t_i.unsqueeze(0))[0]
+        return solved_logps
+
+    def micro_policy(self, s_i, b, c_i):
+        """
+        s_i: single state
+        c_i: time option b started
+        outputs:
+            (a,) action logps
+            (2,) stop logps
+        """
+        raise NotImplementedError()
 
 
 def noisify_tau(t_i, noise_std):
