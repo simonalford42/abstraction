@@ -1,4 +1,5 @@
 import itertools
+import abstract
 import torch.nn as nn
 from einops import rearrange
 from utils import assert_equal, DEVICE, assert_shape
@@ -536,13 +537,14 @@ class HmmNet(nn.Module):
     def __init__(self, control_net, abstract_pen=0.0):
         super().__init__()
         self.control_net = control_net
+        self.ccts = isinstance(self.control_net, abstract.ConsistencyStopController)
         self.b = control_net.b
         self.abstract_pen = abstract_pen
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
-        return self.logp_loss(s_i_batch, actions_batch, lengths, masks)
+        return self.logp_loss(s_i_batch, actions_batch, lengths, masks, ccts=self.ccts)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts=False):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, ccts):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
