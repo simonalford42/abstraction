@@ -17,6 +17,13 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # DEVICE = torch.device("cpu")
 
 
+class CustomDictOne(dict):
+    def __init__(self,*arg,**kw):
+        super(CustomDictOne, self).__init__(*arg, **kw)
+
+
+    
+
 def log(s: str):
     with open('log.txt', 'r+') as f:
         f.write(s)

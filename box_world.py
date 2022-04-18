@@ -578,34 +578,26 @@ j       (b, 2) stop logps
 
         if verbose:
             render_obs(options_trace, title=f'{solved=}', pause=3)
-            print(f'cc_losses: {cc_losses}')
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
 
-    if run and check_cc:
+    if check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
-        run[f'test/cc loss avg'].log(cc_loss_avg)
+        if run:
+            run[f'test/cc loss avg'].log(cc_loss_avg)
     if check_solved:
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
-        print(f'Correct solved pred: {solved_acc:.2f}')
-        print(f'correct_solved_preds: {correct_solved_preds}')
+        # print(f'Correct solved pred: {solved_acc:.2f}')
         if run:
             run[f'test/solved pred acc'].log(solved_acc)
 
     control_net.train()
-    print(f'Solved {num_solved}/{n} episodes')
+    if check_cc:
+        print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
+    else:
+        print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
-
-    # for i in option_map:
-    #     # print(i, Counter(option_map[i]))
-    #     # if i < 3:
-    #     #     continue
-    #     print(i)
-    #     for k, (obs, title, pause) in enumerate(option_map[i]):
-    #         if k > 10:
-    #             break
-    #         render_obs(obs, title=title, pause=0.5)
 
 
 def eval_model(net, env, n=100, renderer: Callable = None):
