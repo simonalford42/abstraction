@@ -30,6 +30,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     updates = 0
     epoch = 0
     while updates < params['traj_updates']:
+        if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
+            # print('freezing microcontroller')
+            net.control_net.freeze_microcontroller()
+
         if epoch and epoch % 100 == 0:
             print('reloading data')
             del dataloader
@@ -144,6 +148,7 @@ def boxworld_main():
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
+    parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze microcontroller')
     args = parser.parse_args()
 
     if not args.seed:
@@ -165,14 +170,14 @@ def boxworld_main():
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    batch_size = 100 if args.ellis else 30
+    batch_size = 80 if args.ellis else 30
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=5000,
         traj_updates=1E7,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size, b=10,
-        model_load_path='models/724f7c53fb6549f094e118422788442c.pt'
+        # model_load_path='models/724f7c53fb6549f094e118422788442c.pt'
     )
     params.update(vars(args))
     featured_params=['model', 'abstract_pen', 'batch_size', 'tau_noise']
