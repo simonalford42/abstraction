@@ -587,43 +587,43 @@ def test_hmm_batched():
         optimizer.step()
 
 
-def test_ccts_reduced_batched():
-    b = 3
-    B = 5
-    random.seed(1)
-    torch.manual_seed(1)
-    np.random.seed(1)
+# def test_ccts_reduced_batched():
+#     b = 3
+#     B = 5
+#     random.seed(1)
+#     torch.manual_seed(1)
+#     np.random.seed(1)
 
-    control_net = abstract.boxworld_controller(b=b, typ='ccts-reduced')
+#     control_net = abstract.boxworld_controller(b=b, typ='ccts-reduced')
 
-    net = hmm.HmmNet(control_net)
+#     net = hmm.HmmNet(control_net)
 
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+#     env = box_world.BoxWorldEnv(seed=1)
+#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
-    net.to(DEVICE)
+#     net.to(DEVICE)
 
-    optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
+#     optimizer = torch.optim.Adam(net.parameters(), lr=8E-4)
 
-    for s_i, actions, lengths, masks in dataloader:
-        optimizer.zero_grad()
-        s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-        total_loss2 = 0
-        for s, action, T in zip(s_i, actions, lengths):
-            s = s[0:T+1]
-            action = action[0:T]
-            loss = net.logp_loss_ub(s, action)
-            # print(f'ub loss: {loss}')
-            total_loss2 += loss
+#     for s_i, actions, lengths, masks in dataloader:
+#         optimizer.zero_grad()
+#         s_i, actions, lengths, masks = s_i.to(DEVICE), actions.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+#         total_loss2 = 0
+#         for s, action, T in zip(s_i, actions, lengths):
+#             s = s[0:T+1]
+#             action = action[0:T]
+#             loss = net.logp_loss_ub(s, action)
+#             # print(f'ub loss: {loss}')
+#             total_loss2 += loss
 
-        total_loss = net.logp_loss(s_i, actions, lengths, masks)
-        assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
+#         total_loss = net.logp_loss(s_i, actions, lengths, masks)
+#         assert torch.isclose(total_loss, total_loss2), f'{total_loss=}, {total_loss2=}'
 
-        # loss = total_loss2
-        loss = total_loss
-        # print(loss)
-        loss.backward()
-        optimizer.step()
+#         # loss = total_loss2
+#         loss = total_loss
+#         # print(loss)
+#         loss.backward()
+#         optimizer.step()
 
 
 def test_ccts_batched():
@@ -825,33 +825,34 @@ def test_cc_batched2():
         assert torch.isclose(total_cc_loss, total_cc_loss_ub), f'{total_cc_loss=}, {total_cc_loss_ub=}'
 
 
-def test_bfs():
-    # searching a grid. different directions have different logps
-    start = (0, 0)
-    goal = (2, 1)
+# def test_bfs():
+#     # searching a grid. different directions have different logps
+#     start = (0, 0)
+#     goal = (2, 1)
 
-    class Controller():
-        def __init__(self, goal):
-            self.goal = goal
-            self.b = 4
+#     class Controller():
+#         def __init__(self, goal):
+#             self.goal = goal
+#             self.b = 4
 
-        def tau_embed(self, s):
-            return s
+#         def tau_embed(self, s):
+#             return s
 
-        def solved_logp(self, t):
-            return torch.log(torch.tensor(max(0, 1 - math.sqrt((self.goal[0] - t[0])**2 + (self.goal[1] - t[1])**2))))
+#         def solved_logps(self, t):
+#             logp = torch.log(torch.tensor(max(0, 1 - math.sqrt((self.goal[0] - t[0])**2 + (self.goal[1] - t[1])**2))))
+#             return torch.tensor([logp, torch.log(1 - torch.exp(logp))])
 
-        def eval_abstract_policy(self, t):
-            action_logps = torch.tensor([-1, -2, -3, -4])
-            dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-            new_taus = torch.tensor([[t[0] + d[0], t[1] + d[1]] for d in dirs])
-            solved_logps = torch.tensor([self.solved_logp(t) for t in new_taus])
-            return action_logps, new_taus, solved_logps
+#         def eval_abstract_policy(self, t):
+#             action_logps = torch.tensor([-1, -2, -3, -4])
+#             dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+#             new_taus = torch.tensor([[t[0] + d[0], t[1] + d[1]] for d in dirs])
+#             solved_logps = torch.tensor([self.solved_logps(t)[0] for t in new_taus])
+#             return action_logps, new_taus, solved_logps
 
-    controller = Controller(goal)
-    states, actions, logp, solved_logp = planning.hlc_bfs(start, controller, solved_threshold=1.0)
-    print(f'states: {states}')
-    print(f'actions: {actions}')
+#     controller = Controller(goal)
+#     states, actions, logp, solved_logp = planning.hlc_bfs(start, controller, solved_threshold=1.0)
+#     print(f'states: {states}')
+#     print(f'actions: {actions}')
 
 
 if __name__ == '__main__':

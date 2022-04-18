@@ -13,8 +13,18 @@ from collections import namedtuple
 POS = Tuple[int, int]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# print('using cpu!!')
-# DEVICE = torch.device("cpu")
+
+WARNINGS = set()
+
+
+def warn(s):
+    if s not in WARNINGS:
+        print('WARNING:', s)
+    WARNINGS.add(s)
+
+
+def hash_tensor(t):
+    return (t * torch.arange(torch.numel(t)).reshape(t.shape)**2).sum() % 1000
 
 
 class CustomDictOne(dict):
@@ -131,6 +141,7 @@ class NoLogRun():
         class NoLogRunInner():
             def log(self, *args, **kwargs):
                 pass
+
             def upload(self, *args, **kwards):
                 pass
 
