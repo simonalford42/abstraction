@@ -196,17 +196,14 @@ class ConsistencyStopController(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
                                    torch.ones(T, device=DEVICE))
-        micro_out = self.micro_net(s_i)
-        assert_shape(micro_out, (T, self.b * self.a))
-        action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
+        action_logps = self.micro_net(s_i)
+        assert_shape(action_logps, (T, self.b, self.a))
         stop_logps = self.calc_stop_logps_ub(t_i)  # (T, T, b, 2)
         assert torch.allclose(torch.logsumexp(stop_logps, dim=3),
                               torch.zeros((T, T, self.b), device=DEVICE),
                               atol=1E-6), f'{stop_logps, torch.logsumexp(stop_logps, dim=3)}'
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
-
-        action_logps = F.log_softmax(action_logps, dim=2)
-        start_logps = F.log_softmax(start_logps, dim=1)
+        assert_shape(start_logps, (T, self.b))
         solved = self.solved_net(t_i)
         return action_logps, stop_logps, start_logps, None, solved
 
@@ -275,9 +272,7 @@ class ConsistencyStopController(nn.Module):
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
                                    torch.ones(B, T, device=DEVICE))
 
-        micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
-        assert_shape(micro_out, (B, T, self.b * self.a))
-        action_logps = rearrange(micro_out, 'B T (b a) -> B T b a', a=self.a)
+        action_logps = self.micro_net(s_i_flattened).reshape(B, T, self.b, self.a)
         stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, T, b, 2)
 
         assert torch.allclose(torch.logsumexp(stop_logps, dim=4),
@@ -287,9 +282,6 @@ class ConsistencyStopController(nn.Module):
 
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
-
-        action_logps = F.log_softmax(action_logps, dim=3)
-        start_logps = F.log_softmax(start_logps, dim=2)
 
         return action_logps, stop_logps, start_logps, None, solved
 
