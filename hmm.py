@@ -493,6 +493,7 @@ class CausalNet(nn.Module):
 
 class SVNet(nn.Module):
     """
+    Supervised Net.
     Like HmmNet, but no abstract model or anything.
     This way, we can swap out HmmNet with this and see how just basic SV
     training does as a baseline.

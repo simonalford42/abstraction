@@ -480,7 +480,7 @@ j       (b, 2) stop logps
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
         correct_solved_pred = True
-        t = 0
+        t = -1
         options = []
         moves_without_moving = 0
         prev_pos = (-1, -1)
@@ -493,7 +493,7 @@ j       (b, 2) stop logps
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -515,6 +515,7 @@ j       (b, 2) stop logps
                         cc_losses.append(cc_loss.item())
                     options_trace[prev_pos] = 'e'
                 current_option = Categorical(logits=start_logps).sample().item()
+                option_start_s = obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
             else:
@@ -555,7 +556,7 @@ j       (b, 2) stop logps
 
             if check_solved:
                 # check that we predicted that we solved
-                _, _, _, solved_logits = control_net.eval_obs(obs)
+                _, _, _, solved_logits = control_net.eval_obs(obs, option_start_s)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
                 if verbose:
                     print(f'END is_solved_pred: {is_solved_pred}')
