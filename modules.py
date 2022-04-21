@@ -29,7 +29,7 @@ class MicroNet(nn.Module):
         self.out_dim = out_dim
         self.conv1 = nn.Conv2d(input_channels, 12, 3, padding='same')
         self.conv2 = nn.Conv2d(12, 12, 3, padding='same')
-        self.fc = nn.Sequential(nn.Linear(12 * np.prod(input_shape), self.d),
+        self.mlp = nn.Sequential(nn.Linear(12 * np.prod(input_shape), self.d),
                                 nn.ReLU(),
                                 # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
@@ -55,7 +55,7 @@ class MicroNet(nn.Module):
             # assert_equal(x.shape, (N, 12, H, W))
 
             x = einops.rearrange(x, 'n c h w -> n (c h w)')
-            x = self.fc(x)
+            x = self.mlp(x)
             return x
 
 
@@ -79,7 +79,7 @@ class RelationalDRLNet(nn.Module):
                                                 num_heads=num_heads,
                                                 batch_first=True)
 
-        self.fc = nn.Sequential(nn.Linear(self.d, self.d),
+        self.mlp = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
@@ -121,7 +121,7 @@ class RelationalDRLNet(nn.Module):
                 # assert_equal(x.shape, (N, H*W, self.d))
 
             x = einops.reduce(x, 'n l d -> n d', 'max')
-            x = self.fc(x)
+            x = self.mlp(x)
 
             return x
 
@@ -184,7 +184,7 @@ class OneByOneBlock(nn.Module):
         return x
 
 
-class FC(nn.Module):
+class MLP(nn.Module):
     def __init__(self,
                  input_dim,
                  output_dim,
@@ -273,16 +273,16 @@ class AllConv(nn.Module):
         return x
 
 
-class ImageFC(nn.Module):
-    def __init__(self, inp_shape, fc_net: FC):
+class ImageMLP(nn.Module):
+    def __init__(self, inp_shape, mlp_net: MLP):
         super().__init__()
-        self.fc_net = fc_net
+        self.mlp_net = mlp_net
         self.first_layer = nn.Linear(in_features=np.prod(inp_shape),
-                                     out_features=fc_net.input_dim)
+                                     out_features=mlp_net.input_dim)
 
     def forward(self, x):
         x = einops.rearrange(x, 'n c h w -> n (c h w)')
         x = self.first_layer(x)
         x = F.relu(x)
-        x = self.fc_net(x)
+        x = self.mlp_net(x)
         return x

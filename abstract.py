@@ -5,7 +5,7 @@ import torch
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC
+from modules import MicroNet, RelationalDRLNet, MLP
 import box_world
 
 TT = torch.Tensor
@@ -175,8 +175,21 @@ class ConsistencyStopController(nn.Module):
     def freeze_microcontroller(self):
         self.micro_net.requires_grad_(False)
 
-    def unfreeze_microcontroller(self):
+    def freeze_all_controllers(self):
+        """
+        Freezes all but the macro transition net and the solved net.
+        """
+        self.micro_net.requires_grad_(False)
+        self.macro_policy_net.requires_grad_(False)
+        self.tau_net.requires_grad_(False)
+
+    def unfreeze(self):
+        """
+        Unfreezes micro_net, macro_policy_net, tau_net.
+        """
         self.micro_net.requires_grad_(True)
+        self.macro_policy_net.requires_grad_(True)
+        self.tau_net.requires_grad_(True)
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -234,6 +247,14 @@ class ConsistencyStopController(nn.Module):
         t_i2 = self.macro_transition_net(t_i2)
         new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
         return new_t_i
+
+    def macro_transition(self, t, b):
+        """
+        Calculate a single abstract transition. Useful for test-time.
+        Does not apply noise to abstract state.
+        """
+        return self.macro_transitions(t.unsqueeze(0),
+                                      torch.tensor([b], device=DEVICE)).reshape(self.t)
 
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
@@ -321,7 +342,7 @@ class ConsistencyStopController(nn.Module):
         """
         return self.tau_net(s.unsqueeze(0))[0]
 
-    def eval_obs(self, s_i):
+    def eval_obs(self, s_i, option_start_s):
         """
         For evaluation when we act for a single state.
 
@@ -333,10 +354,10 @@ class ConsistencyStopController(nn.Module):
             (b, ) tensor of start logps
             (2, ) solved logits (solved is at abstract.SOLVED_IX)
         """
-        # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
-        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(s_i.unsqueeze(0))
+        # (2, b, a), (2, 2, b, 2), (2, b), (1, 1, b), (2, 2)
+        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(torch.stack((option_start_s, s_i)))
 
-        return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
+        return action_logps[1], stop_logps[0, 1], start_logps[1], solved_logits[1]
 
     def eval_abstract_policy(self, t_i):
         """
@@ -401,6 +422,22 @@ class HeteroController(nn.Module):
 
     def unfreeze_microcontroller(self):
         self.micro_net.requires_grad_(True)
+
+    def freeze_all_controllers(self):
+        """
+        Freezes all but the macro transition net and the solved net.
+        """
+        self.micro_net.requires_grad_(False)
+        self.macro_policy_net.requires_grad_(False)
+        self.tau_net.requires_grad_(False)
+
+    def unfreeze(self):
+        """
+        Unfreezes micro_net, macro_policy_net, tau_net.
+        """
+        self.micro_net.requires_grad_(True)
+        self.macro_policy_net.requires_grad_(True)
+        self.tau_net.requires_grad_(True)
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -553,7 +590,7 @@ class HeteroController(nn.Module):
         penalty = penalty.sum(dim=-1)  # (B, T, T, b)
         return penalty
 
-    def eval_obs(self, s_i):
+    def eval_obs(self, s_i, option_start_s=None):
         """
         For evaluation when we act for a single state.
 
@@ -674,7 +711,7 @@ class HomoController(nn.Module):
 
         return action_logps, stop_logps, start_logps, None, 'None'
 
-    def eval_obs(self, s_i):
+    def eval_obs(self, s_i, option_start_s=None):
         """
         For evaluation when we act for a single state.
 
@@ -754,7 +791,7 @@ class NormModule(nn.Module):
         return F.normalize(x, dim=-1, p=self.p)
 
 
-def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
+def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0, mlp_hidden_dim=32):
     """
     typ: hetero, homo, ccts, or ccts-reduced
     """
@@ -787,16 +824,16 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_module)
 
-    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=2, hidden_dim=32),
+    macro_policy_net = nn.Sequential(MLP(input_dim=t, output_dim=b, num_hidden=num_hidden, hidden_dim=hidden_dim),
                                      nn.LogSoftmax(dim=-1))
 
-    macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
+    macro_transition_net = nn.Sequential(MLP(input_dim=macro_trans_in_dim,
                                             output_dim=t,
-                                            num_hidden=2,
-                                            hidden_dim=32),
+                                            num_hidden=num_hidden,
+                                            hidden_dim=num_hidden),
                                          tau_module)
 
-    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=2, hidden_dim=32),
+    solved_net = nn.Sequential(MLP(input_dim=t, output_dim=2, num_hidden=num_hidden, hidden_dim=hidden_dim),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,

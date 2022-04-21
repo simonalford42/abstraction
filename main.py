@@ -1,6 +1,5 @@
 from typing import Any
 import numpy as np
-from modules import FC
 import up_right
 import argparse
 import torch
@@ -31,8 +30,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     epoch = 0
     while updates < params['traj_updates']:
         if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
-            # print('freezing microcontroller')
-            net.control_net.freeze_microcontroller()
+            net.control_net.freeze_all_controllers()
 
         if epoch and epoch % 100 == 0:
             print('reloading data')
@@ -145,13 +143,15 @@ def boxworld_main():
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--tau_noise', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
-    parser.add_argument('--neptune', action='store_true', help='log results to neptune.ai')
-    parser.add_argument('--no_log', action='store_true', help='dont log anything')
-    parser.add_argument('--n', type=int, default=argparse.SUPPRESS, n='number of trajs in dataset')
-    parser.add_argument('--eval', action='store_true', help='skip training and eval model')
-    parser.add_argument('--abstract_dim', type=int, default=32, help='dim of abstract state')
-    parser.add_argument('--ellis', action='store_true', help='run on ellis GPU (=larger batch size)')
-    parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze microcontroller')
+    parser.add_argument('--neptune', action='store_true')
+    parser.add_argument('--no_log', action='store_true')
+    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--eval', action='store_true')
+    parser.add_argument('--abstract_dim', type=int, default=32)
+    parser.add_argument('--ellis', action='store_true')
+    parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
+    parser.add_argument('--hidden_dim', type=int, default=32)
+    parser.add_argument('--num_hidden', type=int, default=2)
     args = parser.parse_args()
 
     if not args.seed:
@@ -173,7 +173,7 @@ def boxworld_main():
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    batch_size = 80 if args.ellis else 30
+    batch_size = 64 if args.ellis else 32
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=5000,
@@ -183,7 +183,7 @@ def boxworld_main():
         # model_load_path='models/724f7c53fb6549f094e118422788442c.pt'
     )
     params.update(vars(args))
-    featured_params = ['model', 'abstract_pen', 'batch_size', 'tau_noise']
+    featured_params=['model', 'abstract_pen', 'tau_noise']
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -196,7 +196,7 @@ def boxworld_main():
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.tau_noise,
-                                              t=params['abstract_dim'])
+                                              t=params['abstract_dim'], num_hidden=params['num_hidden'], hidden_dim=params['hidden_dim'])
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'], ccts=(args.model == 'ccts'))
         elif args.model == 'cc':
