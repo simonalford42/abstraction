@@ -1,6 +1,5 @@
 from typing import Any
 import numpy as np
-from modules import FC
 import up_right
 import argparse
 import torch
