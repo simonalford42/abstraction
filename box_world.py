@@ -544,7 +544,7 @@ j       (b, 2) stop logps
 
             if verbose:
                 title = f'option={current_option}'
-                pause = 1 if new_option else 0.1
+                pause = 0.1 if new_option else 0.05
                 if new_option:
                     title += ' (new)'
                 option_map[current_option].append((obs, title, pause))

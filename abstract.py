@@ -5,7 +5,7 @@ import torch
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, MLP
+from modules import MicroNet, RelationalDRLNet, FC
 import box_world
 
 TT = torch.Tensor
@@ -824,16 +824,16 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_module)
 
-    macro_policy_net = nn.Sequential(MLP(input_dim=t, output_dim=b, num_hidden=num_hidden, hidden_dim=hidden_dim),
+    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=mlp_hidden_dim),
                                      nn.LogSoftmax(dim=-1))
 
-    macro_transition_net = nn.Sequential(MLP(input_dim=macro_trans_in_dim,
+    macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
                                             output_dim=t,
-                                            num_hidden=num_hidden,
-                                            hidden_dim=num_hidden),
+                                            num_hidden=3,
+                                            hidden_dim=mlp_hidden_dim),
                                          tau_module)
 
-    solved_net = nn.Sequential(MLP(input_dim=t, output_dim=2, num_hidden=num_hidden, hidden_dim=hidden_dim),
+    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3, hidden_dim=mlp_hidden_dim),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,

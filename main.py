@@ -150,8 +150,7 @@ def boxworld_main():
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
-    parser.add_argument('--hidden_dim', type=int, default=32)
-    parser.add_argument('--num_hidden', type=int, default=2)
+    parser.add_argument('--mlp_hidden_dim', type=int, default=64)
     args = parser.parse_args()
 
     if not args.seed:
@@ -180,10 +179,10 @@ def boxworld_main():
         traj_updates=1E7,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size, b=10,
-        # model_load_path='models/724f7c53fb6549f094e118422788442c.pt'
+        model_load_path='models/3246c443e3cd43a6a3896cd8d6fa8807.pt',
     )
     params.update(vars(args))
-    featured_params=['model', 'abstract_pen', 'tau_noise']
+    featured_params = ['model', 'abstract_pen', 'tau_noise']
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -216,7 +215,7 @@ def boxworld_main():
         params['save_every'] = params['epochs'] // params['num_saves']
 
     if args.eval:
-        box_world.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=10, option='verbose')
+        box_world.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
     else:
         net = net.to(DEVICE)
         data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)

@@ -290,7 +290,7 @@ def full_sample_solve(env, obs, control_net, render=False):
         obs, rew, done, _ = env.step(a)
         if render:
             title = f'option={current_option}'
-            pause = 0.4 if new_option else 0.2
+            pause = 0.01 if new_option else 0.01
             if new_option:
                 title += ' (new)'
             option_map[current_option].append((obs, title, pause))
