@@ -8,8 +8,7 @@ from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC
 import box_world
 
-# for tensor typing
-T = torch.Tensor
+TT = torch.Tensor
 
 """
 Note: T used for length of sequence i.e. s_i.shape = (T, *s) etc. is not the same
@@ -348,9 +347,9 @@ class ConsistencyStopController(nn.Module):
             (b, 2) tensor of logp new tau is solved
         """
         b, t = self.b, self.t
-        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
-        new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
-                                                   torch.arange(self.b, device=DEVICE))[0]
+        start_logps: TT[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        new_taus: TT[b, t] = self.macro_transitions(t_i.unsqueeze(0),
+                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
         assert_shape(solveds, (b, 2))
@@ -580,9 +579,9 @@ class HeteroController(nn.Module):
             (b, 2) tensor of logp new tau is solved
         """
         b, t = self.b, self.t
-        start_logps: T[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
-        new_taus: T[b, t] = self.macro_transitions(t_i.unsqueeze(0),
-                                                   torch.arange(self.b, device=DEVICE))[0]
+        start_logps: TT[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        new_taus: TT[b, t] = self.macro_transitions(t_i.unsqueeze(0),
+                                                    torch.arange(self.b, device=DEVICE))[0]
         assert_shape(new_taus, (b, t))
         solveds = self.solved_net(new_taus)
         assert_shape(solveds, (b, 2))
@@ -758,9 +757,6 @@ class NormModule(nn.Module):
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
     """
     typ: hetero, homo, ccts, or ccts-reduced
-
-    I realize this attempt to combinator-ize the nn.Modules and reuse code
-    between the types is a mess and probably not good.
     """
     a = 4
     if gumbel:

@@ -534,10 +534,12 @@ class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """
-    def __init__(self, control_net, abstract_pen=0.0):
+    def __init__(self, control_net, abstract_pen=0.0, ccts=False):
         super().__init__()
         self.control_net = control_net
-        self.ccts = isinstance(self.control_net, abstract.ConsistencyStopController)
+        self.ccts = ccts
+        if ccts:
+            assert isinstance(self.control_net, abstract.ConsistencyStopController)
         self.b = control_net.b
         self.abstract_pen = abstract_pen
 

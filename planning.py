@@ -29,20 +29,21 @@ class PrioritizedItem:
 
 
 def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
-            ) -> Generator[Optional[tuple[list, list[int], float, float]], None, None]:
+            ) -> Generator[Optional[tuple[list[int], float, float]], None, None]:
     """
-    Best first search with the abstract policy.
+    Best first search with the high level controller abstract policy.
     solved threshold: probability that we solved the task needed to return something
     Returns:
-        (states, actions, logp, solved_logp)
+        (actions, logp, solved_logp)
     """
+    temp = 1
     start_time = time.time()
     Node = namedtuple("Node", "t prev b logp solved_logp")
     solved_logp_threshold = math.log(solved_threshold)
     # print(f'solved_logp_threshold: {solved_logp_threshold}')
     start_tau = control_net.tau_embed(s0)
     start_solved_logp = control_net.solved_logps(start_tau)[SOLVED_IX]
-    print(f'start_solved_prob: {torch.exp(start_solved_logp)}')
+    # print(f'start_solved_prob: {torch.exp(start_solved_logp)}')
     start = Node(t=control_net.tau_embed(s0), prev=None, b=None, logp=0.0, solved_logp=start_solved_logp)
     num_actions = control_net.b
     expand_queue: PriorityQueue[Node] = PriorityQueue()
@@ -52,11 +53,12 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
         # for each b action, gives new output
         action_logps, new_taus, solved_logps = control_net.eval_abstract_policy(node.t)
         solved_logps = solved_logps[:, SOLVED_IX]
-        print(f'(start) action_logps: {action_logps}')
-        print(f'solved probs: {torch.exp(solved_logps)}')
+        # print(f'(start) action_logps: {action_logps}')
+        # print(f'solved probs: {torch.exp(solved_logps)}')
 
         logps = action_logps + node.logp
-        print(f'logps: {logps}')
+        logps = logps * temp
+        # print(f'logps: {logps}')
         print(f'probs: {torch.exp(logps)}')
 
         assert_shape(logps, (num_actions, ))
@@ -84,7 +86,7 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
         if node.solved_logp >= solved_logp_threshold:
             states, actions = get_path(node)
             print(f'HLC solved with path {actions=}')
-            yield states, actions, node.logp, node.solved_logp
+            yield actions, node.logp, node.solved_logp
 
         # print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
         expand(node)
@@ -100,18 +102,30 @@ def hlc_sampler(s0, control_net) -> tuple[list, list[int], list[float], float]:
 def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
     actions = []
     done = env.done
+    first_step = True
+    pos_visits = {}
 
     while not done:
         action_logps, stop_logps = control_net.micro_policy(s, b)
         a = torch.argmax(action_logps).item()
-        stop = torch.argmax(stop_logps) == box_world.STOP_IX
+        stop = not first_step and torch.argmax(stop_logps) == box_world.STOP_IX
         if stop:
             break
 
         actions.append(a)
         obs, rew, done, info = env.step(a)
-        box_world.render_obs(obs, pause=0.01)
+        pause = 0.2 if first_step else 0.01
+        box_world.render_obs(obs, pause=pause)
+        pos = box_world.player_pos(obs)
+        if pos in pos_visits:
+            pos_visits[pos] += 1
+            if pos_visits[pos] > 5:
+                return
+        else:
+            pos_visits[pos] = 1
+
         s = box_world.obs_to_tensor(obs).to(DEVICE)
+        first_step = False
 
     return actions, s, done
 
@@ -120,7 +134,10 @@ def llc_plan(s: torch.Tensor, abstract_actions, control_net, env) -> tuple[list,
     all_actions = []
     print(f'LLC for plan: {abstract_actions}')
     for b in abstract_actions:
-        actions, s, done = llc_sampler(s, b, control_net, env)
+        out = llc_sampler(s, b, control_net, env)
+        if out is None:
+            break
+        actions, s, done = out
         print(f'LL plan for b={b}: {actions}')
         all_actions.append(actions)
         if done:
@@ -135,12 +152,26 @@ def multiple_plan(env, control_net, timeout, n):
     for i in range(n):
         solved, time = plan(env, control_net, timeout)
         if solved:
-            print(f'Solved number {i}')
+            global L2_ATTEMPTED, L2_SOLVED
+            print(f'Solved number {i})')
+            if L2_ATTEMPTED > 0:
+                print(f'acc={L2_SOLVED}/{L2_ATTEMPTED}={L2_SOLVED/L2_ATTEMPTED:.2f}')
             num_solved += 1
             solve_times.append(time)
 
     solve_times = sorted(solve_times)
     return solve_times
+
+
+def fake_hl_planner(s, control_net):
+    b = control_net.b
+    for i in range(b):
+        for j in range(b):
+            yield ([i, j], 0.0, 0.0)
+
+
+L2_SOLVED = 0
+L2_ATTEMPTED = 0
 
 
 def plan(env, control_net, timeout):
@@ -151,6 +182,9 @@ def plan(env, control_net, timeout):
         env2 = copy.deepcopy(env)
         solved, options = full_sample_solve(env2, env2.obs, control_net, render=True)
         print(f'full sample solved: {solved}, options: {options}')
+        if solved and len(options) > 1:
+            global L2_ATTEMPTED
+            L2_ATTEMPTED += 1
 
     s = box_world.obs_to_tensor(obs).to(DEVICE)
     hl_plan_gen = hlc_bfs(s, control_net, timeout=timeout)
@@ -164,12 +198,17 @@ def plan(env, control_net, timeout):
         out = next(hl_plan_gen)
         if out is None:
             return False, timeout
-        (states, actions, logp, solved_logp) = out
+        (actions, logp, solved_logp) = out
         print(f'HL proposal: actions: {actions}, solved logp: {solved_logp}, logp: {logp}')
         assert not env2.done
         actions, solved = llc_plan(s, actions, control_net, env2)
         if solved:
+            if len(actions) > 1:
+                global L2_SOLVED
+                L2_SOLVED += 1
             return True, time.time()
+        else:
+            return False, 0
 
 
 def test_tau_solved(tau, tau2, control_net):
@@ -214,8 +253,6 @@ def full_sample_solve(env, obs, control_net, render=False):
         obs = box_world.obs_to_tensor(obs).to(DEVICE)
         # (b, a), (b, 2), (b, ), (2, )
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
-        # print(f'stop_logps: {stop_logps[current_option]}')
-        print(f'each step solved prob: {torch.exp(solved_logits[box_world.SOLVED_IX])}')
 
         if current_option is not None:
             stop = Categorical(logits=stop_logps[current_option]).sample().item()
@@ -225,19 +262,19 @@ def full_sample_solve(env, obs, control_net, render=False):
             if current_option is not None:
                 causal_consistency = ((tau - op_new_tau)**2).sum()
                 print(f'causal_consistency: {causal_consistency}')
-                print(f'tau: {tau}')
-                print(f'op_new_tau: {op_new_tau}')
-                test_tau_solved(tau, op_new_tau, control_net)
-                print(f'op_new_tau_solved_prob from before: {op_new_tau_solved_prob}')
+                # print(f'tau: {tau}')
+                # print(f'op_new_tau: {op_new_tau}')
+                # test_tau_solved(tau, op_new_tau, control_net)
+                # print(f'op_new_tau_solved_prob from before: {op_new_tau_solved_prob}')
 
                 options_trace[prev_pos] = 'e'
-            print(f'start probs: {torch.exp(start_logps)}')
+            # print(f'start probs: {torch.exp(start_logps)}')
             current_option = Categorical(logits=start_logps).sample().item()
 
             op_start_logps, op_new_taus, op_solved_logps = control_net.eval_abstract_policy(tau)
             op_new_tau = op_new_taus[current_option]
             op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
-            print(f'solved prob from option: {op_new_tau_solved_prob}')
+            # print(f'solved prob from option: {op_new_tau_solved_prob}')
             options2.append(current_option)
         else:
             # dont overwrite red dot
@@ -278,7 +315,7 @@ def full_sample_solve(env, obs, control_net, render=False):
         print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
-        box_world.render_obs(options_trace, title=f'{solved=}', pause=0.5)
+        box_world.render_obs(options_trace, title=f'{solved=}', pause=1)
 
     print(f'moves:  {moves}')
     print(f'options:{options}')
@@ -293,20 +330,16 @@ def plot_times(solve_times, n):
     plt.show()
 
 
-def fake_hl_planner(s, control_net):
-    for i in range(control_net.b):
-        yield (None, [i], 0, 0)
-
-
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
-    env = box_world.BoxWorldEnv(seed=1, solution_length=(1, ))
-    control_net = utils.load_model('models/724f7c53fb6549f094e118422788442c.pt').control_net
+    env = box_world.BoxWorldEnv(seed=1, solution_length=(1, 2, ))
+    # control_net = utils.load_model('models/724f7c53fb6549f094e118422788442c.pt').control_net
+    control_net = utils.load_model('models/e14b78d01cc548239ffd57286e59e819.pt').control_net
     # control_net.tau_noise_std = 0
 
     # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
-    n = 2
+    n = 200
     solve_times = multiple_plan(env, control_net, timeout=600, n=n)

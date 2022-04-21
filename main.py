@@ -93,6 +93,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
+    """
+    Train a basic supervised model, no option learning or anything.
+    """
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     net.train()
 
@@ -137,17 +140,17 @@ def adjust_state_dict(state_dict):
 
 def boxworld_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cc_pen', type=float, default=1.0)
-    parser.add_argument('--abstract_pen', type=float, default=0.0)
+    parser.add_argument('--cc_pen', type=float, default=1.0, help='causal consistency loss weight')
+    parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--tau_noise', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
-    parser.add_argument('--neptune', action='store_true')
-    parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
-    parser.add_argument('--eval', action='store_true')
-    parser.add_argument('--abstract_dim', type=int, default=32)
-    parser.add_argument('--ellis', action='store_true')
+    parser.add_argument('--neptune', action='store_true', help='log results to neptune.ai')
+    parser.add_argument('--no_log', action='store_true', help='dont log anything')
+    parser.add_argument('--n', type=int, default=argparse.SUPPRESS, n='number of trajs in dataset')
+    parser.add_argument('--eval', action='store_true', help='skip training and eval model')
+    parser.add_argument('--abstract_dim', type=int, default=32, help='dim of abstract state')
+    parser.add_argument('--ellis', action='store_true', help='run on ellis GPU (=larger batch size)')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze microcontroller')
     args = parser.parse_args()
 
@@ -180,7 +183,7 @@ def boxworld_main():
         # model_load_path='models/724f7c53fb6549f094e118422788442c.pt'
     )
     params.update(vars(args))
-    featured_params=['model', 'abstract_pen', 'batch_size', 'tau_noise']
+    featured_params = ['model', 'abstract_pen', 'batch_size', 'tau_noise']
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -188,13 +191,14 @@ def boxworld_main():
         net = SVNet(boxworld_homocontroller(b=1))
     else:
         if args.model == 'hmm-homo':
+            # HMM algorithm where start probs, stop probs, action probs all come from single NN
             control_net = boxworld_homocontroller(b=params['b'])
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.tau_noise,
                                               t=params['abstract_dim'])
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
-            net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
+            net = HmmNet(control_net, abstract_pen=params['abstract_pen'], ccts=(args.model == 'ccts'))
         elif args.model == 'cc':
             net = CausalNet(control_net, cc_weight=params['cc_pen'], abstract_pen=params['abstract_pen'])
         else:
