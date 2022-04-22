@@ -450,6 +450,127 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
+def eval_options_model_interactive(control_net, env, n=100, option='silent', run=None, epoch=None):
+    control_net.eval()
+    num_solved = 0
+    check_cc = hasattr(control_net, 'tau_net')
+    check_solved = hasattr(control_net, 'solved_net')
+    cc_losses = []
+    correct_solved_preds = 0
+
+    for i in range(n):
+        env2 = env.copy()
+        eval_options_model(control_net, env2, n=1, option='verbose')
+        obs = env.reset()
+        options_trace = obs
+        option_map = {i: [] for i in range(control_net.b)}
+        done, solved = False, False
+        correct_solved_pred = True
+        t = -1
+        options = []
+        moves_without_moving = 0
+        prev_pos = (-1, -1)
+
+        current_option = None
+        tau_goal = None
+
+        while not (done or solved):
+            t += 1
+            render_obs(obs, pause=0.1)
+            obs = obs_to_tensor(obs)
+            obs = obs.to(DEVICE)
+            # (b, a), (b, 2), (b, ), (2, )
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
+
+            if check_solved:
+                is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+                # if verbose:
+                #     print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
+                #     print(f'is_solved_pred: {is_solved_pred}')
+                if is_solved_pred:
+                    correct_solved_pred = False
+
+            if current_option is not None:
+                stop = Categorical(logits=stop_logps[current_option]).sample().item()
+            new_option = current_option is None or stop == STOP_IX
+            if new_option:
+                if check_cc:
+                    tau = control_net.tau_embed(obs)
+                if current_option is not None:
+                    if check_cc:
+                        cc_loss = ((tau_goal - tau)**2).sum()
+                        print(f'cc_loss: {cc_loss}')
+                        cc_losses.append(cc_loss.item())
+                    options_trace[prev_pos] = 'e'
+                print(f'Choose new option b; start probs = {torch.exp(start_logps)}')
+                b = int(input('b='))
+                # current_option = Categorical(logits=start_logps).sample().item()
+                current_option = b
+                option_start_s = obs
+                if check_cc:
+                    tau_goal = control_net.macro_transition(tau, current_option)
+            else:
+                # dont overwrite red dot
+                if options_trace[prev_pos] != 'e':
+                    options_trace[prev_pos] = 'm'
+
+            options.append(current_option)
+
+            a = Categorical(logits=action_logps[current_option]).sample().item()
+            option_map[current_option].append(a)
+
+            obs, rew, done, info = env.step(a)
+            solved = rew == bw.REWARD_GOAL
+
+            pos = player_pos(obs)
+            if prev_pos == pos:
+                moves_without_moving += 1
+            else:
+                moves_without_moving = 0
+                prev_pos = pos
+            if moves_without_moving >= 5:
+                done = True
+
+        if solved:
+            obs = obs_to_tensor(obs)
+            obs = obs.to(DEVICE)
+
+            if check_solved:
+                # check that we predicted that we solved
+                _, _, _, solved_logits = control_net.eval_obs(obs, option_start_s)
+                is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
+
+                if not is_solved_pred:
+                    correct_solved_pred = False
+                else:
+                    if correct_solved_pred:
+                        correct_solved_preds += 1
+
+            # add cc loss from last action.
+            if check_cc:
+                tau = control_net.tau_embed(obs)
+                cc_loss = ((tau_goal - tau)**2).sum()
+                cc_losses.append(cc_loss.item())
+            num_solved += 1
+
+    if check_cc:
+        cc_loss_avg = sum(cc_losses) / len(cc_losses)
+        if run:
+            run[f'test/cc loss avg'].log(cc_loss_avg)
+    if check_solved:
+        solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
+        # print(f'Correct solved pred: {solved_acc:.2f}')
+        if run:
+            run[f'test/solved pred acc'].log(solved_acc)
+
+    control_net.train()
+    if check_cc:
+        print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
+    else:
+        print(f'Solved {num_solved}/{n} episodes')
+    return num_solved / n
+
+
 def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
@@ -499,9 +620,9 @@ j       (b, 2) stop logps
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
-                if verbose:
-                    print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
-                    print(f'is_solved_pred: {is_solved_pred}')
+                # if verbose:
+                #     print(f'solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
+                #     print(f'is_solved_pred: {is_solved_pred}')
                 if is_solved_pred:
                     correct_solved_pred = False
 
@@ -514,6 +635,7 @@ j       (b, 2) stop logps
                 if current_option is not None:
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
+                        print(f'cc_loss: {cc_loss}')
                         cc_losses.append(cc_loss.item())
                     options_trace[prev_pos] = 'e'
                 current_option = Categorical(logits=start_logps).sample().item()
@@ -578,7 +700,7 @@ j       (b, 2) stop logps
             num_solved += 1
 
         if verbose:
-            render_obs(options_trace, title=f'{solved=}', pause=3)
+            render_obs(options_trace, title=f'{solved=}', pause=1)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
@@ -594,6 +716,7 @@ j       (b, 2) stop logps
         if run:
             run[f'test/solved pred acc'].log(solved_acc)
 
+    print(f'options: {options}')
     control_net.train()
     if check_cc and len(cc_losses) > 0:
         print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
