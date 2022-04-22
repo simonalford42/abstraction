@@ -179,7 +179,7 @@ def boxworld_main():
         traj_updates=1E7,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size, b=10,
-        model_load_path='models/3246c443e3cd43a6a3896cd8d6fa8807.pt',
+        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
     featured_params = ['model', 'abstract_pen', 'tau_noise']
