@@ -32,13 +32,13 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
             net.control_net.freeze_all_controllers()
 
-        if epoch and epoch % 100 == 0:
-            print('reloading data')
-            del dataloader
-            data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
-                                             n=params['n'], traj=True)
-            dataloader = DataLoader(data, batch_size=params['batch_size'],
-                                    shuffle=False, collate_fn=box_world.traj_collate)
+        # if epoch and epoch % 100 == 0:
+        #     print('reloading data')
+        #     del dataloader
+        #     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
+        #                                      n=params['n'], traj=True)
+        #     dataloader = DataLoader(data, batch_size=params['batch_size'],
+        #                             shuffle=False, collate_fn=box_world.traj_collate)
 
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
@@ -57,16 +57,17 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             run['batch/loss'].log(loss.item())
             run['batch/avg length'].log(sum(lengths) / len(lengths))
             run['batch/mem'].log(utils.get_memory_usage())
-            loss.backward()
-            optimizer.step()
+            # loss.backward()
+            # optimizer.step()
+        if epoch % 100 == 0:
+            print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
-            if net.b != 1:
-                test_acc = box_world.eval_options_model(
-                    net.control_net, test_env, n=params['num_test'],
-                    run=run, epoch=epoch)
-            else:
-                test_acc = box_world.eval_model(net.control_net, test_env, n=params['num_test'])
+            test_env = box_world.BoxWorldEnv(seed=params['seed'])
+            print('using fixed test env')
+            test_acc = box_world.eval_options_model(
+                net.control_net, test_env, n=params['num_test'],
+                run=run, epoch=epoch)
             run['test/accuracy'].log(test_acc)
             print(f'Epoch {epoch}\t test acc {test_acc}')
             mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
@@ -150,7 +151,6 @@ def boxworld_main():
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
-    parser.add_argument('--mlp_hidden_dim', type=int, default=64)
     args = parser.parse_args()
 
     if not args.seed:
@@ -175,11 +175,11 @@ def boxworld_main():
     batch_size = 64 if args.ellis else 32
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=5000,
-        traj_updates=1E7,  # default: 1E7
-        num_saves=4, num_tests=20, num_test=200,
+        n=1,
+        traj_updates=1E4,  # default: 1E7
+        num_saves=4, num_tests=200, num_test=1,
         lr=8E-4, batch_size=batch_size, b=10,
-        model_load_path='models/3246c443e3cd43a6a3896cd8d6fa8807.pt',
+        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
     featured_params = ['model', 'abstract_pen', 'tau_noise']
@@ -195,7 +195,7 @@ def boxworld_main():
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.tau_noise,
-                                              t=params['abstract_dim'], num_hidden=params['num_hidden'], hidden_dim=params['hidden_dim'])
+                                              t=params['abstract_dim'])
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'], ccts=(args.model == 'ccts'))
         elif args.model == 'cc':

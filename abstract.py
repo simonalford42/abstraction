@@ -430,6 +430,8 @@ class HeteroController(nn.Module):
         self.micro_net.requires_grad_(False)
         self.macro_policy_net.requires_grad_(False)
         self.tau_net.requires_grad_(False)
+        self.macro_transition_net.requires_grad_(False)
+        # self.solved_net.requires_grad_(False)
 
     def unfreeze(self):
         """
@@ -791,11 +793,15 @@ class NormModule(nn.Module):
         return F.normalize(x, dim=-1, p=self.p)
 
 
-def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0, mlp_hidden_dim=32):
+def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
     """
     typ: hetero, homo, ccts, or ccts-reduced
     """
     a = 4
+    tau_lp_norm = 1
+    gumbel = False
+    fc_hidden_dim = 64
+
     if gumbel:
         raise NotImplementedError()
 
@@ -824,16 +830,16 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_module)
 
-    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=mlp_hidden_dim),
+    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=fc_hidden_dim),
                                      nn.LogSoftmax(dim=-1))
 
     macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
                                             output_dim=t,
                                             num_hidden=3,
-                                            hidden_dim=mlp_hidden_dim),
+                                            hidden_dim=fc_hidden_dim),
                                          tau_module)
 
-    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3, hidden_dim=mlp_hidden_dim),
+    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3, hidden_dim=fc_hidden_dim),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,
