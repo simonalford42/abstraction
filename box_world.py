@@ -616,6 +616,8 @@ j       (b, 2) stop logps
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
+            if current_option is None:
+                print(f"start probs: {torch.exp(start_logps)}")
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
