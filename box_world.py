@@ -595,6 +595,7 @@ j       (b, 2) stop logps
 
     for i in range(n):
         obs = env.reset()
+        render_obs(obs, pause=1)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(obs), name='obs')
         options_trace = obs
@@ -615,11 +616,6 @@ j       (b, 2) stop logps
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
-            if current_option is not None:
-                stop_prob = torch.exp(stop_logps[current_option, STOP_IX])
-                print(f'stop_prob: {stop_prob}')
-                # if stop_prob.item() < 0.5:
-                    # input()
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -707,7 +703,6 @@ j       (b, 2) stop logps
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
-        print(f"options: {options}")
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
