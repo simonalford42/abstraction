@@ -13,10 +13,10 @@
 #SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
 #SBATCH -t 72:00:00
-#xSBATCH --mem=80G
-#SBATCH --mem=40G
+#SBATCH --mem=80G
+#xSBATCH --mem=40G
 #SBATCH --gres=gpu:1
-#xSBATCH --partition=gpu
-#SBATCH --partition=ellis
+#SBATCH --partition=gpu
+#xSBATCH --partition=ellis
 
 python -u main.py "$@"

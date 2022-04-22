@@ -707,8 +707,9 @@ j       (b, 2) stop logps
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
+        print(f"options: {options}")
 
-    if check_cc:
+    if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
         if run:
             run[f'test/cc loss avg'].log(cc_loss_avg)
@@ -720,7 +721,7 @@ j       (b, 2) stop logps
 
     print(f'options: {options}')
     control_net.train()
-    if check_cc:
+    if check_cc and len(cc_losses) > 0:
         print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
     else:
         print(f'Solved {num_solved}/{n} episodes')
