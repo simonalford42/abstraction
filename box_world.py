@@ -595,7 +595,6 @@ j       (b, 2) stop logps
 
     for i in range(n):
         obs = env.reset()
-        render_obs(obs, pause=1)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(obs), name='obs')
         options_trace = obs

@@ -57,14 +57,15 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             run['batch/loss'].log(loss.item())
             run['batch/avg length'].log(sum(lengths) / len(lengths))
             run['batch/mem'].log(utils.get_memory_usage())
-            # loss.backward()
-            # optimizer.step()
+            loss.backward()
+            optimizer.step()
+
         if epoch % 100 == 0:
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             test_env = box_world.BoxWorldEnv(seed=params['seed'])
-            print('using fixed test env')
+            print('fixed test env')
             test_acc = box_world.eval_options_model(
                 net.control_net, test_env, n=params['num_test'],
                 run=run, epoch=epoch)

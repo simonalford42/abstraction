@@ -430,8 +430,6 @@ class HeteroController(nn.Module):
         self.micro_net.requires_grad_(False)
         self.macro_policy_net.requires_grad_(False)
         self.tau_net.requires_grad_(False)
-        self.macro_transition_net.requires_grad_(False)
-        # self.solved_net.requires_grad_(False)
 
     def unfreeze(self):
         """
@@ -447,7 +445,7 @@ class HeteroController(nn.Module):
         else:
             return self.forward_ub(s_i_batch)
 
-    def forward_ub(self, s_i):
+    def forward_ub(self, s_i, tau_noise=True):
         """
         s_i: (T, s) tensor of states
         outputs:
@@ -463,7 +461,9 @@ class HeteroController(nn.Module):
         t_i = self.tau_net(s_i)  # (T, t)
         torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
                                    torch.ones(T, device=DEVICE))
-        noised_t_i = noisify_tau(t_i, self.tau_noise_std)
+
+        noise = self.tau_noise_std if tau_noise else 0
+        noised_t_i = noisify_tau(t_i, noise)
 
         action_logps, stop_logps = self.micro_net(s_i)
         start_logps = self.macro_policy_net(noised_t_i)  # (T, b) aka P(b | t)
@@ -605,7 +605,7 @@ class HeteroController(nn.Module):
             (2, ) solved logits (solved is at abstract.SOLVED_IX)
         """
         # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
-        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps, _, solved_logits = self.forward_ub(s_i.unsqueeze(0), tau_noise=False)
 
         return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
 
