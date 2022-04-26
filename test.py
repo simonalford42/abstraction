@@ -12,6 +12,7 @@ import box_world
 from hmm import HmmNet, cc_loss, cc_loss_brute, cc_loss_ub, hmm_fw_ub
 from box_world import CONTINUE_IX, STOP_IX
 from utils import DEVICE, assert_equal, assert_shape
+import utils
 import planning
 
 import hypothesis
@@ -665,6 +666,56 @@ def test_ccts_batched():
         optimizer.step()
 
 
+def test_macro_transitions():
+    b = 5
+    t = 10
+    random.seed(1)
+    torch.manual_seed(1)
+    np.random.seed(1)
+
+    control_net = abstract.boxworld_controller(b=b, typ='hetero', t=t)
+
+    env = box_world.BoxWorldEnv(seed=1)
+    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=1)
+
+    control_net.to(DEVICE)
+
+    for s_i, actions, lengths, masks in dataloader:
+        t_i = control_net.tau_net(s_i[0])[:b]
+        assert_shape(t_i, (b, t))
+        bs = torch.arange(b)
+        trans = control_net.macro_transitions(t_i, bs)
+        assert_shape(trans, (b, b, t))
+        trans2 = control_net.macro_transitions2(t_i, bs)
+        assert_shape(trans2, (b, t))
+        assert_equal(trans2.shape, trans[range(b), range(b)].shape)
+        torch.testing.assert_allclose(trans2, trans[range(b), range(b)])
+
+
+def test_latent_gen():
+    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=0), n=100, traj=True, shuffle=False)
+    dataloader = torch.utils.data.DataLoader(data, batch_size=32, shuffle=False, collate_fn=box_world.traj_collate)
+    model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
+    net = utils.load_model(model_load_path)
+    all_t_i, all_b_i = box_world.calc_latents(dataloader, net.control_net)
+    test_env = box_world.BoxWorldEnv(seed=0)
+
+    acc = box_world.eval_options_model(net.control_net, test_env, n=100)
+    print(f'acc: {acc}')
+
+    test_env = box_world.BoxWorldEnv(seed=0)
+    total_solved = 0
+    for s_i, t_i, b_i in zip(data.traj_states, all_t_i, all_b_i):
+        obs = test_env.reset()
+        obs = box_world.obs_to_tensor(obs)
+        torch.testing.assert_close(s_i[0], obs)
+        actions, solved = planning.llc_plan(s_i[0], b_i, net.control_net, test_env)
+        if solved:
+            total_solved += 1
+
+    print(f'total_solved: {total_solved}')
+
+
 def test_solved_batched():
     b = 3
     B = 6
@@ -856,18 +907,4 @@ def test_cc_batched2():
 
 
 if __name__ == '__main__':
-    # test_bfs()
-    # test_solved_batched()
-    # test_actions_batch()
-    # test_cc_batched()
-    # test_ccts_reduced_batched()
-    test_ccts_batched()
-    # test_hmm_and_cc()
-    # test_cc_batched2()
-    # test_cc_logp_vs_hmm_logp()
-    # test_cc2()
-    # test_cc3()
-    # test_cc4()
-    # test_cc5()
-    # test_cc()
-    # test_cc6()
+    test_latent_gen()

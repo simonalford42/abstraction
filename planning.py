@@ -132,13 +132,13 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
 
 def llc_plan(s: torch.Tensor, abstract_actions, control_net, env) -> tuple[list, bool]:
     all_actions = []
-    print(f'LLC for plan: {abstract_actions}')
+    # print(f'LLC for plan: {abstract_actions}')
     for b in abstract_actions:
         out = llc_sampler(s, b, control_net, env)
         if out is None:
             break
         actions, s, done = out
-        print(f'LL plan for b={b}: {actions}')
+        # print(f'LL plan for b={b}: {actions}')
         all_actions.append(actions)
         if done:
             break

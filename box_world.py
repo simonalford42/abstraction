@@ -725,6 +725,7 @@ j       (b, 2) stop logps
         if run:
             run[f'test/solved pred acc'].log(solved_acc)
 
+    # print(f'options: {options}')
     control_net.train()
     if check_cc and len(cc_losses) > 0:
         print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
@@ -848,22 +849,22 @@ def calc_latents(dataloader, control_net):
 
     for s_i_batch, actions_batch, lengths, masks in dataloader:
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
-        action_logps, stop_logps, start_logps, causal_pens, solved, t_i = control_net(s_i_batch, batched=True, tau_noise=False)
+        action_logps, stop_logps, start_logps, causal_pens, solved, traj_t_i = control_net(s_i_batch, batched=True, tau_noise=False)
         for batch_ix, length in enumerate(lengths):
             i = 0
             t_i = []
             b_i = []
             current_option = None
-            while i < length:
+            while i < length - 1:
                 if current_option is not None:
-                    stop = Categorical(logits=stop_logps[batch_ix, current_option]).sample().item()
+                    stop = Categorical(logits=stop_logps[batch_ix, i, current_option]).sample().item()
                 if current_option is None or stop == STOP_IX:
                     current_option = Categorical(logits=start_logps[batch_ix, i]).sample().item()
                     b_i.append(current_option)
-                    t_i.append(t_i[i])
+                    t_i.append(traj_t_i[batch_ix, i])
                 i += 1
             # stop at end
-            t_i.append(t_i[length])
+            t_i.append(traj_t_i[batch_ix, length-1])
             all_t_i.append(torch.stack(t_i))
             all_b_i.append(torch.tensor(b_i))
 
@@ -910,7 +911,7 @@ class LatentDataset(Dataset):
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = True):
+    def __init__(self, env: BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
@@ -931,9 +932,10 @@ class BoxWorldDataset(Dataset):
         self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
 
-        self.traj_states, self.traj_moves = zip(*sorted(zip(self.traj_states, self.traj_moves),
-                                                key=lambda t: t[0].shape[0]))
-        self.traj_states, self.traj_moves = list(self.traj_states), list(self.traj_moves)
+        if shuffle:
+            self.traj_states, self.traj_moves = zip(*sorted(zip(self.traj_states, self.traj_moves),
+                                                    key=lambda t: t[0].shape[0]))
+            self.traj_states, self.traj_moves = list(self.traj_states), list(self.traj_moves)
         assert_equal([m.shape[0] + 1 for m in self.traj_moves], [ts.shape[0] for ts in self.traj_states])
 
     def __len__(self):
