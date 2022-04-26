@@ -114,8 +114,8 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
 
         actions.append(a)
         obs, rew, done, info = env.step(a)
-        pause = 0.2 if first_step else 0.01
-        box_world.render_obs(obs, pause=pause)
+        # pause = 0.2 if first_step else 0.01
+        # box_world.render_obs(obs, pause=pause)
         pos = box_world.player_pos(obs)
         if pos in pos_visits:
             pos_visits[pos] += 1
@@ -174,13 +174,39 @@ L2_SOLVED = 0
 L2_ATTEMPTED = 0
 
 
+def test_consistency(env, control_net, n):
+    num_sample_solved = 0
+    num_plan_solved = 0
+    num_solved = 0
+    for i in range(n):
+        obs = env.reset()
+        obs = box_world.obs_to_tensor(obs)
+        env2 = env.copy()
+        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
+        if solved:
+            num_solved += 1
+            if len(options) > 1:
+                num_sample_solved += 1
+
+                t0 = control_net.tau_embed(obs)
+                b = options[0]
+                t1 = control_net.macro_transition(t0, b)
+                start_logps, _, _ = control_net.eval_abstract_policy(t1)
+                b1 = torch.argmax(start_logps)
+
+                if b1 == options[1]:
+                    num_plan_solved += 1
+
+    print(f'Tried {n}, solved {num_solved}. Of these, {num_sample_solved} had 2+ options, matched with {num_plan_solved}/{num_sample_solved}={num_plan_solved/num_sample_solved}')
+
+
 def plan(env, control_net, timeout):
     obs = env.reset()
 
     for _ in range(1):
         # box_world.render_obs(env2.obs, pause=1)
         env2 = copy.deepcopy(env)
-        solved, options = full_sample_solve(env2, env2.obs, control_net, render=True)
+        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
         print(f'full sample solved: {solved}, options: {options}')
         if solved and len(options) > 1:
             global L2_ATTEMPTED
@@ -233,7 +259,10 @@ def test_tau_solved(tau, tau2, control_net):
     input()
 
 
-def full_sample_solve(env, obs, control_net, render=False):
+def full_sample_solve(env, obs, control_net, render=False, macro=False, argmax=True):
+    """
+    macro: use macro transition model to base next option from previous trnasition prediction, to teset abstract transition model.
+    """
     options_trace = obs
     option_map = {i: [] for i in range(control_net.b)}
     done, solved = False, False
@@ -255,13 +284,22 @@ def full_sample_solve(env, obs, control_net, render=False):
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
 
         if current_option is not None:
-            stop = Categorical(logits=stop_logps[current_option]).sample().item()
+            if argmax:
+                stop = torch.argmax(stop_logps[current_option]).item()
+            else:
+                stop = Categorical(logits=stop_logps[current_option]).sample().item()
         new_option = current_option is None or stop == STOP_IX
         if new_option:
+            if current_option is not None and macro:
+                start_logps = control_net.macro_policy_net(op_new_tau)
+
             tau = control_net.tau_embed(obs)
+            if macro:
+                tau = op_new_tau
+
             if current_option is not None:
                 causal_consistency = ((tau - op_new_tau)**2).sum()
-                print(f'causal_consistency: {causal_consistency}')
+                # print(f'causal_consistency: {causal_consistency}')
                 # print(f'tau: {tau}')
                 # print(f'op_new_tau: {op_new_tau}')
                 # test_tau_solved(tau, op_new_tau, control_net)
@@ -269,11 +307,14 @@ def full_sample_solve(env, obs, control_net, render=False):
 
                 options_trace[prev_pos] = 'e'
             # print(f'start probs: {torch.exp(start_logps)}')
-            current_option = Categorical(logits=start_logps).sample().item()
+            if argmax:
+                current_option = torch.argmax(start_logps).item()
+            else:
+                current_option = Categorical(logits=start_logps).sample().item()
 
             op_start_logps, op_new_taus, op_solved_logps = control_net.eval_abstract_policy(tau)
             op_new_tau = op_new_taus[current_option]
-            op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
+            # op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
             # print(f'solved prob from option: {op_new_tau_solved_prob}')
             options2.append(current_option)
         else:
@@ -312,13 +353,13 @@ def full_sample_solve(env, obs, control_net, render=False):
 
         # check that we predicted that we solved
         _, _, _, solved_logits = control_net.eval_obs(obs)
-        print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
+        # print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
         box_world.render_obs(options_trace, title=f'{solved=}', pause=1)
 
-    print(f'moves:  {moves}')
-    print(f'options:{options}')
+    # print(f'moves:  {moves}')
+    # print(f'options:{options}')
     return solved, options2
 
 
@@ -334,12 +375,15 @@ if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
-    env = box_world.BoxWorldEnv(seed=1, solution_length=(1, 2, ))
-    # control_net = utils.load_model('models/724f7c53fb6549f094e118422788442c.pt').control_net
+    env = box_world.BoxWorldEnv(seed=1)
     control_net = utils.load_model('models/e14b78d01cc548239ffd57286e59e819.pt').control_net
-    # control_net.tau_noise_std = 0
+    # control_net = utils.load_model('models/b2261e15edc14ffdb4c28c0f96528006.pt').control_net
+    # control_net = utils.load_model('models/918fba1553ee47eb8d29ae4b8095f413.pt').control_net
+    # control_net = utils.load_model('models/9a3edab864e84db594a3cc2726018bc6-epoch-2500.pt').control_net
+    control_net.tau_noise_std = 0
 
     # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
-    n = 200
-    solve_times = multiple_plan(env, control_net, timeout=600, n=n)
+    n = 50
+    test_consistency(env, control_net, n=n)
+    # solve_times = multiple_plan(env, control_net, timeout=600, n=n)

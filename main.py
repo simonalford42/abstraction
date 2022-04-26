@@ -10,6 +10,7 @@ import random
 import utils
 from utils import Timing, DEVICE
 from abstract import HeteroController, boxworld_controller, boxworld_homocontroller
+import abstract
 from hmm import CausalNet, SVNet, HmmNet, viterbi
 import time
 import box_world
@@ -17,8 +18,69 @@ import neptune.new as neptune
 import mlflow
 
 
+def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[str, Any]):
+    optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
+    control_net.train()
+    model_id = mlflow.active_run().info.run_id
+    run['model_id'] = model_id
+    if params['freeze'] == 'micro':
+        control_net.freeze_microcontroller()
+    elif params['freeze'] == 'all':
+        control_net.freeze_all_controllers()
+
+    updates = 0
+    epoch = 0
+
+    latent_data = box_world.LatentData(dataloader, control_net)
+    latent_dataloader = DataLoader(latent_data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.latent_traj_collate)
+
+    while updates < params['traj_updates']:
+        if hasattr(dataloader.dataset, 'shuffle'):
+            latent_dataloader.dataset.shuffle(batch_size=params['batch_size'])
+
+        train_loss = 0
+        for t_i_batch, b_i_batch, lengths, masks in latent_dataloader:
+            optimizer.zero_grad()
+            t_i_batch, b_i_batch = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE)
+
+            loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net)
+            train_loss += loss.item()
+            loss = loss / sum(lengths)
+
+            run['batch/loss'].log(loss.item())
+            run['batch/avg length'].log(sum(lengths) / len(lengths))
+            run['batch/mem'].log(utils.get_memory_usage())
+            loss.backward()
+            optimizer.step()
+
+        if epoch % 100 == 0:
+            print(f"train_loss: {train_loss}")
+
+        if params['test_every'] and epoch % params['test_every'] == 0:
+            test_accs = planning.eval_planner(
+                control_net, box_world.BoxWorldEnv(), n=params['num_test'],
+            )
+            print(f'Epoch {epoch}\t test accs {test_accs}')
+            mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)
+
+        run['epoch'].log(epoch)
+        run['loss'].log(train_loss)
+        mlflow.log_metrics({'epoch': epoch,
+                            'loss': train_loss}, step=epoch)
+
+        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
+            path = utils.save_model(control_net, f'models/{model_id}-epoch-{epoch}_control.pt')
+            run['models'].log(path)
+
+        epoch += 1
+        updates += params['n']
+
+
+
+        epoch += 1
+
+
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
-    print('train')
     optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
     net.train()
     model_id = mlflow.active_run().info.run_id
@@ -152,6 +214,7 @@ def boxworld_main():
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
+    parser.add_argument('--fine_tune', action='store_true', help='fine tune training')
     args = parser.parse_args()
 
     if not args.seed:
@@ -217,6 +280,22 @@ def boxworld_main():
 
     if args.eval:
         box_world.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
+    elif args.fine_tune:
+        net = net.to(DEVICE)
+        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
+        dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+
+        with Timing('Completed fine tuning'):
+            with mlflow.start_run():
+                params['id'] = mlflow.active_run().info.run_id
+                run['params'] = params
+                mlflow.log_params(params)
+                for p in featured_params:
+                    print(p.upper() + ':\t ' + str(params[p]))
+                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+                print(f"params: {params}")
+
+                fine_tune(run, dataloader, net.control_net, params)
     else:
         net = net.to(DEVICE)
         data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)

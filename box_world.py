@@ -766,6 +766,38 @@ def obs_to_tensor(obs) -> torch.Tensor:
     return obs
 
 
+def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
+    '''
+    for a trajectory with t_i of shape (T + 1, t) and b_i of shape (T, ),
+    mask is a (max_T_plus_one, ) vector with mask[0:T+1] = 1
+
+    Note that this is different from traj_collate
+    '''
+    # NOTE: different lengths
+    lengths = torch.tensor([len(t_i) for t_i, b_i in batch])
+    max_T_plus_one = max(lengths)
+    t_i_batch = []
+    b_i_batch = []
+    masks = []
+    for t_i, b_i in batch:
+        t = t_i.shape[1]
+        T_plus_one = len(t_i)
+        to_add = max_T_plus_one - T_plus_one
+        t_i2 = torch.cat((t_i, torch.zeros((to_add, t))))
+        b_i2 = torch.cat((b_i, torch.zeros(to_add, dtype=int)))
+        # NOTE: different masking from traj_collate!!!
+        mask = torch.zeros(max_T_plus_one, dtype=int)
+        mask[:T_plus_one] = 1
+        masks.append(mask)
+        assert_equal(t_i2.shape, (max_T_plus_one, t))
+        assert_equal(b_i2.shape, (max_T_plus_one - 1, ))
+        assert_equal(masks.shape, (max_T_plus_one, ))
+        t_i_batch.append(t_i2)
+        b_i_batch.append(b_i2)
+
+    return torch.stack(t_i_batch), torch.stack(b_i_batch), lengths, torch.stack(masks)
+
+
 def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
     """
     batch is a list of (states, moves, length, masks) tuples.
@@ -800,6 +832,72 @@ def box_world_dataloader(env: BoxWorldEnv, n: int, traj: bool = True, batch_size
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
     else:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj)
+
+
+def calc_latents(dataloader, control_net):
+    all_t_i, all_b_i = [], []
+
+    for s_i_batch, actions_batch, lengths, masks in dataloader:
+        # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
+        action_logps, stop_logps, start_logps, causal_pens, solved, t_i = control_net(s_i_batch, batched=True, tau_noise=False)
+        for batch_ix, length in enumerate(lengths):
+            i = 0
+            t_i = []
+            b_i = []
+            current_option = None
+            while i < length:
+                if current_option is not None:
+                    stop = Categorical(logits=stop_logps[batch_ix, current_option]).sample().item()
+                if current_option is None or stop == STOP_IX:
+                    current_option = Categorical(logits=start_logps[batch_ix, i]).sample().item()
+                    b_i.append(current_option)
+                    t_i.append(t_i[i])
+                i += 1
+            # stop at end
+            t_i.append(t_i[length])
+            all_t_i.append(torch.stack(t_i))
+            all_b_i.append(torch.tensor(b_i))
+
+    return all_t_i, all_b_i
+
+
+class LatentDataset(Dataset):
+    def __init__(self, dataloader, control_net: nn.Module):
+        with torch.no_grad():
+            self.t_i, self.b_i = calc_latents(dataloader, control_net)
+
+        self.t_i, self.b_i = zip(*sorted(zip(self.t_i, self.b_i),
+                                             key=lambda t: t[0].shape[0]))
+
+    def __len__(self):
+        return len(self.t_i)
+
+    def __getitem__(self, ix):
+        return self.t_i[ix], self.b_i[ix]
+
+    def shuffle(self, batch_size):
+        """
+        Shuffle trajs which share the same length, while still keeping the overall order the same.
+        Then shuffles among the batches, so that the order in which lengths are encountered differs.
+        """
+        ixs = list(range(len(self.t_i)))
+        random.shuffle(ixs)
+        self.t_i[:] = [self.t_i[i] for i in ixs]
+        self.b_i[:] = [self.b_i[i] for i in ixs]
+        self.t_i[:], self.b_i[:] = zip(*sorted(zip(self.t_i, self.b_i),
+                                                   key=lambda t: t[0].shape[0]))
+        self.t_i, self.b_i = list(self.t_i), list(self.b_i)
+
+        # keep the last batch at the end
+        n = len(self.t_i)
+        n = n - (n % batch_size)
+        ixs = list(range(n))
+        blocks = [ixs[i:i + batch_size] for i in range(0, n, batch_size)]
+        random.shuffle(blocks)
+        ixs = [b for bs in blocks for b in bs]
+        assert_equal(len(ixs), n)
+        self.t_i[:n] = [self.t_i[i] for i in ixs]
+        self.b_i[:n] = [self.b_i[i] for i in ixs]
 
 
 class BoxWorldDataset(Dataset):
@@ -844,7 +942,7 @@ class BoxWorldDataset(Dataset):
     def shuffle(self, batch_size):
         """
         Shuffle trajs which share the same length, while still keeping the overall order the same.
-        Then shuffles among the batches.
+        Then shuffles among the batches, so that the order in which lengths are encountered differs.
         """
         ixs = list(range(len(self.traj_states)))
         random.shuffle(ixs)
