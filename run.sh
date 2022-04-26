@@ -16,7 +16,7 @@
 #SBATCH --mem=80G
 #xSBATCH --mem=40G
 #SBATCH --gres=gpu:1
-#SBATCH --partition=gpu
-#xSBATCH --partition=ellis
+#xSBATCH --partition=gpu
+#SBATCH --partition=ellis
 
 python -u main.py "$@"

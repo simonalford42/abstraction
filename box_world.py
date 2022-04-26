@@ -801,7 +801,7 @@ def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
         masks.append(mask)
         assert_equal(t_i2.shape, (max_T_plus_one, t))
         assert_equal(b_i2.shape, (max_T_plus_one - 1, ))
-        assert_equal(masks.shape, (max_T_plus_one, ))
+        assert_equal(mask.shape, (max_T_plus_one, ))
         t_i_batch.append(t_i2)
         b_i_batch.append(b_i2)
 
@@ -848,6 +848,7 @@ def calc_latents(dataloader, control_net):
     all_t_i, all_b_i = [], []
 
     for s_i_batch, actions_batch, lengths, masks in dataloader:
+        s_i_batch, actions_batch, lengths, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
         action_logps, stop_logps, start_logps, causal_pens, solved, traj_t_i = control_net(s_i_batch, batched=True, tau_noise=False)
         for batch_ix, length in enumerate(lengths):
@@ -865,8 +866,8 @@ def calc_latents(dataloader, control_net):
                 i += 1
             # stop at end
             t_i.append(traj_t_i[batch_ix, length-1])
-            all_t_i.append(torch.stack(t_i))
-            all_b_i.append(torch.tensor(b_i))
+            all_t_i.append(torch.stack(t_i).cpu())
+            all_b_i.append(torch.tensor(b_i).cpu())
 
     return all_t_i, all_b_i
 
@@ -878,6 +879,7 @@ class LatentDataset(Dataset):
 
         self.t_i, self.b_i = zip(*sorted(zip(self.t_i, self.b_i),
                                              key=lambda t: t[0].shape[0]))
+        self.t_i, self.b_i = list(self.t_i), list(self.b_i)
 
     def __len__(self):
         return len(self.t_i)

@@ -174,13 +174,17 @@ L2_SOLVED = 0
 L2_ATTEMPTED = 0
 
 
+def eval_planner(control_net, env, n):
+    return test_consistency(env, control_net, n)
+
+
 def test_consistency(env, control_net, n):
     num_sample_solved = 0
     num_plan_solved = 0
     num_solved = 0
     for i in range(n):
         obs = env.reset()
-        obs = box_world.obs_to_tensor(obs)
+        obs = box_world.obs_to_tensor(obs).to(DEVICE)
         env2 = env.copy()
         solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
         if solved:
@@ -197,7 +201,8 @@ def test_consistency(env, control_net, n):
                 if b1 == options[1]:
                     num_plan_solved += 1
 
-    print(f'Tried {n}, solved {num_solved}. Of these, {num_sample_solved} had 2+ options, matched with {num_plan_solved}/{num_sample_solved}={num_plan_solved/num_sample_solved}')
+    # print(f'Tried {n}, solved {num_solved}. Of these, {num_sample_solved} had 2+ options, matched with {num_plan_solved}/{num_sample_solved}={num_plan_solved/num_sample_solved}')
+    return num_plan_solved/num_sample_solved
 
 
 def plan(env, control_net, timeout):

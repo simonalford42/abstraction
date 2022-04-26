@@ -1,4 +1,5 @@
 from typing import Any
+import planning
 import numpy as np
 import up_right
 import argparse
@@ -23,15 +24,12 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
     control_net.train()
     model_id = mlflow.active_run().info.run_id
     run['model_id'] = model_id
-    if params['freeze'] == 'micro':
-        control_net.freeze_microcontroller()
-    elif params['freeze'] == 'all':
-        control_net.freeze_all_controllers()
+    control_net.freeze_all_controllers()
 
     updates = 0
     epoch = 0
 
-    latent_data = box_world.LatentData(dataloader, control_net)
+    latent_data = box_world.LatentDataset(dataloader, control_net)
     latent_dataloader = DataLoader(latent_data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.latent_traj_collate)
 
     while updates < params['traj_updates']:
@@ -41,7 +39,7 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
         train_loss = 0
         for t_i_batch, b_i_batch, lengths, masks in latent_dataloader:
             optimizer.zero_grad()
-            t_i_batch, b_i_batch = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE)
+            t_i_batch, b_i_batch, lengths, masks = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
 
             loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net)
             train_loss += loss.item()
@@ -57,8 +55,9 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
+            utils.warn('fixed test env seed')
             test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(), n=params['num_test'],
+                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
             )
             print(f'Epoch {epoch}\t test accs {test_accs}')
             mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)

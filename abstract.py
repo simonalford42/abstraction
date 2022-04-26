@@ -21,18 +21,23 @@ def fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net):
     t_i_batch: (B, max_T + 1, t)
     b_i_batch: (B, max_T, )
     '''
+    (B, max_T) = b_i_batch.shape
+    assert_equal(t_i_batch.shape[:-1], (B, max_T + 1, ))
     t_i_pred = t_i_batch[:, 0]
     t_i_preds = [t_i_pred]
 
-    for b_i in b_i_batch:
+    for i in range(b_i_batch.shape[1]):
+        b_i = b_i_batch[:, i]
+        assert_shape(b_i, (B, ))
+        assert_equal(t_i_pred.shape[:-1], (B, ))
         t_i_pred = control_net.macro_transitions2(t_i_pred, b_i)
         t_i_preds.append(t_i_pred)
 
-    t_i_pred_batch = torch.stack(t_i_preds)
+    t_i_pred_batch = torch.stack(t_i_preds, dim=1)
     assert_equal(t_i_pred_batch.shape, t_i_batch.shape)
     loss_batch = (t_i_pred_batch - t_i_batch) ** 2
-    assert_shape(loss_batch.shape, masks.shape)
-    loss = loss_batch * masks
+    assert_equal(loss_batch.shape[:-1], masks.shape)
+    loss = loss_batch * masks[:, :, None]
     loss = loss.sum()
     return loss
 
@@ -597,6 +602,7 @@ class HeteroController(nn.Module):
             bs: (T, ) tensor of actions for each abstract state
         """
         T = t_i.shape[0]
+        assert_equal(bs.shape, (T, ))
         b_onehots = F.one_hot(bs, num_classes=self.b)
         assert_shape(b_onehots, (T, self.b))
         t_i2 = torch.cat((t_i, b_onehots), dim=1)
