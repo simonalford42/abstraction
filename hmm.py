@@ -461,7 +461,7 @@ class CausalNet(nn.Module):
 
     def cc_loss(self, s_i_batch, actions_batch, lengths, masks):
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
-        action_logps, stop_logps, start_logps, causal_pens, solved = self.control_net(s_i_batch, batched=True)
+        action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i_batch, batched=True)
 
         B = len(lengths)
         max_T = action_logps.shape[1] - 1
@@ -483,7 +483,7 @@ class CausalNet(nn.Module):
     def cc_loss_ub(self, s_i, actions):
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
-        action_logps, stop_logps, start_logps, causal_pens, solved = self.control_net(s_i, batched=False)
+        action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i, batched=False)
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 
@@ -518,7 +518,7 @@ class SVNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps, _ = self.control_net(s_i_batch, batched=True)
+        action_logps, stop_logps, start_logps, _, _ = self.control_net(s_i_batch, batched=True)
 
         total_logp = 0
         total_correct = 0
@@ -561,7 +561,7 @@ class HmmNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps, _, solved = self.control_net(s_i_batch, batched=True)
+        action_logps, stop_logps, start_logps, _, solved, _ = self.control_net(s_i_batch, batched=True)
         start_logps = start_logps - self.abstract_pen
 
         action_logps = action_logps[torch.arange(B)[:, None],
@@ -588,7 +588,7 @@ class HmmNet(nn.Module):
         """
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
-        action_logps, stop_logps, start_logps, _, solved = self.control_net(s_i, batched=False)
+        action_logps, stop_logps, start_logps, _, solved, _ = self.control_net(s_i, batched=False)
         start_logps = start_logps - self.abstract_pen
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
@@ -639,7 +639,7 @@ def viterbi(hmm: HmmNet, s_i, actions):
     b = hmm.b
     assert_equal(s_i.shape[0], T + 1)
     # (T+1, b, n), (T+1, b, 2), (T+1, b)
-    action_logps, stop_logps, start_logps, _ = hmm.control_net(s_i)
+    action_logps, stop_logps, start_logps, _, _ = hmm.control_net(s_i)
 
     f_matrix = torch.zeros((T, b))
     f_matrix[0] = start_logps[0] + action_logps[0, :, actions[0]]
