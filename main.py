@@ -30,7 +30,8 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     epoch = 0
     while updates < params['traj_updates']:
         if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
-            net.control_net.freeze_all_controllers()
+            # net.control_net.freeze_all_controllers()
+            net.control_net.freeze_microcontroller()
 
         # if epoch and epoch % 100 == 0:
         #     print('reloading data')
@@ -176,9 +177,9 @@ def boxworld_main():
     batch_size = 64 if args.ellis else 32
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=1,
-        traj_updates=1E4,  # default: 1E7
-        num_saves=4, num_tests=200, num_test=1,
+        n=20000,
+        traj_updates=1E7,  # default: 1E7
+        num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size, b=10,
         model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )

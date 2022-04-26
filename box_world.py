@@ -571,7 +571,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent', run
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None):
+def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None, argmax=True):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -615,8 +615,8 @@ j       (b, 2) stop logps
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
-            if current_option is None:
-                print(f"start probs: {torch.exp(start_logps)}")
+            # if current_option is None:
+                # print(f"start probs: {torch.exp(start_logps)}")
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -627,7 +627,10 @@ j       (b, 2) stop logps
                     correct_solved_pred = False
 
             if current_option is not None:
-                stop = Categorical(logits=stop_logps[current_option]).sample().item()
+                if argmax:
+                    stop = torch.argmax(stop_logps[current_option]).item()
+                else:
+                    stop = Categorical(logits=stop_logps[current_option]).sample().item()
             new_option = current_option is None or stop == STOP_IX
             if new_option:
                 if check_cc:
@@ -635,10 +638,13 @@ j       (b, 2) stop logps
                 if current_option is not None:
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
-                        print(f'cc_loss: {cc_loss}')
+                        # print(f'cc_loss: {cc_loss}')
                         cc_losses.append(cc_loss.item())
                     options_trace[prev_pos] = 'e'
-                current_option = Categorical(logits=start_logps).sample().item()
+                if argmax:
+                    current_option = torch.argmax(start_logps).item()
+                else:
+                    current_option = Categorical(logits=start_logps).sample().item()
                 option_start_s = obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
@@ -649,7 +655,10 @@ j       (b, 2) stop logps
 
             options.append(current_option)
 
-            a = Categorical(logits=action_logps[current_option]).sample().item()
+            if argmax:
+                a = torch.argmax(action_logps[current_option]).item()
+            else:
+                a = Categorical(logits=action_logps[current_option]).sample().item()
             option_map[current_option].append(a)
 
             obs, rew, done, info = env.step(a)
@@ -704,6 +713,7 @@ j       (b, 2) stop logps
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
+        # print(f'options: {options}')
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
@@ -715,7 +725,6 @@ j       (b, 2) stop logps
         if run:
             run[f'test/solved pred acc'].log(solved_acc)
 
-    print(f'options: {options}')
     control_net.train()
     if check_cc and len(cc_losses) > 0:
         print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
