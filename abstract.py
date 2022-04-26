@@ -17,7 +17,19 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 
 
 def fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net):
-    t_i_pred_batch = ...
+    '''
+    t_i_batch: (B, max_T + 1, t)
+    b_i_batch: (B, max_T, )
+    '''
+    t_i_pred = t_i_batch[:, 0]
+    t_i_preds = [t_i_pred]
+
+    for b_i in b_i_batch:
+        t_i_pred = control_net.macro_transitions2(t_i_pred, b_i)
+        t_i_preds.append(t_i_pred)
+
+    t_i_pred_batch = torch.stack(t_i_preds)
+    assert_equal(t_i_pred_batch.shape, t_i_batch.shape)
     loss_batch = (t_i_pred_batch - t_i_batch) ** 2
     assert_shape(loss_batch.shape, masks.shape)
     loss = loss_batch * masks
@@ -264,6 +276,23 @@ class ConsistencyStopController(nn.Module):
         """
         return self.macro_transitions(t.unsqueeze(0),
                                       torch.tensor([b], device=DEVICE)).reshape(self.t)
+
+    def macro_transitions2(self, t_i, bs):
+        """
+        Returns (T, self.t) batch of new abstract states.
+
+        Args:
+            t_i: (T, t) batch of abstract states
+            bs: (T, ) tensor of actions for each abstract state
+        """
+        T = t_i.shape[0]
+        b_onehots = F.one_hot(bs, num_classes=self.b)
+        assert_shape(b_onehots, (T, self.b))
+        t_i2 = torch.cat((t_i, b_onehots), dim=1)
+        assert_shape(t_i2, (T, self.t + self.b))
+        t_i2 = self.macro_transition_net(t_i2)
+        assert_shape(t_i2, (T, self.t))
+        return t_i2
 
     def calc_stop_logps_ub(self, t_i):
         T = t_i.shape[0]
@@ -559,6 +588,25 @@ class HeteroController(nn.Module):
         new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
         return new_t_i
 
+    def macro_transitions2(self, t_i, bs):
+        """
+        Returns (T, self.t) batch of new abstract states.
+
+        Args:
+            t_i: (T, t) batch of abstract states
+            bs: (T, ) tensor of actions for each abstract state
+        """
+        T = t_i.shape[0]
+        b_onehots = F.one_hot(bs, num_classes=self.b)
+        assert_shape(b_onehots, (T, self.b))
+        t_i2 = torch.cat((t_i, b_onehots), dim=1)
+        assert_shape(t_i2, (T, self.t + self.b))
+        out = self.macro_transition_net(t_i2)
+        assert_shape(out, (T, self.t))
+        # residual
+        out = out + t_i
+        return out
+
     def calc_causal_pens_ub(self, t_i, noised_t_i):
         """
         For each pair of indices and each option, calculates (t - alpha(b, t))^2
@@ -805,7 +853,8 @@ class NormModule(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        return F.normalize(x, dim=-1, p=self.p) * self.dim
+        utils.warn('tau norm dim disabled')
+        return F.normalize(x, dim=-1, p=self.p) # * self.dim
 
 
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
