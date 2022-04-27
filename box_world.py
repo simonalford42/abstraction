@@ -571,7 +571,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent', run
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None):
+def eval_options_model(control_net, env, n=100, option='silent', run=None, epoch=None, argmax=True):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -627,7 +627,10 @@ j       (b, 2) stop logps
                     correct_solved_pred = False
 
             if current_option is not None:
-                stop = Categorical(logits=stop_logps[current_option]).sample().item()
+                if argmax:
+                    stop = torch.argmax(stop_logps[current_option]).item()
+                else:
+                    stop = Categorical(logits=stop_logps[current_option]).sample().item()
             new_option = current_option is None or stop == STOP_IX
             if new_option:
                 if check_cc:
@@ -638,7 +641,10 @@ j       (b, 2) stop logps
                         # print(f'cc_loss: {cc_loss}')
                         cc_losses.append(cc_loss.item())
                     options_trace[prev_pos] = 'e'
-                current_option = Categorical(logits=start_logps).sample().item()
+                if argmax:
+                    current_option = torch.argmax(start_logps).item()
+                else:
+                    current_option = Categorical(logits=start_logps).sample().item()
                 option_start_s = obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
@@ -649,7 +655,10 @@ j       (b, 2) stop logps
 
             options.append(current_option)
 
-            a = Categorical(logits=action_logps[current_option]).sample().item()
+            if argmax:
+                a = torch.argmax(action_logps[current_option]).item()
+            else:
+                a = Categorical(logits=action_logps[current_option]).sample().item()
             option_map[current_option].append(a)
 
             obs, rew, done, info = env.step(a)
@@ -704,6 +713,7 @@ j       (b, 2) stop logps
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(obs_figure(options_trace),
                                                name='orange=new option')
+        # print(f'options: {options}')
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
@@ -791,7 +801,7 @@ def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
         masks.append(mask)
         assert_equal(t_i2.shape, (max_T_plus_one, t))
         assert_equal(b_i2.shape, (max_T_plus_one - 1, ))
-        assert_equal(masks.shape, (max_T_plus_one, ))
+        assert_equal(mask.shape, (max_T_plus_one, ))
         t_i_batch.append(t_i2)
         b_i_batch.append(b_i2)
 
@@ -838,6 +848,7 @@ def calc_latents(dataloader, control_net):
     all_t_i, all_b_i = [], []
 
     for s_i_batch, actions_batch, lengths, masks in dataloader:
+        s_i_batch, actions_batch, lengths, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
         action_logps, stop_logps, start_logps, causal_pens, solved, traj_t_i = control_net(s_i_batch, batched=True, tau_noise=False)
         for batch_ix, length in enumerate(lengths):
@@ -855,8 +866,8 @@ def calc_latents(dataloader, control_net):
                 i += 1
             # stop at end
             t_i.append(traj_t_i[batch_ix, length-1])
-            all_t_i.append(torch.stack(t_i))
-            all_b_i.append(torch.tensor(b_i))
+            all_t_i.append(torch.stack(t_i).cpu())
+            all_b_i.append(torch.tensor(b_i).cpu())
 
     return all_t_i, all_b_i
 
@@ -868,6 +879,7 @@ class LatentDataset(Dataset):
 
         self.t_i, self.b_i = zip(*sorted(zip(self.t_i, self.b_i),
                                              key=lambda t: t[0].shape[0]))
+        self.t_i, self.b_i = list(self.t_i), list(self.b_i)
 
     def __len__(self):
         return len(self.t_i)

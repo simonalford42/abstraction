@@ -1,4 +1,5 @@
 from typing import Any
+import planning
 import numpy as np
 import up_right
 import argparse
@@ -23,15 +24,12 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
     control_net.train()
     model_id = mlflow.active_run().info.run_id
     run['model_id'] = model_id
-    if params['freeze'] == 'micro':
-        control_net.freeze_microcontroller()
-    elif params['freeze'] == 'all':
-        control_net.freeze_all_controllers()
+    control_net.freeze_all_controllers()
 
     updates = 0
     epoch = 0
 
-    latent_data = box_world.LatentData(dataloader, control_net)
+    latent_data = box_world.LatentDataset(dataloader, control_net)
     latent_dataloader = DataLoader(latent_data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.latent_traj_collate)
 
     while updates < params['traj_updates']:
@@ -41,7 +39,7 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
         train_loss = 0
         for t_i_batch, b_i_batch, lengths, masks in latent_dataloader:
             optimizer.zero_grad()
-            t_i_batch, b_i_batch = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE)
+            t_i_batch, b_i_batch, lengths, masks = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
 
             loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net)
             train_loss += loss.item()
@@ -57,8 +55,9 @@ def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
+            utils.warn('fixed test env seed')
             test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(), n=params['num_test'],
+                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
             )
             print(f'Epoch {epoch}\t test accs {test_accs}')
             mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)
@@ -92,7 +91,8 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     epoch = 0
     while updates < params['traj_updates']:
         if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
-            net.control_net.freeze_all_controllers()
+            # net.control_net.freeze_all_controllers()
+            net.control_net.freeze_microcontroller()
 
         # if epoch and epoch % 100 == 0:
         #     print('reloading data')
@@ -239,9 +239,9 @@ def boxworld_main():
     batch_size = 64 if args.ellis else 32
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
-        n=1,
-        traj_updates=1E4,  # default: 1E7
-        num_saves=4, num_tests=200, num_test=1,
+        n=20000,
+        traj_updates=1E7,  # default: 1E7
+        num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size, b=10,
         model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )

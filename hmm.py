@@ -2,6 +2,7 @@ import itertools
 import abstract
 import torch.nn as nn
 from einops import rearrange
+import utils
 from utils import assert_equal, DEVICE, assert_shape
 import torch
 from box_world import STOP_IX, CONTINUE_IX, UNSOLVED_IX, SOLVED_IX
@@ -475,6 +476,8 @@ class CausalNet(nn.Module):
                            causal_pens, lengths, masks, self.abstract_pen)
         solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
         loss = -logp + self.cc_weight * cc + solved_loss
+        # utils.warn('loss is only cc')
+        # return cc
         return loss
 
     def cc_loss_ub(self, s_i, actions):
