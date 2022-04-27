@@ -384,6 +384,17 @@ if __name__ == '__main__':
 
     # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
-    n = 50
-    test_consistency(env, control_net, n=n)
+    lengths = []
+    for i in range(100):
+        env.reset()
+        solved, options2 = full_sample_solve(env, env.obs, control_net)
+        if solved:
+            lengths.append(len(options2))
+
+    print('Solved ', len(lengths))
+    from collections import Counter
+    print(Counter(lengths))
+
+    # n = 50
+    # test_consistency(env, control_net, n=n)
     # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
