@@ -16,13 +16,16 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 """
 
 
-def fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net):
+def fine_tune_loss(t_i_batch, b_i_batch, control_net, weights=None):
     '''
     t_i_batch: (B, max_T + 1, t)
     b_i_batch: (B, max_T, )
+    weights: weight loss from each item in batch
     '''
-    (B, max_T) = b_i_batch.shape
-    assert_equal(t_i_batch.shape[:-1], (B, max_T + 1, ))
+    (B, T) = b_i_batch.shape
+    assert_shape(t_i_batch, (B, T + 1, control_net.t))
+    if weights is not None:
+        assert_shape(weights, (B, ))
     t_i_pred = t_i_batch[:, 0]
     t_i_preds = [t_i_pred]
 
@@ -36,9 +39,11 @@ def fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net):
     t_i_pred_batch = torch.stack(t_i_preds, dim=1)
     assert_equal(t_i_pred_batch.shape, t_i_batch.shape)
     loss_batch = (t_i_pred_batch - t_i_batch) ** 2
-    assert_equal(loss_batch.shape[:-1], masks.shape)
-    loss = loss_batch * masks[:, :, None]
-    loss = loss.sum()
+    loss_batch = loss_batch.sum(dim=2)
+    assert_shape(loss_batch, (B, T + 1))
+    if weights is not None:
+        loss_batch = loss_batch * weights[:, None]
+    loss = loss_batch.sum()
     return loss
 
 
@@ -602,7 +607,8 @@ class HeteroController(nn.Module):
             bs: (T, ) tensor of actions for each abstract state
         """
         T = t_i.shape[0]
-        assert_equal(bs.shape, (T, ))
+        assert_shape(t_i, (T, self.t))
+        assert_shape(bs, (T, ))
         b_onehots = F.one_hot(bs, num_classes=self.b)
         assert_shape(b_onehots, (T, self.b))
         t_i2 = torch.cat((t_i, b_onehots), dim=1)

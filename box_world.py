@@ -1,5 +1,6 @@
 import queue
-import os
+import itertools
+import planning
 import random
 import copy
 
@@ -14,7 +15,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
-from utils import assert_equal, POS, DEVICE
+from utils import assert_equal, POS, DEVICE, assert_shape
 from profiler import profile
 from torch.distributions import Categorical
 import torch.nn as nn
@@ -870,6 +871,76 @@ def calc_latents(dataloader, control_net):
             all_b_i.append(torch.tensor(b_i).cpu())
 
     return all_t_i, all_b_i
+
+
+def gen_planning_data(env, n, depth, control_net, tau_precompute, task_i_options=None, weighting='uniform', options_per_traj=0):
+    all_options = []
+    all_states = []
+    all_weights = []
+
+    assert weighting in ['uniform', 'logp']
+    if weighting == 'logp':
+        assert tau_precompute
+
+    if task_i_options is None:
+        all_option_choices = list(itertools.product(range(control_net.b), repeat=depth))
+    env = env.copy()
+    with torch.no_grad():
+        for i in range(n):
+            print(f'{i=}')
+            env.reset()
+
+            if task_i_options is None:
+                random.shuffle(all_option_choices)
+                option_choices = all_option_choices
+            else:
+                option_choices = task_i_options[i]
+
+            weights = []
+            for options in option_choices:
+                actions, states_between_options, solved = planning.llc_plan(options, control_net, env.copy())
+                if len(actions) < len(options):
+                    continue
+
+                states = torch.stack(states_between_options)
+                if tau_precompute:
+                    states = control_net.tau_net(states)
+
+                    if weighting == 'logp':
+                        option_start_logps = control_net.macro_policy_net(states[:-1])
+                        assert_shape(option_start_logps, (len(options), control_net.b))
+                        options_logp = option_start_logps[range(len(options)), options].sum()
+
+                all_options.append(torch.tensor(options))
+                all_states.append(states)
+                if weighting == 'logp':
+                    weights.append(options_logp.exp())
+                else:
+                    assert weighting == 'uniform'
+                    weights.append(1)
+
+                if (task_i_options is None and options_per_traj != 0
+                        and len(weights) >= options_per_traj):
+                    break
+
+
+
+            all_weights += weights
+
+    return all_options, all_states, all_weights
+
+
+class PlanningDataset(Dataset):
+    def __init__(self, env, control_net, n, depth, tau_precompute=False, task_i_options=None, weighting='uniform', options_per_traj=0):
+        # states are abstract if tau_precompute=True, otherwise microscopic.
+        self.options, self.states, self.weights = gen_planning_data(env, n, depth, control_net, tau_precompute, task_i_options=task_i_options, weighting=weighting, options_per_traj=options_per_traj)
+
+    def __len__(self):
+        return len(self.options)
+
+    def __getitem__(self, ix):
+        return self.options[ix], self.states[ix], self.weights[ix]
+
 
 
 class LatentDataset(Dataset):

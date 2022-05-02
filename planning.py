@@ -14,7 +14,7 @@ import abstract
 from utils import DEVICE, assert_equal, assert_shape
 import utils
 import math
-from collections import namedtuple
+from collections import namedtuple, Counter
 from box_world import SOLVED_IX, STOP_IX
 from torch.distributions import Categorical
 
@@ -130,20 +130,23 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
     return actions, s, done
 
 
-def llc_plan(s: torch.Tensor, abstract_actions, control_net, env) -> tuple[list, bool]:
+def llc_plan(options, control_net, env) -> tuple[list, list, bool]:
+    s = box_world.obs_to_tensor(env.obs).to(DEVICE)
     all_actions = []
+    states_between_options = [s]
     # print(f'LLC for plan: {abstract_actions}')
-    for b in abstract_actions:
+    for b in options:
         out = llc_sampler(s, b, control_net, env)
         if out is None:
             break
         actions, s, done = out
         # print(f'LL plan for b={b}: {actions}')
         all_actions.append(actions)
+        states_between_options.append(s)
         if done:
             break
 
-    return all_actions, env.solved
+    return all_actions, states_between_options, env.solved
 
 
 def multiple_plan(env, control_net, timeout, n):
@@ -175,34 +178,39 @@ L2_ATTEMPTED = 0
 
 
 def eval_planner(control_net, env, n):
-    return test_consistency(env, control_net, n)
-
-
-def test_consistency(env, control_net, n):
     num_sample_solved = 0
     num_plan_solved = 0
     num_solved = 0
+    all_options = []
+    lengths = []
+    correct_with_length = {i: 0 for i in range(env.max_num_steps)}
     for i in range(n):
-        obs = env.reset()
-        obs = box_world.obs_to_tensor(obs).to(DEVICE)
-        env2 = env.copy()
-        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
+        env.reset()
+        obs = box_world.obs_to_tensor(env.obs).to(DEVICE)
+        solved, options = full_sample_solve(env, control_net, render=False)
+        all_options.append(options[0])
         if solved:
             num_solved += 1
-            if len(options) > 1:
-                num_sample_solved += 1
+            lengths.append(len(options))
 
-                t0 = control_net.tau_embed(obs)
-                b = options[0]
-                t1 = control_net.macro_transition(t0, b)
-                start_logps, _, _ = control_net.eval_abstract_policy(t1)
-                b1 = torch.argmax(start_logps)
+            t = control_net.tau_embed(obs)
+            matches = True
+            for i in range(1, len(options)):
+                t = control_net.macro_transition(t, options[i-1])
+                start_logps = control_net.macro_policy_net(t.unsqueeze(0))[0]
+                b = torch.argmax(start_logps)
+                if b != options[i]:
+                    matches = False
+            if matches:
+                correct_with_length[len(options)] += 1
 
-                if b1 == options[1]:
-                    num_plan_solved += 1
+    print(f'Solved {num_solved}/{n}.')
+    lengths = Counter(lengths)
+    for i in range(max(lengths)):
+        if lengths[i] > 0:
+            print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
 
-    # print(f'Tried {n}, solved {num_solved}. Of these, {num_sample_solved} had 2+ options, matched with {num_plan_solved}/{num_sample_solved}={num_plan_solved/num_sample_solved}')
-    return num_plan_solved/num_sample_solved
+    return sum(correct_with_length.values())/num_solved
 
 
 def plan(env, control_net, timeout):
@@ -211,7 +219,7 @@ def plan(env, control_net, timeout):
     for _ in range(1):
         # box_world.render_obs(env2.obs, pause=1)
         env2 = copy.deepcopy(env)
-        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
+        solved, options = full_sample_solve(env2, control_net, render=False)
         print(f'full sample solved: {solved}, options: {options}')
         if solved and len(options) > 1:
             global L2_ATTEMPTED
@@ -232,7 +240,7 @@ def plan(env, control_net, timeout):
         (actions, logp, solved_logp) = out
         print(f'HL proposal: actions: {actions}, solved logp: {solved_logp}, logp: {logp}')
         assert not env2.done
-        actions, solved = llc_plan(s, actions, control_net, env2)
+        actions, _, solved = llc_plan(s, actions, control_net, env2)
         if solved:
             if len(actions) > 1:
                 global L2_SOLVED
@@ -264,10 +272,11 @@ def test_tau_solved(tau, tau2, control_net):
     input()
 
 
-def full_sample_solve(env, obs, control_net, render=False, macro=False, argmax=True):
+def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     """
     macro: use macro transition model to base next option from previous trnasition prediction, to teset abstract transition model.
     """
+    obs = env.obs
     options_trace = obs
     option_map = {i: [] for i in range(control_net.b)}
     done, solved = False, False
@@ -329,7 +338,10 @@ def full_sample_solve(env, obs, control_net, render=False, macro=False, argmax=T
 
         options.append(current_option)
 
-        a = Categorical(logits=action_logps[current_option]).sample().item()
+        if argmax:
+            a = torch.argmax(action_logps[current_option]).item()
+        else:
+            a = Categorical(logits=action_logps[current_option]).sample().item()
         option_map[current_option].append(a)
         moves.append(a)
 
