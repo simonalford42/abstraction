@@ -1,4 +1,6 @@
 import time
+import random
+import itertools
 import numpy as np
 import torch.nn.functional as F
 import random
@@ -15,7 +17,7 @@ from utils import DEVICE, assert_equal, assert_shape
 import utils
 import math
 from collections import namedtuple
-from box_world import SOLVED_IX, STOP_IX
+from box_world import SOLVED_IX, STOP_IX, BoxWorldEnv
 from torch.distributions import Categorical
 
 from dataclasses import dataclass, field
@@ -26,6 +28,99 @@ from typing import Any, Union, Generator, Optional
 class PrioritizedItem:
     priority: float
     item: Any = field(compare=False)
+
+
+def eval_abstract_policy_fake(t, control_net: HeteroController, s, env: BoxWorldEnv):
+    new_taus = []
+    new_solved_logps = []
+    new_states = []
+    new_envs = []
+
+    action_logps = control_net.macro_policy_net(t.unsqueeze(0)).reshape((control_net.b, ))
+    for b in range(control_net.b):
+        env2 = env.copy()
+        out = llc_sampler(s, b, control_net, env2)
+        if out is None:
+            action_logps[b] = float('-inf')
+            new_states.append(s)
+            new_taus.append(t.detach())
+            new_envs.append(env2)
+            solved_logps = torch.zeros(2)
+            solved_logps[box_world.SOLVED_IX] = float('-inf')
+            new_solved_logps.append(solved_logps)
+        else:
+            actions, s, solved = out
+            new_states.append(s)
+            t = control_net.tau_embed(s)
+            new_taus.append(t)
+            new_envs.append(env2)
+            new_solved_logps.append(control_net.solved_logps(t))
+
+    return action_logps, torch.stack(new_taus), torch.stack(new_solved_logps), new_states, new_envs
+
+
+def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, timeout=float('inf'),) -> Generator[Optional[tuple[list[int], float, float]], None, None]:
+    """
+    Best first search with the high level controller abstract policy.
+    solved threshold: probability that we solved the task needed to return something
+    Returns:
+        (actions, logp, solved_logp)
+    """
+    temp = 1
+    start_time = time.time()
+    Node = namedtuple("Node", "t prev b logp solved_logp s env")
+    solved_logp_threshold = math.log(solved_threshold)
+    # print(f'solved_logp_threshold: {solved_logp_threshold}')
+    start_tau = control_net.tau_embed(s0)
+    start_solved_logp = control_net.solved_logps(start_tau)[SOLVED_IX]
+    # print(f'start_solved_prob: {torch.exp(start_solved_logp)}')
+    start = Node(t=control_net.tau_embed(s0), prev=None, b=None, logp=0.0, solved_logp=start_solved_logp, env=env.copy(), s=s0)
+    num_actions = control_net.b
+    expand_queue: PriorityQueue[Node] = PriorityQueue()
+    expand_queue.put(PrioritizedItem(-start.logp, start))
+
+    def expand(node: Node):
+        # for each b action, gives new output
+        action_logps, new_taus, solved_logps, new_states, new_envs = eval_abstract_policy_fake(node.t, control_net, node.s, node.env)
+
+        solved_logps = solved_logps[:, SOLVED_IX]
+        # print(f'(start) action_logps: {action_logps}')
+        # print(f'solved probs: {torch.exp(solved_logps)}')
+
+        logps = action_logps + node.logp
+        logps = logps * temp
+        # print(f'logps: {logps}')
+        # print(f'probs: {torch.exp(logps)}')
+
+        assert_shape(logps, (num_actions, ))
+        nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp, s=s, env=env3)
+                 for (tau, b, logp, solved_logp, s, env3)
+                 in zip(new_taus, range(num_actions), logps, solved_logps, new_states, new_envs)]
+
+        for node in nodes:
+            expand_queue.put(PrioritizedItem(-node.logp, node))
+
+    def get_path(node: Node):
+        states, actions = [], []
+        while node is not None:
+            states.append(node.t)
+            actions.append(node.b)
+            node = node.prev
+        return states[::-1], actions[:-1][::-1]
+
+    while True:
+        if (time.time() - start_time) > timeout:
+            yield
+
+        node = expand_queue.get().item
+
+        if node.solved_logp >= solved_logp_threshold:
+            states, actions = get_path(node)
+            # print(f'HLC solved with path {actions=}')
+            yield actions, node.logp, node.solved_logp
+
+        # print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
+        expand(node)
 
 
 def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
@@ -51,7 +146,8 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
 
     def expand(node: Node):
         # for each b action, gives new output
-        action_logps, new_taus, solved_logps = control_net.eval_abstract_policy(node.t)
+        # action_logps, new_taus, solved_logps = control_net.eval_abstract_policy(node.t)
+
         solved_logps = solved_logps[:, SOLVED_IX]
         # print(f'(start) action_logps: {action_logps}')
         # print(f'solved probs: {torch.exp(solved_logps)}')
@@ -59,7 +155,7 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
         logps = action_logps + node.logp
         logps = logps * temp
         # print(f'logps: {logps}')
-        print(f'probs: {torch.exp(logps)}')
+        # print(f'probs: {torch.exp(logps)}')
 
         assert_shape(logps, (num_actions, ))
         nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp)
@@ -85,7 +181,7 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
 
         if node.solved_logp >= solved_logp_threshold:
             states, actions = get_path(node)
-            print(f'HLC solved with path {actions=}')
+            # print(f'HLC solved with path {actions=}')
             yield actions, node.logp, node.solved_logp
 
         # print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
@@ -150,28 +246,31 @@ def multiple_plan(env, control_net, timeout, n):
     num_solved = 0
     solve_times = []
     for i in range(n):
-        solved, time = plan(env, control_net, timeout)
+        solved, time = plan(env, control_net, max_hl_plans=1000)
         if solved:
             global L2_ATTEMPTED, L2_SOLVED
-            print(f'Solved number {i})')
+            print(f'Solved number {i}')
             if L2_ATTEMPTED > 0:
                 print(f'acc={L2_SOLVED}/{L2_ATTEMPTED}={L2_SOLVED/L2_ATTEMPTED:.2f}')
             num_solved += 1
             solve_times.append(time)
 
+    global BETTER
+    print(f'Solved {num_solved}/{n}, including {BETTER} that full sample did not')
     solve_times = sorted(solve_times)
     return solve_times
 
 
 def fake_hl_planner(s, control_net):
-    b = control_net.b
-    for i in range(b):
-        for j in range(b):
-            yield ([i, j], 0.0, 0.0)
+    plans = list(itertools.product(range(control_net.b), 6))
+    plans = random.shuffle(plans)
+    for plan in plans:
+        yield (plan, 0, 0)
 
 
 L2_SOLVED = 0
 L2_ATTEMPTED = 0
+BETTER = 0
 
 
 def eval_planner(control_net, env, n):
@@ -186,7 +285,7 @@ def test_consistency(env, control_net, n):
         obs = env.reset()
         obs = box_world.obs_to_tensor(obs).to(DEVICE)
         env2 = env.copy()
-        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
+        solved, options = full_sample_solve(env2, control_net, render=False)
         if solved:
             num_solved += 1
             if len(options) > 1:
@@ -205,41 +304,38 @@ def test_consistency(env, control_net, n):
     return num_plan_solved/num_sample_solved
 
 
-def plan(env, control_net, timeout):
-    obs = env.reset()
+def plan(env, control_net, max_hl_plans):
+    env.reset()
 
-    for _ in range(1):
-        # box_world.render_obs(env2.obs, pause=1)
-        env2 = copy.deepcopy(env)
-        solved, options = full_sample_solve(env2, env2.obs, control_net, render=False)
-        print(f'full sample solved: {solved}, options: {options}')
-        if solved and len(options) > 1:
-            global L2_ATTEMPTED
-            L2_ATTEMPTED += 1
+    full_sample_solved, options = full_sample_solve(env.copy(), control_net, render=False)
+    print(f'full sample solved: {full_sample_solved}, options: {options}')
+    if full_sample_solved and len(options) > 1:
+        global L2_ATTEMPTED
+        L2_ATTEMPTED += 1
 
-    s = box_world.obs_to_tensor(obs).to(DEVICE)
-    hl_plan_gen = hlc_bfs(s, control_net, timeout=timeout)
+    s = box_world.obs_to_tensor(env.obs).to(DEVICE)
+    # hl_plan_gen = hlc_bfs(s, control_net, timeout=100)
+    hl_plan_gen = hlc_bfs_fake(s, control_net, env, timeout=100)
     # hl_plan_gen = fake_hl_planner(s, control_net)
-
-    while True:
-        # so we can simulate multuple times from same start point
-        env2 = copy.deepcopy(env)
-        # box_world.render_obs(env2.obs, pause=1)
-        assert not env2.done
+    for plan_num in range(max_hl_plans):
         out = next(hl_plan_gen)
         if out is None:
-            return False, timeout
+            return False, 0
         (actions, logp, solved_logp) = out
         print(f'HL proposal: actions: {actions}, solved logp: {solved_logp}, logp: {logp}')
-        assert not env2.done
-        actions, solved = llc_plan(s, actions, control_net, env2)
+        torch.testing.assert_allclose(s, box_world.obs_to_tensor(env.obs))
+        actions, solved = llc_plan(s, actions, control_net, env.copy())
         if solved:
             if len(actions) > 1:
                 global L2_SOLVED
                 L2_SOLVED += 1
+            if not full_sample_solved:
+                print('BETTER')
+                global BETTER
+                BETTER += 1
             return True, time.time()
-        else:
-            return False, 0
+
+    return False, 0
 
 
 def test_tau_solved(tau, tau2, control_net):
@@ -264,11 +360,11 @@ def test_tau_solved(tau, tau2, control_net):
     input()
 
 
-def full_sample_solve(env, obs, control_net, render=False, macro=False, argmax=True):
+def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     """
     macro: use macro transition model to base next option from previous trnasition prediction, to teset abstract transition model.
     """
-    options_trace = obs
+    options_trace = env.obs
     option_map = {i: [] for i in range(control_net.b)}
     done, solved = False, False
     t = 0
@@ -284,7 +380,7 @@ def full_sample_solve(env, obs, control_net, render=False, macro=False, argmax=T
 
     while not (done or solved):
         t += 1
-        obs = box_world.obs_to_tensor(obs).to(DEVICE)
+        obs = box_world.obs_to_tensor(env.obs).to(DEVICE)
         # (b, a), (b, 2), (b, ), (2, )
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
 
@@ -381,25 +477,29 @@ if __name__ == '__main__':
     torch.manual_seed(0)
 
     env = box_world.BoxWorldEnv(seed=1)
-    control_net = utils.load_model('models/e14b78d01cc548239ffd57286e59e819.pt').control_net
+    # control_net = utils.load_model('models/e14b78d01cc548239ffd57286e59e819.pt').control_net
     # control_net = utils.load_model('models/b2261e15edc14ffdb4c28c0f96528006.pt').control_net
     # control_net = utils.load_model('models/918fba1553ee47eb8d29ae4b8095f413.pt').control_net
     # control_net = utils.load_model('models/9a3edab864e84db594a3cc2726018bc6-epoch-2500.pt').control_net
+    # control_net = utils.load_model('models/353d4695ec784f8e87d635eaaeae0270-epoch-1224_control.pt')
+    control_net = utils.load_model('models/b363dbf36c974020a70e6d2876207dad-epoch-25000_control.pt')  # n = 100 full fine tune
+    # control_net = utils.load_model('models/fcfc0586dcf04d838d20efa7fb5cfcf9-epoch-2500_control.pt')  # n = 20k full fine tune
     control_net.tau_noise_std = 0
 
     # box_world.eval_options_model(control_net, env.copy(), n=2, option='verbose')
 
+    n = 100
+
     lengths = []
-    for i in range(100):
+    for i in range(n):
         env.reset()
-        solved, options2 = full_sample_solve(env, env.obs, control_net)
+        solved, options2 = full_sample_solve(env, control_net)
         if solved:
             lengths.append(len(options2))
 
-    print('Solved ', len(lengths))
+    print(f'Full sample solved {len(lengths)}/{n}')
     from collections import Counter
     print(Counter(lengths))
 
-    # n = 50
     # test_consistency(env, control_net, n=n)
-    # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
+    solve_times = multiple_plan(env, control_net, timeout=600, n=n)

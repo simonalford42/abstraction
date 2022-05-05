@@ -907,4 +907,4 @@ def test_cc_batched2():
 
 
 if __name__ == '__main__':
-    test_latent_gen()
+    # test_latent_gen()
