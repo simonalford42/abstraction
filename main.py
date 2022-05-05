@@ -20,17 +20,14 @@ import neptune.new as neptune
 import mlflow
 
 
-def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
-    """
-    Most recent, enumerates all plans and uses planning dataset which may or may not precompute
-    taus.
-    """
+def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
     optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
     control_net.train()
 
     epoch = 0
     updates = 0
-    tau_precompute = True
+    tau_precompute = False
+    print(f"tau_precompute: {tau_precompute}")
 
     if tau_precompute:
         control_net.freeze_microcontroller()
@@ -39,20 +36,12 @@ def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
 
     env = box_world.BoxWorldEnv(seed=params['seed'])
 
-    # env2 = env.copy()
-    # task_i_options = []
-    # for i in range(params['n']):
-    #     env2.reset()
-    #     solved, options = planning.full_sample_solve(env2, control_net)
-    #     task_i_options.append([[options[0]]])
-    # print(f"task_i_options: {task_i_options}")
+    data = box_world.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
 
-    data = box_world.PlanningDataset(env, control_net, n=params['n'], depth=params['depth'],
-                                     tau_precompute=tau_precompute, weighting=params['weighting'],
-                                     options_per_traj=params['options_per_traj'])
     print(f'{len(data)} fine-tuning examples')
     params['epochs'] = int(params['traj_updates'] / len(data))
     print(f"actual params['epochs']: {params['epochs']}")
+
     if params['num_tests'] == 0:
         params['test_every'] = False
     else:
@@ -64,18 +53,28 @@ def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
         params['save_every'] = params['epochs'] // params['num_saves']
         print(f"actual params['save_every']: {params['save_every']}")
 
-    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True)
+    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True,
+                            collate_fn=box_world.latent_traj_collate)
 
     while updates < params['traj_updates']:
+        if hasattr(dataloader.dataset, 'shuffle'):
+            dataloader.dataset.shuffle(batch_size=params['batch_size'])
+
+        if params['test_every'] and epoch % params['test_every'] == 0:
+            print('recalculating dataset')
+            env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
+            data = box_world.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+            dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True,
+                                    collate_fn=box_world.latent_traj_collate)
+
         train_loss = 0
 
         first = True
-        for options, states, weights in dataloader:
-            options, states, weights = options.to(DEVICE), states.to(DEVICE), weights.to(DEVICE)
+        for states, options, lengths, masks in dataloader:
+            states, options, lengths, masks = states.to(DEVICE), options.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
 
             B, T, *s = states.shape
-            assert_equal(T - 1, params['depth'])
-            assert_shape(options, (B, params['depth']))
+
             if not tau_precompute:
                 states_flattened = states.reshape(B * T, *s)
                 t_i_flattened = control_net.tau_net(states_flattened)
@@ -83,15 +82,15 @@ def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
             else:
                 t_i = states
 
-            if params['test_every'] and epoch % (params['test_every'] // 5) == 0 and first:
+            if params['test_every'] and epoch % params['test_every'] == 0 and first:
                 preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
                 print('avg cc loss ', (t_i[:, 1] - preds).sum() / t_i.shape[0])
                 first = False
 
-            # TODO: noise?
-            loss = abstract.fine_tune_loss(t_i, options, control_net, weights=weights)
+            loss = abstract.full_fine_tune_loss(t_i, options, control_net, masks, loss=params['loss'])
+
             train_loss += loss.item()
-            loss = loss / (B * (T + 1))
+            loss = loss / sum(lengths)
 
             loss.backward()
             optimizer.step()
@@ -103,10 +102,14 @@ def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             utils.warn('fixed test env seed')
-            test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['n'],
+            test_acc = planning.eval_planner(
+                control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
             )
-            print(f'Epoch {epoch}\t test accs {test_accs}')
+            print(f'Epoch {epoch}\t test acc {test_acc}')
+            gen_test_acc = planning.eval_planner(
+                control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
+            )
+            print(f'Epoch {epoch}\t gen test acc {gen_test_acc}')
 
         if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
             model_id = params['id']
@@ -115,123 +118,10 @@ def fine_tune3(run, env, control_net: nn.Module, params: dict[str, Any]):
 
         epoch += 1
 
-
-def fine_tune2(run, env, control_net: nn.Module, params: dict[str, Any]):
-    optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
-    control_net.train()
-    control_net.freeze_all_controllers()
-
-    depth = 1
-    epoch = 0
-    updates = 0
-    while updates < params['traj_updates']:
-        train_loss = 0
-        t_i_batch = []
-        b_i_batch = []
-
-        env = box_world.BoxWorldEnv(seed=0)
-
-        for i in range(params['n']):
-            env.reset()
-            s0 = box_world.obs_to_tensor(env.obs).to(DEVICE)
-
-            for options in itertools.product(range(params['b']), repeat=depth):
-                actions, states_between_options, solved = planning.llc_plan(s0, options, control_net, env)
-                if len(actions) < len(options):
-                    continue
-
-                states_between_options = torch.stack(states_between_options)
-                t_i = control_net.tau_net(states_between_options)
-                t_i_batch.append(t_i)
-                b_i_batch.append(torch.tensor(options))
-
-                if len(t_i_batch) == params['batch_size']:
-                    t_i_batch = torch.stack(t_i_batch).to(DEVICE)
-                    b_i_batch = torch.stack(b_i_batch).to(DEVICE)
-                    loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, control_net, weights=None)
-                    train_loss += loss.item()
-                    loss = loss / (len(t_i_batch) * t_i_batch[0].shape[0])
-
-                    loss.backward()
-                    optimizer.step()
-                    optimizer.zero_grad()
-                    t_i_batch = []
-                    b_i_batch = []
-
-        if epoch % 1 == 0:
-            print(f"train_loss: {train_loss}")
-
-        if params['test_every'] and epoch % params['test_every'] == 0:
-            utils.warn('fixed test env seed')
-            test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
-            )
-            print(f'Epoch {epoch}\t test accs {test_accs}')
-            # mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)
-
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
-            model_id = params['id']
-            path = utils.save_model(control_net, f'models/{model_id}-epoch-{epoch}_control.pt')
-            run['models'].log(path)
-
-        epoch += 1
-        updates += params['n']
-
-
-def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[str, Any]):
-    optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
-    control_net.train()
-    model_id = mlflow.active_run().info.run_id
-    run['model_id'] = model_id
-    control_net.freeze_all_controllers()
-
-    updates = 0
-    epoch = 0
-
-    latent_data = box_world.LatentDataset(dataloader, control_net)
-    latent_dataloader = DataLoader(latent_data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.latent_traj_collate)
-
-    while updates < params['traj_updates']:
-        if hasattr(dataloader.dataset, 'shuffle'):
-            latent_dataloader.dataset.shuffle(batch_size=params['batch_size'])
-
-        train_loss = 0
-        for t_i_batch, b_i_batch, lengths, masks in latent_dataloader:
-            optimizer.zero_grad()
-            t_i_batch, b_i_batch, lengths, masks = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-
-            loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net)
-            train_loss += loss.item()
-            loss = loss / sum(lengths)
-
-            run['batch/loss'].log(loss.item())
-            run['batch/avg length'].log(sum(lengths) / len(lengths))
-            run['batch/mem'].log(utils.get_memory_usage())
-            loss.backward()
-            optimizer.step()
-
-        if epoch % 100 == 0:
-            print(f"train_loss: {train_loss}")
-
-        if params['test_every'] and epoch % params['test_every'] == 0:
-            utils.warn('fixed test env seed')
-            test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
-            )
-            print(f'Epoch {epoch}\t test accs {test_accs}')
-            mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)
-
-        run['epoch'].log(epoch)
-        run['loss'].log(train_loss)
-        mlflow.log_metrics({'epoch': epoch,
-                            'loss': train_loss}, step=epoch)
-
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
-            path = utils.save_model(control_net, f'models/{model_id}-epoch-{epoch}_control.pt')
-            run['models'].log(path)
-
-        epoch += 1
-        updates += params['n']
+    if not params['no_log']:
+        model_id = params['id']
+        path = utils.save_model(net, f'models/{model_id}_control.pt')
+        run['model'] = path
 
 
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
@@ -368,16 +258,13 @@ def boxworld_main():
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
     parser.add_argument('--fine_tune', action='store_true', help='fine tune training')
-    parser.add_argument('--depth', type=int, default=1, help='fine tune number of options in plan')
-    parser.add_argument('--weighting', type=str, default='uniform', choices=['uniform', 'logp'], help='uniform or logp weighting of fine tune loss?')
-    parser.add_argument('--options_per_traj', type=int, default=0,
-                        help='number of options per traj during fine-tuning, if zero then does all\
-                              options possible up to depth, otherwise samples randomly')
+    parser.add_argument('--loss', type=str, default='kl', choices=['kl', 'kl-flip', 'log'], help='fine tune dist loss')
     args = parser.parse_args()
 
     if not args.seed:
@@ -405,11 +292,11 @@ def boxworld_main():
         n=20000,
         traj_updates=1E7,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
-        lr=8E-4, batch_size=batch_size, b=10,
+        lr=8E-4, batch_size=batch_size,
         model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
-    featured_params = ['model', 'depth', 'n', 'weighting', 'options_per_traj']
+    featured_params = ['model', 'n', 'loss', 'abstract_pen']
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -457,7 +344,7 @@ def boxworld_main():
                     print(p.upper() + ':\t ' + str(params[p]))
                 print(f"Starting run:\n{mlflow.active_run().info.run_id}")
                 print(f"params: {params}")
-                fine_tune3(run, box_world.BoxWorldEnv(), net.control_net, params)
+                fine_tune(run, box_world.BoxWorldEnv(), net.control_net, params)
 
     else:
         net = net.to(DEVICE)

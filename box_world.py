@@ -54,6 +54,7 @@ class BoxWorldEnv(gym.Env):
         self.num_backward = num_backward
         self.branch_length = branch_length
         self.max_num_steps = max_num_steps
+        self.seed = seed
         self.random_state = np.random.RandomState(seed)
 
         # self.action_space = spaces.Discrete(4)
@@ -779,34 +780,37 @@ def obs_to_tensor(obs) -> torch.Tensor:
 
 def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
     '''
+    takes (states, options) as input
+    states can be either abstract or microscopic.
+
     for a trajectory with t_i of shape (T + 1, t) and b_i of shape (T, ),
+
     mask is a (max_T_plus_one, ) vector with mask[0:T+1] = 1
 
     Note that this is different from traj_collate
     '''
     # NOTE: different lengths
-    lengths = torch.tensor([len(t_i) for t_i, b_i in batch])
+    lengths = torch.tensor([len(states) for states, options in batch])
     max_T_plus_one = max(lengths)
-    t_i_batch = []
-    b_i_batch = []
+    states_batch = []
+    options_batch = []
     masks = []
-    for t_i, b_i in batch:
-        t = t_i.shape[1]
-        T_plus_one = len(t_i)
+    for states, options in batch:
+        T_plus_one, *s = states.shape
         to_add = max_T_plus_one - T_plus_one
-        t_i2 = torch.cat((t_i, torch.zeros((to_add, t))))
-        b_i2 = torch.cat((b_i, torch.zeros(to_add, dtype=int)))
+        states2 = torch.cat((states, torch.zeros((to_add, *s))))
+        options2 = torch.cat((options, torch.zeros(to_add, dtype=int)))
         # NOTE: different masking from traj_collate!!!
         mask = torch.zeros(max_T_plus_one, dtype=int)
         mask[:T_plus_one] = 1
         masks.append(mask)
-        assert_equal(t_i2.shape, (max_T_plus_one, t))
-        assert_equal(b_i2.shape, (max_T_plus_one - 1, ))
+        assert_equal(states2.shape, (max_T_plus_one, *s))
+        assert_equal(options2.shape, (max_T_plus_one - 1, ))
         assert_equal(mask.shape, (max_T_plus_one, ))
-        t_i_batch.append(t_i2)
-        b_i_batch.append(b_i2)
+        states_batch.append(states2)
+        options_batch.append(options2)
 
-    return torch.stack(t_i_batch), torch.stack(b_i_batch), lengths, torch.stack(masks)
+    return torch.stack(states_batch), torch.stack(options_batch), lengths, torch.stack(masks)
 
 
 def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
@@ -873,114 +877,66 @@ def calc_latents(dataloader, control_net):
     return all_t_i, all_b_i
 
 
-def gen_planning_data(env, n, depth, control_net, tau_precompute, task_i_options=None, weighting='uniform', options_per_traj=0):
-    all_options = []
+def gen_planning_data(env, n, control_net, tau_precompute=False):
     all_states = []
-    all_weights = []
+    all_options = []
 
-    assert weighting in ['uniform', 'logp']
-    if weighting == 'logp':
-        assert tau_precompute
-
-    if task_i_options is None:
-        all_option_choices = list(itertools.product(range(control_net.b), repeat=depth))
     env = env.copy()
     with torch.no_grad():
         for i in range(n):
-            print(f'{i=}')
             env.reset()
 
-            if task_i_options is None:
-                random.shuffle(all_option_choices)
-                option_choices = all_option_choices
-            else:
-                option_choices = task_i_options[i]
+            solved, options, states_between_options = planning.full_sample_solve(env.copy(), control_net, argmax=True)
 
-            weights = []
-            for options in option_choices:
-                actions, states_between_options, solved = planning.llc_plan(options, control_net, env.copy())
-                if len(actions) < len(options):
-                    continue
+            states = torch.stack(states_between_options)
+            if tau_precompute:
+                states = control_net.tau_net(states)
 
-                states = torch.stack(states_between_options)
-                if tau_precompute:
-                    states = control_net.tau_net(states)
+            # move back to cpu so collation is ready
+            states = states.cpu()
+            all_states.append(states)
+            all_options.append(torch.tensor(options))
 
-                    if weighting == 'logp':
-                        option_start_logps = control_net.macro_policy_net(states[:-1])
-                        assert_shape(option_start_logps, (len(options), control_net.b))
-                        options_logp = option_start_logps[range(len(options)), options].sum()
-
-                all_options.append(torch.tensor(options))
-                all_states.append(states)
-                if weighting == 'logp':
-                    weights.append(options_logp.exp())
-                else:
-                    assert weighting == 'uniform'
-                    weights.append(1)
-
-                if (task_i_options is None and options_per_traj != 0
-                        and len(weights) >= options_per_traj):
-                    break
-
-
-
-            all_weights += weights
-
-    return all_options, all_states, all_weights
+    return all_states, all_options
 
 
 class PlanningDataset(Dataset):
-    def __init__(self, env, control_net, n, depth, tau_precompute=False, task_i_options=None, weighting='uniform', options_per_traj=0):
-        # states are abstract if tau_precompute=True, otherwise microscopic.
-        self.options, self.states, self.weights = gen_planning_data(env, n, depth, control_net, tau_precompute, task_i_options=task_i_options, weighting=weighting, options_per_traj=options_per_traj)
+    def __init__(self, env, control_net: nn.Module, n, tau_precompute=False):
+        self.states, self.options = gen_planning_data(env, n, control_net, tau_precompute)
 
-    def __len__(self):
-        return len(self.options)
-
-    def __getitem__(self, ix):
-        return self.options[ix], self.states[ix], self.weights[ix]
-
-
-
-class LatentDataset(Dataset):
-    def __init__(self, dataloader, control_net: nn.Module):
-        with torch.no_grad():
-            self.t_i, self.b_i = calc_latents(dataloader, control_net)
-
-        self.t_i, self.b_i = zip(*sorted(zip(self.t_i, self.b_i),
+        self.states, self.options = zip(*sorted(zip(self.states, self.options),
                                              key=lambda t: t[0].shape[0]))
-        self.t_i, self.b_i = list(self.t_i), list(self.b_i)
+        self.states, self.options = list(self.states), list(self.options)
 
     def __len__(self):
-        return len(self.t_i)
+        return len(self.states)
 
     def __getitem__(self, ix):
-        return self.t_i[ix], self.b_i[ix]
+        return self.states[ix], self.options[ix]
 
     def shuffle(self, batch_size):
         """
         Shuffle trajs which share the same length, while still keeping the overall order the same.
         Then shuffles among the batches, so that the order in which lengths are encountered differs.
         """
-        ixs = list(range(len(self.t_i)))
+        ixs = list(range(len(self.states)))
         random.shuffle(ixs)
-        self.t_i[:] = [self.t_i[i] for i in ixs]
-        self.b_i[:] = [self.b_i[i] for i in ixs]
-        self.t_i[:], self.b_i[:] = zip(*sorted(zip(self.t_i, self.b_i),
+        self.states[:] = [self.states[i] for i in ixs]
+        self.options[:] = [self.options[i] for i in ixs]
+        self.states[:], self.options[:] = zip(*sorted(zip(self.states, self.options),
                                                    key=lambda t: t[0].shape[0]))
-        self.t_i, self.b_i = list(self.t_i), list(self.b_i)
+        self.states, self.options = list(self.states), list(self.options)
 
         # keep the last batch at the end
-        n = len(self.t_i)
+        n = len(self.states)
         n = n - (n % batch_size)
         ixs = list(range(n))
         blocks = [ixs[i:i + batch_size] for i in range(0, n, batch_size)]
         random.shuffle(blocks)
         ixs = [b for bs in blocks for b in bs]
         assert_equal(len(ixs), n)
-        self.t_i[:n] = [self.t_i[i] for i in ixs]
-        self.b_i[:n] = [self.b_i[i] for i in ixs]
+        self.states[:n] = [self.states[i] for i in ixs]
+        self.options[:n] = [self.options[i] for i in ixs]
 
 
 class BoxWorldDataset(Dataset):

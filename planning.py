@@ -133,7 +133,7 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env):
 def llc_plan(options, control_net, env) -> tuple[list, list, bool]:
     s = box_world.obs_to_tensor(env.obs).to(DEVICE)
     all_actions = []
-    states_between_options = [s]
+    states_between_options = [s]  # s0 option s1 option s2 ... s_n.
     # print(f'LLC for plan: {abstract_actions}')
     for b in options:
         out = llc_sampler(s, b, control_net, env)
@@ -177,7 +177,21 @@ L2_SOLVED = 0
 L2_ATTEMPTED = 0
 
 
+def eval_sampling(control_net, env, n, macro=False, argmax=False):
+    total_solved = 0
+    for i in range(n):
+        solved, _, _ =  full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax)
+        if solved:
+            total_solved += 1
+
+    return total_solved
+
+
 def eval_planner(control_net, env, n):
+    solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
+    solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
+    print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
+
     num_sample_solved = 0
     num_plan_solved = 0
     num_solved = 0
@@ -187,7 +201,7 @@ def eval_planner(control_net, env, n):
     for i in range(n):
         env.reset()
         obs = box_world.obs_to_tensor(env.obs).to(DEVICE)
-        solved, options = full_sample_solve(env, control_net, render=False)
+        solved, options, _ = full_sample_solve(env, control_net, render=False, argmax=True)
         all_options.append(options[0])
         if solved:
             num_solved += 1
@@ -210,6 +224,8 @@ def eval_planner(control_net, env, n):
         if lengths[i] > 0:
             print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
 
+
+
     return sum(correct_with_length.values())/num_solved
 
 
@@ -219,7 +235,7 @@ def plan(env, control_net, timeout):
     for _ in range(1):
         # box_world.render_obs(env2.obs, pause=1)
         env2 = copy.deepcopy(env)
-        solved, options = full_sample_solve(env2, control_net, render=False)
+        solved, options, _ = full_sample_solve(env2, control_net, render=False)
         print(f'full sample solved: {solved}, options: {options}')
         if solved and len(options) > 1:
             global L2_ATTEMPTED
@@ -274,25 +290,24 @@ def test_tau_solved(tau, tau2, control_net):
 
 def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     """
-    macro: use macro transition model to base next option from previous trnasition prediction, to teset abstract transition model.
+    macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
+    argmax: select options, actions, etc by argmax not by sampling.
     """
     obs = env.obs
-    options_trace = obs
-    option_map = {i: [] for i in range(control_net.b)}
+    options_trace = obs  # as we move, we color over squares in this where we moved, to render later
     done, solved = False, False
-    t = 0
+    option_at_step_i = []  # option at step i
     options = []
-    options2 = []
     moves_without_moving = 0
     prev_pos = (-1, -1)
     op_new_tau = None
     op_new_tau_solved_prob = None
     moves = []
+    states_between_options = []
 
     current_option = None
 
     while not (done or solved):
-        t += 1
         obs = box_world.obs_to_tensor(obs).to(DEVICE)
         # (b, a), (b, 2), (b, ), (2, )
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
@@ -304,6 +319,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
         new_option = current_option is None or stop == STOP_IX
         if new_option:
+            states_between_options.append(obs)  # starts out empty, adds before each option, then adds final at end
             if current_option is not None and macro:
                 start_logps = control_net.macro_policy_net(op_new_tau)
 
@@ -314,13 +330,8 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
             if current_option is not None:
                 causal_consistency = ((tau - op_new_tau)**2).sum()
                 # print(f'causal_consistency: {causal_consistency}')
-                # print(f'tau: {tau}')
-                # print(f'op_new_tau: {op_new_tau}')
-                # test_tau_solved(tau, op_new_tau, control_net)
-                # print(f'op_new_tau_solved_prob from before: {op_new_tau_solved_prob}')
-
                 options_trace[prev_pos] = 'e'
-            # print(f'start probs: {torch.exp(start_logps)}')
+
             if argmax:
                 current_option = torch.argmax(start_logps).item()
             else:
@@ -330,29 +341,29 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
             op_new_tau = op_new_taus[current_option]
             # op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
             # print(f'solved prob from option: {op_new_tau_solved_prob}')
-            options2.append(current_option)
+            options.append(current_option)
         else:
-            # dont overwrite red dot
+            # dont overwrite 'new option' dot from earlier
             if options_trace[prev_pos] != 'e':
                 options_trace[prev_pos] = 'm'
 
-        options.append(current_option)
+        option_at_step_i.append(current_option)
 
         if argmax:
             a = torch.argmax(action_logps[current_option]).item()
         else:
             a = Categorical(logits=action_logps[current_option]).sample().item()
-        option_map[current_option].append(a)
         moves.append(a)
 
         obs, rew, done, _ = env.step(a)
+
         if render:
             title = f'option={current_option}'
             pause = 0.01 if new_option else 0.01
             if new_option:
                 title += ' (new)'
-            option_map[current_option].append((obs, title, pause))
-            # box_world.render_obs(obs, title=title, pause=pause)
+            box_world.render_obs(obs, title=title, pause=pause)
+
         solved = rew == bw.REWARD_GOAL
 
         pos = box_world.player_pos(obs)
@@ -364,20 +375,18 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
         if moves_without_moving >= 5:
             done = True
 
-    if solved:
-        obs = box_world.obs_to_tensor(obs)
-        obs = obs.to(DEVICE)
+    obs = box_world.obs_to_tensor(obs).to(DEVICE)
+    states_between_options.append(obs)
 
+    # if solved:
         # check that we predicted that we solved
-        _, _, _, solved_logits = control_net.eval_obs(obs)
+        # _, _, _, solved_logits = control_net.eval_obs(obs)
         # print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
         box_world.render_obs(options_trace, title=f'{solved=}', pause=1)
 
-    # print(f'moves:  {moves}')
-    # print(f'options:{options}')
-    return solved, options2
+    return solved, options, states_between_options
 
 
 def plot_times(solve_times, n):

@@ -1,4 +1,3 @@
-from collections import namedtuple
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
@@ -14,6 +13,76 @@ TT = torch.Tensor
 Note: T used in Controller classes for length of sequence i.e. s_i.shape = (T, *s) etc. is not the same
 T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 """
+
+
+def full_fine_tune_loss(t_i_batch, b_i_batch, control_net, masks=None, weights=None, loss='kl'):
+    '''
+    t_i_batch: (B, max_T + 1, t)
+    b_i_batch: (B, max_T, )
+    weights: weight loss from each item in batch
+    loss: either 'kl', 'log', or 'kl-flip'
+    '''
+
+    def log_dist_loss(a, b):
+        return -(a + b).exp()
+
+    def kl_dist_loss(a, b):
+        return F.kl_div(input=a, target=b, reduction='none', log_target=True)
+
+    def kl_flip_dist_loss(a, b):
+        return F.kl_div(input=b, target=a, reduction='none', log_target=True)
+
+    if loss == 'kl':
+        dist_loss_fn = kl_dist_loss
+    elif loss == 'kl-flip':
+        dist_loss_fn = kl_flip_dist_loss
+    elif loss == 'log':
+        dist_loss_fn = log_dist_loss
+    else:
+        raise ValueError("Bad arg for loss")
+
+    def solved_and_start_logps(t_i_batch, control_net):
+        (B, T, t) = t_i_batch.shape
+        t_i_flattened = t_i_batch.reshape(B * T, t)
+        solved = control_net.solved_net(t_i_flattened).reshape(B, T, 2)
+        start_logps = control_net.macro_policy_net(t_i_flattened).reshape(B, T, control_net.b)
+        return solved, start_logps
+
+    (B, T) = b_i_batch.shape
+    assert_shape(t_i_batch, (B, T + 1, control_net.t))
+    if weights is not None:
+        assert_shape(weights, (B, ))
+    t_i_pred = t_i_batch[:, 0]
+    t_i_preds = [t_i_pred]
+
+    for i in range(T):
+        b_i = b_i_batch[:, i]
+        assert_shape(b_i, (B, ))
+        t_i_pred = control_net.macro_transitions2(t_i_pred, b_i)
+        t_i_preds.append(t_i_pred)
+
+    t_i_pred_batch = torch.stack(t_i_preds, dim=1)
+    assert_equal(t_i_pred_batch.shape, t_i_batch.shape)
+
+    solved_pred_dist, macro_pred_dist = solved_and_start_logps(t_i_pred_batch, control_net)
+    solved_target_dist, macro_target_dist = solved_and_start_logps(t_i_batch, control_net)
+    loss_batch = (dist_loss_fn(solved_pred_dist, solved_target_dist).sum(dim=-1)
+                  + dist_loss_fn(macro_pred_dist, macro_target_dist).sum(dim=-1))
+
+    cc_loss_batch = (t_i_pred_batch - t_i_batch) ** 2
+    cc_loss_batch = cc_loss_batch.sum(dim=2)
+
+    assert_shape(cc_loss_batch, (B, T + 1))
+    assert_shape(loss_batch, (B, T + 1))
+
+    loss_batch = loss_batch + cc_loss_batch
+
+    if weights is not None:
+        loss_batch = loss_batch * weights[:, None]
+    if masks is not None:
+        loss_batch = loss_batch * masks
+
+    return loss_batch.sum()
 
 
 def fine_tune_loss(t_i_batch, b_i_batch, control_net, weights=None):
@@ -88,14 +157,14 @@ class ConsistencyStopControllerReduced(nn.Module):
         T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
         # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-                                #    torch.ones(T, device=DEVICE))
+        #                            torch.ones(T, device=DEVICE))
         micro_out = self.micro_net(s_i)
         # assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
         stop_logps = self.calc_stop_logps_ub(t_i)  # (T, b, 2)
         # assert torch.allclose(torch.logsumexp(stop_logps, dim=2),
-                            #   torch.zeros((T, self.b), device=DEVICE),
-                            #   atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=2)}'
+        #                       torch.zeros((T, self.b), device=DEVICE),
+        #                       atol=1E-7), f'{stop_logps, torch.logsumexp(stop_logps, dim=2)}'
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
 
         action_logps = F.log_softmax(action_logps, dim=2)
@@ -866,7 +935,7 @@ class NormModule(nn.Module):
 
     def forward(self, x):
         utils.warn('tau norm dim disabled')
-        return F.normalize(x, dim=-1, p=self.p) # * self.dim
+        return F.normalize(x, dim=-1, p=self.p)  # * self.dim
 
 
 def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
