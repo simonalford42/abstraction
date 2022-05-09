@@ -275,8 +275,8 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False):
             total_solved += 1
             lengths.append(len(options))
 
-    print(f'Full sample solved {len(lengths)}/{n}')
-    print(Counter(lengths))
+    # print(f'Full sample solved {len(lengths)}/{n}')
+    # print(Counter(lengths))
 
     return total_solved
 
@@ -312,16 +312,20 @@ def eval_planner(control_net, env, n):
             if matches:
                 correct_with_length[len(options)] += 1
 
-    print(f'Solved {num_solved}/{n}.')
-    lengths = Counter(lengths)
-    for i in range(max(lengths)):
-        if lengths[i] > 0:
-            print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
-
-
     control_net.train()
 
-    return sum(correct_with_length.values())/num_solved
+    print(f'Solved {num_solved}/{n}.')
+    lengths = Counter(lengths)
+    if num_solved > 0:
+        for i in range(max(lengths)):
+            if lengths[i] > 0:
+                print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
+
+        return sum(correct_with_length.values())/num_solved
+    else:
+        return 0
+
+
 
 
 def plan(env, control_net, max_hl_plans=-1):

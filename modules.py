@@ -260,7 +260,6 @@ class FC(nn.Module):
         # self.finalize()
 
     def forward(self, x):
-        # x = self.tensor(x)
         return self.net(x)
 
 

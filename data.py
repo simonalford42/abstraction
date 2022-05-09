@@ -438,8 +438,12 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
         for i in range(n):
             env.reset()
 
-            solved, options, states_between_options = full_sample_solve(env.copy(), control_net, argmax=True, render=True)
-            print(f'{i=} {options=}')
+            control_net.eval()
+
+            solved, options, states_between_options = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            # print(f'{i=} {options=}')
+
+            control_net.train()
 
             states = torch.stack(states_between_options)
             if tau_precompute:
@@ -590,7 +594,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
         if new_option:
             states_between_options.append(obs)  # starts out empty, adds before each option, then adds final at end
             if current_option is not None and macro:
-                start_logps = control_net.macro_policy_net(op_new_tau)
+                start_logps = control_net.macro_policy_net(op_new_tau.unsqueeze(0))[0]
 
             tau = control_net.tau_embed(obs)
             if macro and op_new_tau is not None:

@@ -7,7 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
-from utils import Timing, DEVICE
+from utils import Timing, DEVICE, assert_equal
 from abstract import boxworld_controller, boxworld_homocontroller
 import abstract
 from hmm import CausalNet, SVNet, HmmNet
@@ -62,22 +62,15 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
         if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
             print('recalculating dataset')
             env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
-            data = box_world.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
-            dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True,
-                                    collate_fn=box_world.latent_traj_collate)
+            dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+            dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
+                                    collate_fn=data.latent_traj_collate)
 
         train_loss = 0
 
         first = True
         for states, options, lengths, masks in dataloader:
             states, options, lengths, masks = states.to(DEVICE), options.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
-
-            print(f'masks: {masks}')
-            for ix in range(len(options)):
-                print('new')
-                for state, option in zip(states[ix], options[ix]):
-                    print(option)
-                    box_world.render_obs(data.tensor_to_obs(state), pause=3)
 
             B, T, *s = states.shape
 
@@ -112,10 +105,10 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
                 control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
             )
             print(f'Epoch {epoch}\t test acc {test_acc}')
-            gen_test_acc = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
-            )
-            print(f'Epoch {epoch}\t gen test acc {gen_test_acc}')
+            # gen_test_acc = planning.eval_planner(
+            #     control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
+            # )
+            # print(f'Epoch {epoch}\t gen test acc {gen_test_acc}')
 
         if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
             model_id = params['id']
@@ -185,7 +178,7 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         if params['test_every'] and epoch % params['test_every'] == 0:
             # test_env = box_world.BoxWorldEnv(seed=params['seed'])
             # print('fixed test env')
-            test_acc = box_world.eval_options_model(
+            test_acc = data.eval_options_model(
                 net.control_net, test_env, n=params['num_test'],
                 run=run, epoch=epoch)
             # test_acc = planning.eval_planner(
@@ -262,7 +255,6 @@ def adjust_state_dict(state_dict):
 
 def boxworld_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cc_pen', type=float, default=1.0, help='causal consistency loss weight')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
@@ -271,6 +263,7 @@ def boxworld_main():
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
     parser.add_argument('--lr', type=float, default=argparse.SUPPRESS)
+    parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--load', action='store_true')
@@ -303,21 +296,19 @@ def boxworld_main():
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    # batch_size = 64 if args.ellis else 32
-    utils.warn('low batch size')
-    batch_size = 3
+    batch_size = 64 if args.ellis else 32
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=20000,
-        traj_updates=1E4,  # default: 1E7
+        traj_updates=1E5,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size,
-        # model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
+        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
     featured_params = ['model', 'n', 'abstract_pen']
 
-    assert_equal('model_load_path' in params, params['load'])
+    # assert_equal('model_load_path' in params, params['load'])
     if params['load']:
         net = utils.load_model(params['model_load_path'])
         if params['replace_trans_net']:
@@ -345,7 +336,7 @@ def boxworld_main():
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
         elif args.model == 'cc':
-            net = CausalNet(control_net, cc_weight=params['cc_pen'], abstract_pen=params['abstract_pen'])
+            net = CausalNet(control_net, abstract_pen=params['abstract_pen'])
         else:
             raise NotImplementedError()
 

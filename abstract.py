@@ -50,6 +50,7 @@ def full_fine_tune_loss(t_i_batch, b_i_batch, control_net, masks=None, weights=N
         return solved, start_logps
 
     (B, T) = b_i_batch.shape
+    assert B > 1
     assert_shape(t_i_batch, (B, T + 1, control_net.t))
     if weights is not None:
         assert_shape(weights, (B, ))
