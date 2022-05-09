@@ -5,7 +5,7 @@ import data
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC
+from modules import MicroNet, RelationalDRLNet, FC, RelationalMacroNet
 import box_world
 
 TT = torch.Tensor
@@ -324,7 +324,7 @@ class ConsistencyStopController(nn.Module):
         start_logps = self.macro_policy_net(t_i)  # (T, b) aka P(b | t)
         # assert_shape(start_logps, (T, self.b))
         solved = self.solved_net(t_i)
-        return action_logps, stop_logps, start_logps, None, solved
+        return action_logps, stop_logps, start_logps, None, solved, t_i
 
     def macro_transitions(self, t_i, bs):
         """Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
@@ -427,7 +427,7 @@ class ConsistencyStopController(nn.Module):
         start_logps = self.macro_policy_net(t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(t_i_flattened).reshape(B, T, 2)
 
-        return action_logps, stop_logps, start_logps, None, solved
+        return action_logps, stop_logps, start_logps, None, solved, t_i
 
     def calc_stop_logps_b(self, t_i):
         B, T = t_i.shape[0:2]
@@ -831,7 +831,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=3)
         start_logps = F.log_softmax(start_logits, dim=2)
 
-        return action_logps, stop_logps, start_logps, None, 'None'
+        return action_logps, stop_logps, start_logps, None, 'None', None
 
     def forward_ub(self, s_i):
         """
@@ -855,7 +855,7 @@ class HomoController(nn.Module):
         stop_logps = F.log_softmax(stop_logits, dim=2)
         start_logps = F.log_softmax(start_logits, dim=1)
 
-        return action_logps, stop_logps, start_logps, None, 'None'
+        return action_logps, stop_logps, start_logps, None, 'None', None
 
     def eval_obs(self, s_i, option_start_s=None):
         """
@@ -870,7 +870,7 @@ class HomoController(nn.Module):
             None solved placeholder
         """
         # (1, b, a), (1, b, 2), (1, b)
-        action_logps, stop_logps, start_logps, _, _ = self.forward_ub(s_i.unsqueeze(0))
+        action_logps, stop_logps, start_logps, _, _, _ = self.forward_ub(s_i.unsqueeze(0))
         return action_logps[0], stop_logps[0], start_logps[0], None
 
 
@@ -939,7 +939,8 @@ class NormModule(nn.Module):
         return F.normalize(x, dim=-1, p=self.p)  # * self.dim
 
 
-def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0):
+def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0,
+                        attentional_trans_net=False, batch_norm=False):
     """
     typ: hetero, homo, ccts, or ccts-reduced
     """
@@ -976,19 +977,19 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
     tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
                             tau_module)
 
-    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3, hidden_dim=fc_hidden_dim),
+    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3,
+                                        hidden_dim=fc_hidden_dim, batch_norm=batch_norm),
                                      nn.LogSoftmax(dim=-1))
 
-    macro_transition_net = nn.Sequential(FC(input_dim=macro_trans_in_dim,
-                                            output_dim=t,
-                                            num_hidden=3,
-                                            hidden_dim=fc_hidden_dim),
-                                         tau_module)
+    macro_transition_net = FC(input_dim=macro_trans_in_dim,
+                              output_dim=t,
+                              num_hidden=3,
+                              hidden_dim=fc_hidden_dim,
+                              batch_norm=batch_norm)
+    macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
 
-    print(utils.num_params(macro_transition_net))
-    assert False
-
-    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3, hidden_dim=fc_hidden_dim),
+    solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3,
+                                  hidden_dim=fc_hidden_dim, batch_norm=batch_norm),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,

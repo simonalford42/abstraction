@@ -1,5 +1,11 @@
 from typing import Any
+<<<<<<< HEAD
 from torch.utils.data import DataLoader
+=======
+import modules
+import itertools
+from torch.utils.data import Dataset, DataLoader
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 import planning
 import argparse
 import torch
@@ -15,7 +21,11 @@ import time
 import box_world
 import neptune.new as neptune
 import mlflow
+<<<<<<< HEAD
 import data
+=======
+from modules import FC
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
@@ -58,12 +68,21 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
 
+<<<<<<< HEAD
         # if params['test_every'] and epoch % params['test_every'] == 0:
             # print('recalculating dataset')
             # env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
             # dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
             # dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
             #                         collate_fn=data.latent_traj_collate)
+=======
+        if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
+            print('recalculating dataset')
+            env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
+            data = box_world.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+            dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True,
+                                    collate_fn=box_world.latent_traj_collate)
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
         train_loss = 0
 
@@ -102,7 +121,7 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
             optimizer.zero_grad()
             updates += B
 
-        if params['test_every'] and epoch % (params['test_every'] // 5) == 0:
+        if params['test_every'] and epoch % (max(1, params['test_every'] // 5)) == 0:
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
@@ -140,6 +159,12 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     updates = 0
     epoch = 0
     while updates < params['traj_updates']:
+        if params['variable_abstract_pen']:
+            frac = min(1, 2 * updates / params['traj_updates'])
+            net.abstract_pen = params['abstract_pen'] * frac
+            if epoch % (params['test_every'] // 5) == 0:
+                print(f"net.abstract_pen: {net.abstract_pen}")
+
         if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
             # net.control_net.freeze_all_controllers()
             net.control_net.freeze_microcontroller()
@@ -172,10 +197,11 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             loss.backward()
             optimizer.step()
 
-        if epoch % 100 == 0:
+        if epoch % (params['test_every'] // 5) == 0:
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
+<<<<<<< HEAD
             test_env = box_world.BoxWorldEnv(seed=params['seed'])
             print('fixed test env')
             # test_acc = data.eval_options_model(
@@ -184,6 +210,16 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             test_acc = planning.eval_planner(
                 net.control_net, test_env, n=params['num_test'],
             )
+=======
+            # test_env = box_world.BoxWorldEnv(seed=params['seed'])
+            # print('fixed test env')
+            test_acc = box_world.eval_options_model(
+                net.control_net, test_env, n=params['num_test'],
+                run=run, epoch=epoch)
+            # test_acc = planning.eval_planner(
+            #     net.control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
+            # )
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
             run['test/accuracy'].log(test_acc)
             print(f'Epoch {epoch}\t test acc {test_acc}')
             mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
@@ -263,12 +299,17 @@ def boxworld_main():
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--lr', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--eval', action='store_true')
+    parser.add_argument('--load', action='store_true')
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
     parser.add_argument('--fine_tune', action='store_true', help='fine tune training')
+    parser.add_argument('--variable_abstract_pen', action='store_true', help='variable abstract pen')
+    parser.add_argument('--replace_trans_net', action='store_true')
+    parser.add_argument('--batch_norm', action='store_true')
     parser.add_argument('--loss', type=str, default='kl', choices=['kl', 'kl-flip', 'log'], help='fine tune dist loss')
     args = parser.parse_args()
 
@@ -297,16 +338,28 @@ def boxworld_main():
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=20000,
-        traj_updates=1E7,  # default: 1E7
+        traj_updates=1E4,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
         lr=8E-4, batch_size=batch_size,
         # model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
-    featured_params = ['model', 'n', 'loss', 'abstract_pen']
+    featured_params = ['model', 'n', 'abstract_pen']
 
-    if 'model_load_path' in params:
+    assert_equal('model_load_path' in params, params['load'])
+    if params['load']:
         net = utils.load_model(params['model_load_path'])
+        if params['replace_trans_net']:
+            print('special fill in of the new trans model: hidden dim=256')
+            tau_module = abstract.NormModule(p=1, dim=net.control_net.t)
+            macro_transition_net = FC(input_dim=net.control_net.b + net.control_net.t,
+                                      output_dim=net.control_net.t,
+                                      num_hidden=3,
+                                      hidden_dim=256,
+                                      batch_norm=True)
+            macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
+            net.control_net.macro_transition_net = macro_transition_net
+
     elif args.model == 'sv':
         net = SVNet(boxworld_homocontroller(b=1))
     else:
@@ -316,9 +369,10 @@ def boxworld_main():
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.tau_noise,
-                                              t=params['abstract_dim'])
+                                              t=params['abstract_dim'],
+                                              batch_norm=params['batch_norm'])
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
-            net = HmmNet(control_net, abstract_pen=params['abstract_pen'], ccts=(args.model == 'ccts'))
+            net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
         elif args.model == 'cc':
             net = CausalNet(control_net, cc_weight=params['cc_pen'], abstract_pen=params['abstract_pen'])
         else:

@@ -59,11 +59,57 @@ class MicroNet(nn.Module):
             return x
 
 
+class RelationalMacroNet(nn.Module):
+    def __init__(self, input_dim=32, d=32, num_attn_blocks=2, num_heads=4, out_dim=4, l=16):
+        # pre attn linear has params input_dim * d * l, so be careful not to make too big
+        super().__init__()
+        self.d = d
+        self.l = l
+        self.input_dim=input_dim
+        self.out_dim = out_dim
+        self.num_attn_blocks = num_attn_blocks
+        self.pre_attn_linear = nn.Linear(input_dim, self.d * self.l)
+
+        # shared weights, so just one network
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
+
+        self.fc = nn.Sequential(nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.out_dim),)
+
+    def forward(self, x):
+        with warnings.catch_warnings():
+            assert_equal(x.shape[1], self.input_dim)
+
+            x = self.pre_attn_linear(x)
+            x = einops.rearrange(x, 'b (l d) -> b l d', l=self.l, d=self.d)
+
+            for _ in range(self.num_attn_blocks):
+                x = x + self.attn_block(x, x, x, need_weights=False)[0]
+                x = F.layer_norm(x, (self.d,))
+
+            x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = self.fc(x)
+
+            return x
+
+
 class RelationalDRLNet(nn.Module):
     def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
         super().__init__()
         self.input_channels = input_channels
-        self.d = 64
+        self.d = d
         self.out_dim = out_dim
         self.num_attn_blocks = num_attn_blocks
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')

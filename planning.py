@@ -282,6 +282,8 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False):
 
 
 def eval_planner(control_net, env, n):
+    control_net.eval()
+
     solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
     solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
     print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
@@ -316,6 +318,12 @@ def eval_planner(control_net, env, n):
         if lengths[i] > 0:
             print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
 
+<<<<<<< HEAD
+=======
+
+    control_net.train()
+
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
     return sum(correct_with_length.values())/num_solved
 
 
@@ -378,12 +386,73 @@ def test_tau_solved(tau, tau2, control_net):
     input()
 
 
+<<<<<<< HEAD
 def plot_times(solve_times, n):
     plt.plot(solve_times, [i/n for i in range(len(solve_times))])
     plt.xlabel('Time (s)')
     plt.ylabel(f'Percent of tasks solved, out of {n}')
     plt.ylim(top=1.0)
     plt.show()
+=======
+def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
+    """
+    macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
+    argmax: select options, actions, etc by argmax not by sampling.
+    """
+    obs = env.obs
+    options_trace = obs  # as we move, we color over squares in this where we moved, to render later
+    done, solved = False, False
+    option_at_step_i = []  # option at step i
+    options = []
+    moves_without_moving = 0
+    prev_pos = (-1, -1)
+    op_new_tau = None
+    op_new_tau_solved_prob = None
+    moves = []
+    states_between_options = []
+
+    current_option = None
+
+    while not (done or solved):
+        obs = box_world.obs_to_tensor(obs).to(DEVICE)
+        # (b, a), (b, 2), (b, ), (2, )
+        action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
+
+        if current_option is not None:
+            if argmax:
+                stop = torch.argmax(stop_logps[current_option]).item()
+            else:
+                stop = Categorical(logits=stop_logps[current_option]).sample().item()
+        new_option = current_option is None or stop == STOP_IX
+        if new_option:
+            states_between_options.append(obs)  # starts out empty, adds before each option, then adds final at end
+            if current_option is not None and macro:
+                start_logps = control_net.macro_policy_net(op_new_tau)
+
+            tau = control_net.tau_embed(obs)
+            if macro and op_new_tau is not None:
+                tau = op_new_tau
+
+            if current_option is not None:
+                causal_consistency = ((tau - op_new_tau)**2).sum()
+                # print(f'causal_consistency: {causal_consistency}')
+                options_trace[prev_pos] = 'e'
+
+            if argmax:
+                current_option = torch.argmax(start_logps).item()
+            else:
+                current_option = Categorical(logits=start_logps).sample().item()
+
+            op_start_logps, op_new_taus, op_solved_logps = control_net.eval_abstract_policy(tau)
+            op_new_tau = op_new_taus[current_option]
+            # op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
+            # print(f'solved prob from option: {op_new_tau_solved_prob}')
+            options.append(current_option)
+        else:
+            # dont overwrite 'new option' dot from earlier
+            if options_trace[prev_pos] != 'e':
+                options_trace[prev_pos] = 'm'
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def plan_logp(options, s0, control_net: HeteroController, skip_first=False):
@@ -403,7 +472,11 @@ def plan_logp(options, s0, control_net: HeteroController, skip_first=False):
 
         t = control_net.macro_transition(t, option)
 
+<<<<<<< HEAD
     return logp
+=======
+        solved = env.solved
+>>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def test_llc_stochasticity():

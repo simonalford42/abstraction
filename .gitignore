@@ -1,6 +1,11 @@
 .*.sw*
 models/*
 out/*
+data/*
+mlruns/*
+runs/*
+.neptune/*
+err/*
 .DS_STORE
 .vscode/
 .ipynb_checkpoints/*
