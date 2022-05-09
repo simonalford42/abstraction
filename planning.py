@@ -318,12 +318,9 @@ def eval_planner(control_net, env, n):
         if lengths[i] > 0:
             print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
 
-<<<<<<< HEAD
-=======
 
     control_net.train()
 
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
     return sum(correct_with_length.values())/num_solved
 
 
@@ -386,14 +383,6 @@ def test_tau_solved(tau, tau2, control_net):
     input()
 
 
-<<<<<<< HEAD
-def plot_times(solve_times, n):
-    plt.plot(solve_times, [i/n for i in range(len(solve_times))])
-    plt.xlabel('Time (s)')
-    plt.ylabel(f'Percent of tasks solved, out of {n}')
-    plt.ylim(top=1.0)
-    plt.show()
-=======
 def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     """
     macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
@@ -452,7 +441,6 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
             # dont overwrite 'new option' dot from earlier
             if options_trace[prev_pos] != 'e':
                 options_trace[prev_pos] = 'm'
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def plan_logp(options, s0, control_net: HeteroController, skip_first=False):
@@ -472,11 +460,7 @@ def plan_logp(options, s0, control_net: HeteroController, skip_first=False):
 
         t = control_net.macro_transition(t, option)
 
-<<<<<<< HEAD
     return logp
-=======
-        solved = env.solved
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def test_llc_stochasticity():

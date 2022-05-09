@@ -1,11 +1,5 @@
 from typing import Any
-<<<<<<< HEAD
 from torch.utils.data import DataLoader
-=======
-import modules
-import itertools
-from torch.utils.data import Dataset, DataLoader
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 import planning
 import argparse
 import torch
@@ -21,11 +15,8 @@ import time
 import box_world
 import neptune.new as neptune
 import mlflow
-<<<<<<< HEAD
 import data
-=======
 from modules import FC
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
 
 def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
@@ -68,21 +59,12 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
 
-<<<<<<< HEAD
-        # if params['test_every'] and epoch % params['test_every'] == 0:
-            # print('recalculating dataset')
-            # env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
-            # dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
-            # dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
-            #                         collate_fn=data.latent_traj_collate)
-=======
         if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
             print('recalculating dataset')
             env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
             data = box_world.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
             dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=True,
                                     collate_fn=box_world.latent_traj_collate)
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
 
         train_loss = 0
 
@@ -201,16 +183,6 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
-<<<<<<< HEAD
-            test_env = box_world.BoxWorldEnv(seed=params['seed'])
-            print('fixed test env')
-            # test_acc = data.eval_options_model(
-            #     net.control_net, test_env, n=params['num_test'],
-            #     run=run, epoch=epoch)
-            test_acc = planning.eval_planner(
-                net.control_net, test_env, n=params['num_test'],
-            )
-=======
             # test_env = box_world.BoxWorldEnv(seed=params['seed'])
             # print('fixed test env')
             test_acc = box_world.eval_options_model(
@@ -219,7 +191,6 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             # test_acc = planning.eval_planner(
             #     net.control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
             # )
->>>>>>> 19b9d9012f3bdf201579579488be85c0280b36be
             run['test/accuracy'].log(test_acc)
             print(f'Epoch {epoch}\t test acc {test_acc}')
             mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
