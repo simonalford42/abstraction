@@ -1,82 +1,132 @@
 from typing import Any
+from torch.utils.data import DataLoader
 import planning
-import numpy as np
-import up_right
 import argparse
 import torch
-from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
 from utils import Timing, DEVICE
-from abstract import HeteroController, boxworld_controller, boxworld_homocontroller
+from abstract import boxworld_controller, boxworld_homocontroller
 import abstract
-from hmm import CausalNet, SVNet, HmmNet, viterbi
+from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
 import neptune.new as neptune
 import mlflow
+import data
 
 
-def fine_tune(run, dataloader: DataLoader, control_net: nn.Module, params: dict[str, Any]):
+def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
     optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
     control_net.train()
-    model_id = mlflow.active_run().info.run_id
-    run['model_id'] = model_id
-    control_net.freeze_all_controllers()
 
-    updates = 0
     epoch = 0
+    updates = 0
+    tau_precompute = False
+    print(f"tau_precompute: {tau_precompute}")
 
-    latent_data = box_world.LatentDataset(dataloader, control_net)
-    latent_dataloader = DataLoader(latent_data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.latent_traj_collate)
+    if tau_precompute:
+        control_net.freeze_microcontroller()
+    else:
+        control_net.freeze_all_controllers()
+
+    env = box_world.BoxWorldEnv(seed=params['seed'])
+
+    dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+
+    print(f'{len(dataset)} fine-tuning examples')
+    params['epochs'] = int(params['traj_updates'] / len(dataset))
+    print(f"actual params['epochs']: {params['epochs']}")
+
+    if params['num_tests'] == 0:
+        params['test_every'] = False
+    else:
+        params['test_every'] = max(1, params['epochs'] // params['num_tests'])
+        print(f"actual params['test_every']: {params['test_every']}")
+    if params['num_saves'] == 0:
+        params['save_every'] = False
+    else:
+        params['save_every'] = params['epochs'] // params['num_saves']
+        print(f"actual params['save_every']: {params['save_every']}")
+
+    dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
+                            collate_fn=data.latent_traj_collate)
 
     while updates < params['traj_updates']:
         if hasattr(dataloader.dataset, 'shuffle'):
-            latent_dataloader.dataset.shuffle(batch_size=params['batch_size'])
+            dataloader.dataset.shuffle(batch_size=params['batch_size'])
+
+        # if params['test_every'] and epoch % params['test_every'] == 0:
+            # print('recalculating dataset')
+            # env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
+            # dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+            # dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
+            #                         collate_fn=data.latent_traj_collate)
 
         train_loss = 0
-        for t_i_batch, b_i_batch, lengths, masks in latent_dataloader:
-            optimizer.zero_grad()
-            t_i_batch, b_i_batch, lengths, masks = t_i_batch.to(DEVICE), b_i_batch.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
 
-            loss = abstract.fine_tune_loss(t_i_batch, b_i_batch, lengths, masks, control_net)
+        first = True
+        for states, options, lengths, masks in dataloader:
+            states, options, lengths, masks = states.to(DEVICE), options.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+
+            print(f'masks: {masks}')
+            for ix in range(len(options)):
+                print('new')
+                for state, option in zip(states[ix], options[ix]):
+                    print(option)
+                    box_world.render_obs(data.tensor_to_obs(state), pause=3)
+
+            B, T, *s = states.shape
+
+            if not tau_precompute:
+                states_flattened = states.reshape(B * T, *s)
+                t_i_flattened = control_net.tau_net(states_flattened)
+                t_i = t_i_flattened.reshape(B, T, control_net.t)
+            else:
+                t_i = states
+
+            if params['test_every'] and epoch % params['test_every'] == 0 and first:
+                preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
+                print('avg cc loss ', (t_i[:, 1] - preds).sum() / t_i.shape[0])
+                first = False
+
+            loss = abstract.full_fine_tune_loss(t_i, options, control_net, masks, loss=params['loss'])
+
             train_loss += loss.item()
             loss = loss / sum(lengths)
 
-            run['batch/loss'].log(loss.item())
-            run['batch/avg length'].log(sum(lengths) / len(lengths))
-            run['batch/mem'].log(utils.get_memory_usage())
             loss.backward()
             optimizer.step()
+            optimizer.zero_grad()
+            updates += B
 
-        if epoch % 100 == 0:
+        if params['test_every'] and epoch % (params['test_every'] // 5) == 0:
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             utils.warn('fixed test env seed')
-            test_accs = planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
+            test_acc = planning.eval_planner(
+                control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
             )
-            print(f'Epoch {epoch}\t test accs {test_accs}')
-            mlflow.log_metrics({'epoch': epoch, 'test accs': test_accs}, step=epoch)
-
-        run['epoch'].log(epoch)
-        run['loss'].log(train_loss)
-        mlflow.log_metrics({'epoch': epoch,
-                            'loss': train_loss}, step=epoch)
+            print(f'Epoch {epoch}\t test acc {test_acc}')
+            gen_test_acc = planning.eval_planner(
+                control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
+            )
+            print(f'Epoch {epoch}\t gen test acc {gen_test_acc}')
 
         if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
+            model_id = params['id']
             path = utils.save_model(control_net, f'models/{model_id}-epoch-{epoch}_control.pt')
             run['models'].log(path)
 
         epoch += 1
-        updates += params['n']
 
-
-
-        epoch += 1
+    if not params['no_log']:
+        model_id = params['id']
+        path = utils.save_model(control_net, f'models/{model_id}_control.pt')
+        run['model'] = path
 
 
 def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
@@ -97,10 +147,10 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         # if epoch and epoch % 100 == 0:
         #     print('reloading data')
         #     del dataloader
-        #     data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
+        #     dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
         #                                      n=params['n'], traj=True)
-        #     dataloader = DataLoader(data, batch_size=params['batch_size'],
-        #                             shuffle=False, collate_fn=box_world.traj_collate)
+        #     dataloader = DataLoader(dataset, batch_size=params['batch_size'],
+        #                             shuffle=False, collate_fn=data.traj_collate)
 
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
@@ -128,9 +178,12 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
         if params['test_every'] and epoch % params['test_every'] == 0:
             test_env = box_world.BoxWorldEnv(seed=params['seed'])
             print('fixed test env')
-            test_acc = box_world.eval_options_model(
+            # test_acc = data.eval_options_model(
+            #     net.control_net, test_env, n=params['num_test'],
+            #     run=run, epoch=epoch)
+            test_acc = planning.eval_planner(
                 net.control_net, test_env, n=params['num_test'],
-                run=run, epoch=epoch)
+            )
             run['test/accuracy'].log(test_acc)
             print(f'Epoch {epoch}\t test acc {test_acc}')
             mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
@@ -210,11 +263,13 @@ def boxworld_main():
     parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
     parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
     parser.add_argument('--fine_tune', action='store_true', help='fine tune training')
+    parser.add_argument('--loss', type=str, default='kl', choices=['kl', 'kl-flip', 'log'], help='fine tune dist loss')
     args = parser.parse_args()
 
     if not args.seed:
@@ -236,17 +291,19 @@ def boxworld_main():
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    batch_size = 64 if args.ellis else 32
+    # batch_size = 64 if args.ellis else 32
+    utils.warn('low batch size')
+    batch_size = 3
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=20000,
         traj_updates=1E7,  # default: 1E7
         num_saves=4, num_tests=20, num_test=200,
-        lr=8E-4, batch_size=batch_size, b=10,
-        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
+        lr=8E-4, batch_size=batch_size,
+        # model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
-    featured_params = ['model', 'abstract_pen', 'tau_noise']
+    featured_params = ['model', 'n', 'loss', 'abstract_pen']
 
     if 'model_load_path' in params:
         net = utils.load_model(params['model_load_path'])
@@ -279,11 +336,11 @@ def boxworld_main():
         params['save_every'] = params['epochs'] // params['num_saves']
 
     if args.eval:
-        box_world.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
+        data.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
     elif args.fine_tune:
         net = net.to(DEVICE)
-        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-        dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+        # dataset = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
+        # dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
 
         with Timing('Completed fine tuning'):
             with mlflow.start_run():
@@ -294,12 +351,12 @@ def boxworld_main():
                     print(p.upper() + ':\t ' + str(params[p]))
                 print(f"Starting run:\n{mlflow.active_run().info.run_id}")
                 print(f"params: {params}")
+                fine_tune(run, box_world.BoxWorldEnv(), net.control_net, params)
 
-                fine_tune(run, dataloader, net.control_net, params)
     else:
         net = net.to(DEVICE)
-        data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-        dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+        dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
+        dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
 
         with Timing('Completed training'):
             with mlflow.start_run():

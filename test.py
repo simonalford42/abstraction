@@ -1,15 +1,14 @@
-import math
+# import math
 import random
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import tensor
-from abstract import boxworld_homocontroller
 
 import abstract
 import hmm
 import box_world
-from hmm import HmmNet, cc_loss, cc_loss_brute, cc_loss_ub, hmm_fw_ub
+from hmm import cc_loss_brute, cc_loss_ub, hmm_fw_ub
 from box_world import CONTINUE_IX, STOP_IX
 from utils import DEVICE, assert_equal, assert_shape
 import utils
@@ -907,4 +906,4 @@ def test_cc_batched2():
 
 
 if __name__ == '__main__':
-    # test_latent_gen()
+    test_latent_gen()

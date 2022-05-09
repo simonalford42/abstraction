@@ -5,7 +5,7 @@ from einops import rearrange
 import utils
 from utils import assert_equal, DEVICE, assert_shape
 import torch
-from box_world import STOP_IX, CONTINUE_IX, UNSOLVED_IX, SOLVED_IX
+from data import STOP_IX, CONTINUE_IX, UNSOLVED_IX, SOLVED_IX
 
 
 def cc_fw(b, action_logps, stop_logps, start_logps, lengths, masks):

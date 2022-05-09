@@ -1,16 +1,12 @@
 import torch
-import torch.nn as nn
 import os
 import time
-import mlflow
-from typing import Tuple
 import numpy as np
 import uuid
 import psutil
 from contextlib import nullcontext
 from collections import namedtuple
 
-POS = Tuple[int, int]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -31,8 +27,6 @@ class CustomDictOne(dict):
     def __init__(self,*arg,**kw):
         super(CustomDictOne, self).__init__(*arg, **kw)
 
-
-    
 
 def log(s: str):
     with open('log.txt', 'r+') as f:
@@ -107,10 +101,7 @@ def generate_uuid():
     return uuid.uuid4().hex
 
 
-def next_unused_path(path, extend_fn=None):
-    if not extend_fn:
-        extend_fn = lambda i: f'__({i})'
-
+def next_unused_path(path, extend_fn=lambda i: f'__({i})'):
     last_dot = path.rindex('.')
     extension = path[last_dot:]
     file_name = path[:last_dot]
