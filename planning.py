@@ -188,6 +188,8 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False):
 
 
 def eval_planner(control_net, env, n):
+    control_net.eval()
+
     solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
     solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
     print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
@@ -225,6 +227,7 @@ def eval_planner(control_net, env, n):
             print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
 
 
+    control_net.train()
 
     return sum(correct_with_length.values())/num_solved
 
@@ -324,7 +327,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
                 start_logps = control_net.macro_policy_net(op_new_tau)
 
             tau = control_net.tau_embed(obs)
-            if macro:
+            if macro and op_new_tau is not None:
                 tau = op_new_tau
 
             if current_option is not None:
@@ -364,7 +367,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
                 title += ' (new)'
             box_world.render_obs(obs, title=title, pause=pause)
 
-        solved = rew == bw.REWARD_GOAL
+        solved = env.solved
 
         pos = box_world.player_pos(obs)
         if prev_pos == pos:
