@@ -289,14 +289,12 @@ def eval_planner(control_net, env, n):
     print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
 
     num_solved = 0
-    all_options = []
     lengths = []
     correct_with_length = {i: 0 for i in range(env.max_num_steps)}
     for i in range(n):
         env.reset()
         obs = data.obs_to_tensor(env.obs).to(DEVICE)
         solved, options, _ = data.full_sample_solve(env, control_net, render=False, argmax=True)
-        all_options.append(options[0])
         if solved:
             num_solved += 1
             lengths.append(len(options))

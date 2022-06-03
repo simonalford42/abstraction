@@ -25,7 +25,7 @@ class MicroNet(nn.Module):
         super().__init__()
         self.input_channels = input_channels
         self.input_shape = input_shape
-        self.d = 64
+        self.d = d
         self.out_dim = out_dim
         self.conv1 = nn.Conv2d(input_channels, 12, 3, padding='same')
         self.conv2 = nn.Conv2d(12, 12, 3, padding='same')

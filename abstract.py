@@ -9,6 +9,7 @@ from modules import MicroNet, RelationalDRLNet, FC, RelationalMacroNet
 import box_world
 
 TT = torch.Tensor
+GUMBEL_TEMP = 1
 
 """
 Note: T used in Controller classes for length of sequence i.e. s_i.shape = (T, *s) etc. is not the same
@@ -16,8 +17,79 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 """
 
 
-def full_fine_tune_loss(t_i_batch, b_i_batch, control_net, masks=None, weights=None, loss='kl'):
+nll_loss = nn.NLLLoss(reduction='none')
+
+
+def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=None, weights=None):
     '''
+    Get causal consistency to be low, but instead of matching distributions, directly try to
+    predict whether we solved the task, and if so, what the correct option choice was.
+    '''
+
+    def solved_and_start_logps(t_i_batch, control_net):
+        (B, T, t) = t_i_batch.shape
+        t_i_flattened = t_i_batch.reshape(B * T, t)
+        solved = control_net.solved_net(t_i_flattened).reshape(B, T, 2)
+        start_logps = control_net.macro_policy_net(t_i_flattened).reshape(B, T, control_net.b)
+        return solved, start_logps
+
+    (B, T) = b_i_batch.shape
+    assert_shape(t_i_batch, (B, T + 1, control_net.t))
+    assert_shape(solved_batch, (B, T + 1))
+    if weights is not None:
+        assert_shape(weights, (B, ))
+    t_i_pred = t_i_batch[:, 0]
+    t_i_preds = [t_i_pred]
+
+    for i in range(T):
+        b_i = b_i_batch[:, i]
+        assert_shape(b_i, (B, ))
+        t_i_pred = control_net.macro_transitions2(t_i_pred, b_i)
+        t_i_preds.append(t_i_pred)
+
+    t_i_pred_batch = torch.stack(t_i_preds, dim=1)
+    assert_equal(t_i_pred_batch.shape, t_i_batch.shape)
+
+    # (B, T+1, 2), (B, T+1, b)
+    multi_solved_preds, multi_b_i_preds = solved_and_start_logps(t_i_pred_batch, control_net)
+    single_solved_preds, single_b_i_preds = solved_and_start_logps(t_i_batch, control_net)
+    # no pred needed for last step
+    multi_b_i_preds, single_b_i_preds = multi_b_i_preds[:, :-1], single_b_i_preds[:, :-1]
+    # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
+
+    multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds = [
+        rearrange(x, 'N d C -> N C d') for x in
+        [multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds]]
+
+    cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
+
+    multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+    single_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+
+    multi_b_i_loss = nll_loss(multi_b_i_preds, b_i_batch)
+    single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
+
+    # (B, T)
+    # multi_b_i_loss = multi_b_i_loss * solved_batch[:, -1][:, None]
+    # single_b_i_loss = single_b_i_loss * solved_batch[:, -1][:, None]
+
+    assert_equal(cc_loss_batch.shape, multi_solved_loss.shape)
+    loss_batch = cc_loss_batch + multi_solved_loss + single_solved_loss
+    loss_batch[:, :-1] = loss_batch[:, :-1] + multi_b_i_loss + single_b_i_loss
+
+    if weights is not None:
+        loss_batch = loss_batch * weights[:, None]
+    if masks is not None:
+        loss_batch = loss_batch * masks
+
+    return loss_batch.sum()
+
+
+def fine_tune_loss_v2(t_i_batch, b_i_batch, control_net, masks=None, weights=None, loss='kl'):
+    '''
+    get causal consistency to be low, and also make the distributions match for the mutli-step and
+    single-step predictions.
+
     t_i_batch: (B, max_T + 1, t)
     b_i_batch: (B, max_T, )
     weights: weight loss from each item in batch
@@ -71,13 +143,15 @@ def full_fine_tune_loss(t_i_batch, b_i_batch, control_net, masks=None, weights=N
     loss_batch = (dist_loss_fn(solved_pred_dist, solved_target_dist).sum(dim=-1)
                   + dist_loss_fn(macro_pred_dist, macro_target_dist).sum(dim=-1))
 
-    cc_loss_batch = (t_i_pred_batch - t_i_batch) ** 2
-    cc_loss_batch = cc_loss_batch.sum(dim=-1)
+    # cc_loss_batch = (t_i_pred_batch - t_i_batch) ** 2
+    # cc_loss_batch = cc_loss_batch.sum(dim=-1)
 
-    assert_shape(cc_loss_batch, (B, T + 1))
+    # assert_shape(cc_loss_batch, (B, T + 1))
     assert_shape(loss_batch, (B, T + 1))
 
-    loss_batch = loss_batch + cc_loss_batch
+    # loss_batch = loss_batch + cc_loss_batch
+    # loss_batch = cc_loss_batch
+    utils.warn('kl loss only, one step')
 
     if weights is not None:
         loss_batch = loss_batch * weights[:, None]
@@ -89,6 +163,8 @@ def full_fine_tune_loss(t_i_batch, b_i_batch, control_net, masks=None, weights=N
 
 def fine_tune_loss(t_i_batch, b_i_batch, control_net, weights=None):
     '''
+    get causal consistency loss to be low across multiple steps of simulation.
+
     t_i_batch: (B, max_T + 1, t)
     b_i_batch: (B, max_T, )
     weights: weight loss from each item in batch
@@ -124,7 +200,7 @@ class ConsistencyStopControllerReduced(nn.Module):
     (reduced compared to full abstract model)
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm=1):
+                 macro_transition_net, solved_net):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -136,7 +212,7 @@ class ConsistencyStopControllerReduced(nn.Module):
         self.macro_transition_net = macro_transition_net  # b_i one hot -> t abstract transition
         self.solved_net = solved_net  # t -> 2
         self.b_input = F.one_hot(torch.arange(self.b)).float().to(DEVICE)  # (b, b)
-        self.tau_lp_norm = tau_lp_norm
+        # self.tau_lp_norm = tau_lp_norm
 
     def forward(self, s_i_batch, batched=False):
         if batched:
@@ -158,8 +234,6 @@ class ConsistencyStopControllerReduced(nn.Module):
         """
         # T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-        #                            torch.ones(T, device=DEVICE))
         micro_out = self.micro_net(s_i)
         # assert_shape(micro_out, (T, self.b * self.a))
         action_logps = rearrange(micro_out, 'T (b a) -> T b a', b=self.b)
@@ -213,8 +287,6 @@ class ConsistencyStopControllerReduced(nn.Module):
 
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-        #                            torch.ones(B, T, device=DEVICE))
 
         micro_out = self.micro_net(s_i_flattened).reshape(B, T, -1)
         # assert_shape(micro_out, (B, T, self.b * self.a))
@@ -259,7 +331,7 @@ class ConsistencyStopController(nn.Module):
     alpha(b, tau(s)), beta(s_c, s_t). full abstract model, not markov
     """
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm, tau_noise_std):
+                 macro_transition_net, solved_net, tau_noise_std):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -270,7 +342,6 @@ class ConsistencyStopController(nn.Module):
         self.macro_policy_net = macro_policy_net  # t -> b  aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
         self.solved_net = solved_net  # t -> 2
-        self.tau_lp_norm = tau_lp_norm
         self.tau_noise_std = tau_noise_std
         assert tau_noise_std == 0
 
@@ -314,8 +385,6 @@ class ConsistencyStopController(nn.Module):
         """
         # T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-        #                            torch.ones(T, device=DEVICE))
         action_logps = self.micro_net(s_i)
         # assert_shape(action_logps, (T, self.b, self.a))
         stop_logps = self.calc_stop_logps_ub(t_i)  # (T, T, b, 2)
@@ -414,8 +483,6 @@ class ConsistencyStopController(nn.Module):
 
         t_i_flattened = self.tau_net(s_i_flattened)
         t_i = t_i_flattened.reshape(B, T, self.t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-        #                            torch.ones(B, T, device=DEVICE))
 
         action_logps = self.micro_net(s_i_flattened).reshape(B, T, self.b, self.a)
         stop_logps = self.calc_stop_logps_b(t_i)  # (B, T, T, b, 2)
@@ -522,7 +589,7 @@ def noisify_tau(t_i, noise_std):
 
 class HeteroController(nn.Module):
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_lp_norm, tau_noise_std):
+                 macro_transition_net, solved_net, tau_noise_std):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -532,7 +599,6 @@ class HeteroController(nn.Module):
         self.micro_net = micro_net  # s -> ((a, b), (2*b,))
         self.macro_policy_net = macro_policy_net  # t -> b aka P(b | t)
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
-        self.tau_lp_norm = tau_lp_norm
         self.solved_net = solved_net  # t -> 2
         self.tau_noise_std = tau_noise_std
 
@@ -579,8 +645,6 @@ class HeteroController(nn.Module):
         """
         # T = s_i.shape[0]
         t_i = self.tau_net(s_i)  # (T, t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=1),
-        #                            torch.ones(T, device=DEVICE))
 
         noise = self.tau_noise_std if tau_noise else 0
         noised_t_i = noisify_tau(t_i, noise)
@@ -614,8 +678,6 @@ class HeteroController(nn.Module):
 
         t_i = t_i_flattened.reshape(B, T, self.t)
         # noised_t_i = noised_t_i_flattened.reshape(B, T, self.t)
-        # torch.testing.assert_close(torch.linalg.vector_norm(t_i, ord=self.tau_lp_norm, dim=2),
-        #                            torch.ones(B, T, device=DEVICE))
 
         action_logps, stop_logps = self.micro_net(s_i_flattened)
         action_logps = action_logps.reshape(B, T, self.b, self.a)
@@ -822,12 +884,15 @@ class HomoController(nn.Module):
         """
 
         B, T, *s = s_i_batch.shape
-        out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
-        # assert_equal(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
-        action_logits = out[:, :, :self.b * self.a].reshape(B, T, self.b, self.a)
-        stop_logits = out[:, :, self.b * self.a:self.b * self.a + 2 * self.b].reshape(B, T, self.b, 2)
-        start_logits = out[:, :, self.b * self.a + 2 * self.b:]
-        # assert_equal(start_logits.shape[-1], self.b)
+        if isinstance(self.net, SeparateNetsHomoController):
+            action_logits, stop_logits, start_logits = self.net(s_i_batch)
+        else:
+            out = self.net(s_i_batch.reshape(B * T, *s)).reshape(B, T, -1)
+            # assert_equal(out.shape[-1], self.a * self.b + 2 * self.b + self.b)
+            action_logits = out[:, :, :self.b * self.a].reshape(B, T, self.b, self.a)
+            stop_logits = out[:, :, self.b * self.a:self.b * self.a + 2 * self.b].reshape(B, T, self.b, 2)
+            start_logits = out[:, :, self.b * self.a + 2 * self.b:]
+            # assert_equal(start_logits.shape[-1], self.b)
         action_logps = F.log_softmax(action_logits, dim=3)
         stop_logps = F.log_softmax(stop_logits, dim=3)
         start_logps = F.log_softmax(start_logits, dim=2)
@@ -844,6 +909,7 @@ class HomoController(nn.Module):
             None as causal pen placeholder
             'None' as solveds placeholder
         """
+        assert not isinstance(self.net, SeparateNetsHomoController)
         T = s_i.shape[0]
         out = self.net(s_i)
         # assert_equal(out.shape, (T, self.a * self.b + 2 * self.b + self.b))
@@ -882,25 +948,73 @@ def boxworld_relational_net(out_dim: int = 4):
                             out_dim=out_dim)
 
 
-def boxworld_homocontroller(b):
+def boxworld_homocontroller(b, separate_option_nets=False):
     # a * b for action probs, 2 * b for stop probs, b for start probs
     a = 4
-    out_dim = a * b + 2 * b + b
-    relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
-                                      num_attn_blocks=2,
-                                      num_heads=4,
-                                      out_dim=out_dim).to(DEVICE)
+
+    if separate_option_nets:
+        relational_net = SeparateNetsHomoController(b)
+    else:
+        out_dim = a * b + 2 * b + b
+        relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                          num_attn_blocks=2,
+                                          num_heads=4,
+                                          out_dim=out_dim)
+
     control_net = HomoController(a=a, b=b, net=relational_net)
     return control_net
+
+
+class SeparateNetsHomoController(nn.Module):
+    def __init__(self, b):
+        super().__init__()
+        self.b = b
+        self.a = 4
+        out_dim = self.a + 2 + 1
+        self.relational_nets = nn.ModuleList([RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                                               num_attn_blocks=2,
+                                                               num_heads=4,
+                                                               out_dim=out_dim)
+                                              for _ in range(b)])
+
+    def forward(self, x):
+        B, T, *s = x.shape
+        outs = [net(x.reshape(B * T, *s)).reshape(B, T, -1) for net in self.relational_nets]
+
+        action_logits = []
+        stop_logits = []
+        start_logits = []
+        for out in outs:
+            action_logps = out[:, :, :self.a]
+            stop_logps = out[:, :, self.a : self.a+2]
+            start_logp = ou[:, :, -1:]
+            action_logits.append(action_logps)
+            stop_logits.append(stop_logps)
+            start_logits.append(start_logp)
+
+        action_logits = torch.stack(action_logits, dim=-1)
+        assert_shape(action_logits, (B, T, self.b, self.a))
+        stop_logits = torch.stack(stop_logits, dim=-1)
+        assert_shape(stop_logits, (B, T, self.b, 2))
+        start_logits = torch.cat(start_logits, dim=-1)
+        assert_shape(start_logits, (B, T, self.b))
+        return action_logits, stop_logits, start_logits
 
 
 class ActionsMicroNet(nn.Module):
     def __init__(self, a, b):
         super().__init__()
-        self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                                  input_channels=box_world.NUM_ASCII,
-                                  out_dim=a * b)
         self.b = b
+        out_dim = a * b
+        if relational:
+            self.micro_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                              num_attn_blocks=2,
+                                              num_heads=4,
+                                              out_dim=out_dim)
+        else:
+            self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                      input_channels=box_world.NUM_ASCII,
+                                      out_dim=out_dim)
 
     def forward(self, x):
         x = self.micro_net(x)
@@ -910,11 +1024,18 @@ class ActionsMicroNet(nn.Module):
 
 
 class ActionsAndStopsMicroNet(nn.Module):
-    def __init__(self, a, b):
+    def __init__(self, a, b, relational=False):
         super().__init__()
-        self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                                  input_channels=box_world.NUM_ASCII,
-                                  out_dim=a * b + 2 * b)
+        out_dim = a * b + 2 * b
+        if relational:
+            self.micro_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                              num_attn_blocks=2,
+                                              num_heads=4,
+                                              out_dim=out_dim)
+        else:
+            self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                      input_channels=box_world.NUM_ASCII,
+                                      out_dim=out_dim)
         self.a = a
         self.b = b
 
@@ -940,28 +1061,51 @@ class NormModule(nn.Module):
         return F.normalize(x, dim=-1, p=self.p)  # * self.dim
 
 
-def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_noise_std=0,
-                        attentional_trans_net=False, batch_norm=False):
+class GumbelModule(nn.Module):
+    def __init__(self, dim, num_categories):
+        super().__init__()
+        self.dim = dim
+        self.num_categories = num_categories
+
+    def forward(self, x):
+        assert_equal(x.shape[1], self.num_categories * self.dim)
+        x = x.reshape(-1, self.dim, self.num_categories)
+        if GUMBEL_TEMP < 0.01:
+            x = F.gumbel_softmax(logits=x, tau=GUMBEL_TEMP, dim=2)
+
+        x = F.gumbel_softmax(logits=x, tau=GUMBEL_TEMP, dim=2)
+        x = x.reshape(-1, self.dim * self.num_categories)
+        return x
+
+
+def boxworld_controller(typ, params):
     """
     typ: hetero, homo, ccts, or ccts-reduced
     """
     a = 4
+    b = params['b']
     tau_lp_norm = 1
-    gumbel = False
     fc_hidden_dim = 64
+    t = params['abstract_dim']
 
-    if gumbel:
-        raise NotImplementedError()
+    if params['gumbel']:
+        num_categories = 32
+        dim = t
+        gumbel_module = GumbelModule(dim=dim, num_categories=num_categories)
+        t = dim * num_categories
 
     assert typ in ['hetero', 'homo', 'ccts', 'ccts-reduced']
 
+    if params['separate_option_nets']:
+        assert typ == 'homo'
+
     if typ == 'homo':
-        return boxworld_homocontroller(b)
+        return boxworld_homocontroller(b, separate_option_nets=params['separate_option_nets'])
 
     if typ in ['ccts', 'ccts-reduced']:
-        micro_net = ActionsMicroNet(a, b)
+        micro_net = ActionsMicroNet(a, b, relational=params['relational_micro'])
     else:
-        micro_net = ActionsAndStopsMicroNet(a, b)
+        micro_net = ActionsAndStopsMicroNet(a, b, relational=params['relational_micro'])
 
     if typ == 'ccts-reduced':
         macro_trans_in_dim = b
@@ -975,22 +1119,29 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
         model = HeteroController
 
     tau_module = NormModule(p=tau_lp_norm, dim=t)
-    tau_net = nn.Sequential(boxworld_relational_net(out_dim=t, ),
-                            tau_module)
+    tau_net = boxworld_relational_net(out_dim=t)
+
+    if params['gumbel']:
+        tau_net = nn.Sequential(tau_net, gumbel_module)
+    elif not params['no_tau_norm']:
+        tau_net = nn.Sequential(tau_net, tau_module)
 
     macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3,
-                                        hidden_dim=fc_hidden_dim, batch_norm=batch_norm),
+                                        hidden_dim=fc_hidden_dim, batch_norm=params['batch_norm']),
                                      nn.LogSoftmax(dim=-1))
 
     macro_transition_net = FC(input_dim=macro_trans_in_dim,
                               output_dim=t,
                               num_hidden=3,
                               hidden_dim=fc_hidden_dim,
-                              batch_norm=batch_norm)
-    macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
+                              batch_norm=params['batch_norm'])
+    if params['gumbel']:
+        macro_transition_net = nn.Sequential(macro_transition_net, gumbel_module)
+    if not params['no_tau_norm']:
+        macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
 
     solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3,
-                                  hidden_dim=fc_hidden_dim, batch_norm=batch_norm),
+                                  hidden_dim=fc_hidden_dim, batch_norm=params['batch_norm']),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,
@@ -999,5 +1150,4 @@ def boxworld_controller(b, t=16, typ='hetero', tau_lp_norm=1, gumbel=False, tau_
                  macro_policy_net=macro_policy_net,
                  macro_transition_net=macro_transition_net,
                  solved_net=solved_net,
-                 tau_lp_norm=tau_lp_norm,
-                 tau_noise_std=tau_noise_std)
+                 tau_noise_std=params['tau_noise_std'])
