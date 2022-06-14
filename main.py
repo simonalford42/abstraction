@@ -25,7 +25,7 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
     epoch = 0
     updates = 0
-    tau_precompute = False
+    tau_precompute = True
     print(f"tau_precompute: {tau_precompute}")
 
     if tau_precompute:
@@ -101,6 +101,9 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             utils.warn('fixed test env seed')
+
+            acc = data.eval_options_model(control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'], argmax=True)
+            # print(f'acc: {acc}')
             test_acc = planning.eval_planner(
                 control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
             )

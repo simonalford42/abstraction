@@ -1,3 +1,33 @@
+separate option nets hmm homo AP=0 100%
+models/e36c3e2385d8418a8b1109d78587da68-epoch-1000.pt
+
+CC relational micro AP=1 175/200
+models/244907b5cde841358a4b9d8fee1d32f8-epoch-1750.pt
+HMM relational micro AP=1 165/200
+models/56bea97cf2a84db9af304b16ab0362bf.pt
+HMM relatinal micrl AP=1 175/200
+models/6619520fdfc346a689be99d83fffbdca.pt
+HMM relational micro AP=0 141/200
+3c1cb1ffdb1842009873f9bca0b8c2ca.pt
+
+hmm-homo AP=0 199/200
+models/deff712a84ae4b6da2903417c5eebd1a-epoch-2375.pt
+AP=0.25 cc 110/200
+models/fa6a31cb43d14bd5ad705639f905cc58-epoch-1250.pt
+AP=0.25 cc 80/200
+models/d84c60aeecf44fab96c1a05a15537f49-epoch-1250.pt
+
+no tau norm hmm acc = 60%
+models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+
+hmm-homo AP = 1 acc = 100%
+ models/523a651eee5d4423921820ffe7948b89-epoch-1250.pt
+
+hmm AP=1 acc = 60%
+models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+
+fill in new macro trans net
+Saved model at models/3cbaef33ab42402bb0089d4e2818e025-epoch-250000_control.pt
 
 full fine tune (with tau I think?)
 n=100, seed 1

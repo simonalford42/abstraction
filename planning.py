@@ -264,13 +264,13 @@ L2_ATTEMPTED = 0
 BETTER = 0
 
 
-def eval_sampling(control_net, env, n, macro=False, argmax=False):
+def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
     lengths = []
 
     total_solved = 0
     for i in range(n):
         env.reset()
-        solved, options, _ = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax)
+        solved, options, _ = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax, render=render)
         if solved:
             total_solved += 1
             lengths.append(len(options))
@@ -529,18 +529,29 @@ if __name__ == '__main__':
     torch.manual_seed(0)
 
     depth = 3
+    control_net = True  # is the loaded model a control net
     env = box_world.BoxWorldEnv(seed=1)  # , solution_length=(depth, ))
-    # control_net = utils.load_model('models/e14b78d01cc548239ffd57286e59e819.pt').control_net
-    # control_net = utils.load_model('models/b2261e15edc14ffdb4c28c0f96528006.pt').control_net
-    # control_net = utils.load_model('models/918fba1553ee47eb8d29ae4b8095f413.pt').control_net
-    # control_net = utils.load_model('models/9a3edab864e84db594a3cc2726018bc6-epoch-2500.pt').control_net
-    # control_net = utils.load_model('models/353d4695ec784f8e87d635eaaeae0270-epoch-1224_control.pt')
-    control_net = utils.load_model('models/b363dbf36c974020a70e6d2876207dad-epoch-25000_control.pt')  # n = 100 full fine tune
-    # control_net = utils.load_model('models/fcfc0586dcf04d838d20efa7fb5cfcf9-epoch-2500_control.pt')  # n = 20k full fine tune
+    model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
+
+    net = utils.load_model(f'models/{model_id}.pt')
+    if control_net:
+        control_net = net
+    else:
+        control_net = net.control_net
+
     control_net.tau_noise_std = 0
 
-    acc = data.eval_options_model(control_net, env.copy(), n=1, option='verbose')
+    n = 200
+    env = box_world.BoxWorldEnv()
+    # env = box_world.BoxWorldEnv(solution_length=(6, ))
+    # env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(1, ))
+
+    # acc = eval_sampling(control_net, env, n=n, macro=False)
     # print(f'acc: {acc}')
+    # acc = eval_sampling(control_net, env, n=n, macro=True, render=True)
+    acc = data.eval_options_model(control_net, env, n=n, render=True)
+    # print(f'acc: {acc}')
+    # acc = eval_planner(control_net, env, n=n)
 
     # test_consistency(env, control_net, n=n)
     # eval_sampling(control_net, env, n=100)

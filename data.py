@@ -155,6 +155,10 @@ j       (b, 2) stop logps
 
     for i in range(n):
         obs = env.reset()
+
+        if render:
+            box_world.render_obs(obs, pause=1)
+
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(obs), name='obs')
         options_trace = obs
@@ -229,7 +233,7 @@ j       (b, 2) stop logps
 
             if render:
                 title = f'option={current_option}'
-                pause = 0.1 if new_option else 0.05
+                pause = 0.5 if new_option else 0.05
                 if new_option:
                     title += ' (new)'
                 option_map[current_option].append((obs, title, pause))
@@ -258,7 +262,7 @@ j       (b, 2) stop logps
             num_solved += 1
 
         if render:
-            box_world.render_obs(options_trace, title=f'{solved=}', pause=1)
+            box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(options_trace),
                                                name='orange=new option')
@@ -578,6 +582,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     moves = []
     states_between_options = []
 
+
     current_option = None
 
     while not (done or solved):
@@ -632,7 +637,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
 
         if render:
             title = f'option={current_option}'
-            pause = 0.01 if new_option else 0.01
+            pause = 1 if new_option else 0.01
             if new_option:
                 title += f' (new option = {current_option})'
             box_world.render_obs(obs, title=title, pause=pause)
@@ -657,6 +662,6 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     #     print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
-        box_world.render_obs(options_trace, title=f'{solved=}', pause=1)
+        box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
 
     return solved, options, states_between_options

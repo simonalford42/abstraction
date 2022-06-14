@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import einops
-from utils import assert_equal, DEVICE
+from utils import assert_equal, DEVICE, assert_shape
 import warnings
 
 
@@ -65,7 +65,7 @@ class RelationalMacroNet(nn.Module):
         super().__init__()
         self.d = d
         self.l = l
-        self.input_dim=input_dim
+        self.input_dim = input_dim
         self.out_dim = out_dim
         self.num_attn_blocks = num_attn_blocks
         self.pre_attn_linear = nn.Linear(input_dim, self.d * self.l)
@@ -103,6 +103,123 @@ class RelationalMacroNet(nn.Module):
             x = self.fc(x)
 
             return x
+
+
+class ShrinkingRelationalDRLNet(nn.Module):
+    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4, layer_ensemble_loss_scale=1):
+        super().__init__()
+        self.input_channels = input_channels
+        self.d = d
+        self.out_dim = out_dim
+        self.num_attn_blocks = num_attn_blocks
+        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
+        # self.conv1_batchnorm = nn.BatchNorm2d(12)
+        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
+        # self.conv2_batchnorm = nn.BatchNorm2d(24)
+
+        # 2 exra dims for positional encoding
+        self.pre_attn_linear = nn.Linear(24 + 2, self.d)
+
+        # shared weights, so just one network
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
+
+        self.fc = nn.Sequential(nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.out_dim),)
+
+        self.num_layer_outs = 5
+        self.layer_ensemble = nn.Linear(self.num_layer_outs, 1)
+        self.layer_ensemble_loss_scale = layer_ensemble_loss_scale
+
+    def forward(self, x):
+        with warnings.catch_warnings():
+            # UserWarning: Using padding='same' with even kernel lengths and odd
+            # dilation may require a zero-padded copy of the input be created
+            # ^^ those are annoying
+            warnings.filterwarnings("ignore",category=UserWarning)
+
+            # input: (N, C, H, W)
+            (N, C, H, W) = x.shape
+            # assert_equal(C, self.input_channels)
+
+            x = self.conv1(x)
+
+            out1 = einops.rearrange(x, 'n c h w -> n (h w) c')
+            out1 = self.pre_attn_linear(out1)
+            out1 = einops.reduce(out1, 'n l d -> n d', 'max')
+            out1 = self.fc(out1)
+
+            x = self.conv2(x)
+            x = F.relu(x)
+
+            out2 = einops.rearrange(x, 'n c h w -> n (h w) c')
+            out2 = self.pre_attn_linear(out2)
+            out2 = einops.reduce(out2, 'n l d -> n d', 'max')
+            out2 = self.fc(out2)
+
+            x = self.add_positions(x)
+            x = einops.rearrange(x, 'n c h w -> n (h w) c')
+            x = self.pre_attn_linear(x)
+            # assert_equal(x.shape, (N, H*W, self.d))
+
+            # for _ in range(self.num_attn_blocks):
+            x = x + self.attn_block(x, x, x, need_weights=False)[0]
+            x = F.layer_norm(x, (self.d,))
+
+            out3 = einops.reduce(x, 'n l d -> n d', 'max')
+            out3 = self.fc(out3)
+
+            x = x + self.attn_block(x, x, x, need_weights=False)[0]
+            x = F.layer_norm(x, (self.d,))
+
+            out4 = einops.reduce(x, 'n l d -> n d', 'max')
+            out4 = self.fc(out4)
+
+            x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = self.fc(x)
+            out5 = x
+
+            outs = torch.stack([out1, out2, out3, out4, out5], dim=1)
+            assert_shape(outs, (N, self.num_layer_outs, self.out_dim))
+            outs = einops.rearrange(outs, 'N o d -> N d o')
+            out = self.layer_ensemble(outs)
+            assert_shape(out, (N, self.out_dim, 1))
+            out = out[:, :, 0]
+            assert_shape(out, (N, self.out_dim))
+            return out
+
+    def layer_ensemble_loss(self):
+        return self.layer_ensemble_loss_scale * self.out_fc(torch.arange(5))
+
+    def add_positions(self, inp):
+        # input shape: (N, C, H, W)
+        # output: (N, C+2, H, W)
+        N, C, H, W = inp.shape
+        # ranges between -1 and 1
+        y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
+        x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
+        y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
+        # assert_equal((x_map[-1], y_map[-1]), (1., 1.,))
+        # assert_equal((x_map[0], y_map[0]), (-1., -1.,))
+        # assert_equal(y_map.shape[0], H)
+        # assert_equal(x_map.shape[0], W)
+        x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
+        y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
+        # wonder if there could be a good way to do with einops
+        inp = torch.cat((inp, x_map, y_map), dim=1)
+        assert_equal(inp.shape, (N, C+2, H, W))
+        return inp
 
 
 class RelationalDRLNet(nn.Module):
