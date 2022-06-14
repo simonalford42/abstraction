@@ -5,7 +5,7 @@ import data
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC, RelationalMacroNet
+from modules import MicroNet, RelationalDRLNet, FC
 import box_world
 
 TT = torch.Tensor
@@ -987,7 +987,7 @@ class SeparateNetsHomoController(nn.Module):
         for out in outs:
             action_logps = out[:, :, :self.a]
             stop_logps = out[:, :, self.a : self.a+2]
-            start_logp = ou[:, :, -1:]
+            start_logp = out[:, :, -1:]
             action_logits.append(action_logps)
             stop_logits.append(stop_logps)
             start_logits.append(start_logp)
@@ -1002,7 +1002,7 @@ class SeparateNetsHomoController(nn.Module):
 
 
 class ActionsMicroNet(nn.Module):
-    def __init__(self, a, b):
+    def __init__(self, a, b, relational):
         super().__init__()
         self.b = b
         out_dim = a * b
@@ -1070,9 +1070,6 @@ class GumbelModule(nn.Module):
     def forward(self, x):
         assert_equal(x.shape[1], self.num_categories * self.dim)
         x = x.reshape(-1, self.dim, self.num_categories)
-        if GUMBEL_TEMP < 0.01:
-            x = F.gumbel_softmax(logits=x, tau=GUMBEL_TEMP, dim=2)
-
         x = F.gumbel_softmax(logits=x, tau=GUMBEL_TEMP, dim=2)
         x = x.reshape(-1, self.dim * self.num_categories)
         return x
@@ -1089,7 +1086,7 @@ def boxworld_controller(typ, params):
     t = params['abstract_dim']
 
     if params['gumbel']:
-        num_categories = 32
+        num_categories = params['num_categories']
         dim = t
         gumbel_module = GumbelModule(dim=dim, num_categories=num_categories)
         t = dim * num_categories

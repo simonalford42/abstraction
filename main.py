@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 import planning
 import argparse
 import torch
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
@@ -130,7 +130,8 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     updates = 0
     epoch = 0
     while updates < params['traj_updates']:
-        abstract.GUMBEL_TEMP = params['gumbel_sched'](epoch / params['epochs'])
+        if params['gumbel']:
+            abstract.GUMBEL_TEMP = params['gumbel_sched'](epoch / params['epochs'])
 
         if params['variable_abstract_pen']:
             frac = min(1, 2 * updates / params['traj_updates'])
@@ -171,7 +172,8 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             optimizer.step()
 
         if epoch % (params['test_every'] // 5) == 0:
-            print(f"abstract.GUMBEL_TEMP: {abstract.GUMBEL_TEMP}")
+            if params['gumbel']:
+                print(f"abstract.GUMBEL_TEMP: {abstract.GUMBEL_TEMP}")
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
@@ -283,6 +285,7 @@ def boxworld_main():
     parser.add_argument('--gumbel', action='store_true')
     parser.add_argument('--g_start_temp', type=float, default=1)
     parser.add_argument('--g_stop_temp', type=float, default=1)
+    parser.add_argument('--num_categories', type=int, default=8)
     args = parser.parse_args()
 
     if not args.seed:
@@ -345,9 +348,10 @@ def boxworld_main():
             raise NotImplementedError()
 
     if params['gumbel']:
-        plateau_percent = 0.5
+        plateau_percent = 0.8
         # r is set so that np.exp(-r * plateau_percent) = 0.5
         r = -np.log(0.5) / plateau_percent
+
         def schedule_temp(percent_through):
             # between 0.5 and 1
             x = np.exp(-r * percent_through)
