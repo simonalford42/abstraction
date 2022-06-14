@@ -538,12 +538,13 @@ class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """
-    def __init__(self, control_net, abstract_pen=0.0):
+    def __init__(self, control_net, abstract_pen=0.0, shrink_micro_net=False):
         super().__init__()
         self.control_net = control_net
         self.ccts = isinstance(self.control_net, abstract.ConsistencyStopController)
         self.b = control_net.b
         self.abstract_pen = abstract_pen
+        self.shrink_micro_net = shrink_micro_net
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         return self.logp_loss(s_i_batch, actions_batch, lengths, masks, ccts=self.ccts)
@@ -580,7 +581,13 @@ class HmmNet(nn.Module):
             solved_loss = 0
         else:
             solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
-        return -torch.sum(total_logps) + solved_loss
+
+        loss = -torch.sum(total_logps) + solved_loss
+
+        if self.shrink_micro_net:
+            loss = loss + self.control_net.micro_net.micro_net.layer_ensemble_loss()
+
+        return loss
 
     def logp_loss_ub(self, s_i, actions, ccts=False):
         """

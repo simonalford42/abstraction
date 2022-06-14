@@ -5,7 +5,7 @@ import data
 from einops import rearrange, repeat
 import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
-from modules import MicroNet, RelationalDRLNet, FC
+from modules import MicroNet, RelationalDRLNet, FC, ShrinkingRelationalDRLNet
 import box_world
 
 TT = torch.Tensor
@@ -1024,10 +1024,16 @@ class ActionsMicroNet(nn.Module):
 
 
 class ActionsAndStopsMicroNet(nn.Module):
-    def __init__(self, a, b, relational=False):
+    def __init__(self, a, b, relational=False, shrinking=False, layer_ensemble_loss_scale=1):
         super().__init__()
         out_dim = a * b + 2 * b
-        if relational:
+        if shrinking:
+            self.micro_net = ShrinkingRelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                                       num_attn_blocks=2,
+                                                       num_heads=4,
+                                                       out_dim=out_dim,
+                                                       layer_ensemble_loss_scale=layer_ensemble_loss_scale)
+        elif relational:
             self.micro_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                               num_attn_blocks=2,
                                               num_heads=4,
@@ -1102,7 +1108,9 @@ def boxworld_controller(typ, params):
     if typ in ['ccts', 'ccts-reduced']:
         micro_net = ActionsMicroNet(a, b, relational=params['relational_micro'])
     else:
-        micro_net = ActionsAndStopsMicroNet(a, b, relational=params['relational_micro'])
+        micro_net = ActionsAndStopsMicroNet(a, b, relational=params['relational_micro'],
+                                            shrinking=params['shrink_micro_net'],
+                                            layer_ensemble_loss_scale=params['layer_ensemble_loss_scale'])
 
     if typ == 'ccts-reduced':
         macro_trans_in_dim = b

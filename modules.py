@@ -111,10 +111,10 @@ class ShrinkingRelationalDRLNet(nn.Module):
         self.input_channels = input_channels
         self.d = d
         self.out_dim = out_dim
-        self.num_attn_blocks = num_attn_blocks
-        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
+        assert num_attn_blocks == 2
+        self.conv1 = nn.Conv2d(input_channels, 24, 2, padding='same')
         # self.conv1_batchnorm = nn.BatchNorm2d(12)
-        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
+        self.conv2 = nn.Conv2d(24, 24, 2, padding='same')
         # self.conv2_batchnorm = nn.BatchNorm2d(24)
 
         # 2 exra dims for positional encoding
@@ -155,7 +155,8 @@ class ShrinkingRelationalDRLNet(nn.Module):
 
             x = self.conv1(x)
 
-            out1 = einops.rearrange(x, 'n c h w -> n (h w) c')
+            out1 = self.add_positions(x)
+            out1 = einops.rearrange(out1, 'n c h w -> n (h w) c')
             out1 = self.pre_attn_linear(out1)
             out1 = einops.reduce(out1, 'n l d -> n d', 'max')
             out1 = self.fc(out1)
@@ -163,7 +164,8 @@ class ShrinkingRelationalDRLNet(nn.Module):
             x = self.conv2(x)
             x = F.relu(x)
 
-            out2 = einops.rearrange(x, 'n c h w -> n (h w) c')
+            out2 = self.add_positions(x)
+            out2 = einops.rearrange(out2, 'n c h w -> n (h w) c')
             out2 = self.pre_attn_linear(out2)
             out2 = einops.reduce(out2, 'n l d -> n d', 'max')
             out2 = self.fc(out2)
@@ -200,7 +202,7 @@ class ShrinkingRelationalDRLNet(nn.Module):
             return out
 
     def layer_ensemble_loss(self):
-        return self.layer_ensemble_loss_scale * self.out_fc(torch.arange(5))
+        return self.layer_ensemble_loss_scale * self.layer_ensemble(torch.arange(5, dtype=torch.float, device=DEVICE))
 
     def add_positions(self, inp):
         # input shape: (N, C, H, W)

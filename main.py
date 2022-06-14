@@ -286,6 +286,8 @@ def boxworld_main():
     parser.add_argument('--g_start_temp', type=float, default=1)
     parser.add_argument('--g_stop_temp', type=float, default=1)
     parser.add_argument('--num_categories', type=int, default=8)
+    parser.add_argument('--shrink_micro_net', action='store_true')
+    parser.add_argument('--layer_ensemble_loss_scale', type=float, default=1)
     args = parser.parse_args()
 
     if not args.seed:
@@ -341,8 +343,9 @@ def boxworld_main():
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
             control_net = boxworld_controller(typ, params)
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
-            net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
+            net = HmmNet(control_net, abstract_pen=params['abstract_pen'], shrink_micro_net=params['shrink_micro_net'])
         elif args.model == 'cc':
+            assert not params['shrink_micro_net']
             net = CausalNet(control_net, abstract_pen=params['abstract_pen'])
         else:
             raise NotImplementedError()
