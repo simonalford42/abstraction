@@ -1,9 +1,10 @@
 from typing import Any
+import numpy as np
 from torch.utils.data import DataLoader
 import planning
 import argparse
 import torch
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
@@ -25,17 +26,15 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
     epoch = 0
     updates = 0
-    tau_precompute = True
-    print(f"tau_precompute: {tau_precompute}")
 
-    if tau_precompute:
+    if params['tau_precompute']:
         control_net.freeze_microcontroller()
     else:
         control_net.freeze_all_controllers()
 
     env = box_world.BoxWorldEnv(seed=params['seed'])
 
-    dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+    dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=params['tau_precompute'])
 
     print(f'{len(dataset)} fine-tuning examples')
     params['epochs'] = int(params['traj_updates'] / len(dataset))
@@ -59,22 +58,22 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
         if hasattr(dataloader.dataset, 'shuffle'):
             dataloader.dataset.shuffle(batch_size=params['batch_size'])
 
-        if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
-            print('recalculating dataset')
-            env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
-            dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
-            dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
-                                    collate_fn=data.latent_traj_collate)
+        # if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
+        #     print('recalculating dataset')
+        #     env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
+        #     dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
+        #     dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
+        #                             collate_fn=data.latent_traj_collate)
 
         train_loss = 0
 
         first = True
-        for states, options, lengths, masks in dataloader:
-            states, options, lengths, masks = states.to(DEVICE), options.to(DEVICE), lengths.to(DEVICE), masks.to(DEVICE)
+        for states, options, solveds, lengths, masks in dataloader:
+            states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
 
             B, T, *s = states.shape
 
-            if not tau_precompute:
+            if not params['tau_precompute']:
                 states_flattened = states.reshape(B * T, *s)
                 t_i_flattened = control_net.tau_net(states_flattened)
                 t_i = t_i_flattened.reshape(B, T, control_net.t)
@@ -83,10 +82,10 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
             if params['test_every'] and epoch % params['test_every'] == 0 and first:
                 preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
-                print('avg cc loss ', (t_i[:, 1] - preds).sum() / t_i.shape[0])
+                print('first batch avg cc loss ', (t_i[:, 1] - preds).sum() / t_i.shape[0])
                 first = False
 
-            loss = abstract.full_fine_tune_loss(t_i, options, control_net, masks, loss=params['loss'])
+            loss = abstract.fine_tune_loss_v3(t_i, options, solveds, control_net, masks)
 
             train_loss += loss.item()
             loss = loss / sum(lengths)
@@ -101,17 +100,11 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
         if params['test_every'] and epoch % params['test_every'] == 0:
             utils.warn('fixed test env seed')
-
-            acc = data.eval_options_model(control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'], argmax=True)
-            # print(f'acc: {acc}')
-            test_acc = planning.eval_planner(
+            print(f'Epoch {epoch}')
+            planning.eval_planner(
                 control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
+                # control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
             )
-            print(f'Epoch {epoch}\t test acc {test_acc}')
-            # gen_test_acc = planning.eval_planner(
-            #     control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
-            # )
-            # print(f'Epoch {epoch}\t gen test acc {gen_test_acc}')
 
         if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
             model_id = params['id']
@@ -137,6 +130,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
     updates = 0
     epoch = 0
     while updates < params['traj_updates']:
+        if params['gumbel']:
+            abstract.GUMBEL_TEMP = params['gumbel_sched'](epoch / params['epochs'])
+
         if params['variable_abstract_pen']:
             frac = min(1, 2 * updates / params['traj_updates'])
             net.abstract_pen = params['abstract_pen'] * frac
@@ -176,6 +172,8 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             optimizer.step()
 
         if epoch % (params['test_every'] // 5) == 0:
+            if params['gumbel']:
+                print(f"abstract.GUMBEL_TEMP: {abstract.GUMBEL_TEMP}")
             print(f"train_loss: {train_loss}")
 
         if params['test_every'] and epoch % params['test_every'] == 0:
@@ -258,26 +256,36 @@ def adjust_state_dict(state_dict):
 
 def boxworld_main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
+    parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
-    parser.add_argument('--tau_noise', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
-    parser.add_argument('--neptune', action='store_true')
-    parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
     parser.add_argument('--lr', type=float, default=argparse.SUPPRESS)
-    parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
-    parser.add_argument('--b', type=int, default=10, help='number of options')
+
+    parser.add_argument('--abstract_dim', type=int, default=32)
+    parser.add_argument('--tau_noise_std', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
+    parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
+
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--load', action='store_true')
-    parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--ellis', action='store_true')
-    parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
-    parser.add_argument('--fine_tune', action='store_true', help='fine tune training')
-    parser.add_argument('--variable_abstract_pen', action='store_true', help='variable abstract pen')
+    parser.add_argument('--neptune', action='store_true')
+    parser.add_argument('--no_log', action='store_true')
+    parser.add_argument('--fine_tune', action='store_true')
+    parser.add_argument('--variable_abstract_pen', action='store_true')
+    parser.add_argument('--tau_precompute', action='store_true')
     parser.add_argument('--replace_trans_net', action='store_true')
     parser.add_argument('--batch_norm', action='store_true')
-    parser.add_argument('--loss', type=str, default='kl', choices=['kl', 'kl-flip', 'log'], help='fine tune dist loss')
+    parser.add_argument('--no_tau_norm', action='store_true')
+    parser.add_argument('--relational_micro', action='store_true')
+    parser.add_argument('--toy_test', action='store_true')
+    parser.add_argument('--separate_option_nets', action='store_true')
+    parser.add_argument('--gumbel', action='store_true')
+    parser.add_argument('--g_start_temp', type=float, default=1)
+    parser.add_argument('--g_stop_temp', type=float, default=1)
+    parser.add_argument('--num_categories', type=int, default=8)
     args = parser.parse_args()
 
     if not args.seed:
@@ -300,31 +308,29 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     batch_size = 64 if args.ellis else 32
+    if args.relational_micro or args.gumbel:
+        batch_size = 32 if args.ellis else 16
+
+    if args.fine_tune and not args.load:
+        print('Set load=True for fine tuning')
+        args.load = True
     params = dict(
         # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=20000,
-        traj_updates=1E5,  # default: 1E7
-        num_saves=4, num_tests=20, num_test=200,
+        traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
+        num_saves=20, num_tests=100, num_test=200,
         lr=8E-4, batch_size=batch_size,
-        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
+        # model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
+        model_load_path='models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt',
     )
     params.update(vars(args))
+    if args.toy_test:
+        params.update(dict(n=100, traj_updates=5000, num_test=5, num_tests=2, num_saves=0, no_log=True))
     featured_params = ['model', 'n', 'abstract_pen']
 
     # assert_equal('model_load_path' in params, params['load'])
     if params['load']:
         net = utils.load_model(params['model_load_path'])
-        if params['replace_trans_net']:
-            print('special fill in of the new trans model: hidden dim=256')
-            tau_module = abstract.NormModule(p=1, dim=net.control_net.t)
-            macro_transition_net = FC(input_dim=net.control_net.b + net.control_net.t,
-                                      output_dim=net.control_net.t,
-                                      num_hidden=3,
-                                      hidden_dim=256,
-                                      batch_norm=True)
-            macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
-            net.control_net.macro_transition_net = macro_transition_net
-
     elif args.model == 'sv':
         net = SVNet(boxworld_homocontroller(b=1))
     else:
@@ -333,15 +339,28 @@ def boxworld_main():
             control_net = boxworld_homocontroller(b=params['b'])
         else:
             typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
-            control_net = boxworld_controller(b=params['b'], typ=typ, tau_noise_std=args.tau_noise,
-                                              t=params['abstract_dim'],
-                                              batch_norm=params['batch_norm'])
+            control_net = boxworld_controller(typ, params)
         if args.model in ['hmm', 'hmm-homo', 'ccts']:
             net = HmmNet(control_net, abstract_pen=params['abstract_pen'])
         elif args.model == 'cc':
             net = CausalNet(control_net, abstract_pen=params['abstract_pen'])
         else:
             raise NotImplementedError()
+
+    if params['gumbel']:
+        plateau_percent = 0.8
+        # r is set so that np.exp(-r * plateau_percent) = 0.5
+        r = -np.log(0.5) / plateau_percent
+
+        def schedule_temp(percent_through):
+            # between 0.5 and 1
+            x = np.exp(-r * percent_through)
+            # between 0 and 1
+            x = 2 * x - 1
+            # between stop and start
+            x = params['g_stop_temp'] + x * (params['g_start_temp'] - params['g_stop_temp'])
+            return max(params['g_stop_temp'], x)
+        params['gumbel_sched'] = schedule_temp
 
     params['device'] = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
     params['epochs'] = int(params['traj_updates'] / params['n'])

@@ -334,9 +334,9 @@ def tensor_to_obs(obs):
     return obs
 
 
-def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
+def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]):
     '''
-    takes (states, options) as input
+    takes (states, options, solveds) as input
     states can be either abstract or microscopic.
 
     for a trajectory with t_i of shape (T + 1, t) and b_i of shape (T, ),
@@ -346,12 +346,13 @@ def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
     Note that this is different from traj_collate
     '''
     # NOTE: different lengths
-    lengths = torch.tensor([len(states) for states, options in batch])
+    lengths = torch.tensor([len(states) for states, _, _ in batch])
     max_T_plus_one = max(lengths)
     states_batch = []
     options_batch = []
+    solveds_batch = []
     masks = []
-    for states, options in batch:
+    for states, options, solved in batch:
         T_plus_one, *s = states.shape
         to_add = max_T_plus_one - T_plus_one
         states2 = torch.cat((states, torch.zeros((to_add, *s))))
@@ -366,7 +367,11 @@ def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor]]):
         states_batch.append(states2)
         options_batch.append(options2)
 
-    return torch.stack(states_batch), torch.stack(options_batch), lengths, torch.stack(masks)
+        solveds = torch.zeros(max_T_plus_one, dtype=int)
+        solveds[T_plus_one - 1] = solved
+        solveds_batch.append(solveds)
+
+    return torch.stack(states_batch), torch.stack(options_batch), torch.stack(solveds_batch), lengths, torch.stack(masks)
 
 
 def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
@@ -436,10 +441,12 @@ def calc_latents(dataloader, control_net):
 def gen_planning_data(env, n, control_net, tau_precompute=False):
     all_states = []
     all_options = []
+    all_solveds = []
 
     env = env.copy()
+    total = 0
     with torch.no_grad():
-        for i in range(n):
+        while total < n:
             env.reset()
 
             control_net.eval()
@@ -449,6 +456,11 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
 
             control_net.train()
 
+            # if not solved:
+                # continue
+
+            total += 1
+
             states = torch.stack(states_between_options)
             if tau_precompute:
                 states = control_net.tau_net(states)
@@ -457,23 +469,24 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
             states = states.cpu()
             all_states.append(states)
             all_options.append(torch.tensor(options))
+            all_solveds.append(torch.tensor(int(solved)))
 
-    return all_states, all_options
+    return all_states, all_options, all_solveds
 
 
 class PlanningDataset(Dataset):
     def __init__(self, env, control_net: nn.Module, n, tau_precompute=False):
-        self.states, self.options = gen_planning_data(env, n, control_net, tau_precompute)
+        states, options, solveds = gen_planning_data(env, n, control_net, tau_precompute)
 
-        self.states, self.options = zip(*sorted(zip(self.states, self.options),
-                                                key=lambda t: t[0].shape[0]))
-        self.states, self.options = list(self.states), list(self.options)
+        states, options, solveds = zip(*sorted(zip(states, options, solveds),
+                                               key=lambda t: t[0].shape[0]))
+        self.states, self.options, self.solveds = [list(x) for x in [states, options, solveds]]
 
     def __len__(self):
         return len(self.states)
 
     def __getitem__(self, ix):
-        return self.states[ix], self.options[ix]
+        return self.states[ix], self.options[ix], self.solveds[ix]
 
     def shuffle(self, batch_size):
         """
@@ -484,9 +497,10 @@ class PlanningDataset(Dataset):
         random.shuffle(ixs)
         self.states[:] = [self.states[i] for i in ixs]
         self.options[:] = [self.options[i] for i in ixs]
-        self.states[:], self.options[:] = zip(*sorted(zip(self.states, self.options),
-                                                          key=lambda t: t[0].shape[0]))
-        self.states, self.options = list(self.states), list(self.options)
+        self.solveds[:] = [self.solveds[i] for i in ixs]
+        self.states[:], self.options[:], self.solveds[:] = zip(*sorted(zip(self.states, self.options, self.solveds),
+                                                                       key=lambda t: t[0].shape[0]))
+        self.states, self.options, self.solveds = [list(x) for x in [self.states, self.options, self.solveds]]
 
         # keep the last batch at the end
         n = len(self.states)
@@ -498,6 +512,7 @@ class PlanningDataset(Dataset):
         assert_equal(len(ixs), n)
         self.states[:n] = [self.states[i] for i in ixs]
         self.options[:n] = [self.options[i] for i in ixs]
+        self.solveds[:n] = [self.solveds[i] for i in ixs]
 
 
 class BoxWorldDataset(Dataset):
