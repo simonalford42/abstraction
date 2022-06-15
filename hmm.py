@@ -501,10 +501,11 @@ class SVNet(nn.Module):
     This way, we can swap out HmmNet with this and see how just basic SV
     training does as a baseline.
     """
-    def __init__(self, control_net):
+    def __init__(self, control_net, shrink_micro_net=False):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
+        self.shrink_micro_net = shrink_micro_net
 
     def forward(self, s_i_batch, actions_batch, lengths, masks=None):
         """
@@ -518,7 +519,7 @@ class SVNet(nn.Module):
         assert_equal((B, max_T+1), s_i_batch.shape[0:2])
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
-        action_logps, stop_logps, start_logps, _, _ = self.control_net(s_i_batch, batched=True)
+        action_logps, stop_logps, start_logps, _, _, _ = self.control_net(s_i_batch, batched=True)
 
         total_logp = 0
         total_correct = 0
@@ -531,7 +532,11 @@ class SVNet(nn.Module):
             total_correct += correct
             total_logp += logp
 
-        return -total_logp
+        loss = -total_logp
+        if self.shrink_micro_net:
+            loss = loss + self.control_net.micro_net.micro_net.shrink_loss()
+
+        return loss
 
 
 class HmmNet(nn.Module):
@@ -585,7 +590,7 @@ class HmmNet(nn.Module):
         loss = -torch.sum(total_logps) + solved_loss
 
         if self.shrink_micro_net:
-            loss = loss + self.control_net.micro_net.micro_net.layer_ensemble_loss()
+            loss = loss + self.control_net.micro_net.micro_net.shrink_loss()
 
         return loss
 
