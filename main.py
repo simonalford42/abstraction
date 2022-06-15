@@ -310,20 +310,18 @@ def boxworld_main():
         mlflow.set_experiment('Boxworld 3/22')
 
     batch_size = 64 if args.ellis else 32
-    if args.relational_micro or args.gumbel:
+    if args.relational_micro or args.gumbel or args.shrink_micro_net:
         batch_size = 32 if args.ellis else 16
 
     if args.fine_tune and not args.load:
         print('Set load=True for fine tuning')
         args.load = True
     params = dict(
-        # n=5, traj_updates=30, num_test=5, num_tests=2, num_saves=0,
         n=20000,
         traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
         num_saves=20, num_tests=100, num_test=200,
         lr=8E-4, batch_size=batch_size,
-        # model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
-        model_load_path='models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt',
+        model_load_path='models/56bea97cf2a84db9af304b16ab0362bf.pt',
     )
     params.update(vars(args))
     if args.toy_test:
