@@ -106,7 +106,7 @@ class RelationalMacroNet(nn.Module):
 
 
 class ShrinkingRelationalDRLNet(nn.Module):
-    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4, layer_ensemble_loss_scale=1):
+    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4, shrink_loss_scale=1):
         super().__init__()
         self.input_channels = input_channels
         self.d = d
@@ -138,9 +138,9 @@ class ShrinkingRelationalDRLNet(nn.Module):
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.out_dim),)
 
-        self.num_layer_outs = 5
-        self.layer_ensemble = nn.Linear(self.num_layer_outs, 1)
-        self.layer_ensemble_loss_scale = layer_ensemble_loss_scale
+        self.num_layer_outs = 4
+        self.ensemble = nn.Parameter(torch.ones(self.num_layer_outs, dtype=float))
+        self.shrink_loss_scale = shrink_loss_scale
 
     def forward(self, x):
         with warnings.catch_warnings():
@@ -185,24 +185,19 @@ class ShrinkingRelationalDRLNet(nn.Module):
             x = x + self.attn_block(x, x, x, need_weights=False)[0]
             x = F.layer_norm(x, (self.d,))
 
-            out4 = einops.reduce(x, 'n l d -> n d', 'max')
-            out4 = self.fc(out4)
-
             x = einops.reduce(x, 'n l d -> n d', 'max')
             x = self.fc(x)
-            out5 = x
+            out4 = x
 
-            outs = torch.stack([out1, out2, out3, out4, out5], dim=1)
-            assert_shape(outs, (N, self.num_layer_outs, self.out_dim))
-            outs = einops.rearrange(outs, 'N o d -> N d o')
-            out = self.layer_ensemble(outs)
-            assert_shape(out, (N, self.out_dim, 1))
-            out = out[:, :, 0]
-            assert_shape(out, (N, self.out_dim))
+            weighting = F.softmax(self.ensemble, dim=0)
+            out = out1 * weighting[0] + out2 * weighting[1] + out3 * weighting[2] + out4 * weighting[3]
+
             return out
 
-    def layer_ensemble_loss(self):
-        return self.layer_ensemble_loss_scale * self.layer_ensemble(torch.arange(5, dtype=torch.float, device=DEVICE))
+    def shrink_loss(self):
+        weighting = F.softmax(self.ensemble, dim=0)
+        out = 0 * weighting[0] + 1 * weighting[1] + 2 * weighting[2] + 3 * weighting[3]
+        return self.shrink_loss_scale * out
 
     def add_positions(self, inp):
         # input shape: (N, C, H, W)

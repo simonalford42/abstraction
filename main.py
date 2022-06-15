@@ -17,7 +17,7 @@ import box_world
 import neptune.new as neptune
 import mlflow
 import data
-from modules import FC
+from modules import FC, ShrinkingRelationalDRLNet
 
 
 def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
@@ -222,19 +222,23 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths, masks)
+            if isinstance(net, ShrinkingRelationalDRLNet):
+                loss += net.shrink_loss()
 
             train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR
             loss = loss / sum(lengths)
-            run[f'{epoch}batch/loss'].log(loss.item())
-            run[f'{epoch}batch/avg length'].log(sum(lengths) / len(lengths))
-            run[f'{epoch}batch/mem'].log(utils.get_memory_usage())
+            if run:
+                run[f'{epoch}batch/loss'].log(loss.item())
+                run[f'{epoch}batch/avg length'].log(sum(lengths) / len(lengths))
+                run[f'{epoch}batch/mem'].log(utils.get_memory_usage())
             loss.backward()
             optimizer.step()
 
-        run['epoch'].log(epoch)
-        run['loss'].log(train_loss)
-        run['time'].log(time.time() - start)
+        if run:
+            run['epoch'].log(epoch)
+            run['loss'].log(train_loss)
+            run['time'].log(time.time() - start)
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
@@ -287,7 +291,7 @@ def boxworld_main():
     parser.add_argument('--g_stop_temp', type=float, default=1)
     parser.add_argument('--num_categories', type=int, default=8)
     parser.add_argument('--shrink_micro_net', action='store_true')
-    parser.add_argument('--layer_ensemble_loss_scale', type=float, default=1)
+    parser.add_argument('--shrink_loss_scale', type=float, default=1)
     args = parser.parse_args()
 
     if not args.seed:
@@ -334,7 +338,7 @@ def boxworld_main():
     if params['load']:
         net = utils.load_model(params['model_load_path'])
     elif args.model == 'sv':
-        net = SVNet(boxworld_homocontroller(b=1))
+        net = SVNet(boxworld_homocontroller(b=1), shrink_micro_net=params['shrink_micro_net'])
     else:
         if args.model == 'hmm-homo':
             # HMM algorithm where start probs, stop probs, action probs all come from single NN

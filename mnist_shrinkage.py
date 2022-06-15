@@ -19,7 +19,7 @@ def mnist_data():
 
 
 class ShrinkFC(nn.Module):
-    def __init__(self, hidden_dim=32, out_dim=10, in_dim=28*28*1, shrink_loss_scale=1):
+    def __init__(self, hidden_dim=10, out_dim=10, in_dim=28*28*1, shrink_loss_scale=1):
         super().__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -32,28 +32,26 @@ class ShrinkFC(nn.Module):
         self.ensemble = nn.Parameter(torch.ones(4, dtype=float))
         self.shrink_loss_scale = shrink_loss_scale
 
-    def forward(self, x, out=-1):
+    def forward(self, x, out):
         N, *s = x.shape
         x = x.reshape(N, -1)
         assert_shape(x, (N, self.in_dim))
 
         x = F.relu(self.fc1(x))
         out1 = self.fc5(x)
-        if out == 1:
-            return out1
-
         x = F.relu(self.fc2(x))
         out2 = self.fc5(x)
-        if out == 2:
-            return out2
-
         x = F.relu(self.fc3(x))
         out3 = self.fc5(x)
-        if out == 3:
-            return out3
-
         x = F.relu(self.fc4(x))
         out4 = self.fc5(x)
+
+        if out == 1:
+            return out1
+        if out == 2:
+            return out2
+        if out == 3:
+            return out3
         if out == 4:
             return out4
 
@@ -163,8 +161,8 @@ def train_mnist(out):
             loss.backward()
             optimizer.step()
 
-        train_error = model_error(train_dataloader, model)
-        val_error = model_error(val_dataloader, model)
+        train_error = model_error(train_dataloader, model, out)
+        val_error = model_error(val_dataloader, model, out)
 
         print(f"epoch: {epoch}\t"
               + f"train loss: {train_loss}\t"
@@ -175,14 +173,14 @@ def train_mnist(out):
         train_errors.append(train_error)
         val_errors.append(val_error)
 
-    test_error = model_error(test_dataloader, model)
+    test_error = model_error(test_dataloader, model, out)
     print(f"test_error: {test_error}")
     print(f'time taken: {time.time() - start}')
     # torch.save(model.state_dict(), 'model.pt')
     # plot_results(train_losses, train_errors, val_errors)
 
 
-def model_error(dataloader, model):
+def model_error(dataloader, model, out):
     total_wrong = 0
     n = 0
 
@@ -191,7 +189,7 @@ def model_error(dataloader, model):
 
         for examples, labels in dataloader:
             n += len(labels)
-            logits = model(examples)
+            logits = model(examples, out=out)
             preds = torch.argmax(logits, dim=1)
             num_wrong = (preds != labels).sum()
             total_wrong += num_wrong
@@ -223,6 +221,5 @@ def num_params(model):
 
 
 if __name__ == '__main__':
-    for out in [1, 2, 3, 4, 5]:
-        print(f'{out=}')
-        train_mnist(out=out)
+    for out in [1,2,3,4,5]:
+        train_mnist(out)
