@@ -322,10 +322,10 @@ def boxworld_main():
         args.load = True
     params = dict(
         n=20000,
-        traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
+        traj_updates=1E9 if args.fine_tune else 2E7,  # default: 1E7
         num_saves=20, num_tests=100, num_test=200,
         lr=8E-4, batch_size=batch_size,
-        model_load_path='models/56bea97cf2a84db9af304b16ab0362bf.pt',
+        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
     if args.toy_test:
@@ -336,7 +336,7 @@ def boxworld_main():
     if params['load']:
         net = utils.load_model(params['model_load_path'])
     elif args.model == 'sv':
-        net = SVNet(boxworld_homocontroller(b=1), shrink_micro_net=params['shrink_micro_net'])
+        net = SVNet(boxworld_homocontroller(b=1, shrink_micro_net=params['shrink_micro_net']), shrink_micro_net=params['shrink_micro_net'])
     else:
         if args.model == 'hmm-homo':
             # HMM algorithm where start probs, stop probs, action probs all come from single NN

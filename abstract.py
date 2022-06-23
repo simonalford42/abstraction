@@ -64,7 +64,7 @@ def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=Non
     cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
 
     multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
-    single_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+    single_solved_loss = nll_loss(single_solved_preds, solved_batch)
 
     multi_b_i_loss = nll_loss(multi_b_i_preds, b_i_batch)
     single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
@@ -948,12 +948,18 @@ def boxworld_relational_net(out_dim: int = 4):
                             out_dim=out_dim)
 
 
-def boxworld_homocontroller(b, separate_option_nets=False):
+def boxworld_homocontroller(b, separate_option_nets=False, shrink_micro_net=False):
     # a * b for action probs, 2 * b for stop probs, b for start probs
     a = 4
 
     if separate_option_nets:
         relational_net = SeparateNetsHomoController(b)
+    if shrink_micro_net:
+        out_dim = a * b + 2 * b + b
+        relational_net = ShrinkingRelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                                   num_attn_blocks=2,
+                                                   num_heads=4,
+                                                   out_dim=out_dim)
     else:
         out_dim = a * b + 2 * b + b
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,

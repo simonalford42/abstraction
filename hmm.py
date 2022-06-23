@@ -534,7 +534,8 @@ class SVNet(nn.Module):
 
         loss = -total_logp
         if self.shrink_micro_net:
-            loss = loss + self.control_net.micro_net.micro_net.shrink_loss()
+            assert isinstance(self.control_net, abstract.HomoController)
+            loss = loss + self.control_net.net.shrink_loss()
 
         return loss
 
@@ -589,7 +590,7 @@ class HmmNet(nn.Module):
 
         loss = -torch.sum(total_logps) + solved_loss
 
-        if self.shrink_micro_net:
+        if hasattr(self, 'shrink_micro_net') and self.shrink_micro_net:
             loss = loss + self.control_net.micro_net.micro_net.shrink_loss()
 
         return loss
