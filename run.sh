@@ -13,7 +13,7 @@
 #SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
 #SBATCH -t 72:00:00
-#SBATCH --mem=50G
+#SBATCH --mem=100G
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu
 

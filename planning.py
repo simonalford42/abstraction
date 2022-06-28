@@ -324,8 +324,6 @@ def eval_planner(control_net, env, n):
         return 0
 
 
-
-
 def plan(env, control_net, max_hl_plans=-1):
     env.reset()
 

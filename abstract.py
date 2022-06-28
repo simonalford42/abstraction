@@ -20,6 +20,8 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 nll_loss = nn.NLLLoss(reduction='none')
 
 
+print('fine tune loss v3 only multi-step policy, no cc or single, or solved')
+
 def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=None, weights=None):
     '''
     Get causal consistency to be low, but instead of matching distributions, directly try to
@@ -52,35 +54,43 @@ def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=Non
 
     # (B, T+1, 2), (B, T+1, b)
     multi_solved_preds, multi_b_i_preds = solved_and_start_logps(t_i_pred_batch, control_net)
-    single_solved_preds, single_b_i_preds = solved_and_start_logps(t_i_batch, control_net)
+    # single_solved_preds, single_b_i_preds = solved_and_start_logps(t_i_batch, control_net)
+
     # no pred needed for last step
-    multi_b_i_preds, single_b_i_preds = multi_b_i_preds[:, :-1], single_b_i_preds[:, :-1]
+    multi_b_i_preds = multi_b_i_preds[:, :-1]
+    # single_b_i_preds = single_b_i_preds[:, :-1]
+
     # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
 
-    multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds = [
-        rearrange(x, 'N d C -> N C d') for x in
-        [multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds]]
+    # multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds = [
+    #     rearrange(x, 'N d C -> N C d') for x in
+    #     [multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds]]
+    multi_solved_preds, multi_b_i_preds = [rearrange(x, 'N d C -> N C d') for x in
+        [multi_solved_preds, multi_b_i_preds]]
 
-    cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
+    # cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
 
-    multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
-    single_solved_loss = nll_loss(single_solved_preds, solved_batch)
+    # multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+    # single_solved_loss = nll_loss(single_solved_preds, solved_batch)
 
     multi_b_i_loss = nll_loss(multi_b_i_preds, b_i_batch)
-    single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
+    # single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
 
     # (B, T)
     # multi_b_i_loss = multi_b_i_loss * solved_batch[:, -1][:, None]
     # single_b_i_loss = single_b_i_loss * solved_batch[:, -1][:, None]
 
-    assert_equal(cc_loss_batch.shape, multi_solved_loss.shape)
-    loss_batch = cc_loss_batch + multi_solved_loss + single_solved_loss
-    loss_batch[:, :-1] = loss_batch[:, :-1] + multi_b_i_loss + single_b_i_loss
+    # assert_equal(cc_loss_batch.shape, multi_solved_loss.shape)
+    # loss_batch = cc_loss_batch + multi_solved_loss + single_solved_loss
+    # loss_batch[:, :-1] = loss_batch[:, :-1] + multi_b_i_loss + single_b_i_loss
+
+    loss_batch = multi_b_i_loss
 
     if weights is not None:
         loss_batch = loss_batch * weights[:, None]
     if masks is not None:
-        loss_batch = loss_batch * masks
+        # loss_batch = loss_batch * masks
+        loss_batch = loss_batch * masks[:, :-1]
 
     return loss_batch.sum()
 

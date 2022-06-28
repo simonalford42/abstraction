@@ -18,6 +18,7 @@ import neptune.new as neptune
 import mlflow
 import data
 from modules import FC, ShrinkingRelationalDRLNet
+import muzero
 
 
 def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
@@ -292,11 +293,16 @@ def boxworld_main():
     parser.add_argument('--num_categories', type=int, default=8)
     parser.add_argument('--shrink_micro_net', action='store_true')
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
+    parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1,2,3,4], help='box world env solution_length')
+    parser.add_argument('--muzero', action='store_true')
     args = parser.parse_args()
 
     if not args.seed:
         seed = random.randint(0, 2**32 - 1)
         args.seed = seed
+
+    if type(args.length) == int:
+        args.length = (args.length, )  # box_world env expects tuple
 
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -322,7 +328,7 @@ def boxworld_main():
         args.load = True
     params = dict(
         n=20000,
-        traj_updates=1E9 if args.fine_tune else 2E7,  # default: 1E7
+        traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
         num_saves=20, num_tests=100, num_test=200,
         lr=8E-4, batch_size=batch_size,
         model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
@@ -380,6 +386,25 @@ def boxworld_main():
 
     if args.eval:
         data.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
+    elif args.muzero:
+        net = net.to(DEVICE)
+
+        env = box_world.BoxWorldEnv(seed=args.seed, solution_length=args.length)
+        with Timing('Completed training'):
+            with mlflow.start_run():
+                params['id'] = mlflow.active_run().info.run_id
+                run['params'] = params
+                mlflow.log_params(params)
+                for p in featured_params:
+                    print(p.upper() + ':\t ' + str(params[p]))
+                print(f"Starting muzero run:\n{mlflow.active_run().info.run_id}")
+                print(f"params: {params}")
+
+                muzero.boxworld_main(env, net.control_net, params)
+
+        for p in featured_params:
+            print(p.upper() + ': \t' + str(params[p]))
+
     elif args.fine_tune:
         net = net.to(DEVICE)
         # dataset = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
