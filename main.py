@@ -120,13 +120,20 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
         run['model'] = path
 
 
-def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
+def train(run, net: nn.Module, params: dict[str, Any]):
+
+    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
+    dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
+
+    params['epochs'] = int(params['traj_updates'] / params['n'])
+
     optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
     net.train()
     model_id = mlflow.active_run().info.run_id
     run['model_id'] = model_id
     test_env = box_world.BoxWorldEnv()
     print(f"Net has {utils.num_params(net)} parameters")
+    last_test_start_time = False
 
     updates = 0
     epoch = 0
@@ -172,7 +179,9 @@ def train(run, dataloader: DataLoader, net: nn.Module, params: dict[str, Any]):
             loss.backward()
             optimizer.step()
 
-        if epoch % (params['test_every'] // 5) == 0:
+        if (params['print_every']
+                and (not last_test_start_time
+                     or (time.time() - last_test_start_time > params['test_every'] / 60))):
             if params['gumbel']:
                 print(f"abstract.GUMBEL_TEMP: {abstract.GUMBEL_TEMP}")
             print(f"train_loss: {train_loss}")
@@ -267,8 +276,7 @@ def boxworld_main():
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
-    parser.add_argument('--lr', type=float, default=argparse.SUPPRESS)
-
+    parser.add_argument('--lr', type=float, default=8E-4)
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--tau_noise_std', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
@@ -295,6 +303,8 @@ def boxworld_main():
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
     parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1,2,3,4], help='box world env solution_length')
     parser.add_argument('--muzero', action='store_true')
+    parser.add_argument('--test_every', type=float, default=90, help='number of minutes to test every, if false will not test')
+    parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     args = parser.parse_args()
 
     if not args.seed:
@@ -329,13 +339,12 @@ def boxworld_main():
     params = dict(
         n=20000,
         traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
-        num_saves=20, num_tests=100, num_test=200,
-        lr=8E-4, batch_size=batch_size,
+        batch_size=batch_size,
         model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
     )
     params.update(vars(args))
     if args.toy_test:
-        params.update(dict(n=100, traj_updates=5000, num_test=5, num_tests=2, num_saves=0, no_log=True))
+        params.update(dict(n=100, traj_updates=5000, test_every=1, save_every=False, no_log=True))
     featured_params = ['model', 'n', 'abstract_pen']
 
     # assert_equal('model_load_path' in params, params['load'])
@@ -374,69 +383,30 @@ def boxworld_main():
         params['gumbel_sched'] = schedule_temp
 
     params['device'] = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
-    params['epochs'] = int(params['traj_updates'] / params['n'])
-    if params['num_tests'] == 0:
-        params['test_every'] = False
-    else:
-        params['test_every'] = max(1, params['epochs'] // params['num_tests'])
-    if params['num_saves'] == 0:
-        params['save_every'] = False
-    else:
-        params['save_every'] = params['epochs'] // params['num_saves']
 
     if args.eval:
         data.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
-    elif args.muzero:
-        net = net.to(DEVICE)
-
-        env = box_world.BoxWorldEnv(seed=args.seed, solution_length=args.length)
-        with Timing('Completed training'):
-            with mlflow.start_run():
-                params['id'] = mlflow.active_run().info.run_id
-                run['params'] = params
-                mlflow.log_params(params)
-                for p in featured_params:
-                    print(p.upper() + ':\t ' + str(params[p]))
-                print(f"Starting muzero run:\n{mlflow.active_run().info.run_id}")
-                print(f"params: {params}")
-
-                muzero.boxworld_main(env, net.control_net, params)
-
-        for p in featured_params:
-            print(p.upper() + ': \t' + str(params[p]))
-
-    elif args.fine_tune:
-        net = net.to(DEVICE)
-        # dataset = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-        # dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
-
-        with Timing('Completed fine tuning'):
-            with mlflow.start_run():
-                params['id'] = mlflow.active_run().info.run_id
-                run['params'] = params
-                mlflow.log_params(params)
-                for p in featured_params:
-                    print(p.upper() + ':\t ' + str(params[p]))
-                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
-                print(f"params: {params}")
-                fine_tune(run, box_world.BoxWorldEnv(), net.control_net, params)
-
     else:
         net = net.to(DEVICE)
-        dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-        dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
 
         with Timing('Completed training'):
             with mlflow.start_run():
                 params['id'] = mlflow.active_run().info.run_id
                 run['params'] = params
                 mlflow.log_params(params)
+                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
                 for p in featured_params:
                     print(p.upper() + ':\t ' + str(params[p]))
-                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
                 print(f"params: {params}")
 
-                train(run, dataloader, net, params)
+                if args.muzero:
+                    print(f"Starting muzero run:\n{mlflow.active_run().info.run_id}")
+                    env = box_world.BoxWorldEnv(seed=args.seed, solution_length=args.length)
+                    muzero.boxworld_main(env, net.control_net, params)
+                elif args.fine_tune:
+                    fine_tune(run, box_world.BoxWorldEnv(seed=args.seed), net.control_net, params)
+                else:
+                    train(run, net, params)
 
         for p in featured_params:
             print(p.upper() + ': \t' + str(params[p]))
