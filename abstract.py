@@ -16,7 +16,6 @@ Note: T used in Controller classes for length of sequence i.e. s_i.shape = (T, *
 T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 """
 
-
 nll_loss = nn.NLLLoss(reduction='none')
 
 
@@ -52,35 +51,43 @@ def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=Non
 
     # (B, T+1, 2), (B, T+1, b)
     multi_solved_preds, multi_b_i_preds = solved_and_start_logps(t_i_pred_batch, control_net)
-    single_solved_preds, single_b_i_preds = solved_and_start_logps(t_i_batch, control_net)
+    # single_solved_preds, single_b_i_preds = solved_and_start_logps(t_i_batch, control_net)
+
     # no pred needed for last step
-    multi_b_i_preds, single_b_i_preds = multi_b_i_preds[:, :-1], single_b_i_preds[:, :-1]
+    multi_b_i_preds = multi_b_i_preds[:, :-1]
+    # single_b_i_preds = single_b_i_preds[:, :-1]
+
     # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
 
-    multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds = [
-        rearrange(x, 'N d C -> N C d') for x in
-        [multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds]]
+    # multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds = [
+    #     rearrange(x, 'N d C -> N C d') for x in
+    #     [multi_solved_preds, multi_b_i_preds, single_solved_preds, single_b_i_preds]]
+    multi_solved_preds, multi_b_i_preds = [rearrange(x, 'N d C -> N C d') for x in
+                                           [multi_solved_preds, multi_b_i_preds]]
 
-    cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
+    # cc_loss_batch = ((t_i_pred_batch - t_i_batch) ** 2).sum(dim=-1)
 
-    multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
-    single_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+    # multi_solved_loss = nll_loss(multi_solved_preds, solved_batch)
+    # single_solved_loss = nll_loss(single_solved_preds, solved_batch)
 
     multi_b_i_loss = nll_loss(multi_b_i_preds, b_i_batch)
-    single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
+    # single_b_i_loss = nll_loss(single_b_i_preds, b_i_batch)
 
     # (B, T)
     # multi_b_i_loss = multi_b_i_loss * solved_batch[:, -1][:, None]
     # single_b_i_loss = single_b_i_loss * solved_batch[:, -1][:, None]
 
-    assert_equal(cc_loss_batch.shape, multi_solved_loss.shape)
-    loss_batch = cc_loss_batch + multi_solved_loss + single_solved_loss
-    loss_batch[:, :-1] = loss_batch[:, :-1] + multi_b_i_loss + single_b_i_loss
+    # assert_equal(cc_loss_batch.shape, multi_solved_loss.shape)
+    # loss_batch = cc_loss_batch + multi_solved_loss + single_solved_loss
+    # loss_batch[:, :-1] = loss_batch[:, :-1] + multi_b_i_loss + single_b_i_loss
+
+    loss_batch = multi_b_i_loss
 
     if weights is not None:
         loss_batch = loss_batch * weights[:, None]
     if masks is not None:
-        loss_batch = loss_batch * masks
+        # loss_batch = loss_batch * masks
+        loss_batch = loss_batch * masks[:, :-1]
 
     return loss_batch.sum()
 
@@ -948,12 +955,18 @@ def boxworld_relational_net(out_dim: int = 4):
                             out_dim=out_dim)
 
 
-def boxworld_homocontroller(b, separate_option_nets=False):
+def boxworld_homocontroller(b, separate_option_nets=False, shrink_micro_net=False):
     # a * b for action probs, 2 * b for stop probs, b for start probs
     a = 4
 
     if separate_option_nets:
         relational_net = SeparateNetsHomoController(b)
+    if shrink_micro_net:
+        out_dim = a * b + 2 * b + b
+        relational_net = ShrinkingRelationalDRLNet(input_channels=box_world.NUM_ASCII,
+                                                   num_attn_blocks=2,
+                                                   num_heads=4,
+                                                   out_dim=out_dim)
     else:
         out_dim = a * b + 2 * b + b
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
@@ -1086,31 +1099,31 @@ def boxworld_controller(typ, params):
     typ: hetero, homo, ccts, or ccts-reduced
     """
     a = 4
-    b = params['b']
+    b = params.b
     tau_lp_norm = 1
     fc_hidden_dim = 64
-    t = params['abstract_dim']
+    t = params.abstract_dim
 
-    if params['gumbel']:
-        num_categories = params['num_categories']
+    if params.gumbel:
+        num_categories = params.num_categories
         dim = t
         gumbel_module = GumbelModule(dim=dim, num_categories=num_categories)
         t = dim * num_categories
 
     assert typ in ['hetero', 'homo', 'ccts', 'ccts-reduced']
 
-    if params['separate_option_nets']:
+    if params.separate_option_nets:
         assert typ == 'homo'
 
     if typ == 'homo':
-        return boxworld_homocontroller(b, separate_option_nets=params['separate_option_nets'])
+        return boxworld_homocontroller(b, separate_option_nets=params.separate_option_nets)
 
     if typ in ['ccts', 'ccts-reduced']:
-        micro_net = ActionsMicroNet(a, b, relational=params['relational_micro'])
+        micro_net = ActionsMicroNet(a, b, relational=params.relational_micro)
     else:
-        micro_net = ActionsAndStopsMicroNet(a, b, relational=params['relational_micro'],
-                                            shrinking=params['shrink_micro_net'],
-                                            shrink_loss_scale=params['shrink_loss_scale'])
+        micro_net = ActionsAndStopsMicroNet(a, b, relational=params.relational_micro,
+                                            shrinking=params.shrink_micro_net,
+                                            shrink_loss_scale=params.shrink_loss_scale)
 
     if typ == 'ccts-reduced':
         macro_trans_in_dim = b
@@ -1126,27 +1139,27 @@ def boxworld_controller(typ, params):
     tau_module = NormModule(p=tau_lp_norm, dim=t)
     tau_net = boxworld_relational_net(out_dim=t)
 
-    if params['gumbel']:
+    if params.gumbel:
         tau_net = nn.Sequential(tau_net, gumbel_module)
-    elif not params['no_tau_norm']:
+    elif not params.no_tau_norm:
         tau_net = nn.Sequential(tau_net, tau_module)
 
     macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3,
-                                        hidden_dim=fc_hidden_dim, batch_norm=params['batch_norm']),
+                                        hidden_dim=fc_hidden_dim, batch_norm=params.batch_norm),
                                      nn.LogSoftmax(dim=-1))
 
     macro_transition_net = FC(input_dim=macro_trans_in_dim,
                               output_dim=t,
                               num_hidden=3,
                               hidden_dim=fc_hidden_dim,
-                              batch_norm=params['batch_norm'])
-    if params['gumbel']:
+                              batch_norm=params.batch_norm)
+    if params.gumbel:
         macro_transition_net = nn.Sequential(macro_transition_net, gumbel_module)
-    if not params['no_tau_norm']:
+    if not params.no_tau_norm:
         macro_transition_net = nn.Sequential(macro_transition_net, tau_module)
 
     solved_net = nn.Sequential(FC(input_dim=t, output_dim=2, num_hidden=3,
-                                  hidden_dim=fc_hidden_dim, batch_norm=params['batch_norm']),
+                                  hidden_dim=fc_hidden_dim, batch_norm=params.batch_norm),
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,
@@ -1155,4 +1168,4 @@ def boxworld_controller(typ, params):
                  macro_policy_net=macro_policy_net,
                  macro_transition_net=macro_transition_net,
                  solved_net=solved_net,
-                 tau_noise_std=params['tau_noise_std'])
+                 tau_noise_std=params.tau_noise_std)
