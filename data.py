@@ -9,6 +9,7 @@ from torch.distributions import Categorical
 import torch.nn as nn
 import box_world
 import random
+import wandb
 
 
 STOP_IX = 0
@@ -16,7 +17,7 @@ CONTINUE_IX = 1 - STOP_IX
 UNSOLVED_IX, SOLVED_IX = 0, 1
 
 
-def eval_options_model_interactive(control_net, env, n=100, option='silent', run=None, epoch=None):
+def eval_options_model_interactive(control_net, env, n=100, option='silent', epoch=None):
     control_net.eval()
     num_solved = 0
     check_cc = hasattr(control_net, 'tau_net')
@@ -121,13 +122,9 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent', run
 
     if check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
-        if run:
-            run[f'test/cc loss avg'].log(cc_loss_avg)
     if check_solved:
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
         # print(f'Correct solved pred: {solved_acc:.2f}')
-        if run:
-            run[f'test/solved pred acc'].log(solved_acc)
 
     control_net.train()
     if check_cc:
@@ -137,7 +134,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent', run
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True):
+def eval_options_model(control_net, env, n=100, render=False, epoch=None, argmax=True):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -159,8 +156,8 @@ j       (b, 2) stop logps
         if render:
             box_world.render_obs(obs, pause=1)
 
-        if run and i < 10:
-            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(obs), name='obs')
+        if i < 10:
+            wandb.log({f'test/epoch_{epoch}_obs': wandb.Image(box_world.obs_figure(obs))})
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
@@ -263,24 +260,17 @@ j       (b, 2) stop logps
 
         if render:
             box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
-        if run and i < 10:
-            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(options_trace),
-                                               name='orange=new option')
+        if i < 10:
+            wandb.log({f'test/epoch_{epoch}_obs2': wandb.Image(box_world.obs_figure(options_trace))})
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
-        if run:
-            run[f'test/cc loss avg'].log(cc_loss_avg)
+        wandb.log({'test/cc_loss_avg': cc_loss_avg})
     if check_solved:
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
-        if run:
-            run[f'test/solved pred acc'].log(solved_acc)
+        wandb.log({'test/solved_pred_acc': solved_acc})
 
     control_net.train()
-    if check_cc and len(cc_losses) > 0:
-        print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
-    else:
-        print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
 
@@ -288,7 +278,6 @@ def eval_model(net, env, n=100, renderer: Callable = None):
     """
     renderer is a callable that takes in obs.
     """
-    # print(f'Evaluating model on {n} episodes')
     net.eval()
     num_solved = 0
 
@@ -452,12 +441,11 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
             control_net.eval()
 
             solved, options, states_between_options = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
-            # print(f'{i=} {options=}')
 
             control_net.train()
 
             # if not solved:
-                # continue
+            #     continue
 
             total += 1
 
@@ -596,7 +584,6 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     # op_new_tau_solved_prob = None
     moves = []
     states_between_options = []
-
 
     current_option = None
 

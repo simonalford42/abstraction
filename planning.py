@@ -17,6 +17,7 @@ from data import SOLVED_IX
 from box_world import BoxWorldEnv
 from dataclasses import dataclass, field
 from typing import Any, Generator, Optional
+import wandb
 
 
 @dataclass(order=True)
@@ -287,6 +288,8 @@ def eval_planner(control_net, env, n):
     solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
     solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
     print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
+    wandb.log({'test/model_acc': solved_with_model/n,
+               'test/simulator_acc': solved_with_sim/n})
 
     num_solved = 0
     lengths = []
@@ -313,15 +316,14 @@ def eval_planner(control_net, env, n):
     control_net.train()
 
     print(f'Solved {num_solved}/{n}.')
+    wandb.log({'test/acc': num_solved/n})
     lengths = Counter(lengths)
     if num_solved > 0:
         for i in range(max(lengths)):
             if lengths[i] > 0:
-                print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={correct_with_length[i]/lengths[i]:.2f}')
-
-        return sum(correct_with_length.values())/num_solved
-    else:
-        return 0
+                length_acc = correct_with_length[i] / lengths[i]
+                print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={length_acc:.2f}')
+                wandb.log({f'test/length_{i}_acc': length_acc})
 
 
 def plan(env, control_net, max_hl_plans=-1):

@@ -1,70 +1,50 @@
 from typing import Any
 import numpy as np
+import wandb
 from torch.utils.data import DataLoader
 import planning
 import argparse
 import torch
-# from torch.utils.tensorboard import SummaryWriter
 import torch.nn as nn
 import random
 import utils
+import mlflow
 from utils import Timing, DEVICE, assert_equal
 from abstract import boxworld_controller, boxworld_homocontroller
 import abstract
 from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
-import neptune.new as neptune
-import mlflow
 import data
-from modules import FC, ShrinkingRelationalDRLNet
+from modules import ShrinkingRelationalDRLNet
 import muzero
 
 
-def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
-    optimizer = torch.optim.Adam(control_net.parameters(), lr=params['lr'])
+def fine_tune(control_net: nn.Module, params: dict[str, Any]):
+    env = box_world.BoxWorldEnv(seed=params.seed)
+    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=params.tau_precompute)
+    print(f'{len(dataset)} fine-tuning examples')
+    params.epochs = int(params.traj_updates / len(dataset))
+
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
+                            collate_fn=data.latent_traj_collate)
+
+    optimizer = torch.optim.Adam(control_net.parameters(), lr=params.lr)
     control_net.train()
 
-    epoch = 0
-    updates = 0
-
-    if params['tau_precompute']:
+    if params.tau_precompute:
         control_net.freeze_microcontroller()
     else:
         control_net.freeze_all_controllers()
 
-    env = box_world.BoxWorldEnv(seed=params['seed'])
+    last_test_time = False
+    last_save_time = time.time()
+    epoch = 0
+    updates = 0
 
-    dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=params['tau_precompute'])
-
-    print(f'{len(dataset)} fine-tuning examples')
-    params['epochs'] = int(params['traj_updates'] / len(dataset))
-    print(f"actual params['epochs']: {params['epochs']}")
-
-    if params['num_tests'] == 0:
-        params['test_every'] = False
-    else:
-        params['test_every'] = max(1, params['epochs'] // params['num_tests'])
-        print(f"actual params['test_every']: {params['test_every']}")
-    if params['num_saves'] == 0:
-        params['save_every'] = False
-    else:
-        params['save_every'] = params['epochs'] // params['num_saves']
-        print(f"actual params['save_every']: {params['save_every']}")
-
-    dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
-                            collate_fn=data.latent_traj_collate)
-
-    while updates < params['traj_updates']:
+    while updates < params.traj_updates:
         if hasattr(dataloader.dataset, 'shuffle'):
-            dataloader.dataset.shuffle(batch_size=params['batch_size'])
-
-        # if params['test_every'] and epoch > 0 and epoch % params['test_every'] == 0:
-        #     print('recalculating dataset')
-        #     env = box_world.BoxWorldEnv(seed=params['seed'] + epoch)
-        #     dataset = data.PlanningDataset(env, control_net, n=params['n'], tau_precompute=tau_precompute)
-        #     dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=True,
-        #                             collate_fn=data.latent_traj_collate)
+            dataloader.dataset.shuffle(batch_size=params.batch_size)
 
         train_loss = 0
 
@@ -74,16 +54,16 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
 
             B, T, *s = states.shape
 
-            if not params['tau_precompute']:
+            if not params.tau_precompute:
                 states_flattened = states.reshape(B * T, *s)
                 t_i_flattened = control_net.tau_net(states_flattened)
                 t_i = t_i_flattened.reshape(B, T, control_net.t)
             else:
                 t_i = states
 
-            if params['test_every'] and epoch % params['test_every'] == 0 and first:
+            if params.test_every and epoch % params.test_every == 0 and first:
                 preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
-                print('first batch avg cc loss ', (t_i[:, 1] - preds).sum() / t_i.shape[0])
+                wandb.log({'avg cc loss': (t_i[:, 1] - preds).sum() / t_i.shape[0]})
                 first = False
 
             loss = abstract.fine_tune_loss_v3(t_i, options, solveds, control_net, masks)
@@ -96,71 +76,55 @@ def fine_tune(run, env, control_net: nn.Module, params: dict[str, Any]):
             optimizer.zero_grad()
             updates += B
 
-        if params['test_every'] and epoch % (max(1, params['test_every'] // 5)) == 0:
-            print(f"train_loss: {train_loss}")
-
-        if params['test_every'] and epoch % params['test_every'] == 0:
+        if (params.test_every
+                and (not last_test_time
+                     or (time.time() - last_test_time > (params.test_every * 60)))):
+            last_test_time = time.time()
             utils.warn('fixed test env seed')
-            print(f'Epoch {epoch}')
             planning.eval_planner(
-                control_net, box_world.BoxWorldEnv(seed=env.seed), n=params['num_test'],
-                # control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params['num_test'],
+                control_net, box_world.BoxWorldEnv(seed=env.seed), n=params.num_test,
+                # control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params.num_test,
             )
 
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
-            model_id = params['id']
-            path = utils.save_model(control_net, f'models/{model_id}-epoch-{epoch}_control.pt')
-            run['models'].log(path)
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(control_net, f'models/{params.id}-epoch-{epoch}_control.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
         epoch += 1
 
-    if not params['no_log']:
-        model_id = params['id']
-        path = utils.save_model(control_net, f'models/{model_id}_control.pt')
-        run['model'] = path
+    if not params.no_log:
+        path = utils.save_model(control_net, f'models/{params.id}_control.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def train(run, net: nn.Module, params: dict[str, Any]):
+def train(net: nn.Module, params: dict[str, Any]):
+    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=params.seed), n=params.n, traj=True)
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
-    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=args.seed), n=params['n'], traj=True)
-    dataloader = DataLoader(dataset, batch_size=params['batch_size'], shuffle=False, collate_fn=data.traj_collate)
+    params.epochs = int(params.traj_updates / params.n)
 
-    params['epochs'] = int(params['traj_updates'] / params['n'])
-
-    optimizer = torch.optim.Adam(net.parameters(), lr=params['lr'])
+    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
-    model_id = mlflow.active_run().info.run_id
-    run['model_id'] = model_id
     test_env = box_world.BoxWorldEnv()
     print(f"Net has {utils.num_params(net)} parameters")
-    last_test_start_time = False
 
+    last_test_time = False
+    last_save_time = time.time()
     updates = 0
     epoch = 0
-    while updates < params['traj_updates']:
-        if params['gumbel']:
-            abstract.GUMBEL_TEMP = params['gumbel_sched'](epoch / params['epochs'])
 
-        if params['variable_abstract_pen']:
-            frac = min(1, 2 * updates / params['traj_updates'])
-            net.abstract_pen = params['abstract_pen'] * frac
-            if epoch % (params['test_every'] // 5) == 0:
-                print(f"net.abstract_pen: {net.abstract_pen}")
+    while updates < params.traj_updates:
+        if params.gumbel:
+            abstract.GUMBEL_TEMP = params.gumbel_sched(epoch / params.epochs)
 
-        if params['freeze'] is not False and updates / params['traj_updates'] >= params['freeze']:
+        if params.freeze is not False and updates / params.traj_updates >= params.freeze:
             # net.control_net.freeze_all_controllers()
             net.control_net.freeze_microcontroller()
 
-        # if epoch and epoch % 100 == 0:
-        #     print('reloading data')
-        #     del dataloader
-        #     dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=epoch + params['seed'] * params['epochs']),
-        #                                      n=params['n'], traj=True)
-        #     dataloader = DataLoader(dataset, batch_size=params['batch_size'],
-        #                             shuffle=False, collate_fn=data.traj_collate)
-
         if hasattr(dataloader.dataset, 'shuffle'):
-            dataloader.dataset.shuffle(batch_size=params['batch_size'])
+            dataloader.dataset.shuffle(batch_size=params.batch_size)
 
         train_loss = 0
         start = time.time()
@@ -173,49 +137,41 @@ def train(run, net: nn.Module, params: dict[str, Any]):
             train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR
             loss = loss / sum(lengths)
-            run['batch/loss'].log(loss.item())
-            run['batch/avg length'].log(sum(lengths) / len(lengths))
-            run['batch/mem'].log(utils.get_memory_usage())
             loss.backward()
             optimizer.step()
 
-        if (params['print_every']
-                and (not last_test_start_time
-                     or (time.time() - last_test_start_time > params['test_every'] / 60))):
-            if params['gumbel']:
-                print(f"abstract.GUMBEL_TEMP: {abstract.GUMBEL_TEMP}")
-            print(f"train_loss: {train_loss}")
+        wandb.log({'epoch': epoch,
+                   'loss': train_loss})
+        if params.gumbel:
+            wandb.log({'gumbel_temp': abstract.GUMBEL_TEMP})
 
-        if params['test_every'] and epoch % params['test_every'] == 0:
-            # test_env = box_world.BoxWorldEnv(seed=params['seed'])
+        if (params.test_every
+                and (not last_test_time
+                     or (time.time() - last_test_time > (params.test_every * 60)))):
+            last_test_time = time.time()
+
+            # test_env = box_world.BoxWorldEnv(seed=params.seed)
             # print('fixed test env')
             test_acc = data.eval_options_model(
-                net.control_net, test_env, n=params['num_test'],
-                run=run, epoch=epoch)
+                net.control_net, test_env, n=params.num_test,
+                epoch=epoch)
             # test_acc = planning.eval_planner(
-            #     net.control_net, box_world.BoxWorldEnv(seed=params['seed']), n=params['num_test'],
+            #     net.control_net, box_world.BoxWorldEnv(seed=params.seed), n=params.num_test,
             # )
-            run['test/accuracy'].log(test_acc)
-            print(f'Epoch {epoch}\t test acc {test_acc}')
-            mlflow.log_metrics({'epoch': epoch, 'test acc': test_acc}, step=epoch)
+            wandb.log({'test/acc': test_acc})
 
-        run['epoch'].log(epoch)
-        run['loss'].log(train_loss)
-        run['time'].log(time.time() - start)
-        mlflow.log_metrics({'epoch': epoch,
-                            'loss': train_loss,
-                            'time': time.time() - start}, step=epoch)
-
-        if not params['no_log'] and params['save_every'] and epoch % params['save_every'] == 0 and epoch > 0:
-            path = utils.save_model(net, f'models/{model_id}-epoch-{epoch}.pt')
-            run['models'].log(path)
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(net, f'models/{params.id}-epoch-{epoch}.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
         epoch += 1
-        updates += params['n']
+        updates += params.n
 
-    if not params['no_log']:
-        path = utils.save_model(net, f'models/{model_id}.pt')
-        run['model'] = path
+    if not params.no_log:
+        path = utils.save_model(net, f'models/{params.id}.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -268,9 +224,52 @@ def adjust_state_dict(state_dict):
     return state_dict2
 
 
+def make_gumbel_schedule_fn(params):
+    if not params.gumbel:
+        return False
+
+    plateau_percent = 0.8
+    # r is set so that np.exp(-r * plateau_percent) = 0.5
+    r = -np.log(0.5) / plateau_percent
+
+    def schedule_temp(percent_through):
+        # between 0.5 and 1
+        x = np.exp(-r * percent_through)
+        # between 0 and 1
+        x = 2 * x - 1
+        # between stop and start
+        x = params.g_stop_temp + x * (params.g_start_temp - params.g_stop_temp)
+        return max(params.g_stop_temp, x)
+
+    return schedule_temp
+
+
+def make_net(params):
+    if params.load:
+        net = utils.load_model(params.model_load_path)
+    elif params.model == 'sv':
+        net = SVNet(boxworld_homocontroller(b=1, shrink_micro_net=params.shrink_micro_net), shrink_micro_net=params.shrink_micro_net)
+    else:
+        if params.model == 'hmm-homo':
+            # HMM algorithm where start probs, stop probs, action probs all come from single NN
+            control_net = boxworld_homocontroller(b=params.b)
+        else:
+            typ = 'hetero' if params.model in ['hmm', 'cc'] else params.model
+            control_net = boxworld_controller(typ, params)
+        if params.model in ['hmm', 'hmm-homo', 'ccts']:
+            net = HmmNet(control_net, abstract_pen=params.abstract_pen, shrink_micro_net=params.shrink_micro_net)
+        elif params.model == 'cc':
+            assert not params.shrink_micro_net
+            net = CausalNet(control_net, abstract_pen=params.abstract_pen)
+        else:
+            raise NotImplementedError()
+
+    return net
+
+
 def boxworld_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--n', type=int, default=argparse.SUPPRESS)
+    parser.add_argument('--n', type=int, default=20000)
     parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
@@ -281,13 +280,11 @@ def boxworld_main():
     parser.add_argument('--tau_noise_std', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
 
-    parser.add_argument('--eval', action='store_true')
     parser.add_argument('--load', action='store_true')
     parser.add_argument('--ellis', action='store_true')
-    parser.add_argument('--neptune', action='store_true')
     parser.add_argument('--no_log', action='store_true')
+    parser.add_argument('--num_test', type=int, default=200)
     parser.add_argument('--fine_tune', action='store_true')
-    parser.add_argument('--variable_abstract_pen', action='store_true')
     parser.add_argument('--tau_precompute', action='store_true')
     parser.add_argument('--replace_trans_net', action='store_true')
     parser.add_argument('--batch_norm', action='store_true')
@@ -301,117 +298,68 @@ def boxworld_main():
     parser.add_argument('--num_categories', type=int, default=8)
     parser.add_argument('--shrink_micro_net', action='store_true')
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
-    parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1,2,3,4], help='box world env solution_length')
+    parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1, 2, 3, 4],
+                        help='box world env solution_length, may be single number or tuple of options')
     parser.add_argument('--muzero', action='store_true')
     parser.add_argument('--test_every', type=float, default=90, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
-    args = parser.parse_args()
+    params = parser.parse_args()
 
-    if not args.seed:
+    if not params.seed:
         seed = random.randint(0, 2**32 - 1)
-        args.seed = seed
+        params.seed = seed
 
-    if type(args.length) == int:
-        args.length = (args.length, )  # box_world env expects tuple
+    random.seed(params.seed)
+    torch.manual_seed(params.seed)
 
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    if type(params.length) == int:
+        params.length = (params.length, )  # box_world env expects tuple
 
-    if args.neptune:
-        run = neptune.init(
-            project="simonalford42/abstraction", api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJiNDljOWE3Zi1mNzc5LTQyYjEtYTdmOC1jYTM3ZThhYjUwNzYifQ==",
-        )
+    if params.relational_micro or params.gumbel or params.shrink_micro_net:
+        params.batch_size = 16
     else:
-        run = utils.NoLogRun()
-    if args.no_log:
-        global mlflow
-        mlflow = utils.NoMlflowRun()
+        params.batch_size = 32
+    if params.ellis:
+        params.batch_size *= 2
+
+    if params.fine_tune:
+        params.load = True
+
+    params.traj_updates = 1E9 if params.fine_tune else 1E7  # default: 1E7
+    params.model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
+    params.gumbel_sched = make_gumbel_schedule_fn(params)
+    params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
+
+    if params.toy_test:
+        params.n = 100
+        params.traj_updates = 1000
+        params.test_every = 1
+        params.save_every = False
+        params.no_log = True
+        params.num_test = 5
+
+    if params.no_log:
+        global mlflow; mlflow = utils.NoMlflowRun()
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    batch_size = 64 if args.ellis else 32
-    if args.relational_micro or args.gumbel or args.shrink_micro_net:
-        batch_size = 32 if args.ellis else 16
+    wandb.init(project="abstraction", mode='disabled' if params.no_log else 'online')
 
-    if args.fine_tune and not args.load:
-        print('Set load=True for fine tuning')
-        args.load = True
-    params = dict(
-        n=20000,
-        traj_updates=1E9 if args.fine_tune else 1E7,  # default: 1E7
-        batch_size=batch_size,
-        model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt',
-    )
-    params.update(vars(args))
-    if args.toy_test:
-        params.update(dict(n=100, traj_updates=5000, test_every=1, save_every=False, no_log=True))
-    featured_params = ['model', 'n', 'abstract_pen']
+    net = make_net(params).to(DEVICE)
 
-    # assert_equal('model_load_path' in params, params['load'])
-    if params['load']:
-        net = utils.load_model(params['model_load_path'])
-    elif args.model == 'sv':
-        net = SVNet(boxworld_homocontroller(b=1, shrink_micro_net=params['shrink_micro_net']), shrink_micro_net=params['shrink_micro_net'])
-    else:
-        if args.model == 'hmm-homo':
-            # HMM algorithm where start probs, stop probs, action probs all come from single NN
-            control_net = boxworld_homocontroller(b=params['b'])
-        else:
-            typ = 'hetero' if args.model in ['hmm', 'cc'] else args.model
-            control_net = boxworld_controller(typ, params)
-        if args.model in ['hmm', 'hmm-homo', 'ccts']:
-            net = HmmNet(control_net, abstract_pen=params['abstract_pen'], shrink_micro_net=params['shrink_micro_net'])
-        elif args.model == 'cc':
-            assert not params['shrink_micro_net']
-            net = CausalNet(control_net, abstract_pen=params['abstract_pen'])
-        else:
-            raise NotImplementedError()
+    with Timing('Completed training'):
+        with mlflow.start_run():
+            params.id = mlflow.active_run().info.run_id
+            print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+            print(f"params: {params}")
+            wandb.config = vars(params)
 
-    if params['gumbel']:
-        plateau_percent = 0.8
-        # r is set so that np.exp(-r * plateau_percent) = 0.5
-        r = -np.log(0.5) / plateau_percent
-
-        def schedule_temp(percent_through):
-            # between 0.5 and 1
-            x = np.exp(-r * percent_through)
-            # between 0 and 1
-            x = 2 * x - 1
-            # between stop and start
-            x = params['g_stop_temp'] + x * (params['g_start_temp'] - params['g_stop_temp'])
-            return max(params['g_stop_temp'], x)
-        params['gumbel_sched'] = schedule_temp
-
-    params['device'] = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
-
-    if args.eval:
-        data.eval_options_model(net.control_net, box_world.BoxWorldEnv(), n=100, option='verbose')
-    else:
-        net = net.to(DEVICE)
-
-        with Timing('Completed training'):
-            with mlflow.start_run():
-                params['id'] = mlflow.active_run().info.run_id
-                run['params'] = params
-                mlflow.log_params(params)
-                print(f"Starting run:\n{mlflow.active_run().info.run_id}")
-                for p in featured_params:
-                    print(p.upper() + ':\t ' + str(params[p]))
-                print(f"params: {params}")
-
-                if args.muzero:
-                    print(f"Starting muzero run:\n{mlflow.active_run().info.run_id}")
-                    env = box_world.BoxWorldEnv(seed=args.seed, solution_length=args.length)
-                    muzero.boxworld_main(env, net.control_net, params)
-                elif args.fine_tune:
-                    fine_tune(run, box_world.BoxWorldEnv(seed=args.seed), net.control_net, params)
-                else:
-                    train(run, net, params)
-
-        for p in featured_params:
-            print(p.upper() + ': \t' + str(params[p]))
-
-    run.stop()
+            if params.muzero:
+                muzero.boxworld_main(net.control_net, params)
+            elif params.fine_tune:
+                fine_tune(net.control_net, params)
+            else:
+                train(net, params)
 
 
 if __name__ == '__main__':

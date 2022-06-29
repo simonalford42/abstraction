@@ -171,9 +171,9 @@ def cc_fw_ub(b, action_logps, stop_logps, start_logps):
         # e_prev = 1; options new, c mass fixed at t-1
         # b, e
         f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1], dim=(0, 1))
-                            + start_logps[t-1, :, None]
-                            + action_logps[t-1, :, None]
-                            + stop_logps[t, :, :])
+                           + start_logps[t-1, :, None]
+                           + action_logps[t-1, :, None]
+                           + stop_logps[t, :, :])
 
     total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
     return f, total_logp
@@ -286,7 +286,7 @@ def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens, abstrac
     for b_i in itertools.product(range(b), repeat=T):
         # based off s_i, can we stop and start new option for b_{i+1}
         stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
-                      for i in range(T-1)]
+                     for i in range(T-1)]
         stop_at_i.append([True])  # always stop at end
 
         for stops in itertools.product(*stop_at_i):
@@ -299,7 +299,7 @@ def cc_loss_brute(b, action_logps, stop_logps, start_logps, causal_pens, abstrac
     for b_i in itertools.product(range(b), repeat=T):
         # based off s_i, can we stop and start new option for b_{i+1}
         stop_at_i = [[True, False] if b_i[i] == b_i[i+1] else [True]
-                      for i in range(len(b_i)-1)]
+                     for i in range(len(b_i)-1)]
         stop_at_i.append([True])  # always stop at end
 
         for stops in itertools.product(*stop_at_i):
@@ -376,9 +376,9 @@ def ccts_hmm_fw_ub(b, action_logps, stop_logps, start_logps):
         # e_prev = 1; options new, c mass fixed at t-1
         # b, e
         f[t][:, t-1, :] = (torch.logsumexp(f[t-1][:, :, 1], dim=(0, 1))
-                            + start_logps[t-1, :, None]
-                            + action_logps[t-1, :, None]
-                            + stop_logps[t-1, t, :, :])
+                           + start_logps[t-1, :, None]
+                           + action_logps[t-1, :, None]
+                           + stop_logps[t-1, t, :, :])
 
     total_logp = torch.logsumexp(f[T][:, :, 1], dim=(0, 1))
     return total_logp
