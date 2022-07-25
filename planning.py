@@ -541,12 +541,12 @@ if __name__ == '__main__':
 
     n = 200
     # env = box_world.BoxWorldEnv(solution_length=(6, ))
-    env = box_world.BoxWorldEnv(solution_length=(4, ))
+    env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
 
     # acc = eval_sampling(control_net, env, n=n, macro=False)
     # print(f'acc: {acc}')
     # acc = eval_sampling(control_net, env, n=n, macro=True, render=True)
-    acc = data.eval_options_model(control_net, env, n=n, render=False)
+    acc = data.eval_options_model(control_net, env, n=n, render=True)
     # print(f'acc: {acc}')
     # acc = eval_planner(control_net, env, n=n)
 

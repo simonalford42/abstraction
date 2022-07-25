@@ -4,80 +4,84 @@ import copy
 from typing import Any, Optional, List, Tuple
 import gym
 import argparse
+import random
 import numpy as np
 import pycolab
 import matplotlib
 import matplotlib.pyplot as plt
 from utils import assert_equal
-from pycolab.examples.research.box_world import box_world as bw
 
 POS = Tuple[int, int]
 
 NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
-COLORS = 'abcdefghijklmnopqrst*'
-GOAL_COLOR = '*'
-NUM_COLORS = len(COLORS)
+
+BACKGROUND_INT = 0
+OBSTACLE_INT = 1
+PLAYER_INT = 2
+GOAL_INT = 3
+
+COLORS = {
+    PLAYER_INT: (500, 500, 500),
+    GOAL_INT: (999, 999, 999),
+    BACKGROUND_INT: (800, 800, 800),
+    OBSTACLE_INT: (0, 0, 0),
+}
+
+REWARD_GOAL = 1.
+REWARD_STEP = 0.
+
+MAX_PLACEMENT_TRIES = 200
+MAX_GENERATION_TRIES = 200
+
+NORTH = (-1, 0)
+EAST = (0, 1)
+SOUTH = (1, 0)
+WEST = (0, -1)
+
+ACTION_NOOP = -1
+ACTION_NORTH = 0
+ACTION_SOUTH = 1
+ACTION_WEST = 2
+ACTION_EAST = 3
+
+ACTION_MAP = {
+    ACTION_NORTH: NORTH,
+    ACTION_SOUTH: SOUTH,
+    ACTION_WEST: WEST,
+    ACTION_EAST: EAST,
+}
 
 
-DEFAULT_GRID_SIZE = (14, 14)
-
-
-class BoxWorldEnv(gym.Env):
-    """
-    OpenAI gym interface for the BoxWorld env implemented by DeepMind as part of their pycolab game engine.
-    """
-
+class GridWorldEnv(gym.Env):
     def __init__(
         self,
-        grid_size=12,  # note grid shape is really (grid_size+2, grid_size+2) bc of border
-        solution_length=(1, 2, 3, 4),
-        num_forward=(0, 1, 2, 3, 4),
-        num_backward=(0,),
-        branch_length=1,
+        abstract_grid_size=12,
+        inflate_factor=3,
         max_num_steps=120,
         seed: int = 0,
     ):
-        self.grid_size = grid_size
-        # extra 2 because of border
-        self.shape = (grid_size + 2, grid_size + 2)
-        self.solution_length = solution_length
-        self.num_forward = num_forward
-        self.num_backward = num_backward
-        self.branch_length = branch_length
+        self.abstract_grid_size = abstract_grid_size
+        self.inflate_factor = 3
+        self.grid_size = self.abstract_grid_size * self.inflate_factor
         self.max_num_steps = max_num_steps
         self.seed = seed
         self.random_state = np.random.RandomState(seed)
-
-        # self.action_space = spaces.Discrete(4)
-        # self.observation_space = spaces.Box(low=0, high=100, shape=np.zeros(self.shape))
-
-        self.obs = self.reset()
+        self.reset()
 
     def reset(self):
-        self.game = bw.make_game(
-            grid_size=self.grid_size,
-            solution_length=self.solution_length,
-            num_forward=self.num_forward,
-            num_backward=self.num_backward,
-            branch_length=self.branch_length,
-            max_num_steps=self.max_num_steps,
+        self.obs = make_game(
+            abstract_grid_size=self.abstract_grid_size,
+            inflate_factor=inflate_factor,
             random_state=self.random_state,
         )
-        # from line 267 of human_ui.py
-        obs, reward, _ = self.game.its_showtime()
-        assert reward is None
-        obs = self.process_obs(obs)
         self.done = False
+        self.reward = 0
         self.solved = False
-        return obs
+        self.num_steps = 0
+        return self.obs
 
     def copy(self):
         return copy.deepcopy(self)
-
-    def process_obs(self, obs) -> np.ndarray:
-        obs = np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
-        self.obs = obs
-        return obs
 
     def step(self, action: int) -> Tuple[Any, float, bool, dict]:
         """
@@ -92,61 +96,21 @@ class BoxWorldEnv(gym.Env):
         if action not in [-1, 0, 1, 2, 3]:
             raise ValueError(f'Invalid action provided: {action}')
 
-        obs, reward, _ = self.game.play(action)
-        obs = self.process_obs(obs)
-        self.obs = obs
-        done = self.game.game_over
-        self.done = done
-        self.solved = reward == bw.REWARD_GOAL
-        return obs, reward, done, dict()
+        self.obs, solved = play(self.obs, action)
+        self.reward = 1 if solved else 0
+        self.num_steps += 1
+        self.done = self.num_steps >= self.max_num_steps
+        return self.obs, self.reward, self.done, dict()
 
 
-def hex_to_rgb(hex: str) -> Tuple[int]:
-    # https://stackoverflow.com/a/29643643/4383594
-    hex = hex.lstrip('#')
-    return tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-
-
-def color_name_to_rgb(name: str) -> Tuple[int]:
-    # https://matplotlib.org/stable/gallery/color/named_colors.html
-    hex = matplotlib.colors.CSS4_COLORS[name]
-    return hex_to_rgb(hex)
-
-
-def ascii_to_color(ascii: str):
-    ascii = ascii.lower()
-    if (ascii not in {bw.BORDER, bw.BACKGROUND, bw.GEM, bw.PLAYER}
-            and ascii not in '# *.abcdefghijklmnopqrst'):
-        raise ValueError('invalid ascii provided: ' + ascii)
-    if ascii == bw.BORDER:
-        return color_name_to_rgb('black')
-    elif ascii == bw.BACKGROUND:
-        return color_name_to_rgb('lightgray')
-    elif ascii == bw.GEM:
-        return color_name_to_rgb('white')
-    elif ascii == bw.PLAYER:
-        return color_name_to_rgb('dimgrey')
-    else:
-        s = 'abcdefghijklmnopqrst'
-        i = s.index(ascii)
-        colors = ['brown', 'maroon', 'red', 'orangered', 'orange',
-                  'yellow', 'gold', 'olive', 'greenyellow', 'limegreen', 'green', 'darkgreen', 'cyan',
-                  'dodgerblue', 'blue', 'darkblue', 'indigo', 'purple', 'magenta', 'violet']
-        assert_equal(len(colors), len(s))
-        return color_name_to_rgb(colors[i])
-
-
-def ascii_to_int(ascii: str):
-    # lower and uppercase render the same, just like the colors
-    return '# *.abcdefghijklmnopqrst'.index(ascii.lower())
-
-
-def int_to_ascii(ix: int) -> str:
-    return '# *.abcdefghijklmnopqrst'[ix]
-
-
-def to_color_obs(obs):
-    return np.array([[ascii_to_color(a) for a in row] for row in obs])
+# def make_game(abstract_grid_size: int, inflate_factor: int, random_state) -> np.ndarray:
+#     grid = np.full((abstract_grid_size, abstract_grid_size), BACKGROUND_INT)
+#     starting_pos = (0, 0)
+#     grid[starting_pos] = PLAYER_INT
+#     goal_pos = random.randint(abstract_grid_size-1), random.randint(abstract_grid_size-1)
+#     grid[goal_pos] = GOAL_INT
+#     ups = [0] * goal_pos[1]
+#     rights = [0] *
 
 
 def print_obs(obs):
@@ -413,54 +377,6 @@ def path_to_moves(path: List[POS]) -> List[int]:
     return [dir_to_action_map[d] for d in diffs]
 
 
-def generate_abstract_traj(env: BoxWorldEnv) -> Tuple[List, List]:
-    obs = env.reset()
-    # render_obs(obs, pause=1)
-
-    domino_pos_map = get_dominoes(obs)
-    held_key = get_held_key(obs)
-    goal_domino = get_goal_domino(domino_pos_map.keys())
-    nodes, adj_matrix = get_tree(domino_pos_map, held_key)
-    path = dijkstra(nodes, adj_matrix, start=bw.PLAYER, goal=goal_domino)
-    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key)
-
-    states = [obs]
-    moves = []
-
-    for i, domino in enumerate(path):
-        subgoal_pos: POS = domino_pos_map[domino]
-        options: List[POS] = shortest_path(obs, subgoal_pos)
-        done = False
-
-        for a in path_to_moves(options):
-            obs, _, done, _ = env.step(a)
-            # render_obs(obs, pause=0.01)
-            # states.append(obs)
-            # moves.append(a)
-
-        if len(domino) > 1:
-            # move left to pick up new key, or final gem
-            obs, _, done, _ = env.step(bw.ACTION_WEST)
-            # render_obs(obs, pause=1)
-            # states.append(obs)
-            # moves.append(bw.ACTION_WEST)
-
-        if done:
-            # add the goal key to the top left, to make program learning for
-            # transition function consistent
-            obs[0, 0] = bw.GEM
-
-        if len(domino) > 1:
-            states.append(obs)
-            moves.append(domino)
-
-    # for state in states:
-        # render_obs(state)
-    # print(moves)
-    assert done, 'uh oh, our path solver didnt actually solve'
-    return states, moves
-
-
 def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
     # render_obs(obs, pause=1)
@@ -539,3 +455,4 @@ if __name__ == '__main__':
     env = BoxWorldEnv(**vars(FLAGS))
     play_game(env)
     # profile_traj_generation2(env)
+

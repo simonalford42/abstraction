@@ -9,7 +9,7 @@ import abstract
 import hmm
 import box_world
 from hmm import cc_loss_brute, cc_loss_ub, hmm_fw_ub
-from box_world import CONTINUE_IX, STOP_IX
+from data import CONTINUE_IX, STOP_IX
 from utils import DEVICE, assert_equal, assert_shape
 import utils
 import planning
