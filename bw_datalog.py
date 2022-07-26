@@ -223,6 +223,7 @@ class AbstractEmbedNet(nn.Module):
         # reshape to (batch_size, 2, C, C)
         C = bw.NUM_COLORS
         out = out.reshape(out.shape[0], 2, C, C)
+        out = torch.sigmoid(out)
         return out
 
 

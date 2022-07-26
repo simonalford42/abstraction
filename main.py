@@ -228,7 +228,7 @@ def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, pri
 
             inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
             preds = net(inputs)
-            loss = F.mse_loss(preds, targets, reduction='mean')
+            loss = F.binary_cross_entropy(preds, targets, reduction='mean')
             train_loss += loss.item()
             loss.backward()
             optimizer.step()
