@@ -18,6 +18,7 @@ import box_world
 import data
 from modules import ShrinkingRelationalDRLNet
 import muzero
+import torch.nn.functional as F
 
 
 def fine_tune(control_net: nn.Module, params: dict[str, Any]):
@@ -205,6 +206,32 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
             run['epoch'].log(epoch)
             run['loss'].log(train_loss)
             run['time'].log(time.time() - start)
+
+        if print_every and epoch % print_every == 0:
+            print(f"epoch: {epoch}\t"
+                  + f"train loss: {train_loss}\t"
+                  + f"({time.time() - start:.1f}s)")
+
+
+def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
+    """
+    Train a basic supervised model.
+    """
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+    net.train()
+
+    for epoch in range(epochs):
+        train_loss = 0
+        start = time.time()
+        for inputs, targets in dataloader:
+            optimizer.zero_grad()
+
+            inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
+            preds = net(inputs)
+            loss = F.mse_loss(preds, targets, reduction='mean')
+            train_loss += loss.item()
+            loss.backward()
+            optimizer.step()
 
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"

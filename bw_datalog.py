@@ -1,9 +1,13 @@
 import box_world as bw
 import data
+import utils
 from pyDatalog import pyDatalog as pyd
 from modules import RelationalDRLNet
 from utils import assert_equal
 import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+import main
 
 
 def abstractify(obs):
@@ -179,24 +183,57 @@ def unembed_state(state):
     return abs_state
 
 
-def abstract_sv_data(env, n):
+def abstract_sv_data(env, n) -> list[tuple]:
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
+
+    datas = []
     for traj in trajs:
         states, moves = traj
+        check_traj(states, moves)
+        state_tensors = [data.obs_to_tensor(state) for state in states]
         abs_states = [abstractify_datalog(state) for state in states]
         embed_states = [embed_state(abs_state) for abs_state in abs_states]
         unembed_states = [unembed_state(state) for state in embed_states]
         for state, unembed in zip(abs_states, unembed_states):
             assert_equal(state, unembed)
 
+        datas += list(zip(state_tensors, embed_states))
+
+    return datas
+
+
+class ListDataset(Dataset):
+    def __init__(self, lst):
+        self.lst = lst
+
+    def __len__(self):
+        return len(self.lst)
+
+    def __getitem__(self, idx):
+        return self.lst[idx]
+
+
+class AbstractEmbedNet(nn.Module):
+    def __init__(self, net):
+        super().__init__()
+        self.net = net
+
+    def forward(self, x):
+        out = self.net(x)
+        # reshape to (batch_size, 2, C, C)
+        C = bw.NUM_COLORS
+        out = out.reshape(out.shape[0], 2, C, C)
+        return out
+
 
 # seems like I have to do this outside of the function to get it to work?
 pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
-env = bw.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
-trajs = [bw.generate_abstract_traj(env) for _ in range(100)]
-for traj in trajs:
-    states, moves = traj
-    check_traj(states, moves)
 
-state_net = RelationalDRLNet(out_dim=2 * bw.NUM_COLORS * bw.NUM_COLORS)
-abstract_sv_data(env, n=100)
+n = 100
+env = bw.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
+abs_data = ListDataset(abstract_sv_data(env, n=n))
+dataloader = DataLoader(abs_data, batch_size=16, shuffle=True)
+
+net = AbstractEmbedNet(RelationalDRLNet(input_channels=bw.NUM_ASCII, out_dim=2 * bw.NUM_COLORS * bw.NUM_COLORS))
+print(utils.num_params(net), 'parameters')
+main.sv_train2(dataloader, net=net, epochs=10, lr=3e-4, save_every=None, print_every=1)
