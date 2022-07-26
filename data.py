@@ -155,7 +155,7 @@ j       (b, 2) stop logps
         obs = env.reset()
 
         if render:
-            box_world.render_obs(obs, pause=1)
+            box_world.render_obs(obs, pause=10)
 
         # if i < 10:
             # wandb.log({f'test/obs': wandb.Image(box_world.obs_figure(obs))})
@@ -163,6 +163,7 @@ j       (b, 2) stop logps
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
         correct_solved_pred = True
+        options2 = []
         t = -1
         options = []
         moves_without_moving = 0
@@ -204,6 +205,7 @@ j       (b, 2) stop logps
                 option_start_s = obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
+                options2.append(current_option)
             else:
                 # dont overwrite red dot
                 if options_trace[prev_pos] != 'e':
@@ -258,6 +260,7 @@ j       (b, 2) stop logps
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
             num_solved += 1
+            print(f'{options2=}')
 
         if render:
             box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
