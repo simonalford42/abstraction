@@ -220,6 +220,8 @@ def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, pri
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
     net.train()
 
+    total_hard_matches = 0
+
     for epoch in range(epochs):
         train_loss = 0
         start = time.time()
@@ -228,6 +230,15 @@ def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, pri
 
             inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
             preds = net(inputs)
+            # greedily convert probabilities to hard predictions
+            hard_preds = torch.round(preds)
+            # calculate number of hard matches by iterating through and counting perfect matches
+            num_hard_matches = 0
+            for pred, target in zip(hard_preds, targets):
+                if torch.equal(pred, target):
+                    num_hard_matches += 1
+            total_hard_matches += num_hard_matches
+
             loss = F.binary_cross_entropy(preds, targets, reduction='mean')
             train_loss += loss.item()
             loss.backward()
@@ -236,7 +247,8 @@ def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, pri
         if print_every and epoch % print_every == 0:
             print(f"epoch: {epoch}\t"
                   + f"train loss: {train_loss}\t"
-                  + f"({time.time() - start:.1f}s)")
+                  + f"({time.time() - start:.1f}s)\t"
+                  + f"acc: {total_hard_matches / len(dataloader.dataset):.2f}")
 
 
 def adjust_state_dict(state_dict):
