@@ -61,10 +61,10 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
             else:
                 t_i = states
 
-            if params.test_every and epoch % params.test_every == 0 and first:
-                preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
-                wandb.log({'avg cc loss': (t_i[:, 1] - preds).sum() / t_i.shape[0]})
-                first = False
+            # if params.test_every and epoch % params.test_every == 0 and first:
+            #     preds = control_net.macro_transitions2(t_i[:, 0], options[:, 0])
+            #     wandb.log({'avg cc loss': (t_i[:, 1] - preds).sum() / t_i.shape[0]})
+            #     first = False
 
             loss = abstract.fine_tune_loss_v3(t_i, options, solveds, control_net, masks)
 
@@ -75,6 +75,8 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
             optimizer.step()
             optimizer.zero_grad()
             updates += B
+
+        wandb.log({'loss': train_loss})
 
         if (params.test_every
                 and (not last_test_time
@@ -94,7 +96,7 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
 
         epoch += 1
 
-    if not params.no_log:
+    if not params.no_log and params.save_every:
         path = utils.save_model(control_net, f'models/{params.id}_control.pt')
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
@@ -140,8 +142,7 @@ def train(net: nn.Module, params: dict[str, Any]):
             loss.backward()
             optimizer.step()
 
-        wandb.log({'epoch': epoch,
-                   'loss': train_loss})
+        wandb.log({'loss': train_loss})
         if params.gumbel:
             wandb.log({'gumbel_temp': abstract.GUMBEL_TEMP})
 
@@ -152,9 +153,7 @@ def train(net: nn.Module, params: dict[str, Any]):
 
             # test_env = box_world.BoxWorldEnv(seed=params.seed)
             # print('fixed test env')
-            test_acc = data.eval_options_model(
-                net.control_net, test_env, n=params.num_test,
-                epoch=epoch)
+            test_acc = data.eval_options_model(net.control_net, test_env, n=params.num_test)
             # test_acc = planning.eval_planner(
             #     net.control_net, box_world.BoxWorldEnv(seed=params.seed), n=params.num_test,
             # )
@@ -283,7 +282,6 @@ def boxworld_main():
     parser.add_argument('--load', action='store_true')
     parser.add_argument('--ellis', action='store_true')
     parser.add_argument('--no_log', action='store_true')
-    parser.add_argument('--num_test', type=int, default=200)
     parser.add_argument('--fine_tune', action='store_true')
     parser.add_argument('--tau_precompute', action='store_true')
     parser.add_argument('--replace_trans_net', action='store_true')
@@ -301,9 +299,13 @@ def boxworld_main():
     parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1, 2, 3, 4],
                         help='box world env solution_length, may be single number or tuple of options')
     parser.add_argument('--muzero', action='store_true')
-    parser.add_argument('--test_every', type=float, default=90, help='number of minutes to test every, if false will not test')
+    parser.add_argument('--muzero_scratch', action='store_true')
+    parser.add_argument('--num_test', type=int, default=200)
+    parser.add_argument('--test_every', type=float, default=60, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     params = parser.parse_args()
+
+    featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
     if not params.seed:
         seed = random.randint(0, 2**32 - 1)
@@ -322,10 +324,11 @@ def boxworld_main():
     if params.ellis:
         params.batch_size *= 2
 
-    if params.fine_tune:
-        params.load = True
+    if params.fine_tune and not params.load:
+        print('WARNING: params.load = False, creating new model')
+        # params.load = True
 
-    params.traj_updates = 1E9 if params.fine_tune else 1E7  # default: 1E7
+    params.traj_updates = 1E8 if params.fine_tune or params.muzero else 1E7  # default: 1E7
     params.model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
     params.gumbel_sched = make_gumbel_schedule_fn(params)
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
@@ -339,27 +342,46 @@ def boxworld_main():
         params.num_test = 5
 
     if params.no_log:
-        global mlflow; mlflow = utils.NoMlflowRun()
+        global mlflow
+        mlflow = utils.NoMlflowRun()
     else:
         mlflow.set_experiment('Boxworld 3/22')
 
-    wandb.init(project="abstraction", mode='disabled' if params.no_log else 'online')
+
+    if params.muzero:
+        params.load = True
 
     net = make_net(params).to(DEVICE)
+
+    if params.muzero:
+        data_net = net
+
+        if params.muzero_scratch:
+            params.load = False
+            net = make_net(params).to(DEVICE)
 
     with Timing('Completed training'):
         with mlflow.start_run():
             params.id = mlflow.active_run().info.run_id
             print(f"Starting run:\n{mlflow.active_run().info.run_id}")
-            print(f"params: {params}")
-            wandb.config = vars(params)
+
+            for p in featured_params:
+                print(p.upper() + ': \t' + str(getattr(params, p)))
+            print(f'{params=}')
+
+            wandb.init(project="abstraction",
+                       mode='disabled' if params.no_log else 'online',
+                       config=vars(params))
 
             if params.muzero:
-                muzero.boxworld_main(net.control_net, params)
+                muzero.main(net.control_net, params, data_net=data_net.control_net)
             elif params.fine_tune:
                 fine_tune(net.control_net, params)
             else:
                 train(net, params)
+
+            for p in featured_params:
+                print(p.upper() + ': \t' + str(getattr(params, p)))
 
 
 if __name__ == '__main__':
