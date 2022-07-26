@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
+import utils
 from utils import assert_equal, DEVICE
 from torch.distributions import Categorical
 import torch.nn as nn
@@ -17,7 +18,7 @@ CONTINUE_IX = 1 - STOP_IX
 UNSOLVED_IX, SOLVED_IX = 0, 1
 
 
-def eval_options_model_interactive(control_net, env, n=100, option='silent', epoch=None):
+def eval_options_model_interactive(control_net, env, n=100, option='silent'):
     control_net.eval()
     num_solved = 0
     check_cc = hasattr(control_net, 'tau_net')
@@ -134,7 +135,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent', epo
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, epoch=None, argmax=True):
+def eval_options_model(control_net, env, n=100, render=False, argmax=True):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -156,8 +157,8 @@ j       (b, 2) stop logps
         if render:
             box_world.render_obs(obs, pause=10)
 
-        if i < 10:
-            wandb.log({f'test/epoch_{epoch}_obs': wandb.Image(box_world.obs_figure(obs))})
+        # if i < 10:
+            # wandb.log({f'test/obs': wandb.Image(box_world.obs_figure(obs))})
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
@@ -263,8 +264,8 @@ j       (b, 2) stop logps
 
         if render:
             box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
-        if i < 10:
-            wandb.log({f'test/epoch_{epoch}_obs2': wandb.Image(box_world.obs_figure(options_trace))})
+        # if i < 10:
+            # wandb.log({f'test/obs2': wandb.Image(box_world.obs_figure(options_trace))})
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
@@ -273,6 +274,7 @@ j       (b, 2) stop logps
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
         wandb.log({'test/solved_pred_acc': solved_acc})
 
+    print(f'Solved {num_solved}/{n} episodes')
     control_net.train()
     return num_solved / n
 
@@ -577,6 +579,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     argmax: select options, actions, etc by argmax not by sampling.
     """
     obs = env.obs
+
     options_trace = obs  # as we move, we color over squares in this where we moved, to render later
     done, solved = False, False
     option_at_step_i = []  # option at step i

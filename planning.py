@@ -216,6 +216,11 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=F
     return actions, s, done
 
 
+def is_solved_by_options(env, control_net, options):
+    _, _, solved = llc_plan(options, control_net, env)
+    return solved
+
+
 def llc_plan(options, control_net, env, render=False) -> tuple[list[list], list, bool]:
     s = data.obs_to_tensor(env.obs).to(DEVICE)
     all_actions = []
@@ -285,11 +290,11 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
 def eval_planner(control_net, env, n):
     control_net.eval()
 
-    solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
-    solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
-    print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
-    wandb.log({'test/model_acc': solved_with_model/n,
-               'test/simulator_acc': solved_with_sim/n})
+    # solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
+    # solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
+    # print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
+    # wandb.log({'test/model_acc': solved_with_model/n,
+               # 'test/simulator_acc': solved_with_sim/n})
 
     num_solved = 0
     lengths = []
@@ -298,6 +303,7 @@ def eval_planner(control_net, env, n):
         env.reset()
         obs = data.obs_to_tensor(env.obs).to(DEVICE)
         solved, options, _ = data.full_sample_solve(env, control_net, render=False, argmax=True)
+
         if solved:
             num_solved += 1
             lengths.append(len(options))
@@ -316,10 +322,11 @@ def eval_planner(control_net, env, n):
     control_net.train()
 
     print(f'Solved {num_solved}/{n}.')
+    print(f"lengths: {lengths}")
     wandb.log({'test/acc': num_solved/n})
     lengths = Counter(lengths)
     if num_solved > 0:
-        for i in range(max(lengths)):
+        for i in range(max(lengths) + 1):
             if lengths[i] > 0:
                 length_acc = correct_with_length[i] / lengths[i]
                 print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={length_acc:.2f}')
