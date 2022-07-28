@@ -155,7 +155,7 @@ j       (b, 2) stop logps
         obs = env.reset()
 
         if render:
-            box_world.render_obs(obs, pause=10)
+            box_world.render_obs(obs, pause=1)
 
         # if i < 10:
             # wandb.log({f'test/obs': wandb.Image(box_world.obs_figure(obs))})
