@@ -228,6 +228,10 @@ def sv_train2(dataloader: DataLoader, net, params):
 
     while updates < params.traj_updates:
         total_hard_matches = 0
+        total_negatives = 0
+        total_positives = 0
+        total_negative_matches = 0
+        total_positive_matches = 0
 
         train_loss = 0
         start = time.time()
@@ -239,11 +243,17 @@ def sv_train2(dataloader: DataLoader, net, params):
             # greedily convert probabilities to hard predictions
             hard_preds = torch.round(preds)
             # calculate number of hard matches by iterating through and counting perfect matches
-            num_hard_matches = 0
             for pred, target in zip(hard_preds, targets):
+                negative_spots = (target == 0)
+                positive_spots = (target == 1)
+                match_tensor = (target == pred)
+                total_negatives += negative_spots.sum()
+                total_positives += positive_spots.sum()
+                total_negative_matches += (negative_spots * match_tensor).sum()
+                total_positive_matches += (positive_spots * match_tensor).sum()
+
                 if torch.equal(pred, target):
-                    num_hard_matches += 1
-            total_hard_matches += num_hard_matches
+                    total_hard_matches += 1
 
             loss = F.binary_cross_entropy(preds, targets, reduction='mean')
             train_loss += loss.item()
@@ -251,9 +261,13 @@ def sv_train2(dataloader: DataLoader, net, params):
             optimizer.step()
 
         acc = total_hard_matches / len(dataloader.dataset)
+        negative_acc = total_negative_matches / total_negatives
+        positive_acc = total_positive_matches / total_positives
 
         wandb.log({'loss': train_loss,
-                   'acc': acc})
+                   'acc': acc,
+                   'negative_acc': negative_acc,
+                   'positive_acc': positive_acc})
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -450,6 +464,7 @@ def neurosym(params):
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
     net = bwd.AbstractEmbedNet(bwd.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
+    # net = bwd.AbstractEmbedNet(bwd.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=1 * box_world.NUM_COLORS * box_world.NUM_COLORS))
     net = net.to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     sv_train2(dataloader, net, params)

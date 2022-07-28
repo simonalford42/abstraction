@@ -156,6 +156,8 @@ def embed_state(abs_state):
         for args in abs_state['domino']:
             A[1, colors.index(args[0]), colors.index(args[1])] = 1
     return A
+    # testing witih just predicting the held-key
+    # return A[0:1]
 
 
 def unembed_state(state):
@@ -220,8 +222,9 @@ class AbstractEmbedNet(nn.Module):
 
     def forward(self, x):
         out = self.net(x)
-        # reshape to (batch_size, 2, C, C)
         C = bw.NUM_COLORS
+        # out = out.reshape(out.shape[0], 1, C, C)
+        # reshape to (batch_size, 2, C, C)
         out = out.reshape(out.shape[0], 2, C, C)
         out = torch.sigmoid(out)
         return out
