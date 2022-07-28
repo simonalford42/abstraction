@@ -260,7 +260,7 @@ j       (b, 2) stop logps
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
             num_solved += 1
-            print(f'{options2=}')
+            # print(f'{options2=}')
 
         if render:
             box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)

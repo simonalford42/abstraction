@@ -1,6 +1,7 @@
 from typing import Any
 import numpy as np
 import wandb
+import mlflow
 from torch.utils.data import DataLoader
 import planning
 import argparse
@@ -8,17 +9,18 @@ import torch
 import torch.nn as nn
 import random
 import utils
-import mlflow
-from utils import Timing, DEVICE, assert_equal
+from utils import Timing, DEVICE
 from abstract import boxworld_controller, boxworld_homocontroller
 import abstract
 from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
 import data
-from modules import ShrinkingRelationalDRLNet
+from modules import ShrinkingRelationalDRLNet, RelationalDRLNet
 import muzero
 import torch.nn.functional as F
+import bw_datalog as bwd
+from pyDatalog import pyDatalog as pyd
 
 
 def fine_tune(control_net: nn.Module, params: dict[str, Any]):
@@ -102,7 +104,7 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def train(net: nn.Module, params: dict[str, Any]):
+def learn_options(net: nn.Module, params: dict[str, Any]):
     dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=params.seed), n=params.n, traj=True)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
@@ -212,16 +214,21 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
-def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
+def sv_train2(dataloader: DataLoader, net, params):
     """
     Train a basic supervised model.
     """
-    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
 
-    total_hard_matches = 0
+    params.epochs = int(params.traj_updates / params.n)
 
-    for epoch in range(epochs):
+    updates = 0
+    epoch = 0
+
+    while updates < params.traj_updates:
+        total_hard_matches = 0
+
         train_loss = 0
         start = time.time()
         for inputs, targets in dataloader:
@@ -243,11 +250,17 @@ def sv_train2(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, pri
             loss.backward()
             optimizer.step()
 
-        if print_every and epoch % print_every == 0:
-            print(f"epoch: {epoch}\t"
-                  + f"train loss: {train_loss}\t"
-                  + f"({time.time() - start:.1f}s)\t"
-                  + f"acc: {total_hard_matches / len(dataloader.dataset):.2f}")
+        acc = total_hard_matches / len(dataloader.dataset)
+
+        wandb.log({'loss': train_loss,
+                   'acc': acc})
+
+        epoch += 1
+        updates += len(dataloader.dataset)
+
+    if not params.no_log and params.save_every:
+        path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
 def adjust_state_dict(state_dict):
@@ -314,6 +327,7 @@ def boxworld_main():
     parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--lr', type=float, default=8E-4)
+    parser.add_argument('--batch_size', type=int, default=argparse.SUPPRESS)
     parser.add_argument('--abstract_dim', type=int, default=32)
     parser.add_argument('--tau_noise_std', type=float, default=0.0, help='STD of N(0, sigma) noise added to abstract state embedding to aid planning')
     parser.add_argument('--freeze', type=float, default=False, help='what % through training to freeze some subnets of control net')
@@ -342,6 +356,7 @@ def boxworld_main():
     parser.add_argument('--num_test', type=int, default=200)
     parser.add_argument('--test_every', type=float, default=60, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
+    parser.add_argument('--neurosym', action='store_true')
     params = parser.parse_args()
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
@@ -356,18 +371,20 @@ def boxworld_main():
     if type(params.length) == int:
         params.length = (params.length, )  # box_world env expects tuple
 
-    if params.relational_micro or params.gumbel or params.shrink_micro_net:
-        params.batch_size = 16
-    else:
-        params.batch_size = 32
-    if params.ellis:
-        params.batch_size *= 2
+    if not hasattr(params, 'batch_size'):
+        if params.relational_micro or params.gumbel or params.shrink_micro_net:
+            params.batch_size = 16
+        else:
+            params.batch_size = 32
+        if params.ellis:  # more memory available!
+            params.batch_size *= 2
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
         # params.load = True
 
-    params.traj_updates = 1E8 if params.fine_tune or params.muzero else 1E7  # default: 1E7
+    if not hasattr(params, 'traj_updates'):
+        params.traj_updates = 1E8 if (params.fine_tune or params.muzero or params.neurosym) else 1E7  # default: 1E7
     params.model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
     params.gumbel_sched = make_gumbel_schedule_fn(params)
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
@@ -385,7 +402,6 @@ def boxworld_main():
         mlflow = utils.NoMlflowRun()
     else:
         mlflow.set_experiment('Boxworld 3/22')
-
 
     if params.muzero:
         params.load = True
@@ -416,11 +432,27 @@ def boxworld_main():
                 muzero.main(net.control_net, params, data_net=data_net.control_net)
             elif params.fine_tune:
                 fine_tune(net.control_net, params)
+            elif params.neurosym:
+                neurosym(params)
             else:
-                train(net, params)
+                learn_options(net, params)
 
             for p in featured_params:
                 print(p.upper() + ': \t' + str(getattr(params, p)))
+
+
+def neurosym(params):
+    # seems like I have to do this outside of the function to get it to work?
+    pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
+
+    env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
+    abs_data = bwd.ListDataset(bwd.abstract_sv_data(env, n=params.n))
+    dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
+
+    net = bwd.AbstractEmbedNet(bwd.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
+    net = net.to(DEVICE)
+    print(f"Net has {utils.num_params(net)} parameters")
+    sv_train2(dataloader, net, params)
 
 
 if __name__ == '__main__':

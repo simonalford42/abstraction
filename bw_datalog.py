@@ -3,7 +3,7 @@ import data
 import utils
 from pyDatalog import pyDatalog as pyd
 from modules import RelationalDRLNet
-from utils import assert_equal
+from utils import assert_equal, DEVICE
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
@@ -229,12 +229,3 @@ class AbstractEmbedNet(nn.Module):
 
 # seems like I have to do this outside of the function to get it to work?
 pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
-
-n = 100
-env = bw.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
-abs_data = ListDataset(abstract_sv_data(env, n=n))
-dataloader = DataLoader(abs_data, batch_size=16, shuffle=True)
-
-net = AbstractEmbedNet(RelationalDRLNet(input_channels=bw.NUM_ASCII, out_dim=2 * bw.NUM_COLORS * bw.NUM_COLORS))
-print(utils.num_params(net), 'parameters')
-main.sv_train2(dataloader, net=net, epochs=10, lr=3e-4, save_every=None, print_every=1)
