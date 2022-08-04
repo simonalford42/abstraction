@@ -124,6 +124,14 @@ def logaddexp(tensor, other, mask=None):
     return a + ((tensor - a).exp()*mask[0] + (other - a).exp()*mask[1]).log()
 
 
+def log1minus(x):
+    """
+    Returns log(1 - x.exp())
+    This is the logged version of finding 1 - p
+    """
+    return (1 - x.exp()).log()
+
+
 class NoLogRun():
     def __setitem__(self, key, item):
         pass

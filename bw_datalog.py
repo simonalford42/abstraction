@@ -3,11 +3,14 @@ import data
 import utils
 from pyDatalog import pyDatalog as pyd
 from modules import RelationalDRLNet
-from utils import assert_equal
+from utils import assert_equal, DEVICE
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import main
+
+STATE_EMBED_TRUE_IX = 1
+STATE_EMBED_FALSE_IX = 0
 
 
 def abstractify_datalog(obs):
@@ -123,6 +126,8 @@ def tensorize_symbolic_state(abs_state):
         for args in abs_state['domino']:
             A[1, colors.index(args[0]), colors.index(args[1])] = 1
     return A
+    # testing witih just predicting the held-key
+    # return A[0:1]
 
 
 def parse_symbolic_tensor(state):
@@ -153,7 +158,7 @@ def parse_symbolic_tensor(state):
 def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
-    Returns a list of tuples (state, tensorized_symbolic_state)
+    Returns a list of tuples of the form (abs_state, abs_action, abs_next_state)
     '''
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 
@@ -163,15 +168,7 @@ def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
         states, moves = traj
         check_datalog_consistency(states, moves)
         state_tensors = [data.obs_to_tensor(state) for state in states]
-        symbolic_states = [abstractify_datalog(state) for state in states]
-        tensor_states = [tensorize_symbolic_state(symbolic_state) for symbolic_state in symbolic_states]
-        datas.append((symbolic_states, tensor_states))
-        parsed_states = [parse_symbolic_tensor(state) for state in symbolic_states]
-        for symbolic_state, parsed_state in zip(symbolic_states, parsed_states):
-            assert_equal(symbolic_state, parsed_state)
-
-        # take as input the raw state, try to generate the tensor encoding of the symbolic state
-        datas += list(zip(state_tensors, tensor_states))
+        datas += list(zip(state_tensors[:-1], moves, state_tensors[1:]))
 
     return datas
 
@@ -197,8 +194,9 @@ class AbstractEmbedNet(nn.Module):
 
     def forward(self, x):
         out = self.net(x)
-        # reshape to (batch_size, 2, C, C)
         C = bw.NUM_COLORS
+        # out = out.reshape(out.shape[0], 1, C, C)
+        # reshape to (batch_size, 2, C, C)
         out = out.reshape(out.shape[0], 2, C, C)
         out = torch.sigmoid(out)
         return out
@@ -206,13 +204,3 @@ class AbstractEmbedNet(nn.Module):
 
 # seems like I have to do this outside of the function to get it to work?
 pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
-
-n = 1
-env = bw.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
-abs_data = ListDataset(abstract_sv_data(env, n=n))
-
-dataloader = DataLoader(abs_data, batch_size=16, shuffle=True)
-
-net = AbstractEmbedNet(RelationalDRLNet(input_channels=bw.NUM_ASCII, out_dim=2 * bw.NUM_COLORS * bw.NUM_COLORS))
-print(utils.num_params(net), 'parameters')
-main.sv_train2(dataloader, net=net, epochs=10, lr=3e-4, save_every=None, print_every=1)
