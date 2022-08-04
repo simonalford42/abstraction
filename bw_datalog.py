@@ -2,7 +2,6 @@ import box_world as bw
 import data
 import utils
 from pyDatalog import pyDatalog as pyd
-from modules import RelationalDRLNet
 from utils import assert_equal, DEVICE
 import torch
 import torch.nn as nn

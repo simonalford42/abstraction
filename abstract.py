@@ -948,14 +948,15 @@ class HomoController(nn.Module):
         return action_logps[0], stop_logps[0], start_logps[0], None
 
 
-def boxworld_relational_net(out_dim: int = 4):
+def boxworld_relational_net(dim: int = 64, out_dim: int = 4):
     return RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                             num_attn_blocks=2,
                             num_heads=4,
+                            d=dim,
                             out_dim=out_dim)
 
 
-def boxworld_homocontroller(b, separate_option_nets=False, shrink_micro_net=False):
+def boxworld_homocontroller(b, dim=64, separate_option_nets=False, shrink_micro_net=False):
     # a * b for action probs, 2 * b for stop probs, b for start probs
     a = 4
 
@@ -966,12 +967,14 @@ def boxworld_homocontroller(b, separate_option_nets=False, shrink_micro_net=Fals
         relational_net = ShrinkingRelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                                    num_attn_blocks=2,
                                                    num_heads=4,
+                                                   d=dim,
                                                    out_dim=out_dim)
     else:
         out_dim = a * b + 2 * b + b
         relational_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                           num_attn_blocks=2,
                                           num_heads=4,
+                                          d=dim,
                                           out_dim=out_dim)
 
     control_net = HomoController(a=a, b=b, net=relational_net)
@@ -979,7 +982,7 @@ def boxworld_homocontroller(b, separate_option_nets=False, shrink_micro_net=Fals
 
 
 class SeparateNetsHomoController(nn.Module):
-    def __init__(self, b):
+    def __init__(self, b, dim):
         super().__init__()
         self.b = b
         self.a = 4
@@ -987,6 +990,7 @@ class SeparateNetsHomoController(nn.Module):
         self.relational_nets = nn.ModuleList([RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                                                num_attn_blocks=2,
                                                                num_heads=4,
+                                                               dim=dim,
                                                                out_dim=out_dim)
                                               for _ in range(b)])
 
@@ -1015,7 +1019,7 @@ class SeparateNetsHomoController(nn.Module):
 
 
 class ActionsMicroNet(nn.Module):
-    def __init__(self, a, b, relational):
+    def __init__(self, a, b, relational, dim=64):
         super().__init__()
         self.b = b
         out_dim = a * b
@@ -1023,6 +1027,7 @@ class ActionsMicroNet(nn.Module):
             self.micro_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                               num_attn_blocks=2,
                                               num_heads=4,
+                                              d=dim,
                                               out_dim=out_dim)
         else:
             self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
@@ -1037,19 +1042,21 @@ class ActionsMicroNet(nn.Module):
 
 
 class ActionsAndStopsMicroNet(nn.Module):
-    def __init__(self, a, b, relational=False, shrinking=False, shrink_loss_scale=1):
+    def __init__(self, a, b, dim=64, relational=False, shrinking=False, shrink_loss_scale=1):
         super().__init__()
         out_dim = a * b + 2 * b
         if shrinking:
             self.micro_net = ShrinkingRelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                                        num_attn_blocks=2,
                                                        num_heads=4,
+                                                       d=dim,
                                                        out_dim=out_dim,
                                                        shrink_loss_scale=shrink_loss_scale)
         elif relational:
             self.micro_net = RelationalDRLNet(input_channels=box_world.NUM_ASCII,
                                               num_attn_blocks=2,
                                               num_heads=4,
+                                              d=dim,
                                               out_dim=out_dim)
         else:
             self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
@@ -1116,13 +1123,14 @@ def boxworld_controller(typ, params):
         assert typ == 'homo'
 
     if typ == 'homo':
-        return boxworld_homocontroller(b, separate_option_nets=params.separate_option_nets)
+        return boxworld_homocontroller(b, dim=params.dim, separate_option_nets=params.separate_option_nets)
 
     if typ in ['ccts', 'ccts-reduced']:
-        micro_net = ActionsMicroNet(a, b, relational=params.relational_micro)
+        micro_net = ActionsMicroNet(a, b, dim=params.dim, relational=params.relational_micro)
     else:
         micro_net = ActionsAndStopsMicroNet(a, b, relational=params.relational_micro,
                                             shrinking=params.shrink_micro_net,
+                                            dim=params.dim,
                                             shrink_loss_scale=params.shrink_loss_scale)
 
     if typ == 'ccts-reduced':
@@ -1137,7 +1145,7 @@ def boxworld_controller(typ, params):
         model = HeteroController
 
     tau_module = NormModule(p=tau_lp_norm, dim=t)
-    tau_net = boxworld_relational_net(out_dim=t)
+    tau_net = boxworld_relational_net(out_dim=t, dim=params.dim)
 
     if params.gumbel:
         tau_net = nn.Sequential(tau_net, gumbel_module)

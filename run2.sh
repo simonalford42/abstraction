@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 
-# sbatch --partition ellis run.sh --batch_size 128 --neurosym --n 20000
-sbatch run.sh --batch_size 128 --neurosym --n 20000 --length 2
-
-# sbatch --partition ellis run.sh --batch_size 128 --neurosym --n 20000
-
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 8E-4 --seed 1
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 8E-4 --seed 2
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 8E-4 --seed 3
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 8E-4 --seed 4
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 8E-4 --seed 5
-
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 1E-4 --seed 1
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 1E-4 --seed 2
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 1E-4 --seed 3
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 1E-4 --seed 4
-# sbatch run.sh --model hmm-homo --abstract_pen 1 --lr 1E-4 --seed 5
+sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 4 --num_heads 8 --traj_updates 5E8
+sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 8 --num_heads 8 --traj_updates 5E8
+sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 8 --num_heads 16 --traj_updates 5E8
+sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 4 --num_heads 16 --traj_updates 5E8

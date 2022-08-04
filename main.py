@@ -113,7 +113,10 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
     optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
     test_env = box_world.BoxWorldEnv()
-    print(f"Net has {utils.num_params(net)} parameters")
+
+    num_params = utils.num_params(net)
+    print(f"Net has {num_params} parameters")
+    wandb.config.params = num_params
 
     last_test_time = False
     last_save_time = time.time()
@@ -269,6 +272,9 @@ def sv_train2(dataloader: DataLoader, net, params):
                    'negative_acc': negative_acc,
                    'positive_acc': positive_acc})
 
+        if epoch % 10 == 0:
+            print(f'{loss=}, {acc=}')
+
         epoch += 1
         updates += len(dataloader.dataset)
 
@@ -371,6 +377,9 @@ def boxworld_main():
     parser.add_argument('--test_every', type=float, default=60, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     parser.add_argument('--neurosym', action='store_true')
+    parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
+    parser.add_argument('--num_attn_blocks', type=int, default=2, help='only used for neurosym')
+    parser.add_argument('--num_heads', type=int, default=4, help='only used for neurosym')
     params = parser.parse_args()
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
@@ -388,10 +397,13 @@ def boxworld_main():
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
             params.batch_size = 16
+        elif params.neurosym:
+            params.batch_size=128
         else:
             params.batch_size = 32
         if params.ellis:  # more memory available!
             params.batch_size *= 2
+
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
@@ -463,10 +475,12 @@ def neurosym(params):
     abs_data = bwd.ListDataset(bwd.abstract_sv_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    net = bwd.AbstractEmbedNet(bwd.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
-    # net = bwd.AbstractEmbedNet(bwd.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=1 * box_world.NUM_COLORS * box_world.NUM_COLORS))
+    net = bwd.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=params.dim, num_heads=params.num_heads, num_attn_blocks=params.num_attn_blocks))
     net = net.to(DEVICE)
-    print(f"Net has {utils.num_params(net)} parameters")
+    num_params = utils.num_params(net)
+    print(f"Net has {num_params} parameters")
+    wandb.config.params = num_params
+
     sv_train2(dataloader, net, params)
 
 
