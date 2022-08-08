@@ -294,8 +294,6 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program,
 
     while updates < params.traj_updates:
         train_loss = 0
-        start = time.time()
-
         count = 0
         for states, moves, target_states in dataloader:
             count += 1
@@ -311,6 +309,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program,
             # print(f"{target_state_embeds=}")
             # loss = F.binary_cross_entropy(state_preds.exp(), target_state_embeds.exp())
             loss = F.mse_loss(state_preds, target_state_embeds)
+
             train_loss += loss.item()
             loss.backward()
             optimizer.step()
@@ -520,6 +519,8 @@ def neurosym_train(params):
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
     net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
+    print(net.out_dim)
+    assert False
     net = net.to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
