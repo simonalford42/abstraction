@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
-sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 4 --num_heads 8 --traj_updates 5E8
-sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 8 --num_heads 8 --traj_updates 5E8
-sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 8 --num_heads 16 --traj_updates 5E8
-sbatch run.sh --neurosym --length 4 --dim 128 --num_attn_blocks 4 --num_heads 16 --traj_updates 5E8
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 2 --num_heads 4 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 2 --num_heads 4 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 4 --num_heads 4 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 128 --num_attn_blocks 4 --num_heads 4 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 4 --num_heads 8 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 128 --num_attn_blocks 4 --num_heads 8 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 8 --num_heads 8 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 128 --num_attn_blocks 8 --num_heads 8 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 8 --num_heads 16 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 128 --num_attn_blocks 8 --num_heads 16 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 4 --num_heads 16 --traj_updates 2E7
+sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 128 --num_attn_blocks 4 --num_heads 16 --traj_updates 2E7
+
+sbatch run.sh --model hmm-homo --abstract_pen 1 --traj_updates 4E7 --lr 4E-4
+sbatch run.sh --model hmm-homo --abstract_pen 1 --traj_updates 4E7 --lr 4E-4
+sbatch run.sh --model hmm-homo --abstract_pen 1 --traj_updates 4E7 --lr 4E-4

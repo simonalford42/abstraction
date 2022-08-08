@@ -19,6 +19,8 @@ from hypothesis import example, given, settings, strategies as st
 from hypothesis.strategies import composite
 from hypothesis.extra import numpy as np_st
 
+import neurosym
+
 # mlflow gives a lot of warnings from its dependencies, ignore them
 import warnings
 warnings.filterwarnings("module", category=DeprecationWarning)

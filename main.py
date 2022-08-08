@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import random
 import utils
-from utils import Timing, DEVICE
+from utils import Timing, DEVICE, assert_shape, assert_equal
 from abstract import boxworld_controller, boxworld_homocontroller
 import abstract
 from hmm import CausalNet, SVNet, HmmNet
@@ -19,7 +19,7 @@ import data
 from modules import ShrinkingRelationalDRLNet, RelationalDRLNet
 import muzero
 import torch.nn.functional as F
-import bw_datalog as bwd
+import neurosym
 from pyDatalog import pyDatalog as pyd
 
 
@@ -163,7 +163,7 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
             # test_acc = planning.eval_planner(
             #     net.control_net, box_world.BoxWorldEnv(seed=params.seed), n=params.num_test,
             # )
-            wandb.log({'test/acc': test_acc})
+            wandb.log({'acc': test_acc})
 
         if (not params.no_log and params.save_every
                 and (time.time() - last_save_time > (params.save_every * 60))):
@@ -217,7 +217,7 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
-def sv_train2(dataloader: DataLoader, net, params):
+def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, params):
     """
     Train a basic supervised model.
     """
@@ -274,6 +274,48 @@ def sv_train2(dataloader: DataLoader, net, params):
 
         if epoch % 10 == 0:
             print(f'{loss=}, {acc=}')
+
+        epoch += 1
+        updates += len(dataloader.dataset)
+
+    if not params.no_log and params.save_every:
+        path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
+
+
+def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program, params):
+    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
+    net.train()
+
+    params.epochs = int(params.traj_updates / params.n)
+
+    updates = 0
+    epoch = 0
+
+    while updates < params.traj_updates:
+        train_loss = 0
+        start = time.time()
+
+        count = 0
+        for states, moves, target_states in dataloader:
+            count += 1
+            optimizer.zero_grad()
+
+            states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
+            state_embeds = net(states)
+            target_state_embeds = net(target_states)
+            state_preds = neurosym.world_model_step_prob(state_embeds, moves, world_model_program)
+            # print(f"{state_preds.shape=}")
+            # print(f"{target_state_embeds.shape=}")
+            # print(f"{state_preds=}")
+            # print(f"{target_state_embeds=}")
+            # loss = F.binary_cross_entropy(state_preds.exp(), target_state_embeds.exp())
+            loss = F.mse_loss(state_preds, target_state_embeds)
+            train_loss += loss.item()
+            loss.backward()
+            optimizer.step()
+
+        wandb.log({'loss': train_loss})
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -459,7 +501,7 @@ def boxworld_main():
             elif params.fine_tune:
                 fine_tune(net.control_net, params)
             elif params.neurosym:
-                neurosym(params)
+                neurosym_train(params)
             else:
                 learn_options(net, params)
 
@@ -467,21 +509,21 @@ def boxworld_main():
                 print(p.upper() + ': \t' + str(getattr(params, p)))
 
 
-def neurosym(params):
+def neurosym_train(params):
     # seems like I have to do this outside of the function to get it to work?
     pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
     env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
-    abs_data = bwd.ListDataset(bwd.abstract_sv_data(env, n=params.n))
+
+    # abs_data = neurosym.ListDataset(neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n))
+    abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    net = bwd.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=params.dim, num_heads=params.num_heads, num_attn_blocks=params.num_attn_blocks))
+    net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
     net = net.to(DEVICE)
-    num_params = utils.num_params(net)
-    print(f"Net has {num_params} parameters")
-    wandb.config.params = num_params
-
-    sv_train2(dataloader, net, params)
+    print(f"Net has {utils.num_params(net)} parameters")
+    # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
+    learn_neurosym_world_model(dataloader, net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
 
 
 if __name__ == '__main__':

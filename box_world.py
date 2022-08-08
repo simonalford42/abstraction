@@ -13,10 +13,12 @@ from pycolab.examples.research.box_world import box_world as bw
 
 POS = Tuple[int, int]
 
-NUM_ASCII = len('# *.abcdefghijklmnopqrst')  # 24
-COLORS = 'abcdefghijklmnopqrst*'
+COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
+ASCII = '# .' + COLORS
 GOAL_COLOR = '*'
 NUM_COLORS = len(COLORS)
+# colors like 'abcdefghijklmnopqrst*' and colors like '# .'
+NUM_ASCII = bw.NUM_COLORS + len(bw.OBJECT_COLORS)
 
 
 DEFAULT_GRID_SIZE = (14, 14)
@@ -30,7 +32,7 @@ class BoxWorldEnv(gym.Env):
     def __init__(
         self,
         grid_size=12,  # note grid shape is really (grid_size+2, grid_size+2) bc of border
-        solution_length=(1, 2, 3, 4),
+        solution_length: tuple=(1, 2, 3, 4),
         num_forward=(0, 1, 2, 3, 4),
         num_backward=(0,),
         branch_length=1,
@@ -41,6 +43,8 @@ class BoxWorldEnv(gym.Env):
         # extra 2 because of border
         self.shape = (grid_size + 2, grid_size + 2)
         self.solution_length = solution_length
+        if max(solution_length) + 1 >= bw.NUM_COLORS:
+            raise ValueError(f'Solution length must be less than {bw.NUM_COLORS - 1=}')
         self.num_forward = num_forward
         self.num_backward = num_backward
         self.branch_length = branch_length
@@ -116,7 +120,7 @@ def color_name_to_rgb(name: str) -> Tuple[int]:
 def ascii_to_color(ascii: str):
     ascii = ascii.lower()
     if (ascii not in {bw.BORDER, bw.BACKGROUND, bw.GEM, bw.PLAYER}
-            and ascii not in '# *.abcdefghijklmnopqrst'):
+            and ascii not in ASCII):
         raise ValueError('invalid ascii provided: ' + ascii)
     if ascii == bw.BORDER:
         return color_name_to_rgb('black')
@@ -127,22 +131,20 @@ def ascii_to_color(ascii: str):
     elif ascii == bw.PLAYER:
         return color_name_to_rgb('dimgrey')
     else:
-        s = 'abcdefghijklmnopqrst'
-        i = s.index(ascii)
-        colors = ['brown', 'maroon', 'red', 'orangered', 'orange',
-                  'yellow', 'gold', 'olive', 'greenyellow', 'limegreen', 'green', 'darkgreen', 'cyan',
-                  'dodgerblue', 'blue', 'darkblue', 'indigo', 'purple', 'magenta', 'violet']
-        assert_equal(len(colors), len(s))
+        i = COLORS.index(ascii)
+        colors = ['blue', 'red', 'orange', 'green', 'cyan', 'purple', 'yellow', 'green',
+                  'brown', 'maroon', 'gold', 'olive', 'limegreen', 'dodgerblue', 'indigo', 'violet',
+                  'orangered', 'greenyellow', 'darkgreen', 'darkblue', 'magenta'][:len(COLORS)]
         return color_name_to_rgb(colors[i])
 
 
 def ascii_to_int(ascii: str):
     # lower and uppercase render the same, just like the colors
-    return '# *.abcdefghijklmnopqrst'.index(ascii.lower())
+    return ASCII.index(ascii.lower())
 
 
 def int_to_ascii(ix: int) -> str:
-    return '# *.abcdefghijklmnopqrst'[ix]
+    return ASCII[ix]
 
 
 def to_color_obs(obs):
@@ -222,7 +224,7 @@ def play_game(env):
 
         obs, rew, done, info = env.step(action)
 
-    render_obs(obs, pause=5)
+    # render_obs(obs, pause=5)
 
 
 def get_dominoes(obs) -> dict[str, POS]:
@@ -537,5 +539,6 @@ if __name__ == '__main__':
     #     run_deepmind_ui(**vars(FLAGS))
 
     env = BoxWorldEnv(**vars(FLAGS))
-    play_game(env)
+    while True:
+        play_game(env)
     # profile_traj_generation2(env)

@@ -8,38 +8,8 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import main
 
-
-def abstractify(obs):
-    dominoes = bw.get_dominoes(obs)
-    held_key = bw.get_held_key(obs)
-    return [held_key] + sorted([s.upper() for s in dominoes.keys()], key=lambda s: (len(s), s))
-
-
-def transition(abs_obs, abs_action):
-    '''
-    abs_obs: list of strings
-    abs_action: a single letter of the color key we want to move to
-    returns a new abs_obs.
-    '''
-    held_key = abs_obs[0]
-    assert '.' == abs_obs[1]
-    targets = [x for x in abs_obs[1:] if x[0] == abs_action]
-    assert len(targets) == 1
-    target = targets[0]
-    new_dominoes = abs_obs[1:]
-    if len(target) == 1:
-        # open key
-        new_held_key = target
-        new_dominoes.remove(target)
-    else:
-        if held_key == target[1]:
-            new_held_key = target[0]
-            new_dominoes.remove(target)
-        else:
-            new_held_key = held_key
-
-    new_abs_obs = [new_held_key] + new_dominoes
-    return new_abs_obs
+STATE_EMBED_TRUE_IX = 1
+STATE_EMBED_FALSE_IX = 0
 
 
 def abstractify_datalog(obs):
@@ -129,7 +99,7 @@ def transition_datalog(abs_obs: dict[str, list[tuple[str, str]]], abs_action: tu
     return get_post_transition_facts()
 
 
-def check_traj(states, moves):
+def check_datalog_consistency(states, moves):
     abs_states = [abstractify_datalog(state) for state in states]
     abs_moves = [(move[0].lower(), ) for move in moves]
     for i, (abs_state, abs_move) in enumerate(zip(abs_states, abs_moves)):
@@ -137,7 +107,7 @@ def check_traj(states, moves):
         assert_equal(abs_state2, abs_states[i+1])
 
 
-def embed_state(abs_state):
+def tensorize_symbolic_state(abs_state):
     '''
     Input: dict of facts, {'held_key': [args], 'domino': [args]}
         where args are tuples of the form (X, Y) and X, Y are color strings
@@ -159,7 +129,7 @@ def embed_state(abs_state):
     # return A[0:1]
 
 
-def unembed_state(state):
+def parse_symbolic_tensor(state):
     '''
     Input: 2 x C x C pytorch tensor A, where C is the number of colors
         and A[0, i, 0] is 1 iff the held key is i 1
@@ -184,26 +154,28 @@ def unembed_state(state):
     return abs_state
 
 
-def abstract_sv_data(env, n) -> list[tuple]:
+def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
+    '''
+    Creates symbolic state abstraction data for n episodes of the environment.
+    Returns a list of tuples of the form (abs_state, abs_action, abs_next_state)
+    '''
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 
+    # plural so we don't overwrite the data import
     datas = []
     for traj in trajs:
         states, moves = traj
-        check_traj(states, moves)
+        check_datalog_consistency(states, moves)
         state_tensors = [data.obs_to_tensor(state) for state in states]
-        abs_states = [abstractify_datalog(state) for state in states]
-        embed_states = [embed_state(abs_state) for abs_state in abs_states]
-        unembed_states = [unembed_state(state) for state in embed_states]
-        for state, unembed in zip(abs_states, unembed_states):
-            assert_equal(state, unembed)
-
-        datas += list(zip(state_tensors, embed_states))
+        datas += list(zip(state_tensors[:-1], moves, state_tensors[1:]))
 
     return datas
 
 
 class ListDataset(Dataset):
+    '''
+    Generic Dataset class for data stored in a list.
+    '''
     def __init__(self, lst):
         self.lst = lst
 
