@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-sbatch run.sh --sv_options --traj_updates 1E8 --model fc
-sbatch run.sh --sv_options --traj_updates 1E8 --model fc
-sbatch run.sh --sv_options --traj_updates 1E8 --model attn
-sbatch run.sh --sv_options --traj_updates 1E8 --model attn
+sbatch run.sh --neurosym --traj_updates 1E8
+sbatch run.sh --neurosym --traj_updates 1E8
+
+
 # sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 2 --num_heads 4 --traj_updates 2E7
 # sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 2 --num_heads 4 --traj_updates 2E7
 # sbatch run.sh --model hmm-homo --abstract_pen 1 --dim 64 --num_attn_blocks 4 --num_heads 4 --traj_updates 2E7
