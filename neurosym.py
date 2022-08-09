@@ -1,4 +1,5 @@
 import box_world as bw
+import numpy as np
 import random
 import data
 import utils
@@ -11,6 +12,8 @@ from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
 import main
 from einops import rearrange
+import einops
+import modules
 
 STATE_EMBED_TRUE_IX = 0
 STATE_EMBED_FALSE_IX = 1
@@ -455,6 +458,76 @@ def world_model_data(env, n) -> list[tuple]:
         datas += list(zip(state_tensors[:-1], move_ixs, state_tensors[1:]))
 
     return datas
+
+
+def option_sv_data(env, n) -> list[tuple]:
+    trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
+
+    datas = []
+    for traj in trajs:
+        states, moves = traj
+        tensorized_symbolic_states = [tensorize_symbolic_state(abstractify(state)) for state in states]
+        datas += list(zip(tensorized_symbolic_states[:-1], moves))
+
+    return datas
+
+
+class SVOptionNet(nn.Module):
+    def __init__(self, num_colors, num_options, hidden_dim, num_hidden=2):
+        super().__init__()
+        self.in_shape = (2, num_colors, num_colors, 2)
+        self.in_dim = np.prod(self.in_shape)
+        self.num_options = num_options
+        self.hidden_dim = hidden_dim
+        self.fc = modules.FC(self.in_dim, self.num_options, num_hidden=num_hidden, hidden_dim=hidden_dim)
+
+    def forward(self, x):
+        assert_equal(x.shape[1:], self.in_shape)
+        return self.fc(x.reshape(-1, self.in_dim))
+
+
+class SVOptionNet2(nn.Module):
+    def __init__(self, num_colors, num_options, num_heads=4, num_attn_blocks=2, hidden_dim=64):
+        self.num_colors = num_colors
+        self.num_options = num_options
+        self.in_shape = (2, num_colors, num_colors, 2)
+        self.in_dim = np.prod(self.in_shape)
+        # dimension of embedded predicate: one hot each color and the predicate choice
+        self.d = 2 * self.num_colors + 2
+        self.hidden_dim = hidden_dim
+        self.out_dim = num_options
+
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
+        self.num_attn_blocks = num_attn_blocks
+
+        self.fc = nn.Sequential(nn.Linear(self.d, self.hidden_dim),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.hidden_dim, self.hidden_dim),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.hidden_dim, self.hidden_dim),
+                                nn.ReLU(),
+                                # nn.BatchNorm1d(self.d),
+                                nn.Linear(self.hidden_dim, self.hidden_dim),
+                                nn.ReLU(),
+                                nn.Linear(self.hidden_dim, self.out_dim),)
+
+    def forward(self, x):
+        B = x.shape[0]
+        assert_equal(x.shape[1:], self.in_shape)
+        x = self.embed_predicates(x)
+        assert_shape(x, (B, self.num_colors * self.num_colors * 2, self.d))
+
+        for _ in range(self.num_attn_blocks):
+            x = x + self.attn_block(x, x, x, need_weights=False)[0]
+            x = F.layer_norm(x, (self.d,))
+
+        x = einops.reduce(x, 'n l d -> n d', 'max')
+        x = self.fc(x)
+        return x
 
 
 def test_world_model():
