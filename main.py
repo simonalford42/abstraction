@@ -152,6 +152,8 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
         wandb.log({'loss': train_loss})
         if params.gumbel:
             wandb.log({'gumbel_temp': abstract.GUMBEL_TEMP})
+        if params.toy_test:
+            print(f'{train_loss=}')
 
         if (params.test_every
                 and (not last_test_time
@@ -434,6 +436,7 @@ def boxworld_main():
     parser.add_argument('--test_every', type=float, default=60, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     parser.add_argument('--neurosym', action='store_true')
+    parser.add_argument('--cc_neurosym', action='store_true')
     parser.add_argument('--sv_options', action='store_true')
     parser.add_argument('--sv_options_net_fc', action='store_true')
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
@@ -458,12 +461,11 @@ def boxworld_main():
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
             params.batch_size = 16
         elif params.neurosym:
-            params.batch_size=128
+            params.batch_size = 128
         else:
             params.batch_size = 32
         if params.ellis:  # more memory available!
             params.batch_size *= 2
-
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
