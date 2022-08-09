@@ -308,7 +308,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             state_embeds = net(states)
             target_state_embeds = net(target_states)
             state_preds = neurosym.world_model_step_prob(state_embeds, moves, world_model_program)
-            move_logits = options_net(state_preds)
+            move_logits = options_net(state_preds[:, :, :, :, 0])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
