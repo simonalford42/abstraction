@@ -21,6 +21,7 @@ import muzero
 import torch.nn.functional as F
 import neurosym
 from pyDatalog import pyDatalog as pyd
+from itertools import chain
 
 
 def fine_tune(control_net: nn.Module, params: dict[str, Any]):
@@ -283,8 +284,8 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program, params):
-    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
+def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_model_program, params):
+    optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
     net.train()
 
     params.epochs = int(params.traj_updates / params.n)
@@ -294,7 +295,11 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program,
 
     while updates < params.traj_updates:
         train_loss = 0
+        total_state_loss = 0
+        total_move_loss = 0
         count = 0
+
+        moves_num_right = 0
         for states, moves, target_states in dataloader:
             count += 1
             optimizer.zero_grad()
@@ -303,18 +308,29 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, world_model_program,
             state_embeds = net(states)
             target_state_embeds = net(target_states)
             state_preds = neurosym.world_model_step_prob(state_embeds, moves, world_model_program)
+            move_logits = options_net(state_preds)
+            move_preds = torch.argmax(move_logits, dim=1)
+            moves_num_right += (move_preds == moves).sum()
+            move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+
             # print(f"{state_preds.shape=}")
             # print(f"{target_state_embeds.shape=}")
             # print(f"{state_preds=}")
             # print(f"{target_state_embeds=}")
             # loss = F.binary_cross_entropy(state_preds.exp(), target_state_embeds.exp())
-            loss = F.mse_loss(state_preds, target_state_embeds)
+            state_loss = F.mse_loss(state_preds, target_state_embeds)
+
+            loss = move_loss + state_loss
 
             train_loss += loss.item()
+            total_move_loss += move_loss.item()
+            total_state_loss += state_loss.item()
             loss.backward()
             optimizer.step()
 
-        wandb.log({'loss': train_loss})
+        wandb.log({'loss': train_loss,
+                   'total_move_loss': total_move_loss,
+                   'total_state_loss': total_state_loss})
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -385,7 +401,7 @@ def boxworld_main():
     parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
-    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced', 'fc', 'attn'])
+    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--lr', type=float, default=8E-4)
     parser.add_argument('--batch_size', type=int, default=argparse.SUPPRESS)
@@ -419,6 +435,7 @@ def boxworld_main():
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     parser.add_argument('--neurosym', action='store_true')
     parser.add_argument('--sv_options', action='store_true')
+    parser.add_argument('--sv_options_net_fc', action='store_true')
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
@@ -524,7 +541,13 @@ def neurosym_train(params):
     net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
-    learn_neurosym_world_model(dataloader, net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
+
+    if params.sv_options_net_fc:
+        options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
+    else:
+        options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+
+    learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
 
 
 def sv_option_pred(params):
@@ -535,7 +558,7 @@ def sv_option_pred(params):
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
-    if params.model == 'fc':
+    if params.sv_options_net_fc:
         net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
     else:
         net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
