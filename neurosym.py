@@ -536,6 +536,6 @@ def test_world_model():
             torch.testing.assert_allclose(state[:, :, :, STATE_EMBED_TRUE_IX], next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
 
 
-test_world_model()
+# test_world_model()
 
 # supervised_symbolic_state_abstraction_data(bw.BoxWorldEnv(), n=100)
