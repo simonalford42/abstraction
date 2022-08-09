@@ -418,9 +418,11 @@ def boxworld_main():
     parser.add_argument('--test_every', type=float, default=60, help='number of minutes to test every, if false will not test')
     parser.add_argument('--save_every', type=float, default=180, help='number of minutes to save every, if false will not save')
     parser.add_argument('--neurosym', action='store_true')
+    parser.add_argument('--sv_options', action='store_true')
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
-    parser.add_argument('--num_attn_blocks', type=int, default=2, help='only used for neurosym')
-    parser.add_argument('--num_heads', type=int, default=4, help='only used for neurosym')
+    parser.add_argument('--num_attn_blocks', type=int, default=2)
+    parser.add_argument('--num_heads', type=int, default=4)
+
     params = parser.parse_args()
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
@@ -501,6 +503,8 @@ def boxworld_main():
                 fine_tune(net.control_net, params)
             elif params.neurosym:
                 neurosym_train(params)
+            elif params.sv_options:
+                sv_option_pred(params)
             else:
                 learn_options(net, params)
 
@@ -518,13 +522,60 @@ def neurosym_train(params):
     abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS))
-    print(net.out_dim)
-    assert False
-    net = net.to(DEVICE)
+    net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
     learn_neurosym_world_model(dataloader, net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
+
+
+def sv_option_pred(params):
+    env = box_world.BoxWorldEnv()
+
+    # dataset of (symbolic_tensorized_state, option) pairs
+    dataset = neurosym.ListDataset(neurosym.option_sv_data(env, n=params.n))
+
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
+
+    net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=params.b, hidden_dim=128, num_hidden=2).to(DEVICE)
+    net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=params.b, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+
+    print(f"Net has {utils.num_params(net)} parameters")
+    option_pred_train(dataloader, net, epochs=params.epochs, lr=params.lr)
+
+
+def option_pred_train(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
+    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+    net.train()
+
+    for epoch in range(epochs):
+        train_loss = 0
+        start = time.time()
+        for datum in dataloader:
+            datum = tuple([d.to(DEVICE) for d in datum])
+            optimizer.zero_grad()
+
+            loss = loss_fn(net, data)
+
+            train_loss += loss.item()
+            # reduce just like cross entropy so batch size doesn't affect LR
+            loss = loss / sum(lengths)
+            if run:
+                run[f'{epoch}batch/loss'].log(loss.item())
+                run[f'{epoch}batch/avg length'].log(sum(lengths) / len(lengths))
+                run[f'{epoch}batch/mem'].log(utils.get_memory_usage())
+            loss.backward()
+            optimizer.step()
+
+        if run:
+            run['epoch'].log(epoch)
+            run['loss'].log(train_loss)
+            run['time'].log(time.time() - start)
+
+        if print_every and epoch % print_every == 0:
+            print(f"epoch: {epoch}\t"
+                  + f"train loss: {train_loss}\t"
+                  + f"({time.time() - start:.1f}s)")
+
 
 
 if __name__ == '__main__':
