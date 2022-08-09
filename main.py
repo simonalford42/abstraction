@@ -536,46 +536,47 @@ def sv_option_pred(params):
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
-    net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=params.b, hidden_dim=128, num_hidden=2).to(DEVICE)
-    net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=params.b, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+    net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
+    # net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
 
     print(f"Net has {utils.num_params(net)} parameters")
-    option_pred_train(dataloader, net, epochs=params.epochs, lr=params.lr)
+    option_pred_train(dataloader, net, params)
 
 
-def option_pred_train(dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
-    optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+def option_pred_train(dataloader: DataLoader, net, params):
+    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
+    loss_fn = nn.CrossEntropyLoss(reduction='mean')
     net.train()
 
-    for epoch in range(epochs):
+    updates = 0
+    train_loss = 0
+
+    while updates <= params.traj_updates:
         train_loss = 0
-        start = time.time()
+
+        num_right = 0
         for datum in dataloader:
-            datum = tuple([d.to(DEVICE) for d in datum])
             optimizer.zero_grad()
 
-            loss = loss_fn(net, data)
-
+            datum = tuple([d.to(DEVICE) for d in datum])
+            states, moves = datum
+            B = states.shape[0]
+            move_logits = net(states)
+            assert_shape(move_logits, (B, box_world.NUM_COLORS))
+            assert_shape(moves, (B, ))
+            assert max(moves) <= box_world.NUM_COLORS - 1
+            move_preds = torch.argmax(move_logits, dim=1)
+            num_right += sum(move_preds == moves)
+            loss = loss_fn(move_logits, moves)
             train_loss += loss.item()
-            # reduce just like cross entropy so batch size doesn't affect LR
-            loss = loss / sum(lengths)
-            if run:
-                run[f'{epoch}batch/loss'].log(loss.item())
-                run[f'{epoch}batch/avg length'].log(sum(lengths) / len(lengths))
-                run[f'{epoch}batch/mem'].log(utils.get_memory_usage())
+
             loss.backward()
             optimizer.step()
 
-        if run:
-            run['epoch'].log(epoch)
-            run['loss'].log(train_loss)
-            run['time'].log(time.time() - start)
-
-        if print_every and epoch % print_every == 0:
-            print(f"epoch: {epoch}\t"
-                  + f"train loss: {train_loss}\t"
-                  + f"({time.time() - start:.1f}s)")
-
+        acc = num_right / len(dataloader.dataset)
+        updates += len(dataloader.dataset)
+        wandb.log({'loss': train_loss,
+                   'acc': acc})
 
 
 if __name__ == '__main__':

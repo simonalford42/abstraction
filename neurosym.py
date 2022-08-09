@@ -1,4 +1,5 @@
 import box_world as bw
+import math
 import numpy as np
 import random
 import data
@@ -467,7 +468,8 @@ def option_sv_data(env, n) -> list[tuple]:
     for traj in trajs:
         states, moves = traj
         tensorized_symbolic_states = [tensorize_symbolic_state(abstractify(state)) for state in states]
-        datas += list(zip(tensorized_symbolic_states[:-1], moves))
+        move_color_ixs = [bw.COLORS.index(domino[0]) for domino in moves]
+        datas += list(zip(tensorized_symbolic_states[:-1], move_color_ixs))
 
     return datas
 
@@ -475,7 +477,7 @@ def option_sv_data(env, n) -> list[tuple]:
 class SVOptionNet(nn.Module):
     def __init__(self, num_colors, num_options, hidden_dim, num_hidden=2):
         super().__init__()
-        self.in_shape = (2, num_colors, num_colors, 2)
+        self.in_shape = (2, num_colors, num_colors)
         self.in_dim = np.prod(self.in_shape)
         self.num_options = num_options
         self.hidden_dim = hidden_dim
@@ -488,21 +490,23 @@ class SVOptionNet(nn.Module):
 
 class SVOptionNet2(nn.Module):
     def __init__(self, num_colors, num_options, num_heads=4, num_attn_blocks=2, hidden_dim=64):
+        super().__init__()
         self.num_colors = num_colors
         self.num_options = num_options
-        self.in_shape = (2, num_colors, num_colors, 2)
+        self.in_shape = (2, num_colors, num_colors)
         self.in_dim = np.prod(self.in_shape)
         # dimension of embedded predicate: one hot each color and the predicate choice
-        self.d = 2 * self.num_colors + 2
+        d = self.num_colors * 2 + 2 + 1
+        self.embed_dim = 2**(math.ceil(math.log(d, 2)))
         self.hidden_dim = hidden_dim
         self.out_dim = num_options
 
-        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.embed_dim,
                                                 num_heads=num_heads,
                                                 batch_first=True)
         self.num_attn_blocks = num_attn_blocks
 
-        self.fc = nn.Sequential(nn.Linear(self.d, self.hidden_dim),
+        self.fc = nn.Sequential(nn.Linear(self.embed_dim, self.hidden_dim),
                                 nn.ReLU(),
                                 # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.hidden_dim, self.hidden_dim),
@@ -515,18 +519,52 @@ class SVOptionNet2(nn.Module):
                                 nn.ReLU(),
                                 nn.Linear(self.hidden_dim, self.out_dim),)
 
+        self.pcc_one_hot = self.make_pcc_one_hot(p=2, c=self.num_colors)
+
+    def make_pcc_one_hot(self, p, c):
+        vecs = []
+        for i in range(p):
+            for j in range(c):
+                for k in range(c):
+                    vec = torch.cat([F.one_hot(torch.tensor(i), num_classes=p),
+                                     F.one_hot(torch.tensor(j), num_classes=c),
+                                     F.one_hot(torch.tensor(k), num_classes=c)],
+                                    dim=0)
+                    assert_shape(vec, (p + c + c, ))
+                    vecs.append(vec)
+
+        pcc_one_hot = torch.stack(vecs)
+        assert_shape(pcc_one_hot, (p * c * c, p + c + c))
+
+        return pcc_one_hot.to(DEVICE)
+
+
     def forward(self, x):
         B = x.shape[0]
         assert_equal(x.shape[1:], self.in_shape)
         x = self.embed_predicates(x)
-        assert_shape(x, (B, self.num_colors * self.num_colors * 2, self.d))
+        assert_shape(x, (B, self.num_colors * self.num_colors * 2, self.embed_dim))
 
         for _ in range(self.num_attn_blocks):
             x = x + self.attn_block(x, x, x, need_weights=False)[0]
-            x = F.layer_norm(x, (self.d,))
+            x = F.layer_norm(x, (self.embed_dim,))
 
         x = einops.reduce(x, 'n l d -> n d', 'max')
         x = self.fc(x)
+        return x
+
+    def embed_predicates(self, x):
+        B = x.shape[0]
+        # (predicate_one_hot | color1_one_hot | color2_one_hot | value)
+        assert_shape(x, (B, 2, self.num_colors, self.num_colors))
+        x = rearrange(x, 'B p C1 C2 -> B (p C1 C2) 1')
+        assert_shape(x, (B, self.num_colors * self.num_colors * 2, 1))
+        pcc_one_hot_batch = einops.repeat(self.pcc_one_hot, 'pcc d -> B pcc d', B=B)
+        x = torch.cat([pcc_one_hot_batch, x], dim=2)
+        d = self.num_colors * 2 + 2 + 1
+        assert_shape(x, (B, self.num_colors * self.num_colors * 2, d))
+        x = torch.cat([x, torch.zeros((B, self.num_colors * self.num_colors * 2, self.embed_dim - d)).to(DEVICE)], dim=-1)
+
         return x
 
 
