@@ -385,7 +385,7 @@ def boxworld_main():
     parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
-    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
+    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced', 'fc', 'attn'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--lr', type=float, default=8E-4)
     parser.add_argument('--batch_size', type=int, default=argparse.SUPPRESS)
@@ -475,15 +475,6 @@ def boxworld_main():
     if params.muzero:
         params.load = True
 
-    net = make_net(params).to(DEVICE)
-
-    if params.muzero:
-        data_net = net
-
-        if params.muzero_scratch:
-            params.load = False
-            net = make_net(params).to(DEVICE)
-
     with Timing('Completed training'):
         with mlflow.start_run():
             params.id = mlflow.active_run().info.run_id
@@ -498,6 +489,13 @@ def boxworld_main():
                        config=vars(params))
 
             if params.muzero:
+                net = make_net(params).to(DEVICE)
+                data_net = net
+
+                if params.muzero_scratch:
+                    params.load = False
+                    net = make_net(params).to(DEVICE)
+
                 muzero.main(net.control_net, params, data_net=data_net.control_net)
             elif params.fine_tune:
                 fine_tune(net.control_net, params)
@@ -506,6 +504,7 @@ def boxworld_main():
             elif params.sv_options:
                 sv_option_pred(params)
             else:
+                net = make_net(params).to(DEVICE)
                 learn_options(net, params)
 
             for p in featured_params:
@@ -536,8 +535,10 @@ def sv_option_pred(params):
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
-    net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
-    # net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+    if params.model == 'fc':
+        net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
+    else:
+        net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
 
     print(f"Net has {utils.num_params(net)} parameters")
     option_pred_train(dataloader, net, params)
