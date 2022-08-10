@@ -428,7 +428,7 @@ def boxworld_main():
     parser.add_argument('--num_categories', type=int, default=8)
     parser.add_argument('--shrink_micro_net', action='store_true')
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
-    parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1, 2, 3, 4],
+    parser.add_argument('--length', type=int, default=(1, 2, 3, 4),
                         help='box world env solution_length, may be single number or tuple of options')
     parser.add_argument('--muzero', action='store_true')
     parser.add_argument('--muzero_scratch', action='store_true')
@@ -456,6 +456,9 @@ def boxworld_main():
 
     if type(params.length) == int:
         params.length = (params.length, )  # box_world env expects tuple
+
+    if params.cc_neurosym:
+        params.model = 'cc'
 
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
