@@ -426,8 +426,8 @@ def boxworld_main():
     parser.add_argument('--num_categories', type=int, default=8)
     parser.add_argument('--shrink_micro_net', action='store_true')
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
-    parser.add_argument('--length', type=int, default=(1, 2, 3, 4), choices=[1, 2, 3, 4],
-                        help='box world env solution_length, may be single number or tuple of options')
+    parser.add_argument('--length', type=tuple, default=(1, 2, 3, 4),
+                        help='box world env solution_length')
     parser.add_argument('--muzero', action='store_true')
     parser.add_argument('--muzero_scratch', action='store_true')
     parser.add_argument('--num_test', type=int, default=200)
