@@ -1113,7 +1113,7 @@ def boxworld_controller(typ, params):
 
     if params.cc_neurosym:
         # predicate state
-        t = 2 * box_world.num_colors * box_world.num_colors
+        t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS
 
     if params.gumbel:
         num_categories = params.num_categories
