@@ -13,6 +13,12 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 WARNINGS = set()
 
 
+def gpu_check():
+    utils.print_torch_device()
+    print(torch.arange(3).to(DEVICE))
+    print('passed gpu check')
+
+
 def warn(s):
     if s not in WARNINGS:
         print('WARNING:', s)

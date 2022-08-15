@@ -741,6 +741,7 @@ class HeteroController(nn.Module):
         # b repeats in inner loop
         b_repeats = repeat(bs, 'b -> (repeat b)', repeat=T)
 
+        # assumes each b corresponds to color action
         out = self.world_model_program_step(t_i2, b_repeats)
         out = rearrange(out, '(T |bs|) p C C 2 -> T |bs| (p C C 2))', p=2, C=box_world.NUM_COLORS)
         return out

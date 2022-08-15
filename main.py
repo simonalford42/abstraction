@@ -448,6 +448,8 @@ def boxworld_main():
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
+    utils.gpu_check()
+
     if not params.seed:
         seed = random.randint(0, 2**32 - 1)
         params.seed = seed
@@ -460,6 +462,7 @@ def boxworld_main():
 
     if params.cc_neurosym:
         params.model = 'cc'
+        params.b = box_world.NUM_COLORS
 
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
