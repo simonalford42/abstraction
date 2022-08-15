@@ -1148,7 +1148,7 @@ def boxworld_controller(typ, params):
     fc_hidden_dim = 64
     t = params.abstract_dim
 
-    if params.cc_neurosyma:
+    if params.cc_neurosym:
         assert_equal(typ, 'hetero')
         # predicate state
         t = 2 * box_world.num_colors * box_world.num_colors * 2
