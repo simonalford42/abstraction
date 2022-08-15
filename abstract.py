@@ -7,6 +7,7 @@ import utils
 from utils import assert_equal, assert_shape, DEVICE, logaddexp
 from modules import MicroNet, RelationalDRLNet, FC, ShrinkingRelationalDRLNet
 import box_world
+import neurosym
 
 TT = torch.Tensor
 GUMBEL_TEMP = 1
@@ -595,8 +596,11 @@ def noisify_tau(t_i, noise_std):
 
 
 class HeteroController(nn.Module):
+    def world_model_step_fn(states, moves):
+        return neurosym.world_model_step(states, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
+
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_noise_std):
+                 macro_transition_net, solved_net, tau_noise_std, cc_neurosym=False, world_model_program=None):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -608,6 +612,12 @@ class HeteroController(nn.Module):
         self.macro_transition_net = macro_transition_net  # (t + b) -> t abstract transition
         self.solved_net = solved_net  # t -> 2
         self.tau_noise_std = tau_noise_std
+        self.cc_neurosym = cc_neurosym
+        # only needed if cc_neurosym is True
+        self.world_model_program = world_model_program
+
+    def world_model_program_step(self, states, moves):
+        return neurosym.world_model_step(states, moves, self.world_model_program)
 
     def freeze_microcontroller(self):
         self.micro_net.requires_grad_(False)
@@ -711,6 +721,30 @@ class HeteroController(nn.Module):
         """
         return self.tau_net(s.unsqueeze(0))[0]
 
+    def neurosym_macro_transitions(self, t_i, bs):
+        """
+        Input:
+              t_i: (T, (p C C 2)) batch of abstract state embeddings
+              bs: 1D batch of actions
+
+        Output:
+                (T, |bs|, (p C C 2)) batch of new abstract states for each option applied.
+
+        Uses the world model program to do the macro transitions.
+        """
+
+        T = t_i.shape[0]
+        nb = bs.shape[0]
+        # calculate transition for each t_i + b pair
+        # t_i repeats in outer loop
+        t_i2 = repeat(t_i, 'T (p C C 2) -> (T repeat) p C C 2', repeat=nb, p=2, C=box_world.NUM_COLORS)
+        # b repeats in inner loop
+        b_repeats = repeat(bs, 'b -> (repeat b)', repeat=T)
+
+        out = self.world_model_program_step(t_i2, b_repeats)
+        out = rearrange(out, '(T |bs|) p C C 2 -> T |bs| (p C C 2))', p=2, C=box_world.NUM_COLORS)
+        return out
+
     def macro_transitions(self, t_i, bs):
         """
         Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
@@ -721,6 +755,9 @@ class HeteroController(nn.Module):
             t_i: (T, t) batch of abstract states
             bs: 1D tensor of actions to try
         """
+        if self.cc_neurosym:
+            return self.neurosym_macro_transitions(t_i, bs)
+
         T = t_i.shape[0]
         nb = bs.shape[0]
         # calculate transition for each t_i + b pair
@@ -1112,8 +1149,11 @@ def boxworld_controller(typ, params):
     t = params.abstract_dim
 
     if params.cc_neurosym:
+        assert_equal(typ, 'hetero')
         # predicate state
-        t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS
+        t = 2 * box_world.num_colors * box_world.num_colors * 2
+        # during cc neurosym, we assume certain actions correspond to color movements.
+        assert_equal(b, box_world.NUM_COLORS)
 
     if params.gumbel:
         num_categories = params.num_categories
@@ -1163,11 +1203,14 @@ def boxworld_controller(typ, params):
                                         hidden_dim=fc_hidden_dim, batch_norm=params.batch_norm),
                                      nn.LogSoftmax(dim=-1))
 
-    macro_transition_net = FC(input_dim=macro_trans_in_dim,
-                              output_dim=t,
-                              num_hidden=3,
-                              hidden_dim=fc_hidden_dim,
-                              batch_norm=params.batch_norm)
+    if params.cc_neurosym:
+        macro_transition_net = None
+    else:
+        macro_transition_net = FC(input_dim=macro_trans_in_dim,
+                                  output_dim=t,
+                                  num_hidden=3,
+                                  hidden_dim=fc_hidden_dim,
+                                  batch_norm=params.batch_norm)
     if params.gumbel:
         macro_transition_net = nn.Sequential(macro_transition_net, gumbel_module)
     if not params.no_tau_norm:
@@ -1178,9 +1221,11 @@ def boxworld_controller(typ, params):
                                nn.LogSoftmax(dim=-1))
 
     return model(a=a, b=b, t=t,
-                 tau_net=tau_net,
-                 micro_net=micro_net,
-                 macro_policy_net=macro_policy_net,
-                 macro_transition_net=macro_transition_net,
-                 solved_net=solved_net,
-                 tau_noise_std=params.tau_noise_std)
+                   tau_net=tau_net,
+                   micro_net=micro_net,
+                   macro_policy_net=macro_policy_net,
+                   macro_transition_net=macro_transition_net,
+                   solved_net=solved_net,
+                   tau_noise_std=params.tau_noise_std,
+                   cc_neurosym=params.cc_neurosym,
+                   world_model_program=neurosym.BW_WORLD_MODEL_PROGRAM)

@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
-import main
 from einops import rearrange
 import einops
 import modules
@@ -343,7 +342,7 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     state_embeds: [batch_size, 2, C, C, 2] tensor whose [:, P, A, B, STATE_EMBED_TRUE_IX] tells whether P(A, B) is true.
     likewise for STATE_EMBED_FALSE_IX.
-    moves: [batch_size, ] tensor of colors [0, C-1w]
+    moves: [batch_size, ] tensor of colors [0, C-1]
     world_model_program: a dict with keys 'precondition' and 'effect'.
         each are a length list of tuples (predicate, args, is_negated)
         where predicate is an index 0 or 1
@@ -356,7 +355,8 @@ def world_model_step(state_embeds, moves, world_model_program):
     log_P = state_embeds
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
-    # print(f'{moves=}')
+    assert_shape(moves, (B, ))
+    assert max(moves) <= C - 1 and min(moves) >= 0, f'moves must be in [0, {C-1}] but instead are {[min(moves), max(moves)]}'
     print(f'{log_P[:, :, :, :, STATE_EMBED_TRUE_IX]=}')
 
     # pre args is either 'X', 'Y', or 'XY'
