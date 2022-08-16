@@ -313,14 +313,15 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             move_logits = options_net(state_preds[:, :, :, :, 0])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
+
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
 
             # print(f"{state_preds.shape=}")
             # print(f"{target_state_embeds.shape=}")
             # print(f"{state_preds=}")
             # print(f"{target_state_embeds=}")
-            # loss = F.binary_cross_entropy(state_preds.exp(), target_state_embeds.exp())
-            state_loss = F.mse_loss(state_preds, target_state_embeds)
+            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True)
+            # state_loss = F.mse_loss(state_preds, target_state_embeds)
 
             loss = move_loss + state_loss
 
