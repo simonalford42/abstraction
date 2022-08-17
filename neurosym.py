@@ -300,13 +300,15 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
     P0, P1 = P[:, :, :, :, STATE_EMBED_FALSE_IX], P[:, :, :, :, STATE_EMBED_TRUE_IX]
     Q0, Q1 = Q[:, :, :, :, STATE_EMBED_FALSE_IX], Q[:, :, :, :, STATE_EMBED_TRUE_IX]
     # new_P0 = P0 * (1 - Q1) + P1 * Q0
-    new_P0 = P0 * (1 - Q1) + P1 * Q0
     # new_P1 = P1 * (1 - Q0) + P0 * Q1
-    new_P1 = P1 * (1 - Q0) + P0 * Q1
+
+    # P1' = P1 + P0 Q1 - P1 Q0
+    new_P1 = P1 + P0 * Q1 - P1 * Q0
+    # P0' = P0 + P1 Q0 - P0 Q1
+    new_P0 = P0 + P1 * Q0 - P0 * Q1
     new_P1_2 = 1 - new_P0
 
-    # assert torch.allclose(log1minus(new_log_P0), new_log_P1)
-    torch.testing.assert_allclose(1 - new_P0, new_P1)
+    torch.testing.assert_allclose(new_P1_2, new_P1)
     if STATE_EMBED_FALSE_IX == 0:
         new_P = torch.stack([new_P0, new_P1], dim=-1)
     else:
@@ -333,6 +335,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
     log_P = state_embeds
+    print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
@@ -383,16 +386,29 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     # TODO: if sum is greater than one, then normalize
     log_Q = torch.clamp(log_Q, max=0)
+    print(f"{log_Q=}")
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
 
     # P1' = P1 + P0 Q1 - P1 Q0
     # P0' = P0 + P1 Q0 - P0 Q1
+    inter1 = log_P0 + log_Q1
+    print(f"{inter1=}")
+    inter2 = log_P1 + log_Q0
+    print(f"{inter2=}")
+    inter3 = utils.logaddexp(inter1, inter2, mask=[1, -1])  # why does this give NaN's?
+    # exp(-inf) - exp(-inf) = 0 - 0 = 0??
+    print(f"{inter3=}")
+    inter4 = torch.logaddexp(log_P1, inter3)
+    print(f"{inter4=}")
     new_log_P1 = torch.logaddexp(log_P1, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
-    new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
+    new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P1 + log_Q0, log_P0 + log_Q1, mask=[1, -1]))
+    print(f"{new_log_P1=}")
+    print(f"{new_log_P0=}")
 
     new_log_P1_2 = log1minus(new_log_P0)
+    print(f"{new_log_P1_2=}")
     torch.testing.assert_allclose(new_log_P1_2, new_log_P1)
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
@@ -500,7 +516,6 @@ class SVOptionNet2(nn.Module):
 
         return pcc_one_hot.to(DEVICE)
 
-
     def forward(self, x):
         B = x.shape[0]
         assert_equal(x.shape[1:], self.in_shape)
@@ -530,10 +545,10 @@ class SVOptionNet2(nn.Module):
         return x
 
 
-def test_world_model():
+def test_world_model(probs=False):
     env = bw.BoxWorldEnv()
     world_data = []
-    trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(5000)]
+    trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(500)]
 
     for traj in trajs:
         states, moves = traj
@@ -553,15 +568,15 @@ def test_world_model():
             assert STATE_EMBED_TRUE_IX == 0
             state = torch.stack([state, 1 - state], dim=-1)
 
-            next_state_pred = world_model_step_prob(state.unsqueeze(0),
-                                                    move_tensor.unsqueeze(0),
-                                                    world_model_program=BW_WORLD_MODEL_PROGRAM)
+            if probs:
+                next_state_pred = world_model_step_prob(state.unsqueeze(0),
+                                                        move_tensor.unsqueeze(0),
+                                                        world_model_program=BW_WORLD_MODEL_PROGRAM)
+            else:
+                next_state_pred = world_model_step(state.log().unsqueeze(0),
+                                                   move_tensor.unsqueeze(0),
+                                                   world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
             assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
-            # next_state_pred = world_model_step(state.unsqueeze(0),
-                                                #  move_tensor.unsqueeze(0),
-                                                #  world_model_program=BW_WORLD_MODEL_PROGRAM)
-
-            # assert torch.allclose(next_state, torch.exp(next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX]))
 
     test_world_model_data(world_data)
 
@@ -603,12 +618,18 @@ def test_world_model():
         assert STATE_EMBED_TRUE_IX == 0
         state = torch.stack([state, 1 - state], dim=-1)
         for program in identity_programs:
-            next_state_pred = world_model_step_prob(state.unsqueeze(0),
-                                                    move_tensor.unsqueeze(0),
-                                                    world_model_program=program)
-            torch.testing.assert_allclose(state[:, :, :, STATE_EMBED_TRUE_IX], next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
+            if probs:
+                next_state_pred = world_model_step_prob(state.unsqueeze(0),
+                                                        move_tensor.unsqueeze(0),
+                                                        world_model_program=BW_WORLD_MODEL_PROGRAM)
+            else:
+                next_state_pred = world_model_step(state.log().unsqueeze(0),
+                                                   move_tensor.unsqueeze(0),
+                                                   world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
+            assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
 
 
-# test_world_model()
-
+if __name__ == '__main__':
+# test_world_model(probs=True)
+    test_world_model(probs=False)
 # supervised_symbolic_state_abstraction_data(bw.BoxWorldEnv(), n=100)

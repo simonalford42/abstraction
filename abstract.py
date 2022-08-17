@@ -756,7 +756,7 @@ class HeteroController(nn.Module):
             t_i: (T, t) batch of abstract states
             bs: 1D tensor of actions to try
         """
-        if self.cc_neurosym:
+        if hasattr(self, 'cc_neurosym') and self.cc_neurosym:
             return self.neurosym_macro_transitions(t_i, bs)
 
         T = t_i.shape[0]

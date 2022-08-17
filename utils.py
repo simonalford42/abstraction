@@ -127,6 +127,15 @@ def logaddexp(tensor, other, mask=[1, 1]):
     assert mask.shape == (2, ), 'Invalid mask shape'
 
     a = torch.max(tensor, other)
+    print(f"{a=}")
+    inter0 = (tensor - a)  # this causes NaN's to appear like crazy because we get inf - inf
+    print(f"{inter0=}")
+    inter1 = (tensor - a).exp()
+    print(f"{inter1=}")
+    inter111 = ((tensor - a).exp() * mask[0])
+    print(f"{inter111=}")
+    inter112 = ((other - a).exp() * mask[1])
+    print(f"{inter112=}")
     return a + ((tensor - a).exp()*mask[0] + (other - a).exp()*mask[1]).log()
 
 
