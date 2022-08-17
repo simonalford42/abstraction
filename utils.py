@@ -120,11 +120,11 @@ def next_unused_path(path, extend_fn=lambda i: f'__({i})'):
     return path
 
 
-def logaddexp(tensor, other, mask=None):
-    if mask is None:
-        mask = torch.tensor([1, 1])
-    else:
-        assert mask.shape == (2, ), 'Invalid mask shape'
+def logaddexp(tensor, other, mask=[1, 1]):
+    if type(mask) in [list, tuple]:
+        mask = torch.tensor(mask)
+
+    assert mask.shape == (2, ), 'Invalid mask shape'
 
     a = torch.max(tensor, other)
     return a + ((tensor - a).exp()*mask[0] + (other - a).exp()*mask[1]).log()

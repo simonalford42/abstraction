@@ -339,7 +339,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     assert max(moves) <= C - 1 and min(moves) >= 0, f'moves must be in [0, {C-1}] but instead are {[min(moves), max(moves)]}'
 
     # pre args is either 'X', 'Y', or 'XY'
-    precondition_logps = torch.zeros(B, C, C)
+    precondition_logps = torch.zeros((B, C, C), device=DEVICE)
 
     for predicate, args, is_negated in world_model_program['precondition']:
         if predicate == 'action':
@@ -369,7 +369,7 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     # each of the effects gets assigned this probability of being true.
     # otherwise, by default, things stay the same.
-    log_Q = torch.log(torch.zeros(B, 2, C, C, 2))
+    log_Q = torch.log(torch.zeros((B, 2, C, C, 2), device=DEVICE))
 
     for predicate, args, is_negated in world_model_program['effect']:
         if predicate == 'held_key':
@@ -609,6 +609,6 @@ def test_world_model():
             torch.testing.assert_allclose(state[:, :, :, STATE_EMBED_TRUE_IX], next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
 
 
-test_world_model()
+# test_world_model()
 
 # supervised_symbolic_state_abstraction_data(bw.BoxWorldEnv(), n=100)
