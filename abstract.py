@@ -737,12 +737,13 @@ class HeteroController(nn.Module):
         nb = bs.shape[0]
         # calculate transition for each t_i + b pair
         # t_i repeats in outer loop
-        t_i2 = repeat(t_i, 'T (p C C 2) -> (T repeat) p C C 2', repeat=nb, p=2, C=box_world.NUM_COLORS)
+        t_i2 = repeat(t_i, 'T (p C1 C2 two) -> (T repeat) p C1 C2 two', repeat=nb, p=2, C1=box_world.NUM_COLORS, C2=box_world.NUM_COLORS)
         # b repeats in inner loop
         b_repeats = repeat(bs, 'b -> (repeat b)', repeat=T)
 
+        # assumes each b corresponds to color action
         out = self.world_model_program_step(t_i2, b_repeats)
-        out = rearrange(out, '(T |bs|) p C C 2 -> T |bs| (p C C 2))', p=2, C=box_world.NUM_COLORS)
+        out = rearrange(out, '(T |bs|) p C1 C2 two -> T |bs| (p C1 C2 two))', p=2, C1=box_world.NUM_COLORS, C2=box_world.NUM_COLORS)
         return out
 
     def macro_transitions(self, t_i, bs):
@@ -1151,7 +1152,7 @@ def boxworld_controller(typ, params):
     if params.cc_neurosym:
         assert_equal(typ, 'hetero')
         # predicate state
-        t = 2 * box_world.num_colors * box_world.num_colors * 2
+        t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS * 2
         # during cc neurosym, we assume certain actions correspond to color movements.
         assert_equal(b, box_world.NUM_COLORS)
 

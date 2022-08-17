@@ -313,14 +313,15 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             move_logits = options_net(state_preds[:, :, :, :, 0])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
+
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
 
             # print(f"{state_preds.shape=}")
             # print(f"{target_state_embeds.shape=}")
             # print(f"{state_preds=}")
             # print(f"{target_state_embeds=}")
-            # loss = F.binary_cross_entropy(state_preds.exp(), target_state_embeds.exp())
-            state_loss = F.mse_loss(state_preds, target_state_embeds)
+            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True)
+            # state_loss = F.mse_loss(state_preds, target_state_embeds)
 
             loss = move_loss + state_loss
 
@@ -448,6 +449,8 @@ def boxworld_main():
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
+    utils.gpu_check()
+
     if not params.seed:
         seed = random.randint(0, 2**32 - 1)
         params.seed = seed
@@ -460,6 +463,7 @@ def boxworld_main():
 
     if params.cc_neurosym:
         params.model = 'cc'
+        params.b = box_world.NUM_COLORS
 
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:

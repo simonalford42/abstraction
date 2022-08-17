@@ -251,8 +251,6 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
     P = state_embeds
     B, C = P.shape[0], P.shape[2]
     assert_shape(P, (B, 2, C, C, 2))
-    # print(f'{moves=}')
-    # print(f'{P[:, :, :, :, STATE_EMBED_TRUE_IX]=}')
 
     # pre args is either 'X', 'Y', or 'XY'
     precondition_probs = torch.ones(B, C, C)
@@ -279,14 +277,10 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
         else:
             raise ValueError('args must be X or Y')
 
-        # print(f"{predicate=} {probs=}")
         # (B, C, C) tells probability that precondition satisfied
-        # print(f'{predicate=}, {probs.nonzero()=}')
         precondition_probs *= probs
         assert_shape(precondition_probs, (B, C, C))
 
-    # print(f"{precondition_probs=}, {precondition_probs[:, :, 2]=}")
-    # print(f'{precondition_probs.nonzero()=}')
     # each of the effects gets assigned this probability of being true.
     # otherwise, by default, things stay the same.
     Q = torch.zeros(B, 2, C, C, 2)
@@ -296,35 +290,21 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
             assert args in ['X', 'Y']
             # sum precondition probs over axis not in args
             Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_probs.sum(dim=2 if args == 'X' else 1)
-            # print(f"{predicate=}, {args=}, {is_negated=}, {Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]=}")
 
         else:
             assert predicate == 'domino' and args == 'XY'
             Q[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_probs
 
     Q = torch.clamp(Q, max=1)
-    # print Q values for held_key(Y), neg_held_key(Y), domino(X, Y)
-    # print(f'{Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX]=}')
-    # print(f'{Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX]=}')
-    # print(f'{Q[:, DOMINO_IX, :, 0, STATE_EMBED_TRUE_IX]=}')
-
-    # print(f'{Q[:, :, :, :, STATE_EMBED_TRUE_IX].nonzero()=}')
 
     P0, P1 = P[:, :, :, :, STATE_EMBED_FALSE_IX], P[:, :, :, :, STATE_EMBED_TRUE_IX]
-    # print(f"{P0=}, {P1=}")
     Q0, Q1 = Q[:, :, :, :, STATE_EMBED_FALSE_IX], Q[:, :, :, :, STATE_EMBED_TRUE_IX]
-    # print(f"{Q0=}, {Q1=}")
     # new_P0 = P0 * (1 - Q1) + P1 * Q0
     new_P0 = P0 * (1 - Q1) + P1 * Q0
-    # print(f"{new_P0=}")
     # new_P1 = P1 * (1 - Q0) + P0 * Q1
     new_P1 = P1 * (1 - Q0) + P0 * Q1
-    # print(f"{new_P1=}")
     new_P1_2 = 1 - new_P0
-    # print(f"{new_P1_2=}")
-    # print(f"{new_P1_2-new_P1=}")
-    # print(f'{new_P0.nonzero()=}')
-    # print(f'{new_P1.nonzero()=}')
+
     # assert torch.allclose(log1minus(new_log_P0), new_log_P1)
     torch.testing.assert_allclose(1 - new_P0, new_P1)
     if STATE_EMBED_FALSE_IX == 0:
@@ -357,10 +337,9 @@ def world_model_step(state_embeds, moves, world_model_program):
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
     assert max(moves) <= C - 1 and min(moves) >= 0, f'moves must be in [0, {C-1}] but instead are {[min(moves), max(moves)]}'
-    print(f'{log_P[:, :, :, :, STATE_EMBED_TRUE_IX]=}')
 
     # pre args is either 'X', 'Y', or 'XY'
-    precondition_logps = torch.zeros(B, C, C)
+    precondition_logps = torch.zeros((B, C, C), device=DEVICE)
 
     for predicate, args, is_negated in world_model_program['precondition']:
         if predicate == 'action':
@@ -384,54 +363,37 @@ def world_model_step(state_embeds, moves, world_model_program):
         else:
             raise ValueError('args must be X or Y')
 
-        print(f"{predicate=} {logps=}")
         # (B, C, C) tells probability that precondition satisfied
-        # print(f'{predicate=}, {probs.nonzero()=}')
         precondition_logps += logps
         assert_shape(precondition_logps, (B, C, C))
 
-    print(f"{precondition_logps=}, {precondition_logps[:, :, 2]=}")
-    # print(f'{precondition_probs.nonzero()=}')
     # each of the effects gets assigned this probability of being true.
     # otherwise, by default, things stay the same.
-    log_Q = torch.log(torch.zeros(B, 2, C, C, 2))
+    log_Q = torch.log(torch.zeros((B, 2, C, C, 2), device=DEVICE))
 
     for predicate, args, is_negated in world_model_program['effect']:
         if predicate == 'held_key':
             assert args in ['X', 'Y']
             # sum precondition probs over axis not in args
             log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_logps.logsumexp(dim=2 if args == 'X' else 1)
-            print(f"{predicate=}, {args=}, {is_negated=}, {log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]=}")
 
         else:
             assert predicate == 'domino' and args == 'XY'
             log_Q[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_logps
 
+    # TODO: if sum is greater than one, then normalize
     log_Q = torch.clamp(log_Q, max=0)
-    # print Q values for held_key(Y), neg_held_key(Y), domino(X, Y)
-    print(f'{log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX]=}')
-    print(f'{log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX]=}')
-    print(f'{log_Q[:, DOMINO_IX, :, 0, STATE_EMBED_TRUE_IX]=}')
-
-    # print(f'{Q[:, :, :, :, STATE_EMBED_TRUE_IX].nonzero()=}')
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
-    print(f"{log_P0=}, {log_P1=}")
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
-    print(f"{log_Q0=}, {log_Q1=}")
-    # new_P0 = P0 * (1 - Q1) + P1 * Q0
-    new_log_P0 = torch.logaddexp(log_P0 + log1minus(log_Q1), log_P1 + log_Q0)
-    print(f"{new_log_P0=}")
-    # new_P1 = P1 * (1 - Q0) + P0 * Q1
-    new_log_P1 = torch.logaddexp(log_P1 + log1minus(log_Q0), log_P0 + log_Q1)
-    print(f"{new_log_P1=}")
+
+    # P1' = P1 + P0 Q1 - P1 Q0
+    # P0' = P0 + P1 Q0 - P0 Q1
+    new_log_P1 = torch.logaddexp(log_P1, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
+    new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
+
     new_log_P1_2 = log1minus(new_log_P0)
-    print(f"{new_log_P1_2=}")
-    print(f"{new_log_P1_2-new_log_P1=}")
-    # print(f'{new_P0.nonzero()=}')
-    # print(f'{new_P1.nonzero()=}')
-    # assert torch.allclose(log1minus(new_log_P0), new_log_P1)
-    torch.testing.assert_allclose(log1minus(new_log_P0), new_log_P1)
+    torch.testing.assert_allclose(new_log_P1_2, new_log_P1)
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
     else:

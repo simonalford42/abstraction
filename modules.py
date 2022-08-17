@@ -21,20 +21,24 @@ class Print(nn.Module):
 
 
 class MicroNet(nn.Module):
-    def __init__(self, input_shape, input_channels=3, d=32, out_dim=4):
+    def __init__(self, input_shape, input_channels=3, d=32, out_dim=4, third_conv=False, inter_channels=12):
         super().__init__()
         self.input_channels = input_channels
         self.input_shape = input_shape
         self.d = d
         self.out_dim = out_dim
-        self.conv1 = nn.Conv2d(input_channels, 12, 3, padding='same')
-        self.conv2 = nn.Conv2d(12, 12, 3, padding='same')
+        self.conv1 = nn.Conv2d(input_channels, inter_channels, 3, padding='same')
+        self.conv2 = nn.Conv2d(inter_channels, inter_channels, 3, padding='same')
+        self.third_conv = third_conv
+        if third_conv:
+            self.conv3 = nn.Conv3d(inter_channels, inter_channels, 3, padding='same')
+
         self.fc = nn.Sequential(nn.Linear(12 * np.prod(input_shape), self.d),
                                 nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
+                                nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
+                                nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.out_dim)
                                 )
 
