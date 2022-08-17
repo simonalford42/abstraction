@@ -16,7 +16,7 @@ POS = Tuple[int, int]
 COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
 ASCII = '# .' + COLORS
 GOAL_COLOR = '*'
-NUM_COLORS = len(COLORS)
+NUM_COLORS = len(COLORS)  # if all colors used, should be 21
 assert_equal(NUM_COLORS, bw.NUM_COLORS + 1)  # this is because we count the goal color as a color, while pycolab boxworld does not)
 # colors like 'abcdefghijklmnopqrst*' and colors like '# .'
 NUM_ASCII = bw.NUM_COLORS + len(bw.OBJECT_COLORS)

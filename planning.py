@@ -536,7 +536,7 @@ if __name__ == '__main__':
     depth = 3
     control_net = True  # is the loaded model a control net
     env = box_world.BoxWorldEnv(seed=1)  # , solution_length=(depth, ))
-    model_id = '4792ad636c5e4521bd943a3bd62f3374'; control_net = False
+    model_id = '72ba65df94854ff484f946b64b527623'; control_net = False
 
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -548,8 +548,8 @@ if __name__ == '__main__':
 
     n = 200
     # env = box_world.BoxWorldEnv(solution_length=(6, ))
-    # env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
-    env = box_world.BoxWorldEnv()
+    env = box_world.BoxWorldEnv(solution_length=(3, ), num_forward=(1, ))
+    # env = box_world.BoxWorldEnv()
 
     # acc = eval_sampling(control_net, env, n=n, macro=False)
     # print(f'acc: {acc}')
