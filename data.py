@@ -1,4 +1,5 @@
 from typing import List, Tuple, Callable
+import animate
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -135,7 +136,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, argmax=True):
+def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -152,18 +153,14 @@ j       (b, 2) stop logps
     correct_solved_preds = 0
 
     for i in range(n):
+        video_obss = []
         obs = env.reset()
-
-        if render:
-            box_world.render_obs(obs, pause=1)
-
-        # if i < 10:
-            # wandb.log({f'test/obs': wandb.Image(box_world.obs_figure(obs))})
+        if run and i < 10:
+            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(obs), name='obs')
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
         correct_solved_pred = True
-        options2 = []
         t = -1
         options = []
         moves_without_moving = 0
@@ -171,6 +168,7 @@ j       (b, 2) stop logps
 
         current_option = None
         tau_goal = None
+        done_video = False
 
         while not (done or solved):
             t += 1
@@ -189,6 +187,8 @@ j       (b, 2) stop logps
                     stop = torch.argmax(stop_logps[current_option]).item()
                 else:
                     stop = Categorical(logits=stop_logps[current_option]).sample().item()
+                if stop == STOP_IX:
+                    done_video = True
             new_option = current_option is None or stop == STOP_IX
             if new_option:
                 if check_cc:
@@ -205,7 +205,6 @@ j       (b, 2) stop logps
                 option_start_s = obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
-                options2.append(current_option)
             else:
                 # dont overwrite red dot
                 if options_trace[prev_pos] != 'e':
@@ -232,12 +231,24 @@ j       (b, 2) stop logps
                 done = True
 
             if render:
-                title = f'option={current_option}'
-                pause = 0.5 if new_option else 0.05
+                title = f'Executing option {current_option}'
+                pause = 1.6 if new_option else 0.2
+                # pause = 0.2
                 if new_option:
-                    title += ' (new)'
+                    title = f'Starting new option: {current_option}'
                 option_map[current_option].append((obs, title, pause))
                 box_world.render_obs(obs, title=title, pause=pause)
+                if not done_video:
+                    video_obss.append((obs, title, pause))
+
+        if render:
+            if solved:
+                title = 'Solved episode'
+            else:
+                title = 'Episode terminated (did not solve)'
+            box_world.render_obs(obs, title=title, pause=1)
+            # video_obss.append((obs, title, 2))
+            animate.save_video(video_obss, f'new_video{i}')
 
         if solved:
             obs = obs_to_tensor(obs)
@@ -260,22 +271,25 @@ j       (b, 2) stop logps
                 cc_loss = ((tau_goal - tau)**2).sum()
                 cc_losses.append(cc_loss.item())
             num_solved += 1
-            # print(f'{options2=}')
 
-        if render:
-            box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
-        # if i < 10:
-            # wandb.log({f'test/obs2': wandb.Image(box_world.obs_figure(options_trace))})
+        if run and i < 10:
+            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(options_trace),
+                                               name='orange=new option')
 
     if check_cc and len(cc_losses) > 0:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
-        wandb.log({'test/cc_loss_avg': cc_loss_avg})
+        if run:
+            run[f'test/cc loss avg'].log(cc_loss_avg)
     if check_solved:
         solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
-        wandb.log({'test/solved_pred_acc': solved_acc})
+        if run:
+            run[f'test/solved pred acc'].log(solved_acc)
 
-    print(f'Solved {num_solved}/{n} episodes')
     control_net.train()
+    if check_cc and len(cc_losses) > 0:
+        print(f'Solved {num_solved}/{n} episodes, CC loss avg = {cc_loss_avg}')
+    else:
+        print(f'Solved {num_solved}/{n} episodes')
     return num_solved / n
 
 

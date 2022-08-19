@@ -179,6 +179,8 @@ def render_obs(obs, title=None, pause=0.0001):
     if title:
         plt.title(title)
     fig.canvas.draw()
+    plt.xticks([])
+    plt.yticks([])
     plt.pause(pause)
 
 
