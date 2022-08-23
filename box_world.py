@@ -19,8 +19,8 @@ GOAL_COLOR = '*'
 NUM_COLORS = len(COLORS)  # if all colors used, should be 21
 assert_equal(NUM_COLORS, bw.NUM_COLORS + 1)  # this is because we count the goal color as a color, while pycolab boxworld does not)
 # colors like 'abcdefghijklmnopqrst*' and also the player, background, and border
-# NUM_ASCII = len(ASCII)
-NUM_ASCII = 64
+NUM_ASCII = len(ASCII)
+# NUM_ASCII = 64
 # assert_equal(NUM_ASCII, 24)
 
 
@@ -143,6 +143,8 @@ def ascii_to_color(ascii: str):
 
 def ascii_to_int(ascii: str):
     # lower and uppercase render the same, just like the colors
+    if ascii.lower() not in ASCII:
+        print(f"ascii: {ascii} not found in {ASCII=}")
     return ASCII.index(ascii.lower())
 
 
@@ -208,9 +210,11 @@ def run_deepmind_ui(**args):
 def play_game(env):
     obs = env.reset()
     done = False
+    print(NUM_COLORS)
     print('Enter wasd to move, q to quit')
     while not done:
-        render_obs(obs)
+        # render_obs(obs)
+        print_obs(obs)
         key = input()
         if key.lower() == 'q':
             return False

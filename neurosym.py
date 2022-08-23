@@ -335,7 +335,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
     log_P = state_embeds
-    # print(f"{log_P=}")
+    print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
@@ -386,7 +386,7 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     # TODO: if sum is greater than one, then normalize
     log_Q = torch.clamp(log_Q, max=0)
-    # print(f"{log_Q=}")
+    print(f"{log_Q=}")
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
@@ -398,9 +398,10 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     # P1' = (P1 + Q1)(1- Q0)
     new_log_P1 = torch.logaddexp(log_P1, log_Q1) + utils.log1minus(log_Q0)
-    # print(f"{new_log_P1=}")
+    print(f"{new_log_P1=}")
 
     new_log_P0 = utils.log1minus(new_log_P1)
+    print(f"new_log_P0: {new_log_P0}")
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
     else:

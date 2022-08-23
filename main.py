@@ -309,7 +309,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
             state_embeds = net(states)
             target_state_embeds = net(target_states)
-            state_preds = neurosym.world_model_step_prob(state_embeds, moves, world_model_program)
+            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
             move_logits = options_net(state_preds[:, :, :, :, 0])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
@@ -461,10 +461,6 @@ def boxworld_main():
     if type(params.length) == int:
         params.length = (params.length, )  # box_world env expects tuple
 
-    if params.cc_neurosym:
-        params.model = 'cc'
-        params.b = box_world.NUM_COLORS
-
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
             params.batch_size = 16
@@ -474,6 +470,12 @@ def boxworld_main():
             params.batch_size = 32
         if params.ellis:  # more memory available!
             params.batch_size *= 2
+
+    if params.cc_neurosym:
+        params.model = 'cc'
+        params.b = box_world.NUM_COLORS
+        params.batch_size = max(1, int(params.batch_size / 2))
+
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
@@ -486,7 +488,8 @@ def boxworld_main():
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
 
     if params.toy_test:
-        params.n = 100
+        # params.n = 100
+        params.n = 1
         params.traj_updates = 1000
         params.test_every = 1
         params.save_every = False

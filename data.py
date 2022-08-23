@@ -1,5 +1,4 @@
 from typing import List, Tuple, Callable
-import animate
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -248,7 +247,7 @@ j       (b, 2) stop logps
                 title = 'Episode terminated (did not solve)'
             box_world.render_obs(obs, title=title, pause=1)
             # video_obss.append((obs, title, 2))
-            animate.save_video(video_obss, f'new_video{i}')
+            # animate.save_video(video_obss, f'new_video{i}')
 
         if solved:
             obs = obs_to_tensor(obs)
