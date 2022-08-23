@@ -335,7 +335,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
     log_P = state_embeds
-    print(f"{log_P=}")
+    # print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
@@ -386,30 +386,21 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     # TODO: if sum is greater than one, then normalize
     log_Q = torch.clamp(log_Q, max=0)
-    print(f"{log_Q=}")
+    # print(f"{log_Q=}")
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
 
     # P1' = P1 + P0 Q1 - P1 Q0
     # P0' = P0 + P1 Q0 - P0 Q1
-    inter1 = log_P0 + log_Q1
-    print(f"{inter1=}")
-    inter2 = log_P1 + log_Q0
-    print(f"{inter2=}")
-    inter3 = utils.logaddexp(inter1, inter2, mask=[1, -1])  # why does this give NaN's?
-    # exp(-inf) - exp(-inf) = 0 - 0 = 0??
-    print(f"{inter3=}")
-    inter4 = torch.logaddexp(log_P1, inter3)
-    print(f"{inter4=}")
-    new_log_P1 = torch.logaddexp(log_P1, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
-    new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P1 + log_Q0, log_P0 + log_Q1, mask=[1, -1]))
-    print(f"{new_log_P1=}")
-    print(f"{new_log_P0=}")
+    # new_log_P1 = torch.logaddexp(log_P1, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
+    # new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P1 + log_Q0, log_P0 + log_Q1, mask=[1, -1]))
 
-    new_log_P1_2 = log1minus(new_log_P0)
-    print(f"{new_log_P1_2=}")
-    torch.testing.assert_allclose(new_log_P1_2, new_log_P1)
+    # P1' = (P1 + Q1)(1- Q0)
+    new_log_P1 = torch.logaddexp(log_P1, log_Q1) + utils.log1minus(log_Q0)
+    # print(f"{new_log_P1=}")
+
+    new_log_P0 = utils.log1minus(new_log_P1)
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
     else:
@@ -553,15 +544,19 @@ def test_world_model(probs=False):
     for traj in trajs:
         states, moves = traj
         tensorized_symbolic_states = [tensorize_symbolic_state(abstractify(state)) for state in states]
+        pred_states = [abstractify(state) for state in states]
 
-        world_data += list(zip(tensorized_symbolic_states[:-1], moves, tensorized_symbolic_states[1:]))
+        world_data += list(zip(tensorized_symbolic_states[:-1], moves, tensorized_symbolic_states[1:], pred_states[:-1], pred_states[1:]))
         # world_data += list(zip(states[:-1], moves, states[1:]))
 
     def test_world_model_data(world_data):
-        for (state, move, next_state) in world_data:
+        for (state, move, next_state, pred_state, next_pred_state) in world_data:
+            # print(f"{pred_state=}")
+            # print(f"{next_pred_state=}")
             # embed it, run through world model, unembed, and compare to next_state
+            # print(f"{move=}")
             # print(f'{state=}, {move=}, {abstract_state=}')
-            # move[0] is the new held key, move[1] is the key to be unlocked by current key
+            # move[0] is the new held key, move[1] is the uppercase lock to be unlocked by current key
             move_ix = bw.COLORS.index(move[0])
             move_tensor = torch.tensor(move_ix)
             # state = torch.stack([state, 1 - state], dim=-1).log()
@@ -582,7 +577,7 @@ def test_world_model(probs=False):
 
     # linear combinations of states
     states_with_move = {}
-    for (state, move, next_state) in world_data:
+    for (state, move, next_state, _, _) in world_data:
         if move in states_with_move:
             states_with_move[move].append((state, next_state))
         else:
@@ -598,7 +593,7 @@ def test_world_model(probs=False):
                 frac = random.choice([0.1, 0.2, 0.3, 0.4, 0.5])
                 state = frac * state1 + (1 - frac) * state2
                 next_state = frac * next_state1 + (1 - frac) * next_state2
-                mixed_states.append((state, move, next_state))
+                mixed_states.append((state, move, next_state, None, None))
 
     test_world_model_data(mixed_states)
 
@@ -612,7 +607,7 @@ def test_world_model(probs=False):
     ]
 
     # for any state, identity program should give the same state
-    for (state, move, next_state) in world_data:
+    for (state, move, next_state, _, _) in world_data:
         move_ix = bw.COLORS.index(move[0])
         move_tensor = torch.tensor(move_ix)
         assert STATE_EMBED_TRUE_IX == 0
@@ -630,6 +625,6 @@ def test_world_model(probs=False):
 
 
 if __name__ == '__main__':
-# test_world_model(probs=True)
+    # test_world_model(probs=True)
     test_world_model(probs=False)
-# supervised_symbolic_state_abstraction_data(bw.BoxWorldEnv(), n=100)
+    # supervised_symbolic_state_abstraction_data(bw.BoxWorldEnv(), n=100)

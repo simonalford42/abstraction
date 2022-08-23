@@ -320,7 +320,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             # print(f"{target_state_embeds.shape=}")
             # print(f"{state_preds=}")
             # print(f"{target_state_embeds=}")
-            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True)
+            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='mean')
             # state_loss = F.mse_loss(state_preds, target_state_embeds)
 
             loss = move_loss + state_loss
