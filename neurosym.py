@@ -222,9 +222,10 @@ class AbstractEmbedNet(nn.Module):
         # out = out.reshape(out.shape[0], 1, C, C)
         # reshape to (batch_size, 2, C, C)
         out = out.reshape(out.shape[0], 2, C, C, 2)
-        # out = F.log_softmax(out, dim=-1)
-        out = F.softmax(out, dim=-1)
-        # out = torch.sigmoid(out)
+        out = F.log_softmax(out, dim=-1)  # logs sum to one
+        # print(f"{out=}")
+        # out = F.softmax(out, dim=-1)  # sum to one
+        # out = torch.sigmoid(out)  # all outs between 0 and 1
         return out
 
 
@@ -335,7 +336,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
     log_P = state_embeds
-    print(f"{log_P=}")
+    # print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
@@ -384,9 +385,8 @@ def world_model_step(state_embeds, moves, world_model_program):
             assert predicate == 'domino' and args == 'XY'
             log_Q[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_logps
 
-    # TODO: if sum is greater than one, then normalize
+    # print('log_Q > 0: ', torch.where(log_Q > 0))
     log_Q = torch.clamp(log_Q, max=0)
-    print(f"{log_Q=}")
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
@@ -397,17 +397,24 @@ def world_model_step(state_embeds, moves, world_model_program):
     # new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P1 + log_Q0, log_P0 + log_Q1, mask=[1, -1]))
 
     # P1' = (P1 + Q1)(1- Q0)
-    new_log_P1 = torch.logaddexp(log_P1, log_Q1) + utils.log1minus(log_Q0)
-    print(f"{new_log_P1=}")
+    # new_log_P1 = torch.logaddexp(log_P1, log_Q1) + utils.log1minus(log_Q0)
+
+    # delete: P1' = P1(1 - Q0)
+    new_log_P1 = log_P1 + utils.log1minus(log_Q0)
+    # add: P1' = P1 + Q1 - P1 Q1
+    new_log_P1 = torch.logaddexp(new_log_P1, utils.logaddexp(log_Q1, new_log_P1 + log_Q1, mask=[1, -1]))
+
+    new_log_P1 = torch.clamp(new_log_P1, max=0)
 
     new_log_P0 = utils.log1minus(new_log_P1)
-    print(f"new_log_P0: {new_log_P0}")
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
     else:
         new_log_P = torch.stack([new_log_P1, new_log_P0], dim=-1)
 
     assert_shape(new_log_P, (B, 2, C, C, 2))
+    assert not torch.any(torch.isnan(new_log_P)), f'new_log_P is nan: {new_log_P}'
+    # print('is nan: ', torch.any(torch.isnan(new_log_P)))
     return new_log_P
 
 

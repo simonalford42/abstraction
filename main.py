@@ -136,7 +136,6 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
             dataloader.dataset.shuffle(batch_size=params.batch_size)
 
         train_loss = 0
-        start = time.time()
         for s_i_batch, actions_batch, lengths, masks in dataloader:
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
@@ -295,6 +294,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
     updates = 0
     epoch = 0
 
+    print('start')
     while updates < params.traj_updates:
         train_loss = 0
         total_state_loss = 0
@@ -305,6 +305,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
         for states, moves, target_states in dataloader:
             count += 1
             optimizer.zero_grad()
+            print('start2')
 
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
             state_embeds = net(states)
@@ -315,12 +316,14 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             moves_num_right += (move_preds == moves).sum()
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+            print(f"{move_loss=}")
 
-            # print(f"{state_preds.shape=}")
-            # print(f"{target_state_embeds.shape=}")
-            # print(f"{state_preds=}")
-            # print(f"{target_state_embeds=}")
-            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='mean')
+            print(f"{state_preds.shape=}")
+            print(f"{target_state_embeds.shape=}")
+            print(f"{state_preds=}")
+            print(f"{target_state_embeds=}")
+            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            print(f"{state_loss=}")
             # state_loss = F.mse_loss(state_preds, target_state_embeds)
 
             loss = move_loss + state_loss
