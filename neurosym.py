@@ -212,7 +212,7 @@ class ListDataset(Dataset):
 
 
 class AbstractEmbedNet(nn.Module):
-    def __init__(self, net):
+    def __init__(self, net: RelationalDRLNet):
         super().__init__()
         self.net = net
 
@@ -336,6 +336,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
     log_P = state_embeds
+    assert not torch.any(torch.isnan(log_P)), f'log_P is nan: {log_P}'
     # print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
@@ -396,17 +397,21 @@ def world_model_step(state_embeds, moves, world_model_program):
     # new_log_P1 = torch.logaddexp(log_P1, utils.logaddexp(log_P0 + log_Q1, log_P1 + log_Q0, mask=[1, -1]))
     # new_log_P0 = torch.logaddexp(log_P0, utils.logaddexp(log_P1 + log_Q0, log_P0 + log_Q1, mask=[1, -1]))
 
-    # P1' = (P1 + Q1)(1- Q0)
-    # new_log_P1 = torch.logaddexp(log_P1, log_Q1) + utils.log1minus(log_Q0)
+    # P1' = (P1 + Q1 P0)(1- Q0)
+    new_log_P1 = torch.logaddexp(log_P1, log_Q1 + log_P0) + utils.log1minus(log_Q0)
 
     # delete: P1' = P1(1 - Q0)
-    new_log_P1 = log_P1 + utils.log1minus(log_Q0)
+    # new_log_P1 = log_P1 + utils.log1minus(log_Q0)
+    # print(f"000 {new_log_P1=}")
     # add: P1' = P1 + Q1 - P1 Q1
-    new_log_P1 = torch.logaddexp(new_log_P1, utils.logaddexp(log_Q1, new_log_P1 + log_Q1, mask=[1, -1]))
+    # new_log_P1 = torch.logaddexp(new_log_P1, utils.logaddexp(log_Q1, new_log_P1 + log_Q1, mask=[1, -1]))
+    # print(f"pre clamp {new_log_P1=}")
 
     new_log_P1 = torch.clamp(new_log_P1, max=0)
+    # print(f"{new_log_P1=}")
 
     new_log_P0 = utils.log1minus(new_log_P1)
+    # print(f"{new_log_P0=}")
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
     else:
@@ -415,6 +420,8 @@ def world_model_step(state_embeds, moves, world_model_program):
     assert_shape(new_log_P, (B, 2, C, C, 2))
     assert not torch.any(torch.isnan(new_log_P)), f'new_log_P is nan: {new_log_P}'
     # print('is nan: ', torch.any(torch.isnan(new_log_P)))
+    # print(f"{new_log_P=}")
+    # print('>=0: ', torch.where(new_log_P >= 0))
     return new_log_P
 
 

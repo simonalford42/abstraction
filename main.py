@@ -285,8 +285,9 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_model_program, params):
-    optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
+def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmbedNet, options_net, world_model_program, params):
+    # optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
+    optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
     net.train()
 
     params.epochs = int(params.traj_updates / params.n)
@@ -308,20 +309,23 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             print('start2')
 
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
+            # print(f"{states=}")
             state_embeds = net(states)
-            target_state_embeds = net(target_states)
+            # print(f"{state_embeds=}")
+            with torch.no_grad():
+                target_state_embeds = net(target_states)
             state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
             move_logits = options_net(state_preds[:, :, :, :, 0])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
-            print(f"{move_loss=}")
+            # print(f"{move_loss=}")
 
-            print(f"{state_preds.shape=}")
-            print(f"{target_state_embeds.shape=}")
-            print(f"{state_preds=}")
-            print(f"{target_state_embeds=}")
+            # print(f"{state_preds.shape=}")
+            # print(f"{target_state_embeds.shape=}")
+            # print(f"{state_preds=}")
+            # print(f"{target_state_embeds=}")
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
             print(f"{state_loss=}")
             # state_loss = F.mse_loss(state_preds, target_state_embeds)
@@ -332,7 +336,15 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             total_move_loss += move_loss.item()
             total_state_loss += state_loss.item()
             loss.backward()
+            print(f"{net.net.fc[-1].layer.weight=}")
+            print(f"{net.net.fc[-1].layer.weight.data=}")
+            print(f"{net.net.fc[-1].layer.weight.grad.data=}")
             optimizer.step()
+            print('OPTIMIZER STEP')
+            print(f"{net.net.fc[-1].layer.weight=}")
+            print(f"{net.net.fc[-1].layer.weight.data=}")
+            print(f"{net.net.fc[-1].layer.weight.grad.data=}")
+            # print(f"{net.net.attn_block.=}")
 
         wandb.log({'loss': train_loss,
                    'total_move_loss': total_move_loss,
@@ -554,7 +566,8 @@ def neurosym_train(params):
     abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    net = neurosym.AbstractEmbedNet(neurosym.RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
+    utils.warn('WARNING: super small DRLNet dim used for debugging')
+    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
 

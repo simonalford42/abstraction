@@ -8,16 +8,29 @@ from utils import assert_equal, DEVICE, assert_shape
 import warnings
 
 
-class Print(nn.Module):
-    def __init__(self, layer):
+class PrintWrapperModule(nn.Module):
+    '''
+    Take a nn.Module and return a new nn.Module that prints the input and parameters of the module before the forward pass.
+    '''
+
+    def __init__(self, layer, print_parameters=True, print_input=True, print_output=False):
         super().__init__()
         self.layer = layer
+        self.print_parameters = print_parameters
+        self.print_input = print_input
+        self.print_output = print_output
 
     def forward(self, x):
-        print(x)
-        for p in self.parameters():
-            print(p)
-        return self.layer(x)
+        if self.print_input:
+            print('Input: ', x)
+        if self.print_parameters:
+            print('Parameters:')
+            for p in self.parameters():
+                print(p)
+        out = self.layer(x)
+        if self.print_output:
+            print('Output: ', out)
+        return out
 
 
 class MicroNet(nn.Module):
@@ -254,7 +267,7 @@ class RelationalDRLNet(nn.Module):
                                 # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                nn.Linear(self.d, self.out_dim),)
+                                PrintWrapperModule(nn.Linear(self.d, self.out_dim), print_output=True),)
 
     def forward(self, x):
         with warnings.catch_warnings():
