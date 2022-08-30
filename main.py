@@ -314,8 +314,8 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
             # print(f"{state_embeds=}")
             with torch.no_grad():
                 target_state_embeds = net(target_states)
-            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
-            move_logits = options_net(state_preds[:, :, :, :, 0])
+            state_preds, tensor_dict = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            move_logits = options_net(state_preds)
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
 
@@ -326,7 +326,8 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
             # print(f"{target_state_embeds.shape=}")
             # print(f"{state_preds=}")
             # print(f"{target_state_embeds=}")
-            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            # state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            state_loss = (state_preds - target_state_embeds).square().sum() / len(state_preds)
             print(f"{state_loss=}")
             # state_loss = F.mse_loss(state_preds, target_state_embeds)
 
@@ -336,15 +337,14 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
             total_move_loss += move_loss.item()
             total_state_loss += state_loss.item()
             loss.backward()
-            print(f"{net.net.fc[-1].layer.weight=}")
-            print(f"{net.net.fc[-1].layer.weight.data=}")
-            print(f"{net.net.fc[-1].layer.weight.grad.data=}")
+            print(tensor_dict)
+            print('precondition_logps grad: ', tensor_dict['precondition_logps'].grad)
+            print('log_Q grad: ', tensor_dict['log_Q'].grad)
+            print('precond_sum grad: ', tensor_dict['precond_sum'].grad)
+            print('preclamp_log_Q grad: ', tensor_dict['preclamp_log_Q'].grad)
+            assert not torch.any(torch.isnan(tensor_dict['precondition_logps'].grad)), 'grad is nan'
             optimizer.step()
             print('OPTIMIZER STEP')
-            print(f"{net.net.fc[-1].layer.weight=}")
-            print(f"{net.net.fc[-1].layer.weight.data=}")
-            print(f"{net.net.fc[-1].layer.weight.grad.data=}")
-            # print(f"{net.net.attn_block.=}")
 
         wandb.log({'loss': train_loss,
                    'total_move_loss': total_move_loss,
@@ -567,7 +567,7 @@ def neurosym_train(params):
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
     utils.warn('WARNING: super small DRLNet dim used for debugging')
-    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * 2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
+    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
 

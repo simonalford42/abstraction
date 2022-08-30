@@ -26,9 +26,13 @@ HELD_KEY_IX = 0
 DOMINO_IX = 1
 
 BW_WORLD_MODEL_PROGRAM = {'precondition':
-                           [('held_key', 'X', False), ('domino', 'XY', False), ('action', 'Y', False)],
+                           [('held_key', 'X', True), ('domino', 'XY', True), ('action', 'Y', True)],
                           'effect':
-                           [('held_key', 'Y', False), ('held_key', 'X', True), ('domino', 'XY', True)]}
+                           [('held_key', 'Y', True), ('held_key', 'X', False), ('domino', 'XY', False)]}
+# BW_WORLD_MODEL_PROGRAM = {'precondition':
+                        #    [('domino', 'XY', True),],
+                        #   'effect':
+                        #    [('held_key', 'X', True),]}
 
 
 def abstractify(obs):
@@ -221,7 +225,7 @@ class AbstractEmbedNet(nn.Module):
         C = bw.NUM_COLORS
         # out = out.reshape(out.shape[0], 1, C, C)
         # reshape to (batch_size, 2, C, C)
-        out = out.reshape(out.shape[0], 2, C, C, 2)
+        out = out.reshape(out.shape[0], 2, C, C)
         out = F.log_softmax(out, dim=-1)  # logs sum to one
         # print(f"{out=}")
         # out = F.softmax(out, dim=-1)  # sum to one
@@ -241,10 +245,11 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
     likewise for STATE_EMBED_FALSE_IX.
     moves: [batch_size, ] tensor of colors [0, C-1w]
     world_model_program: a dict with keys 'precondition' and 'effect'.
-        each are a length list of tuples (predicate, args, is_negated)
+        each are a length list of tuples (predicate, args, is_true)
+
         where predicate is an index 0 or 1
               args is a string, either 'X', 'Y', or 'XY'
-              is_negated is a boolean
+              is_true is a boolean
 
     Returns: [batch_size, 2, C, C, 2] tensor of new state predictions.
     '''
@@ -256,16 +261,16 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
     # pre args is either 'X', 'Y', or 'XY'
     precondition_probs = torch.ones(B, C, C)
 
-    for predicate, args, is_negated in world_model_program['precondition']:
+    for predicate, args, is_true in world_model_program['precondition']:
         if predicate == 'action':
             # if arg is 'X', then we can only allow P to be 1 when the first arg equals the action
             # if the arg is 'Y', then we can only allow P to be 1 when the second arg equals the action
             probs = F.one_hot(moves, num_classes=C)
             assert_shape(probs, (B, C))
         elif predicate == 'held_key':
-            probs = P[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]
+            probs = P[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
         elif predicate == 'domino':
-            probs = P[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]
+            probs = P[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
         else:
             raise ValueError(f'unknown predicate {predicate}')
 
@@ -286,15 +291,15 @@ def world_model_step_prob(state_embeds, moves, world_model_program):
     # otherwise, by default, things stay the same.
     Q = torch.zeros(B, 2, C, C, 2)
 
-    for predicate, args, is_negated in world_model_program['effect']:
+    for predicate, args, is_true in world_model_program['effect']:
         if predicate == 'held_key':
             assert args in ['X', 'Y']
             # sum precondition probs over axis not in args
-            Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_probs.sum(dim=2 if args == 'X' else 1)
+            Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precondition_probs.sum(dim=2 if args == 'X' else 1)
 
         else:
             assert predicate == 'domino' and args == 'XY'
-            Q[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_probs
+            Q[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precondition_probs
 
     Q = torch.clamp(Q, max=1)
 
@@ -327,17 +332,24 @@ def world_model_step(state_embeds, moves, world_model_program):
     likewise for STATE_EMBED_FALSE_IX.
     moves: [batch_size, ] tensor of colors [0, C-1]
     world_model_program: a dict with keys 'precondition' and 'effect'.
-        each are a length list of tuples (predicate, args, is_negated)
+        each are a length list of tuples (predicate, args, is_true)
         where predicate is an index 0 or 1
               args is a string, either 'X', 'Y', or 'XY'
-              is_negated is a boolean
+              is_true is a boolean
 
     Returns: [batch_size, 2, C, C, 2] tensor of new state predictions.
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
-    log_P = state_embeds
+    print(f"{moves=}")
+    log_P1 = state_embeds
+    log_P0 = utils.log1minus(log_P1)
+    if STATE_EMBED_FALSE_IX == 0:
+        log_P = torch.stack([log_P0, log_P1], dim=-1)
+    else:
+        log_P = torch.stack([log_P1, log_P0], dim=-1)
+
     assert not torch.any(torch.isnan(log_P)), f'log_P is nan: {log_P}'
-    # print(f"{log_P=}")
+    print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
     assert_shape(moves, (B, ))
@@ -346,16 +358,17 @@ def world_model_step(state_embeds, moves, world_model_program):
     # pre args is either 'X', 'Y', or 'XY'
     precondition_logps = torch.zeros((B, C, C), device=DEVICE)
 
-    for predicate, args, is_negated in world_model_program['precondition']:
+    for predicate, args, is_true in world_model_program['precondition']:
+        print(f"{predicate=}")
         if predicate == 'action':
             # if arg is 'X', then we can only allow P to be 1 when the first arg equals the action
             # if the arg is 'Y', then we can only allow P to be 1 when the second arg equals the action
             logps = torch.log(F.one_hot(moves, num_classes=C))
             assert_shape(logps, (B, C))
         elif predicate == 'held_key':
-            logps = log_P[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]
+            logps = log_P[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
         elif predicate == 'domino':
-            logps = log_P[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX]
+            logps = log_P[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
         else:
             raise ValueError(f'unknown predicate {predicate}')
 
@@ -369,25 +382,39 @@ def world_model_step(state_embeds, moves, world_model_program):
             raise ValueError('args must be X or Y')
 
         # (B, C, C) tells probability that precondition satisfied
-        precondition_logps += logps
+        precondition_logps = precondition_logps + logps
         assert_shape(precondition_logps, (B, C, C))
 
-    # each of the effects gets assigned this probability of being true.
-    # otherwise, by default, things stay the same.
-    log_Q = torch.log(torch.zeros((B, 2, C, C, 2), device=DEVICE))
+    print(f"{precondition_logps=}")
+    # try to prevent going over 0 when LSE over axis
+    # precondition_logps = precondition_logps * 100
 
-    for predicate, args, is_negated in world_model_program['effect']:
+    # otherwise, by default, things stay the same.
+    # (batch_size, predicate, color, color, setting_true_or_false)
+    # log_Q = torch.log(torch.zeros((B, 2, C, C, 2), device=DEVICE))
+    log_Q = torch.full((B, 2, C, C, 2), fill_value=-100., device=DEVICE)
+
+    precond_sum = None
+    for predicate, args, is_true in world_model_program['effect']:
+        print(predicate)
         if predicate == 'held_key':
             assert args in ['X', 'Y']
             # sum precondition probs over axis not in args
-            log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_logps.logsumexp(dim=2 if args == 'X' else 1)
+            precond_sum = precondition_logps.logsumexp(dim=2 if args == 'X' else 1)
+            # assert torch.max(precond_sum) < 0, f'{precond_sum=}'
+            log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precond_sum
 
+            print(f"{log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]=}")
         else:
             assert predicate == 'domino' and args == 'XY'
-            log_Q[:, DOMINO_IX, :, :, STATE_EMBED_FALSE_IX if is_negated else STATE_EMBED_TRUE_IX] = precondition_logps
+            log_Q[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precondition_logps
+            print(f"{log_Q[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]=}")
 
-    # print('log_Q > 0: ', torch.where(log_Q > 0))
+    print(f'pre clamp {log_Q=}')
+    preclamp_log_Q = log_Q
+    print(f'{torch.where(log_Q > 0)=}')
     log_Q = torch.clamp(log_Q, max=0)
+    print(f"post clamp {log_Q=}")
 
     log_P0, log_P1 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX], log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
@@ -410,19 +437,26 @@ def world_model_step(state_embeds, moves, world_model_program):
     new_log_P1 = torch.clamp(new_log_P1, max=0)
     # print(f"{new_log_P1=}")
 
-    new_log_P0 = utils.log1minus(new_log_P1)
+    # new_log_P0 = utils.log1minus(new_log_P1)
     # print(f"{new_log_P0=}")
-    if STATE_EMBED_FALSE_IX == 0:
-        new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
-    else:
-        new_log_P = torch.stack([new_log_P1, new_log_P0], dim=-1)
+    # if STATE_EMBED_FALSE_IX == 0:
+        # new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
+    # else:
+        # new_log_P = torch.stack([new_log_P1, new_log_P0], dim=-1)
+    new_log_P = new_log_P1
 
-    assert_shape(new_log_P, (B, 2, C, C, 2))
+    assert_shape(new_log_P, (B, 2, C, C))
     assert not torch.any(torch.isnan(new_log_P)), f'new_log_P is nan: {new_log_P}'
     # print('is nan: ', torch.any(torch.isnan(new_log_P)))
     # print(f"{new_log_P=}")
     # print('>=0: ', torch.where(new_log_P >= 0))
-    return new_log_P
+
+    # new_log_P.retain_grad()
+    # log_Q.retain_grad()
+    # precond_sum.retain_grad()
+    # precondition_logps.retain_grad()
+    # preclamp_log_Q.retain_grad()
+    return new_log_P # , {'precondition_logps': precondition_logps, 'log_Q': log_Q, 'precond_sum': precond_sum, 'preclamp_log_Q': preclamp_log_Q}
 
 
 def world_model_data(env, n) -> list[tuple]:
@@ -574,9 +608,6 @@ def test_world_model(probs=False):
             # move[0] is the new held key, move[1] is the uppercase lock to be unlocked by current key
             move_ix = bw.COLORS.index(move[0])
             move_tensor = torch.tensor(move_ix)
-            # state = torch.stack([state, 1 - state], dim=-1).log()
-            assert STATE_EMBED_TRUE_IX == 0
-            state = torch.stack([state, 1 - state], dim=-1)
 
             if probs:
                 next_state_pred = world_model_step_prob(state.unsqueeze(0),
@@ -586,7 +617,7 @@ def test_world_model(probs=False):
                 next_state_pred = world_model_step(state.log().unsqueeze(0),
                                                    move_tensor.unsqueeze(0),
                                                    world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
-            assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
+            assert torch.allclose(next_state, next_state_pred[0])
 
     test_world_model_data(world_data)
 
@@ -625,8 +656,6 @@ def test_world_model(probs=False):
     for (state, move, next_state, _, _) in world_data:
         move_ix = bw.COLORS.index(move[0])
         move_tensor = torch.tensor(move_ix)
-        assert STATE_EMBED_TRUE_IX == 0
-        state = torch.stack([state, 1 - state], dim=-1)
         for program in identity_programs:
             if probs:
                 next_state_pred = world_model_step_prob(state.unsqueeze(0),
@@ -636,7 +665,7 @@ def test_world_model(probs=False):
                 next_state_pred = world_model_step(state.log().unsqueeze(0),
                                                    move_tensor.unsqueeze(0),
                                                    world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
-            assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
+            assert torch.allclose(next_state, next_state_pred[0])
 
 
 if __name__ == '__main__':

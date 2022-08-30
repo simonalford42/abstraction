@@ -43,8 +43,6 @@ class WorldModel(nn.Module):
         return h.squeeze(0), d.squeeze(0)
 
 
-
-
 def demo_world_model(demo_optimization=True):
     wm = WorldModel(10)
 
@@ -55,7 +53,6 @@ def demo_world_model(demo_optimization=True):
     holding = torch.zeros(10)
     holding[0] = 1
 
-
     for a in [1,3,4]:
         action = torch.zeros(10)
         action[a] = 1
@@ -63,15 +60,15 @@ def demo_world_model(demo_optimization=True):
         next_holding, next_dominos = wm(action, holding, dominos.view(-1))
         next_dominos = next_dominos.view(10,10)
 
-
         print("issuing action", a,
               "while holding",
               torch.argmax(holding).item(),
               "\n\tin the initial state\t",
-              ", ".join(sorted([str((i,j)) for i in range(10) for j in range(10) if dominos[i,j]>0.5 ])),
+              ", ".join(sorted([str((i,j)) for i in range(10) for j in range(10) if dominos[i,j] > 0.5])),
               "\n\tgives the new state\t",
-              ", ".join(sorted([str((i,j)) for i in range(10) for j in range(10) if next_dominos[i,j]>0.5 ])))
-
+              ", ".join(sorted([str((i,j)) for i in range(10) for j in range(10) if next_dominos[i,j] > 0.5])),
+              "\n\tand the new holding\t",
+              torch.argmax(next_holding).item())
 
         if not demo_optimization:
             continue
@@ -95,7 +92,7 @@ def demo_world_model(demo_optimization=True):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            if step%100 == 0:
+            if step % 100 == 0:
                 print("\toptimization step", step,
                       "loss", loss.item(),
                       "predicted action", torch.argmax(action_distribution).item())
@@ -117,7 +114,7 @@ def demo_world_model(demo_optimization=True):
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            if step%100 == 0:
+            if step % 100 == 0:
                 print("\toptimization step", step,
                       "loss", loss.item(),
                       "predicted holding", torch.argmax(holding_distribution).item())
@@ -145,14 +142,14 @@ def demo_world_model(demo_optimization=True):
                       "loss", loss.item(),
                       "predicted dominos",
                       ", ".join(sorted([str((i,j)) for i in range(10) for j in range(10)
-                                        if torch.sigmoid(domino_distribution)[i,j]>0.5 ])))
+                                        if torch.sigmoid(domino_distribution)[i,j] > 0.5 ])))
 
 
 
         holding = next_holding
         dominos = next_dominos
 
-demo_world_model_with_optimization(demo_optimization=False) # you can also set this to true for a more involved demo
+demo_world_model(demo_optimization=True) # you can also set this to true for a more involved demo
 
 
 def causal_consistency_loss(initial_state, final_state, option):

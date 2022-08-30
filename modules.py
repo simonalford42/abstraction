@@ -267,7 +267,7 @@ class RelationalDRLNet(nn.Module):
                                 # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                PrintWrapperModule(nn.Linear(self.d, self.out_dim), print_output=True),)
+                                nn.Linear(self.d, self.out_dim),)
 
     def forward(self, x):
         with warnings.catch_warnings():
