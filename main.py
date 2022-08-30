@@ -340,7 +340,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
             print(tensor_dict)
             print('precondition_logps grad: ', tensor_dict['precondition_logps'].grad)
             print('log_Q grad: ', tensor_dict['log_Q'].grad)
-            print('precond_sum grad: ', tensor_dict['precond_sum'].grad)
+            # print('precond_sum grad: ', tensor_dict['precond_sum'].grad)
             print('preclamp_log_Q grad: ', tensor_dict['preclamp_log_Q'].grad)
             assert not torch.any(torch.isnan(tensor_dict['precondition_logps'].grad)), 'grad is nan'
             optimizer.step()

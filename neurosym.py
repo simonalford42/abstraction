@@ -30,9 +30,11 @@ BW_WORLD_MODEL_PROGRAM = {'precondition':
                           'effect':
                            [('held_key', 'Y', True), ('held_key', 'X', False), ('domino', 'XY', False)]}
 # BW_WORLD_MODEL_PROGRAM = {'precondition':
-                        #    [('domino', 'XY', True),],
+                        #    [('domino', 'XY', True), ('action', 'Y', True)],
                         #   'effect':
-                        #    [('held_key', 'X', True),]}
+                        #    [('domino', 'XY', True),]}
+
+MIN_FLOAT = torch.finfo(torch.float).min
 
 
 def abstractify(obs):
@@ -340,6 +342,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     Returns: [batch_size, 2, C, C, 2] tensor of new state predictions.
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
+
     print(f"{moves=}")
     log_P1 = state_embeds
     log_P0 = utils.log1minus(log_P1)
@@ -348,6 +351,10 @@ def world_model_step(state_embeds, moves, world_model_program):
     else:
         log_P = torch.stack([log_P1, log_P0], dim=-1)
 
+
+    # trying to avoid inf's when training since they cause NaNs after backpropping through logsumexp, see
+    # https://github.com/pytorch/pytorch/issues/49724
+    assert not torch.any(torch.isinf(log_P)), f'log_P has inf: {log_P}'
     assert not torch.any(torch.isnan(log_P)), f'log_P is nan: {log_P}'
     print(f"{log_P=}")
     B, C = log_P.shape[0], log_P.shape[2]
@@ -364,6 +371,9 @@ def world_model_step(state_embeds, moves, world_model_program):
             # if arg is 'X', then we can only allow P to be 1 when the first arg equals the action
             # if the arg is 'Y', then we can only allow P to be 1 when the second arg equals the action
             logps = torch.log(F.one_hot(moves, num_classes=C))
+            # turn -inf's into min float value
+            logps[logps == float('-inf')] = MIN_FLOAT
+
             assert_shape(logps, (B, C))
         elif predicate == 'held_key':
             logps = log_P[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
@@ -381,10 +391,12 @@ def world_model_step(state_embeds, moves, world_model_program):
         else:
             raise ValueError('args must be X or Y')
 
+        assert not torch.any(torch.isinf(logps)), f'logps has inf: {logps}'
         # (B, C, C) tells probability that precondition satisfied
         precondition_logps = precondition_logps + logps
         assert_shape(precondition_logps, (B, C, C))
 
+    assert not torch.any(torch.isinf(precondition_logps)), f'precondition_logps has inf: {precondition_logps}'
     print(f"{precondition_logps=}")
     # try to prevent going over 0 when LSE over axis
     # precondition_logps = precondition_logps * 100
@@ -392,7 +404,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     # otherwise, by default, things stay the same.
     # (batch_size, predicate, color, color, setting_true_or_false)
     # log_Q = torch.log(torch.zeros((B, 2, C, C, 2), device=DEVICE))
-    log_Q = torch.full((B, 2, C, C, 2), fill_value=-100., device=DEVICE)
+    log_Q = torch.full((B, 2, C, C, 2), fill_value=MIN_FLOAT, device=DEVICE)
 
     precond_sum = None
     for predicate, args, is_true in world_model_program['effect']:
@@ -451,12 +463,14 @@ def world_model_step(state_embeds, moves, world_model_program):
     # print(f"{new_log_P=}")
     # print('>=0: ', torch.where(new_log_P >= 0))
 
-    # new_log_P.retain_grad()
-    # log_Q.retain_grad()
+    new_log_P.retain_grad()
+    log_Q.retain_grad()
+
     # precond_sum.retain_grad()
-    # precondition_logps.retain_grad()
-    # preclamp_log_Q.retain_grad()
-    return new_log_P # , {'precondition_logps': precondition_logps, 'log_Q': log_Q, 'precond_sum': precond_sum, 'preclamp_log_Q': preclamp_log_Q}
+    precondition_logps.retain_grad()
+    preclamp_log_Q.retain_grad()
+    # return new_log_P, {'precondition_logps': precondition_logps, 'log_Q': log_Q, 'precond_sum': precond_sum, 'preclamp_log_Q': preclamp_log_Q}
+    return new_log_P, {'precondition_logps': precondition_logps, 'log_Q': log_Q, 'preclamp_log_Q': preclamp_log_Q}
 
 
 def world_model_data(env, n) -> list[tuple]:
