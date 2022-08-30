@@ -295,7 +295,6 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
     updates = 0
     epoch = 0
 
-    print('start')
     while updates < params.traj_updates:
         train_loss = 0
         total_state_loss = 0
@@ -306,45 +305,29 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
         for states, moves, target_states in dataloader:
             count += 1
             optimizer.zero_grad()
-            print('start2')
 
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
-            # print(f"{states=}")
+
             state_embeds = net(states)
-            # print(f"{state_embeds=}")
             with torch.no_grad():
                 target_state_embeds = net(target_states)
-            state_preds, tensor_dict = neurosym.world_model_step(state_embeds, moves, world_model_program)
+
+            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+
             move_logits = options_net(state_preds)
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
-            # print(f"{move_loss=}")
-
-            # print(f"{state_preds.shape=}")
-            # print(f"{target_state_embeds.shape=}")
-            # print(f"{state_preds=}")
-            # print(f"{target_state_embeds=}")
-            # state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
-            state_loss = (state_preds - target_state_embeds).square().sum() / len(state_preds)
-            print(f"{state_loss=}")
-            # state_loss = F.mse_loss(state_preds, target_state_embeds)
-
+            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
             loss = move_loss + state_loss
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
             total_state_loss += state_loss.item()
+
             loss.backward()
-            print(tensor_dict)
-            print('precondition_logps grad: ', tensor_dict['precondition_logps'].grad)
-            print('log_Q grad: ', tensor_dict['log_Q'].grad)
-            # print('precond_sum grad: ', tensor_dict['precond_sum'].grad)
-            print('preclamp_log_Q grad: ', tensor_dict['preclamp_log_Q'].grad)
-            assert not torch.any(torch.isnan(tensor_dict['precondition_logps'].grad)), 'grad is nan'
             optimizer.step()
-            print('OPTIMIZER STEP')
 
         wandb.log({'loss': train_loss,
                    'total_move_loss': total_move_loss,
