@@ -214,7 +214,7 @@ class ListDataset(Dataset):
 
 
 class AbstractEmbedNet(nn.Module):
-    def __init__(self, net: RelationalDRLNet):
+    def __init__(self, net):
         super().__init__()
         self.net = net
 
@@ -224,10 +224,10 @@ class AbstractEmbedNet(nn.Module):
         # out = out.reshape(out.shape[0], 1, C, C)
         # reshape to (batch_size, 2, C, C)
         out = out.reshape(out.shape[0], 2, C, C)
-        out = F.log_softmax(out, dim=-1)  # logs sum to one
+        # out = F.log_softmax(out, dim=-1)  # logs sum to one
         # print(f"{out=}")
         # out = F.softmax(out, dim=-1)  # sum to one
-        # out = torch.sigmoid(out)  # all outs between 0 and 1
+        out = torch.sigmoid(out)  # all outs between 0 and 1
         return out
 
 
@@ -406,6 +406,11 @@ def world_model_step(state_embeds, moves, world_model_program):
 
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
 
+    # 1. add
+    #     -  P1' = P1 + Q1 - P1 Q1 = P1 + Q1 P0
+    # 2. delete, if both then delete what was added.
+    #     - P1' = P1 (1 - Q0)
+    # composed together:
     # P1' = (P1 + Q1 P0)(1- Q0)
     new_log_P1 = torch.logaddexp(log_P1, log_Q1 + log_P0) + utils.log1minus(log_Q0)
     new_log_P1 = torch.clamp(new_log_P1, max=0)
@@ -416,8 +421,7 @@ def world_model_step(state_embeds, moves, world_model_program):
 def world_model_data(env, n) -> list[tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
-    Returns a list of tuples of the form (abs_state, abs_action, abs_next_state)
-    where abs_state and abs_next state are tensor embeddings of the symbolic state.
+    Returns a list of tuples of the form (state, abs_action, next_state)
     '''
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 

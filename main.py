@@ -16,7 +16,7 @@ from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
 import data
-from modules import ShrinkingRelationalDRLNet, RelationalDRLNet
+from modules import RelationalDRLNet, MicroNet2
 import muzero
 import torch.nn.functional as F
 import neurosym
@@ -545,21 +545,23 @@ def neurosym_train(params):
 
     env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
 
-    # abs_data = neurosym.ListDataset(neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n))
-    abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
+    # abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
+    abs_data = neurosym.ListDataset(neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    utils.warn('WARNING: super small DRLNet dim used for debugging')
-    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
+
+    # net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
+    net = neurosym.AbstractEmbedNet(MicroNet2(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
-    # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
 
-    if params.sv_options_net_fc:
-        options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
-    else:
-        options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+    neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
 
-    learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
+    # if params.sv_options_net_fc:
+        # options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
+    # else:
+        # options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+
+    # learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
 
 
 def sv_option_pred(params):
