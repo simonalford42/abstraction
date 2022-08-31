@@ -38,12 +38,14 @@ class MicroNet2(nn.Module):
         super().__init__()
         self.input_channels = input_channels
         self.out_dim = out_dim
-        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
-        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
-        self.linear = nn.Linear(24, self.out_dim)
+        hidden_channels = 10 * out_dim
+        self.conv1 = nn.Conv2d(input_channels, hidden_channels, 2, padding='same')
+        self.conv2 = nn.Conv2d(hidden_channels, hidden_channels, 2, padding='same')
+        self.linear = nn.Linear(hidden_channels, out_dim)
 
     def forward(self, x):
         with warnings.catch_warnings():
+            warnings.filterwarnings("ignore",category=UserWarning)
             x = self.conv1(x)
             x = self.conv2(x)
             x = F.relu(x)

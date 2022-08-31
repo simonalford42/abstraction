@@ -274,8 +274,8 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
                    'negative_acc': negative_acc,
                    'positive_acc': positive_acc})
 
-        if epoch % 10 == 0:
-            print(f'{loss=}, {acc=}')
+        # if epoch % 10 == 0:
+            # print(f'{train_loss=}, {acc=}')
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -398,6 +398,7 @@ def make_net(params):
 
 def boxworld_main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--note', type=str, default='')
     parser.add_argument('--n', type=int, default=20000)
     parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
@@ -442,6 +443,7 @@ def boxworld_main():
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
+    parser.add_argument('--symbolic_supervised', action='store_true')
 
     params = parser.parse_args()
 
@@ -543,25 +545,48 @@ def neurosym_train(params):
     # seems like I have to do this outside of the function to get it to work?
     pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
-    env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
+    solution_length = params.solution_length
+    if type(solution_length) == tuple:
+        solution_length = max(solution_length)
 
-    # abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
-    abs_data = neurosym.ListDataset(neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n))
-    dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
+    env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
 
+    if params.symbolic_supervised:
+        data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n)
+        abs_data = neurosym.ListDataset(data)
+        dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    # net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
-    net = neurosym.AbstractEmbedNet(MicroNet2(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
-    print(f"Net has {utils.num_params(net)} parameters")
+        out_dim = 2 * box_world.NUM_COLORS ** 2
+        # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim)
 
-    neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
+        net = MicroNet2(input_channels=box_world.NUM_ASCII, out_dim=out_dim)
+        print('micro net')
 
-    # if params.sv_options_net_fc:
-        # options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
-    # else:
-        # options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+        net = neurosym.AbstractEmbedNet(net).to(DEVICE)
+        print(f"Net has {utils.num_params(net)} parameters")
+        neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
+    else:
+        abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
+        dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    # learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM, params)
+        out_dim = 2 * box_world.NUM_COLORS ** 2
+        net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim)
+        net = neurosym.AbstractEmbedNet(net).to(DEVICE)
+        print(f"Net has {utils.num_params(net)} parameters")
+
+        if params.sv_options_net_fc:
+            options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
+                                               num_options=box_world.NUM_COLORS,
+                                               hidden_dim=128,
+                                               num_hidden=2).to(DEVICE)
+        else:
+            options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+                                                num_options=box_world.NUM_COLORS,
+                                                num_heads=params.num_heads,
+                                                hidden_dim=128).to(DEVICE)
+
+        learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
+                params)
 
 
 def sv_option_pred(params):
@@ -573,9 +598,15 @@ def sv_option_pred(params):
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
     if params.sv_options_net_fc:
-        net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, hidden_dim=128, num_hidden=2).to(DEVICE)
+        net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
+                                   num_options=box_world.NUM_COLORS,
+                                   hidden_dim=128,
+                                   num_hidden=2).to(DEVICE)
     else:
-        net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS, num_options=box_world.NUM_COLORS, num_heads=params.num_heads, hidden_dim=128).to(DEVICE)
+        net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+                                    num_options=box_world.NUM_COLORS,
+                                    num_heads=params.num_heads,
+                                    hidden_dim=128).to(DEVICE)
 
     print(f"Net has {utils.num_params(net)} parameters")
     option_pred_train(dataloader, net, params)
