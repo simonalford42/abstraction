@@ -275,7 +275,7 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
                    'positive_acc': positive_acc})
 
         if epoch % 10 == 0:
-            print(f'{loss=}, {acc=}')
+            print(f'{train_loss=}, {acc=}, {negative_acc=}, {positive_acc=}')
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -428,7 +428,7 @@ def boxworld_main():
     parser.add_argument('--shrink_micro_net', action='store_true')
     parser.add_argument('--shrink_loss_scale', type=float, default=1)
 
-    parser.add_argument('--length', type=tuple, default=(1, 2, 3, 4),
+    parser.add_argument('--solution_length', type=tuple, default=(1, 2, 3, 4),
                         help='box world env solution_length, may be single number or tuple of options')
     parser.add_argument('--muzero', action='store_true')
     parser.add_argument('--muzero_scratch', action='store_true')
@@ -456,8 +456,8 @@ def boxworld_main():
     random.seed(params.seed)
     torch.manual_seed(params.seed)
 
-    if type(params.length) == int:
-        params.length = (params.length, )  # box_world env expects tuple
+    if type(params.solution_length) == int:
+        params.solution_length = (params.solution_length, )  # box_world env expects tuple
 
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
@@ -473,7 +473,6 @@ def boxworld_main():
         params.model = 'cc'
         params.b = box_world.NUM_COLORS
         params.batch_size = max(1, int(params.batch_size / 2))
-
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
@@ -543,15 +542,15 @@ def neurosym_train(params):
     # seems like I have to do this outside of the function to get it to work?
     pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
-    env = box_world.BoxWorldEnv(solution_length=(4, ), num_forward=(4, ))
+    env = box_world.BoxWorldEnv(solution_length=(2, ), num_forward=(2, ))
 
     # abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
     abs_data = neurosym.ListDataset(neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
+    print(f'{len(abs_data)} examples')
 
-
-    # net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
-    net = neurosym.AbstractEmbedNet(MicroNet2(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
+    # net = neurosym.AbstractEmbedNet(MicroNet2(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS)).to(DEVICE)
+    net = MicroNet2(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
 
     neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)

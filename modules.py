@@ -34,24 +34,19 @@ class PrintWrapperModule(nn.Module):
 
 
 class MicroNet2(nn.Module):
-    def __init__(self, input_channels=3, out_dim=64):
+    def __init__(self, input_channels, num_colors):
         super().__init__()
         self.input_channels = input_channels
-        self.out_dim = out_dim
-        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
-        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
-        self.linear = nn.Linear(24, self.out_dim)
+        self.num_colors = num_colors
+        self.conv1 = nn.Conv2d(self.input_channels, 2 * num_colors * num_colors, 2, padding='same')
 
     def forward(self, x):
         with warnings.catch_warnings():
             x = self.conv1(x)
-            x = self.conv2(x)
-            x = F.relu(x)
-
             x = einops.rearrange(x, 'n c h w -> n (h w) c')
-            x = self.linear(x)
-
             x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = einops.rearrange(x, 'n (t c1 c2) -> n t c1 c2', t=2, c1=self.num_colors, c2=self.num_colors)
+            x = torch.sigmoid(x)
             return x
 
 
@@ -63,7 +58,8 @@ class MicroNet(nn.Module):
         self.d = d
         self.out_dim = out_dim
         self.conv1 = nn.Conv2d(input_channels, inter_channels, 3, padding='same')
-        self.conv2 = nn.Conv2d(inter_channels, inter_channels, 3, padding='same')
+        self.conv1 = nn.Conv2d(input_channels, inter_channels, 3, padding='same')
+
         self.third_conv = third_conv
         if third_conv:
             self.conv3 = nn.Conv3d(inter_channels, inter_channels, 3, padding='same')
