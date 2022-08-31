@@ -33,6 +33,28 @@ class PrintWrapperModule(nn.Module):
         return out
 
 
+class MicroNet2(nn.Module):
+    def __init__(self, input_channels=3, out_dim=64):
+        super().__init__()
+        self.input_channels = input_channels
+        self.out_dim = out_dim
+        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
+        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
+        self.linear = nn.Linear(24, self.out_dim)
+
+    def forward(self, x):
+        with warnings.catch_warnings():
+            x = self.conv1(x)
+            x = self.conv2(x)
+            x = F.relu(x)
+
+            x = einops.rearrange(x, 'n c h w -> n (h w) c')
+            x = self.linear(x)
+
+            x = einops.reduce(x, 'n l d -> n d', 'max')
+            return x
+
+
 class MicroNet(nn.Module):
     def __init__(self, input_shape, input_channels=3, d=32, out_dim=4, third_conv=False, inter_channels=12):
         super().__init__()

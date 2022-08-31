@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class WorldModel(nn.Module):
     def __init__(self, n_colors):
         super().__init__()
@@ -10,7 +11,7 @@ class WorldModel(nn.Module):
         context = scallop.ScallopContext(provenance="difftopkproofs")
 
         # INPUTS (predicted by tau)
-        context.add_relation("current_holding", (int,), input_mapping=[(i,) for i in range(n_colors)]) # what are we holding right now? unary predicate
+        context.add_relation("current_holding", (int,), input_mapping=[(i,) for i in range(n_colors)])  # what are we holding right now? unary predicate
         context.add_relation("current_domino", (int,int), # what dominos are in the world right now? binary predicate
                              input_mapping=[(i,j)
                                             for i in range(n_colors)
@@ -19,8 +20,8 @@ class WorldModel(nn.Module):
         context.add_relation("action", (int,), input_mapping=[(i,) for i in range(n_colors)])
 
         # OUTPUTS (predicted by world model, given inputs)
-        context.add_relation("next_holding", (int,)) # what are we holding at the completion of the option
-        context.add_relation("next_domino", (int,int)) # what dominos exit in the world at the completion of the option
+        context.add_relation("next_holding", (int,))  # what are we holding at the completion of the option
+        context.add_relation("next_domino", (int,int))  # what dominos exit in the world at the completion of the option
 
         # WORLD MODEL
         # you will start holding n if you are currently holding m, a domino links m to n, and the option picks up n
@@ -28,7 +29,6 @@ class WorldModel(nn.Module):
         # there is a domino (n,m) if it previously existed and ~(action(m) and current_holding(n)). used demorgan's law to rewrite this
         context.add_rule("next_domino(n,m) = current_domino(n,m) and ~action(m)")
         context.add_rule("next_domino(n,m) = current_domino(n,m) and ~current_holding(n)")
-
 
         # think of these as neural networks which predict the true/false values of a predicate given the true/false values of the input predicates
         self.next_holding = context.forward_function("next_holding", output_mapping=[(i,) for i in range(n_colors)], retain_graph=True)
