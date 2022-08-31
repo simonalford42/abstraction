@@ -549,8 +549,7 @@ def neurosym_train(params):
     abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
     dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-    utils.warn('WARNING: super small DRLNet dim used for debugging')
-    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=4)).to(DEVICE)
+    net = neurosym.AbstractEmbedNet(RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=2 * box_world.NUM_COLORS * box_world.NUM_COLORS, d=64)).to(DEVICE)
     print(f"Net has {utils.num_params(net)} parameters")
     # neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
 
