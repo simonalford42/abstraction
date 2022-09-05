@@ -266,8 +266,8 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
             optimizer.step()
 
         acc = total_hard_matches / len(dataloader.dataset)
-        negative_acc = total_negative_matches / total_negatives
-        positive_acc = total_positive_matches / total_positives
+        negative_acc = (total_negative_matches / total_negatives).item()
+        positive_acc = (total_positive_matches / total_positives).item()
 
         wandb.log({'loss': train_loss,
                    'acc': acc,
@@ -459,8 +459,8 @@ def boxworld_main():
     random.seed(params.seed)
     torch.manual_seed(params.seed)
 
-    if type(params.solution_length) == int:
-        params.solution_length = (params.solution_length, )  # box_world env expects tuple
+    # the parser parses as string tuple instead of int tuple
+    params.solution_length = tuple(int(l) for l in params.solution_length)
 
     if not hasattr(params, 'batch_size'):
         if params.relational_micro or params.gumbel or params.shrink_micro_net:
@@ -585,7 +585,7 @@ def neurosym_train(params):
                                                 hidden_dim=128).to(DEVICE)
 
         learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
-                params)
+                                   params)
 
 
 def sv_option_pred(params):
