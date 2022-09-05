@@ -214,9 +214,10 @@ class ListDataset(Dataset):
 
 
 class AbstractEmbedNet(nn.Module):
-    def __init__(self, net):
+    def __init__(self, net, sigmoid=False):
         super().__init__()
         self.net = net
+        self.sigmoid = sigmoid
 
     def forward(self, x):
         out = self.net(x)
@@ -224,10 +225,14 @@ class AbstractEmbedNet(nn.Module):
         # out = out.reshape(out.shape[0], 1, C, C)
         # reshape to (batch_size, 2, C, C)
         out = out.reshape(out.shape[0], 2, C, C)
-        # out = F.log_softmax(out, dim=-1)  # logs sum to one
+
+        if self.sigmoid:
+            out = torch.sigmoid(out)  # all outs between 0 and 1
+        else:
+            out = F.log_softmax(out, dim=-1)  # logs sum to one
+            # out = F.softmax(out, dim=-1)  # sum to one
+
         # print(f"{out=}")
-        # out = F.softmax(out, dim=-1)  # sum to one
-        out = torch.sigmoid(out)  # all outs between 0 and 1
         return out
 
 
