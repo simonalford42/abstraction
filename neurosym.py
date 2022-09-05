@@ -213,29 +213,6 @@ class ListDataset(Dataset):
         return self.lst[idx]
 
 
-class AbstractEmbedNet(nn.Module):
-    def __init__(self, net, sigmoid=False):
-        super().__init__()
-        self.net = net
-        self.sigmoid = sigmoid
-
-    def forward(self, x):
-        out = self.net(x)
-        C = bw.NUM_COLORS
-        # out = out.reshape(out.shape[0], 1, C, C)
-        # reshape to (batch_size, 2, C, C)
-        out = out.reshape(out.shape[0], 2, C, C)
-
-        if self.sigmoid:
-            out = torch.sigmoid(out)  # all outs between 0 and 1
-        else:
-            out = F.log_softmax(out, dim=-1)  # logs sum to one
-            # out = F.softmax(out, dim=-1)  # sum to one
-
-        # print(f"{out=}")
-        return out
-
-
 # seems like I have to do this outside of the function to get it to work?
 pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
@@ -331,8 +308,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     Run the world model program on the state embeddings and return the new state prediction.
 
-    state_embeds: [batch_size, 2, C, C, 2] tensor whose [:, P, A, B, STATE_EMBED_TRUE_IX] tells whether P(A, B) is true.
-    likewise for STATE_EMBED_FALSE_IX.
+    state_embeds: [batch_size, 2, C, C, 2] tensor
     moves: [batch_size, ] tensor of colors [0, C-1]
     world_model_program: a dict with keys 'precondition' and 'effect'.
         each are a length list of tuples (predicate, args, is_true)
@@ -344,15 +320,14 @@ def world_model_step(state_embeds, moves, world_model_program):
     '''
     # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
 
-    log_P1 = state_embeds
-    log_P0 = utils.log1minus(log_P1)
-    if STATE_EMBED_FALSE_IX == 0:
-        log_P = torch.stack([log_P0, log_P1], dim=-1)
-    else:
-        log_P = torch.stack([log_P1, log_P0], dim=-1)
+    log_P = state_embeds
 
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
+
+    log_P1 = log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
+    log_P0 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX]
+
     assert_shape(moves, (B, ))
     assert max(moves) <= C - 1 and min(moves) >= 0, f'moves must be in [0, {C-1}] but instead are {[min(moves), max(moves)]}'
 
@@ -419,8 +394,16 @@ def world_model_step(state_embeds, moves, world_model_program):
     # P1' = (P1 + Q1 P0)(1- Q0)
     new_log_P1 = torch.logaddexp(log_P1, log_Q1 + log_P0) + utils.log1minus(log_Q0)
     new_log_P1 = torch.clamp(new_log_P1, max=0)
+    new_log_P0 = utils.log1minus(new_log_P1)
 
-    return new_log_P1
+    if STATE_EMBED_FALSE_IX == 0:
+        new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
+    else:
+        new_log_P = torch.stack([new_log_P1, new_log_P0], dim=-1)
+
+    assert_shape(new_log_P, log_P.shape)
+
+    return new_log_P
 
 
 def world_model_data(env, n) -> list[tuple]:
@@ -577,10 +560,11 @@ def test_world_model(probs=False):
                                                         move_tensor.unsqueeze(0),
                                                         world_model_program=BW_WORLD_MODEL_PROGRAM)
             else:
+                state = torch.stack([state, 1-state], dim=-1)
                 next_state_pred = world_model_step(state.log().unsqueeze(0),
                                                    move_tensor.unsqueeze(0),
                                                    world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
-            assert torch.allclose(next_state, next_state_pred[0])
+            assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
 
     test_world_model_data(world_data)
 
@@ -625,10 +609,11 @@ def test_world_model(probs=False):
                                                         move_tensor.unsqueeze(0),
                                                         world_model_program=BW_WORLD_MODEL_PROGRAM)
             else:
-                next_state_pred = world_model_step(state.log().unsqueeze(0),
+                state2 = torch.stack([state, 1-state], dim=-1)
+                next_state_pred = world_model_step(state2.log().unsqueeze(0),
                                                    move_tensor.unsqueeze(0),
                                                    world_model_program=BW_WORLD_MODEL_PROGRAM).exp()
-            assert torch.allclose(next_state, next_state_pred[0])
+            assert torch.allclose(next_state, next_state_pred[0, :, :, :, STATE_EMBED_TRUE_IX])
 
 
 if __name__ == '__main__':

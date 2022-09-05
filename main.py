@@ -22,6 +22,7 @@ import torch.nn.functional as F
 import neurosym
 from pyDatalog import pyDatalog as pyd
 from itertools import chain
+from einops.layers.torch import Rearrange
 
 
 def fine_tune(control_net: nn.Module, params: dict[str, Any]):
@@ -106,14 +107,14 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
 
 
 def learn_options(net: nn.Module, params: dict[str, Any]):
-    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=params.seed), n=params.n, traj=True)
+    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length), n=params.n, traj=True)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
     params.epochs = int(params.traj_updates / params.n)
 
     optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
-    test_env = box_world.BoxWorldEnv()
+    test_env = box_world.BoxWorldEnv(solution_length=params.solution_length)
 
     num_params = utils.num_params(net)
     print(f"Net has {num_params} parameters")
@@ -285,7 +286,7 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmbedNet, options_net, world_model_program, params):
+def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_model_program, params):
     # optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
     optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
     net.train()
@@ -567,9 +568,14 @@ def neurosym_train(params):
         abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-        out_dim = 2 * box_world.NUM_COLORS ** 2
+        C = box_world.NUM_COLORS
+        out_dim = 2 * C * C * 2
         net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim)
-        net = neurosym.AbstractEmbedNet(net).to(DEVICE)
+        net = nn.Sequential(net,
+                            Rearrange('b (p C1 C2 two) -> b p C1 C2 two', p=2, C1=C, C2=C, two=2),
+                            nn.LogSoftmax(dim=-1),
+                            ).to(DEVICE)
+
         print(f"Net has {utils.num_params(net)} parameters")
 
         if params.sv_options_net_fc:

@@ -724,11 +724,11 @@ class HeteroController(nn.Module):
     def neurosym_macro_transitions(self, t_i, bs):
         """
         Input:
-              t_i: (T, (p C C 2)) batch of abstract state embeddings
+              t_i: (T, (p C C)) batch of abstract state embeddings
               bs: 1D batch of actions
 
         Output:
-                (T, |bs|, (p C C 2)) batch of new abstract states for each option applied.
+                (T, |bs|, (p C C)) batch of new abstract states for each option applied.
 
         Uses the world model program to do the macro transitions.
         """
@@ -736,17 +736,20 @@ class HeteroController(nn.Module):
         T = t_i.shape[0]
         nb = bs.shape[0]
         C = box_world.NUM_COLORS
+        assert_shape(t_i, (T, 2 * C * C * 2))
+        t_i = rearrange(t_i, 'T (p C1 C2 two) -> T p C1 C2 two', p=2, C1=C, C2=C, two=2)
+        t_i = F.log_softmax(t_i, dim=-1)
+
         # calculate transition for each t_i + b pair
         # t_i repeats in outer loop
-        t_i2 = repeat(t_i, 'T (p C1 C2 two) -> (T repeat) p C1 C2 two', repeat=nb, p=2, C1=C, C2=C)
+        t_i2 = repeat(t_i, 'T p C1 C2 two -> (T repeat) p C1 C2 two', repeat=nb)
         # b repeats in inner loop
         b_repeats = repeat(bs, 'b -> (repeat b)', repeat=T)
 
         # assumes each b corresponds to color action
         out = self.world_model_program_step(t_i2, b_repeats)
         assert_shape(out, (T * nb, 2, C, C, 2))
-        # out = rearrange(out, '(T bs) p C1 C2 two -> T bs p C1 C2 two', p=2, C1=C, C2=C)
-        out = rearrange(out, '(T bs) p C1 C2 two -> T bs (p C1 C2 two)', T=T, bs=nb, p=2, C1=C, C2=C)
+        out = rearrange(out, '(T bs) p C1 C2 two -> T bs (p C1 C2 two)', T=T)
         return out
 
     def macro_transitions(self, t_i, bs):

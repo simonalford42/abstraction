@@ -47,7 +47,8 @@ class BoxWorldEnv(gym.Env):
         self.shape = (grid_size + 2, grid_size + 2)
         self.solution_length = solution_length
         if max(solution_length) + 1 >= bw.NUM_COLORS:
-            raise ValueError(f'Solution length must be ≤ {bw.NUM_COLORS - 2}')
+            print(f'WARNING: current # colors limits solution length to be at most {bw.NUM_COLORS - 2}')
+            self.solution_length = tuple([x for x in solution_length if x < bw.NUM_COLORS - 1])
         self.num_forward = num_forward
         self.num_backward = num_backward
         self.branch_length = branch_length
