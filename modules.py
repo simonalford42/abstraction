@@ -59,7 +59,7 @@ class MicroNet(nn.Module):
         self.d = d
         self.out_dim = out_dim
         self.conv1 = nn.Conv2d(input_channels, inter_channels, 3, padding='same')
-        self.conv2 = nn.Conv2d(input_channels, inter_channels, 3, padding='same')
+        self.conv2 = nn.Conv2d(inter_channels, inter_channels, 3, padding='same')
 
         self.third_conv = third_conv
         if third_conv:
