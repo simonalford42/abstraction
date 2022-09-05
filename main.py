@@ -321,6 +321,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net: neurosym.AbstractEmb
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
             loss = move_loss + state_loss
+            print(f"loss: {loss.item()}")
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
