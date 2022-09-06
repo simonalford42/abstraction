@@ -321,7 +321,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
-            loss = move_loss + state_loss
+            loss = move_loss + params.state_loss_scale * state_loss
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
@@ -444,6 +444,7 @@ def boxworld_main():
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
+    parser.add_argument('--state_loss_scale', type=float, default=1.0)
     parser.add_argument('--symbolic_supervised', action='store_true')
 
     params = parser.parse_args()
