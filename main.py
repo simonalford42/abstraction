@@ -120,7 +120,6 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
     print(f"Net has {num_params} parameters")
     wandb.config.params = num_params
 
-    last_test_time = False
     last_save_time = time.time()
     updates = 0
     epoch = 0
@@ -296,6 +295,8 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
     updates = 0
     epoch = 0
 
+    last_save_time = time.time()
+
     while updates < params.traj_updates:
         train_loss = 0
         total_state_loss = 0
@@ -321,8 +322,7 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
-            loss = move_loss + state_loss
-            print(f"loss: {loss.item()}")
+            loss = move_loss + params.state_loss_weight * state_loss
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
@@ -337,6 +337,12 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
         epoch += 1
         updates += len(dataloader.dataset)
+
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(net, f'models/{params.id}_neurosym-epoch-{epoch}.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
     if not params.no_log and params.save_every:
         path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
@@ -445,6 +451,8 @@ def boxworld_main():
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
+    parser.add_argument('--state_loss_weight', type=float, default=1.0)
+    parser.add_argument('--cc_weight', type=float, default=1.0)
     parser.add_argument('--symbolic_supervised', action='store_true')
 
     params = parser.parse_args()

@@ -503,6 +503,9 @@ class SVOptionNet2(nn.Module):
         return pcc_one_hot.to(DEVICE)
 
     def forward(self, x):
+        # TODO: handle (2, c, c, 2) input
+        x = x[:, :, :, :, 0]
+
         B = x.shape[0]
         assert_equal(x.shape[1:], self.in_shape)
         x = self.embed_predicates(x)
