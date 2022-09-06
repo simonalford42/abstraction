@@ -391,7 +391,7 @@ def make_net(params):
             net = HmmNet(control_net, abstract_pen=params.abstract_pen, shrink_micro_net=params.shrink_micro_net)
         elif params.model == 'cc':
             assert not params.shrink_micro_net
-            net = CausalNet(control_net, abstract_pen=params.abstract_pen)
+            net = CausalNet(control_net, abstract_pen=params.abstract_pen, cc_weight=params.cc_weight)
         else:
             raise NotImplementedError()
 
