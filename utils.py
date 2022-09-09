@@ -6,7 +6,9 @@ import uuid
 import psutil
 from contextlib import nullcontext
 from collections import namedtuple
+import itertools
 
+import matplotlib.pyplot as plt
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -76,6 +78,8 @@ class Timing(object):
 def assert_equal(a, b):
     if np.ndarray in [type(a), type(b)]:
         assert np.array_equal(a, b), f'a != b: a:{a}, b:{b}'
+    elif torch.Tensor in [type(a), type(b)]:
+        assert torch.equal(a, b), f'a != b: a:{a}, b:{b}'
     else:
         assert a == b, f'a != b: a:{a}, b:{b}'
 
@@ -177,6 +181,35 @@ class NoMlflowRun():
 
     def set_experiment(self, *args, **kwargs):
         pass
+
+
+def compare_tensors(t1, t2):
+    # (a, b, c, d), (a, b, c, d) -> (a, b, c, 2d)
+    plot_tensor(torch.cat((t1, t2), dim=-1))
+
+
+def plot_tensor(t):
+    if t.dim() == 2:
+        plot_2D_tensor(t)
+    else:
+        init_shape = t.shape[:-2]
+        for init_dim_values in itertools.product(*map(range, init_shape)):
+            plot_2D_tensor(t[init_dim_values], label=init_dim_values)
+
+
+def plot_2D_tensor(t, label=None):
+    (y, x) = t.shape
+    fig, ax = plt.subplots()
+    ax.imshow(t)
+
+    print(t)
+    for j in range(y):
+        for i in range(x):
+            ax.text(i, j, f'{t[j][i].item():.2f}', ha="center", va="center", color="w", fontsize=6)
+
+    if label is not None:
+        plt.title(label)
+    plt.show()
 
 
 if __name__ == '__main__':

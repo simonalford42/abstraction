@@ -243,7 +243,6 @@ def get_dominoes(obs) -> dict[str, POS]:
         The location value is where the agent wants to go.
         So it's the right side of the domino.
     """
-
     dominoes = {}
     for y in range(len(obs)):
         for x in range(len(obs[y])):
@@ -272,7 +271,7 @@ def get_dominoes(obs) -> dict[str, POS]:
                     and right_of in {bw.PLAYER, bw.BACKGROUND, bw.BORDER}):
                 # lone key!
                 dominoes[s] = (y, x)
-            elif s.islower() and right_of.isupper():
+            elif s.islower() and (right_of.isupper() or right_of.islower()):
                 dominoes[s + right_of] = (y, x + 1)
 
     return dominoes

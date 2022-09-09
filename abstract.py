@@ -600,7 +600,7 @@ class HeteroController(nn.Module):
         return neurosym.world_model_step(states, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
 
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
-                 macro_transition_net, solved_net, tau_noise_std, cc_neurosym=False, world_model_program=None):
+                 macro_transition_net, solved_net, tau_noise_std, cc_neurosym=False, world_model_program=None, fake_cc_neurosym=False):
         super().__init__()
         self.a = a  # number of actions
         self.b = b  # number of options
@@ -613,6 +613,7 @@ class HeteroController(nn.Module):
         self.solved_net = solved_net  # t -> 2
         self.tau_noise_std = tau_noise_std
         self.cc_neurosym = cc_neurosym
+        self.fake_cc_neurosym = fake_cc_neurosym
         # only needed if cc_neurosym is True
         self.world_model_program = world_model_program
 
@@ -688,7 +689,14 @@ class HeteroController(nn.Module):
         """
         B, T, *s = s_i_batch.shape
         s_i_flattened = s_i_batch.reshape(B * T, *s)
-        t_i_flattened = self.tau_net(s_i_flattened)
+        if self.fake_cc_neurosym:
+            with torch.no_grad():
+                symbolic_states = [neurosym.tensor_to_symbolic_state(s_i_flattened[i]) for i in range(B * T)]
+                symbolic_states = [rearrange(s, 'p c1 c2 two -> (p c1 c2 two)') for s in symbolic_states]
+                t_i_flattened = torch.stack(symbolic_states, dim=0)
+                assert_shape(t_i_flattened, (B * T, self.t))
+        else:
+            t_i_flattened = self.tau_net(s_i_flattened)
 
         noise = self.tau_noise_std if tau_noise else 0
         noised_t_i_flattened = noisify_tau(t_i_flattened, noise)
@@ -1235,4 +1243,5 @@ def boxworld_controller(typ, params):
                    solved_net=solved_net,
                    tau_noise_std=params.tau_noise_std,
                    cc_neurosym=params.cc_neurosym,
-                   world_model_program=neurosym.BW_WORLD_MODEL_PROGRAM)
+                   world_model_program=neurosym.BW_WORLD_MODEL_PROGRAM,
+                   fake_cc_neurosym=params.fake_cc_neurosym,)

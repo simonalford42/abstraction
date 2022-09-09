@@ -311,19 +311,24 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
 
-            state_embeds = net(states)
+            # state_embeds = net(states)
+            state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+
             with torch.no_grad():
-                target_state_embeds = net(target_states)
+                # target_state_embeds = net(target_states)
+                target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
 
             state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
 
-            move_logits = options_net(state_preds)
+            move_logits = options_net(state_preds[:, :, :, :, neurosym.STATE_EMBED_TRUE_IX])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
 
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
             loss = move_loss + params.state_loss_weight * state_loss
+            print(f"{move_loss=}")
+            print(f"{state_loss=}")
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
@@ -455,6 +460,7 @@ def boxworld_main():
     parser.add_argument('--state_loss_weight', type=float, default=1.0)
     parser.add_argument('--cc_weight', type=float, default=1.0)
     parser.add_argument('--symbolic_supervised', action='store_true')
+    parser.add_argument('--fake_cc_neurosym', action='store_true')
 
     params = parser.parse_args()
 

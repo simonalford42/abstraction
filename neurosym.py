@@ -1,4 +1,5 @@
 import box_world as bw
+import itertools
 import math
 import numpy as np
 import random
@@ -12,6 +13,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
+import box_world
 import einops
 import modules
 
@@ -30,7 +32,8 @@ BW_WORLD_MODEL_PROGRAM = {'precondition':
                           'effect':
                            [('held_key', 'Y', True), ('held_key', 'X', False), ('domino', 'XY', False)]}
 
-MIN_FLOAT = torch.finfo(torch.float).min
+# inf causes NaN losses, and torch min float turns into inf when you add them together lol
+INF_FLOAT = -1E16
 
 
 def abstractify(obs):
@@ -173,6 +176,26 @@ def parse_symbolic_tensor(state):
         # sort domino args
         abs_state['domino'] = sorted(abs_state['domino'])
     return abs_state
+
+
+def parse_symbolic_tensor2(state):
+    '''
+    Input: 2 x C x C pytorch tensor A, where C is the number of colors
+        and A[HELD_KEY_IX, i, 0] is 1 iff the held key is i 1
+        and A[DOMINO_IX, i, j] is 1 iff (i, j) is a domino
+        A[HELD_KEY, i, 1] is always 0
+    Output: tuple (held_key_probs, domino_probs)
+        a: list of (color, prob) tuples sorted by decreasing probability
+        b: list of (color pair, prob) tuples sorted by decreasing probability
+    '''
+    a = [(bw.COLORS[i], state[HELD_KEY_IX, i, 0].item())
+         for i in range(len(bw.COLORS))]
+    b = [(bw.COLORS[pair[0]] + bw.COLORS[pair[1]],
+          state[DOMINO_IX, pair[0], pair[1]].item())
+         for pair in itertools.product(range(len(bw.COLORS)), repeat=2)]
+    a = sorted(a, key=lambda x: x[1], reverse=True)
+    b = sorted(b, key=lambda x: x[1], reverse=True)
+    return a, b
 
 
 def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
@@ -339,11 +362,7 @@ def world_model_step(state_embeds, moves, world_model_program):
             # if arg is 'X', then we can only allow P to be 1 when the first arg equals the action
             # if the arg is 'Y', then we can only allow P to be 1 when the second arg equals the action
             logps = torch.log(F.one_hot(moves, num_classes=C))
-            # using -inf when P is 0 causes NaNs backpropagating through logsumexp
-            # --instead use torch float's min value. see
-            # https://github.com/pytorch/pytorch/issues/49724
-            logps[logps == float('-inf')] = MIN_FLOAT
-
+            logps = sanitize_infs(logps)
             assert_shape(logps, (B, C))
         elif predicate == 'held_key':
             logps = log_P[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
@@ -365,11 +384,12 @@ def world_model_step(state_embeds, moves, world_model_program):
         precondition_logps = precondition_logps + logps
         assert_shape(precondition_logps, (B, C, C))
 
+    assert not torch.any(torch.isinf(precondition_logps))
     # otherwise, by default, things stay the same.
     # using -inf when P is 0 causes NaNs backpropagating through logsumexp
     # --instead use torch float's min value. see
     # https://github.com/pytorch/pytorch/issues/49724
-    log_Q = torch.full((B, 2, C, C, 2), fill_value=MIN_FLOAT, device=DEVICE)
+    log_Q = torch.full((B, 2, C, C, 2), fill_value=INF_FLOAT, device=DEVICE)
 
     precond_sum = None
     for predicate, args, is_true in world_model_program['effect']:
@@ -377,12 +397,14 @@ def world_model_step(state_embeds, moves, world_model_program):
             assert args in ['X', 'Y']
             # sum precondition probs over axis not in args
             precond_sum = precondition_logps.logsumexp(dim=2 if args == 'X' else 1)
+            assert not torch.any(torch.isinf(precond_sum))
             log_Q[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precond_sum
         else:
             assert predicate == 'domino' and args == 'XY'
             log_Q[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX] = precondition_logps
 
     log_Q = torch.clamp(log_Q, max=0)
+    assert not torch.any(torch.isinf(log_Q))
 
     log_Q0, log_Q1 = log_Q[:, :, :, :, STATE_EMBED_FALSE_IX], log_Q[:, :, :, :, STATE_EMBED_TRUE_IX]
 
@@ -393,8 +415,11 @@ def world_model_step(state_embeds, moves, world_model_program):
     # composed together:
     # P1' = (P1 + Q1 P0)(1- Q0)
     new_log_P1 = torch.logaddexp(log_P1, log_Q1 + log_P0) + utils.log1minus(log_Q0)
+    new_log_P1 = torch.clip(new_log_P1, min=INF_FLOAT)
+    assert not torch.any(torch.isinf(new_log_P1))
     new_log_P1 = torch.clamp(new_log_P1, max=0)
     new_log_P0 = utils.log1minus(new_log_P1)
+    new_log_P0 = torch.clamp(new_log_P0, min=INF_FLOAT)
 
     if STATE_EMBED_FALSE_IX == 0:
         new_log_P = torch.stack([new_log_P0, new_log_P1], dim=-1)
@@ -436,6 +461,47 @@ def option_sv_data(env, n) -> list[tuple]:
         datas += list(zip(tensorized_symbolic_states[:-1], move_color_ixs))
 
     return datas
+
+
+def tensor_to_symbolic_state(state) -> torch.Tensor:
+    '''
+    State: a (num_ascii, 14, 14) tensor
+    Output: a (2, C, C, 2) tensor
+    '''
+    obs_state = data.tensor_to_obs(state)
+    abstract_state = abstractify(obs_state)
+    symbolic_state = tensorize_symbolic_state(abstract_state)
+    one_minus = 1 - symbolic_state
+
+    if STATE_EMBED_FALSE_IX == 0:
+        a = torch.stack([one_minus, symbolic_state], dim=-1)
+    else:
+        a = torch.stack([symbolic_state, one_minus], dim=-1)
+
+    assert_shape(a, (2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
+    out = a.log()
+    out = sanitize_infs(out)
+    return out
+
+
+def sanitize_infs(x):
+    '''
+    using -inf when P is 0 causes NaN issues, e.g. NaN after backproping through logsumexp.
+    --instead use a really small value. We don't use torch float's min value
+    because when you add two of them together, you get inf again lol.
+    https://github.com/pytorch/pytorch/issues/49724
+    '''
+    x[x == float('-inf')] = INF_FLOAT
+    return x
+
+
+def print_tensor_preds(t, threshold=0.5):
+    '''
+    t: (2, C, C, 2) tensor
+    '''
+    t = t.exp()
+    print('held_key: ', [i for i in range(bw.NUM_COLORS) if t[HELD_KEY_IX, i, 0, STATE_EMBED_TRUE_IX] > threshold])
+    print('domino: ', [(i, j) for i in range(bw.NUM_COLORS) for j in range(bw.NUM_COLORS) if t[DOMINO_IX, i, j, STATE_EMBED_TRUE_IX] > threshold])
 
 
 class SVOptionNet(nn.Module):
