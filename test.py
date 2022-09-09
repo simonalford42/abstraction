@@ -20,6 +20,7 @@ from hypothesis.strategies import composite
 from hypothesis.extra import numpy as np_st
 
 import neurosym
+import data
 
 # mlflow gives a lot of warnings from its dependencies, ignore them
 import warnings
@@ -877,6 +878,18 @@ def test_cc_batched2():
         assert torch.isclose(total_cc_loss, total_cc_loss_ub), f'{total_cc_loss=}, {total_cc_loss_ub=}'
 
 
+def test_symbolic_state():
+    env = box_world.BoxWorldEnv()
+    n = 100
+    for i in range(n):
+        states, moves = box_world.generate_traj(env)
+
+        for s in states:
+            s1 = neurosym.tensorize_symbolic_state(neurosym.abstractify(s))
+            s2 = neurosym.tensor_to_symbolic_state(data.obs_to_tensor(s))
+            assert_equal(s1, s2)
+
+
 # def test_bfs():
 #     # searching a grid. different directions have different logps
 #     start = (0, 0)
@@ -908,4 +921,4 @@ def test_cc_batched2():
 
 
 if __name__ == '__main__':
-    test_latent_gen()
+    test_symbolic_state()

@@ -11,6 +11,7 @@ import torch.nn as nn
 import box_world
 import random
 import wandb
+import neurosym
 
 
 STOP_IX = 0
@@ -135,7 +136,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True):
+def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -209,6 +210,17 @@ j       (b, 2) stop logps
                 if options_trace[prev_pos] != 'e':
                     options_trace[prev_pos] = 'm'
 
+            if symbolic_print and new_option:
+                tau = control_net.tau_embed(obs)
+                tau = rearrange(tau, '(p c1 c2 two) -> p c1 c2 two', p=2, c1=box_world.NUM_COLORS, c2=box_world.NUM_COLORS, two=2)
+                tau = tau[:, :, :, neurosym.STATE_EMBED_TRUE_IX]
+                held_keys, dominos = neurosym.parse_symbolic_tensor2(tau)
+                held_keys = [(k, p) for (k, p) in held_keys if p > 1E-5]
+                dominos = [(k, p) for (k, p) in dominos if p > 1E-5]
+                held_keys = [f'{k}: {p:.7f}' for (k, p) in held_keys]
+                dominos = [f'{k}: {p:.7f}' for (k, p) in dominos]
+                print(held_keys[:min(3, len(held_keys))], dominos[:min(5, len(dominos))])
+
             options.append(current_option)
 
             if argmax:
@@ -231,7 +243,7 @@ j       (b, 2) stop logps
 
             if render:
                 title = f'Executing option {current_option}'
-                pause = 1.6 if new_option else 0.2
+                pause = 1.6 if new_option else 0.1
                 # pause = 0.2
                 if new_option:
                     title = f'Starting new option: {current_option}'
