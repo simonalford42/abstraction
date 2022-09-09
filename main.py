@@ -120,6 +120,7 @@ def learn_options(net: nn.Module, params: dict[str, Any]):
     print(f"Net has {num_params} parameters")
     wandb.config.params = num_params
 
+    last_test_time = False
     last_save_time = time.time()
     updates = 0
     epoch = 0
