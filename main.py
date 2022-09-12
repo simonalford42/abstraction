@@ -16,7 +16,7 @@ from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
 import data
-from modules import RelationalDRLNet, MicroNet2
+from modules import RelationalDRLNet, MicroNet2, MicroNet3
 import muzero
 import torch.nn.functional as F
 import neurosym
@@ -275,8 +275,8 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
                    'negative_acc': negative_acc,
                    'positive_acc': positive_acc})
 
-        if epoch % 10 == 0:
-            print(f'{train_loss=}, {acc=}, {negative_acc=}, {positive_acc=}')
+        # if epoch % 10 == 0:
+            # print(f'{train_loss=}, {acc=}, {negative_acc=}, {positive_acc=}')
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -313,22 +313,27 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             # state_embeds = net(states)
             state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+            state_embeds = state_embeds.to(DEVICE)
 
             with torch.no_grad():
                 # target_state_embeds = net(target_states)
                 target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
+                target_state_embeds = target_state_embeds.to(DEVICE)
 
-            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
 
-            move_logits = options_net(state_preds[:, :, :, :, neurosym.STATE_EMBED_TRUE_IX])
+            move_logits = options_net(state_embeds)
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
-
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+
+            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
-            loss = move_loss + params.state_loss_weight * state_loss
-            print(f"{move_loss=}")
-            print(f"{state_loss=}")
+
+            # loss = move_loss + params.state_loss_weight * state_loss
+            loss = move_loss
+            # print(f"{move_loss=}")
+            # assert_equal(state_loss.item(), 0)
+            # print(f"{state_loss=}")
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
@@ -459,8 +464,9 @@ def boxworld_main():
     parser.add_argument('--num_heads', type=int, default=4)
     parser.add_argument('--state_loss_weight', type=float, default=1.0)
     parser.add_argument('--cc_weight', type=float, default=1.0)
-    parser.add_argument('--symbolic_supervised', action='store_true')
     parser.add_argument('--fake_cc_neurosym', action='store_true')
+    parser.add_argument('--symbolic_sv', action='store_true')
+    parser.add_argument('--micro_net2', action='store_true')
 
     params = parser.parse_args()
 
@@ -564,19 +570,23 @@ def neurosym_train(params):
     solution_length = (max(params.solution_length), )
     env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
 
-    if params.symbolic_supervised:
+    if params.symbolic_sv:
         data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n)
         abs_data = neurosym.ListDataset(data)
         print(f'{len(abs_data)} examples')
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-        # out_dim = 2 * box_world.NUM_COLORS ** 2
-        # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim, d=128)
-        # net = neurosym.AbstractEmbedNet(net).to(DEVICE)
-
-        net = MicroNet2(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS)
-        net = net.to(DEVICE)
-        print('micro net')
+        if params.micro_net2:
+            # net = MicroNet2(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS).to(DEVICE)
+            net = MicroNet3(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS).to(DEVICE)
+        else:
+            C = box_world.NUM_COLORS
+            out_dim = 2 * C * C
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim, d=128)
+            net = nn.Sequential(net,
+                                Rearrange('b (p C1 C2) -> b p C1 C2', p=2, C1=C, C2=C),
+                                nn.Sigmoid(),
+                                ).to(DEVICE)
 
         print(f"Net has {utils.num_params(net)} parameters")
         neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
