@@ -38,32 +38,40 @@ class MicroNet2(nn.Module):
         super().__init__()
         self.input_channels = input_channels
         self.num_colors = num_colors
-        self.conv1 = nn.Conv2d(self.input_channels, 2 * num_colors * num_colors, 2)
+        self.conv1 = nn.Conv2d(self.input_channels, 2 * num_colors * num_colors, 2, bias=False)
 
-    def forward(self, x):
+    def forward(self, x, prnt=False):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore",category=UserWarning)
             x = self.conv1(x)
-            x = einops.rearrange(x, 'n c h w -> n (h w) c')
-            x = einops.reduce(x, 'n l d -> n d', 'max')
+            if prnt:
+                print(f"{x[0,:,:,:]=}")
+                torch.save(x, 'conv_out.pt')
+            x = einops.rearrange(x, 'n c h w -> n c (h w)')
+            x = einops.reduce(x, 'n d l -> n d', 'max')
             x = einops.rearrange(x, 'n (t c1 c2) -> n t c1 c2', t=2, c1=self.num_colors, c2=self.num_colors)
+            if prnt:
+                print(f"{x[0,0,:,0]=}")
             x = torch.sigmoid(x)
+            if prnt:
+                print(f"{x[0,0,:,0]=}")
+
             return x
 
 
 class MicroNet3(nn.Module):
-    def __init__(self, input_channels, num_colors):
+    def __init__(self, input_channels, num_colors, num_out):
         super().__init__()
         self.input_channels = input_channels
         self.num_colors = num_colors
-        self.conv1 = nn.Conv2d(self.input_channels, 1, 2)
+        self.conv1 = nn.Conv2d(self.input_channels, num_out, 2, bias=False)
 
     def forward(self, x):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore",category=UserWarning)
             x = self.conv1(x)
-            x = einops.rearrange(x, 'n c h w -> n (h w) c')
-            x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = einops.rearrange(x, 'n c h w -> n c (h w)')
+            x = einops.reduce(x, 'n d l -> n d', 'max')
             x = torch.sigmoid(x)
             return x
 

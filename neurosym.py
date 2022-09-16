@@ -17,6 +17,8 @@ import box_world
 import einops
 import modules
 
+CHECK_IXS = [0]
+
 STATE_EMBED_TRUE_IX = 0
 STATE_EMBED_FALSE_IX = 1
 
@@ -131,7 +133,7 @@ def check_datalog_consistency(states, moves):
         assert_equal(abs_state2, abs_states[i+1])
 
 
-def tensorize_symbolic_state2(abs_state):
+def tensorize_symbolic_state2(abs_state, n_dominoes=1):
     '''
     Input: dict of facts, {'held_key': [args], 'domino': [args]}
         where args are tuples of the form (X, Y) and X, Y are color strings
@@ -140,16 +142,77 @@ def tensorize_symbolic_state2(abs_state):
         and A[1, i, j] is 1 iif (i, j) is a domino
         A[0, i, 1] is always 0
     '''
-    colors = bw.COLORS
-    out = torch.tensor([0.])
-    if 'domino' in abs_state:
-        if ('A', 'B') in abs_state['domino']:
-            print('hi')
-            out = torch.tensor([1.])
-    return out
+    if n_dominoes == 1:
+        colors = bw.COLORS
+        out = torch.tensor([0.])
+        if 'domino' in abs_state:
+            if ('a', 'b') in abs_state['domino']:
+                out = torch.tensor([1.])
+
+        return out
+    else:
+        state = tensorize_symbolic_state(abs_state)
+        state.flatten()[n_dominoes:] = 0  # changes state tensor
+        return state
 
 
-def tensorize_symbolic_state(abs_state):
+def precond_logps(state_embeds, world_model_program=BW_WORLD_MODEL_PROGRAM):
+    '''
+    state_embeds: [batch_size, 2, C, C, 2] tensor
+
+    world_model_program: a dict with keys 'precondition' and 'effect'.
+        each are a length list of tuples (predicate, args, is_true)
+        where predicate is an index 0 or 1
+              args is a string, either 'X', 'Y', or 'XY'
+              is_true is a boolean
+
+    Returns: [batch_size, C] tensor of precondition logps
+    '''
+    # example: held_key(Y), neg_held_key(X), neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
+
+    log_P = state_embeds
+
+    B, C = log_P.shape[0], log_P.shape[2]
+    assert_shape(log_P, (B, 2, C, C, 2))
+
+    log_P1 = log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
+    log_P0 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX]
+
+    # pre args is either 'X', 'Y', or 'XY'
+    precondition_logps = torch.zeros((B, C, C), device=log_P.device)
+
+    for predicate, args, is_true in world_model_program['precondition']:
+        if predicate == 'held_key':
+            logps = log_P[:, HELD_KEY_IX, :, 0, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
+        elif predicate == 'domino':
+            logps = log_P[:, DOMINO_IX, :, :, STATE_EMBED_TRUE_IX if is_true else STATE_EMBED_FALSE_IX]
+        elif predicate == 'action':
+            # this function itself is really asuming that action(Y) is in the precondition of the program
+            continue
+        else:
+            raise ValueError(f'unknown predicate {predicate}')
+
+        if args == 'X':
+            logps = rearrange(logps, 'B C -> B C 1')
+        elif args == 'Y':
+            logps = rearrange(logps, 'B C -> B 1 C')
+        elif args == 'XY':
+            pass
+        else:
+            raise ValueError('args must be X or Y')
+
+        # (B, C, C) tells probability that precondition satisfied
+        precondition_logps = precondition_logps + logps
+        assert_shape(precondition_logps, (B, C, C))
+
+    precondition_logps = torch.logsumexp(precondition_logps, dim=1)
+    assert not torch.any(torch.isinf(precondition_logps))
+
+    assert_shape(precondition_logps, (B, C))
+    return precondition_logps
+
+
+def tensorize_symbolic_state(abs_state, num_out=None):
     '''
     Input: dict of facts, {'held_key': [args], 'domino': [args]}
         where args are tuples of the form (X, Y) and X, Y are color strings
@@ -166,9 +229,11 @@ def tensorize_symbolic_state(abs_state):
     if 'domino' in abs_state:
         for args in abs_state['domino']:
             A[DOMINO_IX, colors.index(args[0]), colors.index(args[1])] = 1
+
+    if num_out is not None:
+        A = A.flatten()[:num_out]
+
     return A
-    # testing witih just predicting the held-key
-    # return A[0:1]
 
 
 def parse_symbolic_tensor(state):
@@ -216,10 +281,10 @@ def parse_symbolic_tensor2(state):
     return a, b
 
 
-def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
+def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> list[tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
-    Returns a list of tuples of the form (symbolic_state, tensorized_embedding)
+    Returns a list of tuples of the form (obs_tensor, symbolic_tensor)
     '''
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 
@@ -230,13 +295,40 @@ def supervised_symbolic_state_abstraction_data(env, n) -> list[tuple]:
         check_datalog_consistency(states, moves)
         state_tensors = [data.obs_to_tensor(state) for state in states]
         abs_states = [abstractify(state) for state in states]
-        embed_states = [tensorize_symbolic_state2(abs_state) for abs_state in abs_states]
+        embed_states = [tensorize_symbolic_state(abs_state, num_out=num_out)
+                        for abs_state in abs_states]
+
         # unembed_states = [parse_symbolic_tensor(embed_state) for embed_state in embed_states]
         # for state, unembed in zip(abs_states, unembed_states):
-            # assert_equal(state, unembed)
+        #     assert_equal(state, unembed)
+
+        # just do the first example, so the held key is always floating around
+        # state_tensors, embed_states = state_tensors[:1], embed_states[:1]
+
+        # ignore the first example, so the held key is always in top left
+        state_tensors, embed_states = state_tensors[1:], embed_states[1:]
+        # only add examples where the held_key is 'd'
+        if -1 not in CHECK_IXS:
+            zipped_results = [(s, e) for (s, e) in zip(state_tensors, embed_states)
+                              if torch.any(e[HELD_KEY_IX, CHECK_IXS, 0] == 1)]
+        else:
+            zipped_results = [(s, e) for (s, e) in zip(state_tensors, embed_states)]
+
+        if len(zipped_results) == 0:
+            continue
+        else:
+            state_tensors, embed_states = zip(*zipped_results)
+
+        for state, embed in zip(state_tensors, embed_states):
+            assert torch.where(state[:, 0, 0] != 0)[0] - 3 == torch.where(embed[HELD_KEY_IX, :, 0] != 0)[0]
 
         datas += list(zip(state_tensors, embed_states))
 
+    # get how many positive outputs there are.
+    total_positive = sum([symbolic_tensor.sum() for (obs_tensor, symbolic_tensor) in datas])
+    total_negative = sum([(symbolic_tensor == 0).sum() for (obs_tensor, symbolic_tensor) in datas])
+    print(f"dataset {total_positive=}")
+    print(f"dataset {total_negative=}")
     return datas
 
 
@@ -536,7 +628,7 @@ class SVOptionNet(nn.Module):
         return self.fc(x.reshape(-1, self.in_dim))
 
 
-class SVOptionNet2(nn.Module):
+class RelationalMacroNet2(nn.Module):
     def __init__(self, num_colors, num_options, num_heads=4, num_attn_blocks=2, hidden_dim=64):
         super().__init__()
         self.num_colors = num_colors
@@ -554,17 +646,10 @@ class SVOptionNet2(nn.Module):
                                                 batch_first=True)
         self.num_attn_blocks = num_attn_blocks
 
-        self.fc = nn.Sequential(nn.Linear(self.embed_dim, self.hidden_dim),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.hidden_dim, self.hidden_dim),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.hidden_dim, self.hidden_dim),
-                                nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
-                                nn.Linear(self.hidden_dim, self.hidden_dim),
-                                nn.ReLU(),
+        self.fc = nn.Sequential(nn.Linear(self.embed_dim, self.hidden_dim), nn.ReLU(),
+                                nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(),
+                                nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(),
+                                nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(),
                                 nn.Linear(self.hidden_dim, self.out_dim),)
 
         self.pcc_one_hot = self.make_pcc_one_hot(p=2, c=self.num_colors)
@@ -587,11 +672,13 @@ class SVOptionNet2(nn.Module):
         return pcc_one_hot.to(DEVICE)
 
     def forward(self, x):
-        # TODO: handle (2, c, c, 2) input
-        x = x[:, :, :, :, 0]
-
         B = x.shape[0]
+        C = self.num_colors
+        assert_shape(x, (B, 2 * C * C * 2))
+        x = rearrange(x, 'B (p C1 C2 two) -> B p C1 C2 two', p=2, C1=C, C2=C, two=2)
+        x = x[:, :, :, :, 0]
         assert_equal(x.shape[1:], self.in_shape)
+
         x = self.embed_predicates(x)
         assert_shape(x, (B, self.num_colors * self.num_colors * 2, self.embed_dim))
 
