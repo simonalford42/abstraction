@@ -419,7 +419,6 @@ SOLVED_LOSS_B = nn.CrossEntropyLoss(reduction='none')
 
 def calc_solved_loss(solved, lengths=None, masks=None):
     batched = len(solved.shape) == 3
-    # print(f'solved: {solved}')
     if batched:
         B, T = solved.shape[:-1]
         # mask is 1 up to second to last. (for reasons that have to do with how
@@ -429,7 +428,6 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         # (B, T, 2)
         targets = torch.full((B, T), UNSOLVED_IX, device=DEVICE)
         targets[range(B), lengths] = SOLVED_IX
-        # print(f'targets: {targets}')
         loss = SOLVED_LOSS_B(solved.reshape(B * T, 2), targets.reshape((B * T, ))).reshape(B, T)
         loss = (loss[:, :-1] * masks).sum() + loss[range(B), lengths].sum()
         return loss
@@ -438,7 +436,6 @@ def calc_solved_loss(solved, lengths=None, masks=None):
         T = solved.shape[0]
         target = torch.full((T, ), UNSOLVED_IX, device=DEVICE)
         target[-1] = SOLVED_IX
-        # print(f'target: {target}')
         return SOLVED_LOSS_UB(solved, target)
 
 
@@ -583,10 +580,12 @@ class HmmNet(nn.Module):
         else:
             total_logps = hmm_fw(self.b, action_logps, stop_logps, start_logps, lengths)
 
-        if solved == 'None':
-            solved_loss = 0
-        else:
-            solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
+        # disable solved loss for now
+        solved_loss = 0
+        # if solved == 'None':
+            # solved_loss = 0
+        # else:
+            # solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
 
         loss = -torch.sum(total_logps) + solved_loss
 

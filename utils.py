@@ -17,8 +17,7 @@ WARNINGS = set()
 
 def gpu_check():
     print_torch_device()
-    print(torch.arange(3).to(DEVICE).device)
-    print('Passed GPU check')
+    torch.arange(3).to(DEVICE)
 
 
 def warn(s):

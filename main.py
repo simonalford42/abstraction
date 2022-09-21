@@ -107,7 +107,8 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
 
 
 def learn_options(net: nn.Module, params: dict[str, Any]):
-    dataset = data.BoxWorldDataset(box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length), n=params.n, traj=True)
+    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
+    dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
     params.epochs = int(params.traj_updates / params.n)
@@ -504,6 +505,7 @@ def boxworld_main():
     parser.add_argument('--num_out', type=int, default=None)
     parser.add_argument('--check_ix', type=int, default=-1)
     parser.add_argument('--num_check', type=int, default=0)
+    parser.add_argument('--test', action='store_true')
     parser.add_argument('--relational_macro', action='store_true')
 
     params = parser.parse_args()
@@ -573,6 +575,10 @@ def boxworld_main():
 
     if params.muzero:
         params.load = True
+
+    if params.test:
+        test(params)
+        return
 
     with Timing('Completed training'):
         with mlflow.start_run():
@@ -727,13 +733,29 @@ def option_pred_train(dataloader: DataLoader, net, params):
                    'acc': acc})
 
 
-def test():
+def test(params):
     # make a fake cc neurosym HMM Net and a normal one
     # then compare their losses and such after different inferences
+    params.fake_cc_neurosym = True
+    params.model = 'hmm'
+    fake_hmm_net = make_net(params)
+    params.fake_cc_neurosym = False
+    hmm_net = make_net(params)
 
+    # make dataset
+    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
+    dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
+    # run one inference step, check print statements
+    for s_i_batch, actions_batch, lengths, masks in dataloader:
+        s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
+
+        fake_loss = fake_hmm_net(s_i_batch, actions_batch, lengths, masks)
+        print(f"{fake_loss=}")
+        loss = hmm_net(s_i_batch, actions_batch, lengths, masks)
+        print(f"{loss=}")
 
 
 if __name__ == '__main__':
-    test()
-    # boxworld_main()
+    boxworld_main()
