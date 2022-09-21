@@ -660,4 +660,4 @@ def option_pred_train(dataloader: DataLoader, net, params):
 
 
 if __name__ == '__main__':
-    boxworld_main()
+    # boxworld_main()
