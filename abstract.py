@@ -1,4 +1,5 @@
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 import torch
 import data
@@ -648,6 +649,17 @@ class HeteroController(nn.Module):
         else:
             return self.forward_ub(s_i_batch, tau_noise=tau_noise)
 
+    def calc_start_logps(self, t_i):
+        logps = self.macro_policy_net(t_i)
+
+        if self.cc_neurosym:
+            t_i = rearrange(t_i, 'B (p C1 C2 two) -> B p C1 C2 two', p=2, C1=self.b, C2=self.b, two=2)
+            move_precond_logps = neurosym.precond_logps(t_i).to(DEVICE)
+            assert_equal(logps.shape, move_precond_logps.shape)
+            logps = logps + move_precond_logps
+
+        return logps
+
     def forward_ub(self, s_i, tau_noise=True):
         """
         s_i: (T, s) tensor of states
@@ -668,7 +680,7 @@ class HeteroController(nn.Module):
         noised_t_i = noisify_tau(t_i, noise)
 
         action_logps, stop_logps = self.micro_net(s_i)
-        start_logps = self.macro_policy_net(noised_t_i)  # (T, b) aka P(b | t)
+        start_logps = self.calc_start_logps(noised_t_i)  # (T, b) aka P(b | t)
         causal_pens = self.calc_causal_pens_ub(t_i, noised_t_i)  # (T, T, b)
         solved = self.solved_net(noised_t_i)
 
@@ -693,7 +705,7 @@ class HeteroController(nn.Module):
             with torch.no_grad():
                 symbolic_states = [neurosym.tensor_to_symbolic_state(s_i_flattened[i]) for i in range(B * T)]
                 symbolic_states = [rearrange(s, 'p c1 c2 two -> (p c1 c2 two)') for s in symbolic_states]
-                t_i_flattened = torch.stack(symbolic_states, dim=0)
+                t_i_flattened = torch.stack(symbolic_states, dim=0).to(DEVICE)
                 assert_shape(t_i_flattened, (B * T, self.t))
         else:
             t_i_flattened = self.tau_net(s_i_flattened)
@@ -707,7 +719,7 @@ class HeteroController(nn.Module):
         action_logps, stop_logps = self.micro_net(s_i_flattened)
         action_logps = action_logps.reshape(B, T, self.b, self.a)
         stop_logps = stop_logps.reshape(B, T, self.b, 2)
-        start_logps = self.macro_policy_net(noised_t_i_flattened).reshape(B, T, self.b)
+        start_logps = self.calc_start_logps(noised_t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(noised_t_i_flattened).reshape(B, T, 2)
 
         causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
@@ -732,11 +744,11 @@ class HeteroController(nn.Module):
     def neurosym_macro_transitions(self, t_i, bs):
         """
         Input:
-              t_i: (T, (p C C)) batch of abstract state embeddings
+              t_i: (T, (p C C 2)) batch of abstract state embeddings
               bs: 1D batch of actions
 
         Output:
-                (T, |bs|, (p C C)) batch of new abstract states for each option applied.
+                (T, |bs|, (p C C 2)) batch of new abstract states for each option applied.
 
         Uses the world model program to do the macro transitions.
         """
@@ -848,13 +860,24 @@ class HeteroController(nn.Module):
 
         macro_trans = self.macro_transitions(noised_t_i_flattened,
                                              torch.arange(self.b, device=DEVICE))
-        macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
-        t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
+        if self.cc_neurosym or self.fake_cc_neurosym:
+            t_i3 = repeat(t_i_batch, 'B T t -> B r T b t', r=T, b=self.b)
+            macro_trans3 = repeat(macro_trans, '(B T) b t -> B T r b t', B=B, T=T, r=T, b=self.b)
+            # penalty2 = F.mse_loss(t_i3, macro_trans3, reduction='none')
+            # assert_shape(penalty2, (B, T, T, self.b, self.t))
+            # assert_shape(penalty, (B, T, T, self.b, self.t))
+            # assert_equal(penalty2, penalty)
 
-        # (start, end, action, t value)
-        penalty = (t_i2 - macro_trans2)**2
-        # assert_shape(penalty, (B, T, T, self.b, self.t))
+            penalty = F.kl_div(t_i3, macro_trans3, log_target=True, reduction='none')
+            assert_shape(penalty, (B, T, T, self.b, self.t))
+        else:
+            macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
+            t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
+
+            # (start, end, action, t value)
+            penalty = (t_i2 - macro_trans2)**2
+
         penalty = penalty.sum(dim=-1)  # (B, T, T, b)
         return penalty
 
@@ -884,7 +907,7 @@ class HeteroController(nn.Module):
             (b, 2) tensor of logp new tau is solved
         """
         b, t = self.b, self.t
-        start_logps: TT[b, ] = self.macro_policy_net(t_i.unsqueeze(0))[0]
+        start_logps: TT[b, ] = self.calc_start_logps(t_i.unsqueeze(0))[0]
         new_taus: TT[b, t] = self.macro_transitions(t_i.unsqueeze(0),
                                                     torch.arange(self.b, device=DEVICE))[0]
         # assert_shape(new_taus, (b, t))
@@ -1163,7 +1186,7 @@ def boxworld_controller(typ, params):
     fc_hidden_dim = 64
     t = params.abstract_dim
 
-    if params.cc_neurosym:
+    if params.cc_neurosym or params.fake_cc_neurosym:
         assert_equal(typ, 'hetero')
         # predicate state
         t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS * 2
@@ -1214,9 +1237,13 @@ def boxworld_controller(typ, params):
     elif not params.no_tau_norm:
         tau_net = nn.Sequential(tau_net, tau_module)
 
-    macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3,
-                                        hidden_dim=fc_hidden_dim, batch_norm=params.batch_norm),
-                                     nn.LogSoftmax(dim=-1))
+    if params.relational_macro:
+        assert params.cc_neurosym
+        macro_policy_net = neurosym.RelationalMacroNet2(num_colors=box_world.NUM_COLORS, num_options=b,num_heads=params.num_heads, num_attn_blocks=params.num_attn_blocks)
+    else:
+        macro_policy_net = nn.Sequential(FC(input_dim=t, output_dim=b, num_hidden=3,
+                                            hidden_dim=fc_hidden_dim, batch_norm=params.batch_norm),
+                                         nn.LogSoftmax(dim=-1))
 
     if params.cc_neurosym:
         macro_transition_net = None

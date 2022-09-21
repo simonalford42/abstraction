@@ -16,7 +16,7 @@ from hmm import CausalNet, SVNet, HmmNet
 import time
 import box_world
 import data
-from modules import RelationalDRLNet, MicroNet2
+from modules import RelationalDRLNet, MicroNet2, MicroNet3
 import muzero
 import torch.nn.functional as F
 import neurosym
@@ -232,34 +232,46 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
     updates = 0
     epoch = 0
 
+    obs_info = []
+
     while updates < params.traj_updates:
         total_hard_matches = 0
         total_negatives = 0
         total_positives = 0
         total_negative_matches = 0
         total_positive_matches = 0
+        spotwise_correct = None
 
         train_loss = 0
         start = time.time()
         for inputs, targets in dataloader:
             optimizer.zero_grad()
 
+            if spotwise_correct is None:
+                spotwise_correct = torch.zeros(targets.shape[1:], device=DEVICE)
+
             inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
             preds = net(inputs)
             # greedily convert probabilities to hard predictions
             hard_preds = torch.round(preds)
             # calculate number of hard matches by iterating through and counting perfect matches
-            for pred, target in zip(hard_preds, targets):
+            for inp, pred, target in zip(inputs, hard_preds, targets):
                 negative_spots = (target == 0)
                 positive_spots = (target == 1)
                 match_tensor = (target == pred)
+                spotwise_correct += match_tensor
                 total_negatives += negative_spots.sum()
                 total_positives += positive_spots.sum()
                 total_negative_matches += (negative_spots * match_tensor).sum()
                 total_positive_matches += (positive_spots * match_tensor).sum()
 
+                assert torch.where(inp[:, 0, 0] != 0)[0] - 3 == torch.where(target[neurosym.HELD_KEY_IX, :, 0] != 0)[0]
+
                 if torch.equal(pred, target):
                     total_hard_matches += 1
+                elif epoch > 50:
+                    if torch.any(pred[0, :, 0] != target[0, :, 0]):
+                        obs_info.append((inp, pred[0, :, 0], target[0, :, 0]))
 
             loss = F.binary_cross_entropy(preds, targets, reduction='mean')
             train_loss += loss.item()
@@ -267,6 +279,7 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
             optimizer.step()
 
         acc = total_hard_matches / len(dataloader.dataset)
+        spotwise_acc = spotwise_correct / len(dataloader.dataset)
         negative_acc = (total_negative_matches / total_negatives).item()
         positive_acc = (total_positive_matches / total_positives).item()
 
@@ -277,6 +290,24 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
 
         if epoch % 10 == 0:
             print(f'{train_loss=}, {acc=}, {negative_acc=}, {positive_acc=}')
+            print(f"{spotwise_acc=}")
+
+            if epoch > 50:
+                if len(obs_info) > 1:
+                    print(f"{net.conv1.weight=}")
+                    if len(obs_info) > 10:
+                        random.shuffle(obs_info)
+                        obs_info = obs_info[:3]
+                    for obs, pred_keys, target_keys in obs_info:
+                        # convert from tensor to ascii
+                        ascii_obs = data.tensor_to_obs(obs)
+                        print(f"{pred_keys=}")
+                        print(f"{target_keys=}")
+                        print(ascii_obs)
+                        with torch.no_grad():
+                            preds2 = net(obs.unsqueeze(0), prnt=True)
+
+
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -287,14 +318,16 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
 
 
 def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_model_program, params):
-    # optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
-    optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
+    optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
+    # optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
     net.train()
 
     params.epochs = int(params.traj_updates / params.n)
 
     updates = 0
     epoch = 0
+
+    last_save_time = time.time()
 
     while updates < params.traj_updates:
         train_loss = 0
@@ -311,22 +344,30 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             # state_embeds = net(states)
             state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+            state_embeds = state_embeds.to(DEVICE)
 
             with torch.no_grad():
                 # target_state_embeds = net(target_states)
                 target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
+                target_state_embeds = target_state_embeds.to(DEVICE)
 
-            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            move_logits = options_net(state_embeds)
+            move_precond_logps = neurosym.precond_logps(state_embeds)
+            assert_equal(move_logits.shape, move_precond_logps.shape)
+            move_logits = move_logits * move_precond_logps
 
-            move_logits = options_net(state_preds[:, :, :, :, neurosym.STATE_EMBED_TRUE_IX])
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
-
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+
+            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
             state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
-            print(f"{move_loss=}")
-            print(f"{state_loss=}")
-            loss = move_loss + params.state_loss_scale * state_loss
+
+            # loss = move_loss + params.state_loss_weight * state_loss
+            loss = move_loss
+            # print(f"{move_loss=}")
+            # assert_equal(state_loss.item(), 0)
+            # print(f"{state_loss=}")
 
             train_loss += loss.item()
             total_move_loss += move_loss.item()
@@ -341,6 +382,12 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
         epoch += 1
         updates += len(dataloader.dataset)
+
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(net, f'models/{params.id}_neurosym-epoch-{epoch}.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
     if not params.no_log and params.save_every:
         path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
@@ -395,7 +442,7 @@ def make_net(params):
             net = HmmNet(control_net, abstract_pen=params.abstract_pen, shrink_micro_net=params.shrink_micro_net)
         elif params.model == 'cc':
             assert not params.shrink_micro_net
-            net = CausalNet(control_net, abstract_pen=params.abstract_pen)
+            net = CausalNet(control_net, abstract_pen=params.abstract_pen, cc_weight=params.cc_weight)
         else:
             raise NotImplementedError()
 
@@ -449,11 +496,24 @@ def boxworld_main():
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
-    parser.add_argument('--state_loss_scale', type=float, default=1.0)
-    parser.add_argument('--symbolic_supervised', action='store_true')
+    parser.add_argument('--state_loss_weight', type=float, default=1.0)
+    parser.add_argument('--cc_weight', type=float, default=1.0)
     parser.add_argument('--fake_cc_neurosym', action='store_true')
+    parser.add_argument('--symbolic_sv', action='store_true')
+    parser.add_argument('--micro_net2', action='store_true')
+    parser.add_argument('--num_out', type=int, default=None)
+    parser.add_argument('--check_ix', type=int, default=-1)
+    parser.add_argument('--num_check', type=int, default=0)
+    parser.add_argument('--relational_macro', action='store_true')
 
     params = parser.parse_args()
+
+    if params.num_check > 0:
+        neurosym.CHECK_IXS = [i+1 for i in range(params.num_check)]
+    else:
+        neurosym.CHECK_IXS = [params.check_ix]
+
+    print(f"{neurosym.CHECK_IXS=}")
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
@@ -483,6 +543,8 @@ def boxworld_main():
         params.model = 'cc'
         params.b = box_world.NUM_COLORS
         params.batch_size = max(1, int(params.batch_size / 2))
+    if params.fake_cc_neurosym:
+        params.b = box_world.NUM_COLORS
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
@@ -555,19 +617,25 @@ def neurosym_train(params):
     solution_length = (max(params.solution_length), )
     env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
 
-    if params.symbolic_supervised:
-        data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n)
+    if params.symbolic_sv:
+        data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
         abs_data = neurosym.ListDataset(data)
         print(f'{len(abs_data)} examples')
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
-        # out_dim = 2 * box_world.NUM_COLORS ** 2
-        # net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim, d=128)
-        # net = neurosym.AbstractEmbedNet(net).to(DEVICE)
-
-        net = MicroNet2(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS)
-        net = net.to(DEVICE)
-        print('micro net')
+        if params.micro_net2:
+            if params.num_out is None:
+                net = MicroNet2(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS).to(DEVICE)
+            else:
+                net = MicroNet3(input_channels=box_world.NUM_ASCII, num_colors=box_world.NUM_COLORS, num_out=params.num_out).to(DEVICE)
+        else:
+            C = box_world.NUM_COLORS
+            out_dim = 2 * C * C
+            net = RelationalDRLNet(input_channels=box_world.NUM_ASCII, out_dim=out_dim, d=128)
+            net = nn.Sequential(net,
+                                Rearrange('b (p C1 C2) -> b p C1 C2', p=2, C1=C, C2=C),
+                                nn.Sigmoid(),
+                                ).to(DEVICE)
 
         print(f"Net has {utils.num_params(net)} parameters")
         neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
@@ -659,5 +727,13 @@ def option_pred_train(dataloader: DataLoader, net, params):
                    'acc': acc})
 
 
+def test():
+    # make a fake cc neurosym HMM Net and a normal one
+    # then compare their losses and such after different inferences
+
+
+
+
 if __name__ == '__main__':
+    test()
     # boxworld_main()

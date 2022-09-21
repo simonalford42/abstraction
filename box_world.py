@@ -13,8 +13,11 @@ from pycolab.examples.research.box_world import box_world as bw
 
 POS = Tuple[int, int]
 
+# colors for keys
 COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
+# all colors
 ASCII = '# .' + COLORS
+
 GOAL_COLOR = '*'
 NUM_COLORS = len(COLORS)  # if all colors used, should be 21
 assert_equal(NUM_COLORS, bw.NUM_COLORS + 1)  # this is because we count the goal color as a color, while pycolab boxworld does not)
