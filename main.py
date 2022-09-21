@@ -318,8 +318,8 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
 
 
 def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_model_program, params):
-    # optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
-    optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
+    optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
+    # optimizer = torch.optim.SGD(net.parameters(), lr=params.lr)
     net.train()
 
     params.epochs = int(params.traj_updates / params.n)
@@ -543,6 +543,8 @@ def boxworld_main():
         params.model = 'cc'
         params.b = box_world.NUM_COLORS
         params.batch_size = max(1, int(params.batch_size / 2))
+    if params.fake_cc_neurosym:
+        params.b = box_world.NUM_COLORS
 
     if params.fine_tune and not params.load:
         print('WARNING: params.load = False, creating new model')
@@ -725,5 +727,13 @@ def option_pred_train(dataloader: DataLoader, net, params):
                    'acc': acc})
 
 
+def test():
+    # make a fake cc neurosym HMM Net and a normal one
+    # then compare their losses and such after different inferences
+
+
+
+
 if __name__ == '__main__':
-    boxworld_main()
+    test()
+    # boxworld_main()

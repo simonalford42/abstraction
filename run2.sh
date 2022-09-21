@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-sbatch run.sh --cc_neurosym --relational_macro --abstract_pen 1 --model cc
-sbatch run.sh --cc_neurosym --relational_macro --abstract_pen 1 --model cc
+# sbatch --partition=ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis
+sbatch --partition=ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis --relational_macro_net

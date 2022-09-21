@@ -1,4 +1,5 @@
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 import torch
 import data
@@ -653,7 +654,7 @@ class HeteroController(nn.Module):
 
         if self.cc_neurosym:
             t_i = rearrange(t_i, 'B (p C1 C2 two) -> B p C1 C2 two', p=2, C1=self.b, C2=self.b, two=2)
-            move_precond_logps = neurosym.precond_logps(t_i)
+            move_precond_logps = neurosym.precond_logps(t_i).to(DEVICE)
             assert_equal(logps.shape, move_precond_logps.shape)
             logps = logps + move_precond_logps
 
@@ -704,7 +705,7 @@ class HeteroController(nn.Module):
             with torch.no_grad():
                 symbolic_states = [neurosym.tensor_to_symbolic_state(s_i_flattened[i]) for i in range(B * T)]
                 symbolic_states = [rearrange(s, 'p c1 c2 two -> (p c1 c2 two)') for s in symbolic_states]
-                t_i_flattened = torch.stack(symbolic_states, dim=0)
+                t_i_flattened = torch.stack(symbolic_states, dim=0).to(DEVICE)
                 assert_shape(t_i_flattened, (B * T, self.t))
         else:
             t_i_flattened = self.tau_net(s_i_flattened)
@@ -859,13 +860,24 @@ class HeteroController(nn.Module):
 
         macro_trans = self.macro_transitions(noised_t_i_flattened,
                                              torch.arange(self.b, device=DEVICE))
-        macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
 
-        t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
+        if self.cc_neurosym or self.fake_cc_neurosym:
+            t_i3 = repeat(t_i_batch, 'B T t -> B r T b t', r=T, b=self.b)
+            macro_trans3 = repeat(macro_trans, '(B T) b t -> B T r b t', B=B, T=T, r=T, b=self.b)
+            # penalty2 = F.mse_loss(t_i3, macro_trans3, reduction='none')
+            # assert_shape(penalty2, (B, T, T, self.b, self.t))
+            # assert_shape(penalty, (B, T, T, self.b, self.t))
+            # assert_equal(penalty2, penalty)
 
-        # (start, end, action, t value)
-        penalty = (t_i2 - macro_trans2)**2
-        # assert_shape(penalty, (B, T, T, self.b, self.t))
+            penalty = F.kl_div(t_i3, macro_trans3, log_target=True, reduction='none')
+            assert_shape(penalty, (B, T, T, self.b, self.t))
+        else:
+            macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
+            t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
+
+            # (start, end, action, t value)
+            penalty = (t_i2 - macro_trans2)**2
+
         penalty = penalty.sum(dim=-1)  # (B, T, T, b)
         return penalty
 
@@ -1174,7 +1186,7 @@ def boxworld_controller(typ, params):
     fc_hidden_dim = 64
     t = params.abstract_dim
 
-    if params.cc_neurosym:
+    if params.cc_neurosym or params.fake_cc_neurosym:
         assert_equal(typ, 'hetero')
         # predicate state
         t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS * 2

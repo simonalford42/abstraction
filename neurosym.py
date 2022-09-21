@@ -46,6 +46,10 @@ def abstractify(obs):
     dominoes = [d.lower()[::-1] for d in dominoes]
     held_key = bw.get_held_key(obs)
 
+    if '.' not in dominoes:
+        print(obs)
+        assert False
+
     # the agent
     dominoes.remove('.')
     # sort dominoes by length, then alphabetically
@@ -578,15 +582,18 @@ def tensor_to_symbolic_state(state) -> torch.Tensor:
     State: a (num_ascii, 14, 14) tensor
     Output: a (2, C, C, 2) tensor
     '''
-    obs_state = data.tensor_to_obs(state)
-    abstract_state = abstractify(obs_state)
-    symbolic_state = tensorize_symbolic_state(abstract_state)
-    one_minus = 1 - symbolic_state
-
-    if STATE_EMBED_FALSE_IX == 0:
-        a = torch.stack([one_minus, symbolic_state], dim=-1)
+    if (state == 0).all():
+        a =  torch.zeros((2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
     else:
-        a = torch.stack([symbolic_state, one_minus], dim=-1)
+        obs_state = data.tensor_to_obs(state)
+        abstract_state = abstractify(obs_state)
+        symbolic_state = tensorize_symbolic_state(abstract_state)
+        one_minus = 1 - symbolic_state
+
+        if STATE_EMBED_FALSE_IX == 0:
+            a = torch.stack([one_minus, symbolic_state], dim=-1)
+        else:
+            a = torch.stack([symbolic_state, one_minus], dim=-1)
 
     assert_shape(a, (2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
     out = a.log()
