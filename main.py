@@ -540,6 +540,8 @@ def boxworld_main():
             params.batch_size = 32
         if params.ellis:  # more memory available!
             params.batch_size *= 2
+        if params.abstract_dim > 64:
+            params.batch_size = int(params.batch_size / 2)
 
     if params.cc_neurosym:
         params.model = 'cc'
