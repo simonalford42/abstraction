@@ -2,7 +2,7 @@
 
 
  # job name
-#SBATCH -J sv
+#SBATCH -J bw
  # output file (%j expands to jobID)
 #SBATCH -o out/bw25_%A.out
  # total nodes
