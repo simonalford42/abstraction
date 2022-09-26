@@ -544,7 +544,7 @@ if __name__ == '__main__':
     depth = 3
     control_net = True  # is the loaded model a control net
     env = box_world.BoxWorldEnv(seed=1)  # , solution_length=(depth, ))
-    model_id = '1904b5929cfb462ea96ec8e43273f2aa'; control_net = False
+    model_id = '7caf148820a04ce3bbd8bbfb43a8cd9c'; control_net = False
     # model_id = '72ba65df94854ff484f946b64b527623'; control_net = False
 
     net = utils.load_model(f'models/{model_id}.pt')
