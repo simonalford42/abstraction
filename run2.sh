@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# sbatch --partition=ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis --save_every 60
-sbatch --partition=ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis --relational_macro --save_every 60
+sbatch --partition-ellis run.sh --sv_micro --sv_micro_data_type ground_truth
+sbatch --partition-ellis run.sh --sv_micro --sv_micro_data_type ground_truth
+sbatch --partition-ellis run.sh --sv_micro --sv_micro_data_type from_model
+sbatch --partition-ellis run.sh --sv_micro --sv_micro_data_type full_traj
 
 # sbatch run.sh --model hmm --abstract_pen 1 --abstract_dim 128
 # sbatch run.sh --model hmm --abstract_pen 1 --abstract_dim 256
