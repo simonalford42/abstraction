@@ -221,6 +221,7 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
+
 def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, params):
     """
     Train a basic supervised model.
@@ -506,6 +507,8 @@ def boxworld_main():
     parser.add_argument('--check_ix', type=int, default=-1)
     parser.add_argument('--num_check', type=int, default=0)
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--sv_micro', action='store_true')
+    parser.add_argument('--sv_micro_data_type', type=str, default='full_traj')
     parser.add_argument('--relational_macro', action='store_true')
 
     params = parser.parse_args()
@@ -556,7 +559,9 @@ def boxworld_main():
 
     if not hasattr(params, 'traj_updates'):
         params.traj_updates = 1E8 if (params.fine_tune or params.muzero or params.neurosym) else 1E7  # default: 1E7
-    params.model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
+
+    params.model_load_path = 'models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt'
+
     params.gumbel_sched = make_gumbel_schedule_fn(params)
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
 
@@ -604,6 +609,10 @@ def boxworld_main():
                     net = make_net(params).to(DEVICE)
 
                 muzero.main(net.control_net, params, data_net=data_net.control_net)
+            elif params.sv_micro:
+                net = make_net(params).to(DEVICE).control_net
+                assert isinstance(net, abstract.HeteroController)
+                sv_micro_train(params, net)
             elif params.fine_tune:
                 fine_tune(net.control_net, params)
             elif params.neurosym:
@@ -627,7 +636,7 @@ def neurosym_train(params):
 
     if params.symbolic_sv:
         data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
-        abs_data = neurosym.ListDataset(data)
+        abs_data = data.ListDataset(data)
         print(f'{len(abs_data)} examples')
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
@@ -648,7 +657,7 @@ def neurosym_train(params):
         print(f"Net has {utils.num_params(net)} parameters")
         neurosym_symbolic_supervised_state_abstraction(dataloader, net, params)
     else:
-        abs_data = neurosym.ListDataset(neurosym.world_model_data(env, n=params.n))
+        abs_data = data.ListDataset(neurosym.world_model_data(env, n=params.n))
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
         C = box_world.NUM_COLORS
@@ -680,7 +689,7 @@ def sv_option_pred(params):
     env = box_world.BoxWorldEnv()
 
     # dataset of (symbolic_tensorized_state, option) pairs
-    dataset = neurosym.ListDataset(neurosym.option_sv_data(env, n=params.n))
+    dataset = data.ListDataset(neurosym.option_sv_data(env, n=params.n))
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
@@ -733,6 +742,52 @@ def option_pred_train(dataloader: DataLoader, net, params):
         updates += len(dataloader.dataset)
         wandb.log({'loss': train_loss,
                    'acc': acc})
+
+
+def sv_micro_train(params, control_net):
+    '''
+    controll net is for data generation, not training
+    '''
+    net = abstract.ActionsAndStopsMicroNet(a=4, b=params.b).to(DEVICE)
+    dataset = data.sv_micro_data(n=params.n, typ=params.sv_micro_data_type, control_net=control_net)
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
+
+    optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
+    # can't use cross entropy, because the action_logps are already softmaxed
+    # instead, use negative log likelihood
+    loss_fn = nn.NLLLoss(reduction='mean')
+    net.train()
+
+    updates = 0
+    train_loss = 0
+
+    while updates <= params.traj_updates:
+        train_loss = 0
+
+        num_right = 0
+        for states, actions, options in dataloader:
+            optimizer.zero_grad()
+            states, actions, options = states.to(DEVICE), actions.to(DEVICE), options.to(DEVICE)
+            B = states.shape[0]
+            action_logps, stop_logps = net(states)
+            assert_shape(action_logps, (B, params.b, 4))
+            action_logps = action_logps[range(B), options, :]
+            assert_shape(action_logps, (B, 4))
+
+            loss = loss_fn(action_logps, actions)
+            train_loss += loss.item()
+
+            pred = torch.argmax(action_logps, dim=1)
+            num_right += sum(pred == actions)
+
+            loss.backward()
+            optimizer.step()
+
+        acc = num_right / len(dataloader.dataset)
+        updates += len(dataloader.dataset)
+        wandb.log({'loss': train_loss,
+                   'acc': acc})
+
 
 
 def test(params):

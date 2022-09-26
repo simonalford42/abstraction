@@ -19,6 +19,8 @@ COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
 ASCII = '# .' + COLORS
 
 GOAL_COLOR = '*'
+# note: to change number of colors, look at the pycolab boxworld file!
+
 NUM_COLORS = len(COLORS)  # if all colors used, should be 21
 assert_equal(NUM_COLORS, bw.NUM_COLORS + 1)  # this is because we count the goal color as a color, while pycolab boxworld does not)
 # colors like 'abcdefghijklmnopqrst*' and also the player, background, and border
@@ -507,6 +509,55 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
     assert done, 'uh oh, our path solver didnt actually solve'
     return states, moves
+
+
+def generate_traj_with_options(env: BoxWorldEnv) -> Tuple[List, List, List]:
+    '''
+    Note the options list is repeated to be the same length as the states list.
+    '''
+
+    obs = env.reset()
+    # render_obs(obs, pause=1)
+
+    domino_pos_map = get_dominoes(obs)
+    held_key = get_held_key(obs)
+    goal_domino = get_goal_domino(domino_pos_map.keys())
+    nodes, adj_matrix = get_tree(domino_pos_map, held_key)
+    path = dijkstra(nodes, adj_matrix, start=bw.PLAYER, goal=goal_domino)
+    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key)
+
+    states = [obs]
+    moves = []
+    options: List[int] = []  # the color we're reaching, as an integer
+
+    assert path[0] == '.'
+    path = path[1:]  # we're already there..
+
+    for i, domino in enumerate(path):
+        target_domino = domino[0]
+        option_number = COLORS.index(target_domino)
+
+        subgoal_pos: POS = domino_pos_map[domino]
+        option: List[POS] = shortest_path(obs, subgoal_pos)
+
+        for a in path_to_moves(option):
+            obs, _, done, _ = env.step(a)
+            # render_obs(obs, pause=0.01)
+            states.append(obs)
+            moves.append(a)
+            options.append(option_number)
+        if len(domino) > 1:
+            # move left to pick up new key, or final gem
+            obs, _, done, _ = env.step(bw.ACTION_WEST)
+            # render_obs(obs, pause=1)
+            states.append(obs)
+            moves.append(bw.ACTION_WEST)
+            options.append(option_number)
+
+    assert done, 'uh oh, our path solver didnt actually solve'
+    states = states[:-1]
+    assert len(states) == len(moves) == len(options)
+    return states, moves, options
 
 
 if __name__ == '__main__':

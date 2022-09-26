@@ -8,7 +8,7 @@ import utils
 from utils import assert_equal, DEVICE
 from torch.distributions import Categorical
 import torch.nn as nn
-import box_world
+import box_world as bw
 import random
 import wandb
 import neurosym
@@ -45,7 +45,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
 
         while not (done or solved):
             t += 1
-            box_world.render_obs(obs, pause=0.1)
+            bw.render_obs(obs, pause=0.1)
             obs = obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
@@ -91,7 +91,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
             obs, rew, done, info = env.step(a)
             solved = env.solved
 
-            pos = box_world.player_pos(obs)
+            pos = bw.player_pos(obs)
             if prev_pos == pos:
                 moves_without_moving += 1
             else:
@@ -156,7 +156,7 @@ j       (b, 2) stop logps
         video_obss = []
         obs = env.reset()
         if run and i < 10:
-            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(obs), name='obs')
+            run[f'test/epoch {epoch}/obs'].log(bw.obs_figure(obs), name='obs')
         options_trace = obs
         option_map = {i: [] for i in range(control_net.b)}
         done, solved = False, False
@@ -212,7 +212,7 @@ j       (b, 2) stop logps
 
             if symbolic_print and new_option:
                 tau = control_net.tau_embed(obs)
-                tau = rearrange(tau, '(p c1 c2 two) -> p c1 c2 two', p=2, c1=box_world.NUM_COLORS, c2=box_world.NUM_COLORS, two=2)
+                tau = rearrange(tau, '(p c1 c2 two) -> p c1 c2 two', p=2, c1=bw.NUM_COLORS, c2=bw.NUM_COLORS, two=2)
                 tau = tau[:, :, :, neurosym.STATE_EMBED_TRUE_IX]
                 held_keys, dominos = neurosym.parse_symbolic_tensor2(tau)
                 held_keys = [(k, p) for (k, p) in held_keys if p > 1E-5]
@@ -232,7 +232,7 @@ j       (b, 2) stop logps
             obs, rew, done, info = env.step(a)
             solved = env.solved
 
-            pos = box_world.player_pos(obs)
+            pos = bw.player_pos(obs)
             if prev_pos == pos:
                 moves_without_moving += 1
             else:
@@ -248,7 +248,7 @@ j       (b, 2) stop logps
                 if new_option:
                     title = f'Starting new option: {current_option}'
                 option_map[current_option].append((obs, title, pause))
-                box_world.render_obs(obs, title=title, pause=pause)
+                bw.render_obs(obs, title=title, pause=pause)
                 if not done_video:
                     video_obss.append((obs, title, pause))
 
@@ -257,7 +257,7 @@ j       (b, 2) stop logps
                 title = 'Solved episode'
             else:
                 title = 'Episode terminated (did not solve)'
-            box_world.render_obs(obs, title=title, pause=1)
+            bw.render_obs(obs, title=title, pause=1)
             # video_obss.append((obs, title, 2))
             # animate.save_video(video_obss, f'new_video{i}')
 
@@ -284,7 +284,7 @@ j       (b, 2) stop logps
             num_solved += 1
 
         if run and i < 10:
-            run[f'test/epoch {epoch}/obs'].log(box_world.obs_figure(options_trace),
+            run[f'test/epoch {epoch}/obs'].log(bw.obs_figure(options_trace),
                                                name='orange=new option')
 
     if check_cc and len(cc_losses) > 0:
@@ -337,10 +337,10 @@ def eval_model(net, env, n=100, renderer: Callable = None):
 
 
 def obs_to_tensor(obs) -> torch.Tensor:
-    obs = torch.tensor([[box_world.ascii_to_int(a) for a in row]
+    obs = torch.tensor([[bw.ascii_to_int(a) for a in row]
                        for row in obs])
-    obs = F.one_hot(obs, num_classes=box_world.NUM_ASCII).to(torch.float)
-    assert_equal(obs.shape[-1], box_world.NUM_ASCII)
+    obs = F.one_hot(obs, num_classes=bw.NUM_ASCII).to(torch.float)
+    assert_equal(obs.shape[-1], bw.NUM_ASCII)
     obs = rearrange(obs, 'h w c -> c h w')
     return obs
 
@@ -348,7 +348,7 @@ def obs_to_tensor(obs) -> torch.Tensor:
 def tensor_to_obs(obs):
     obs = rearrange(obs, 'c h w -> h w c')
     obs = torch.argmax(obs, dim=-1)
-    obs = np.array([[box_world.int_to_ascii(i) for i in row]
+    obs = np.array([[bw.int_to_ascii(i) for i in row]
                      for row in obs])
     return obs
 
@@ -421,7 +421,7 @@ def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
     return torch.stack(states_batch), torch.stack(moves_batch), torch.tensor(lengths), torch.stack(masks)
 
 
-def box_world_dataloader(env: box_world.BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
+def bw_dataloader(env: bw.BoxWorldEnv, n: int, traj: bool = True, batch_size: int = 256):
     data = BoxWorldDataset(env, n, traj)
     if traj:
         return DataLoader(data, batch_size=batch_size, shuffle=not traj, collate_fn=traj_collate)
@@ -470,7 +470,11 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
 
             control_net.eval()
 
-            solved, options, states_between_options = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            out_dict = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            solved = out_dict['solved']
+            options = out_dict['options']
+            states_between_options = out_dict['states_between_options']
+
 
             control_net.train()
 
@@ -534,14 +538,14 @@ class PlanningDataset(Dataset):
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: box_world.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True):
+    def __init__(self, env: bw.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
         """
         # all in memory
         # list of (states, moves) tuple
-        self.data: List[Tuple[List, List]] = [box_world.generate_traj(env) for i in range(n)]
+        self.data: List[Tuple[List, List]] = [bw.generate_traj(env) for i in range(n)]
         # states, moves = self.data[0]
         # self.data = [(states[0:2], moves[0:1])]
         self.traj = traj
@@ -603,6 +607,8 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
     argmax: select options, actions, etc by argmax not by sampling.
     """
+    control_net.eval()
+
     obs = env.obs
 
     options_trace = obs  # as we move, we color over squares in this where we moved, to render later
@@ -615,6 +621,10 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     # op_new_tau_solved_prob = None
     moves = []
     states_between_options = []
+    states_for_each_option = []
+    moves_for_each_option = []
+    option_states = []
+    option_moves = []
 
     current_option = None
 
@@ -630,6 +640,12 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
                 stop = Categorical(logits=stop_logps[current_option]).sample().item()
         new_option = current_option is None or stop == STOP_IX
         if new_option:
+            if current_option is not None:
+                states_for_each_option.append(option_states)
+                moves_for_each_option.append(option_moves)
+                option_states = []
+                option_moves = []
+
             states_between_options.append(obs)  # starts out empty, adds before each option, then adds final at end
             if current_option is not None and macro:
                 start_logps = control_net.macro_policy_net(op_new_tau.unsqueeze(0))[0]
@@ -666,6 +682,9 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
             a = Categorical(logits=action_logps[current_option]).sample().item()
         moves.append(a)
 
+        option_moves.append(a)
+        option_states.append(obs)
+
         obs, rew, done, _ = env.step(a)
 
         if render:
@@ -673,11 +692,11 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
             pause = 1 if new_option else 0.01
             if new_option:
                 title += f' (new option = {current_option})'
-            box_world.render_obs(obs, title=title, pause=pause)
+            bw.render_obs(obs, title=title, pause=pause)
 
         solved = env.solved
 
-        pos = box_world.player_pos(obs)
+        pos = bw.player_pos(obs)
         if prev_pos == pos:
             moves_without_moving += 1
         else:
@@ -689,12 +708,78 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     obs = obs_to_tensor(obs).to(DEVICE)
     states_between_options.append(obs)
 
+    states_for_each_option.append(option_states)
+    moves_for_each_option.append(option_moves)
+
     # if solved:
     #     check that we predicted that we solved
     #     _, _, _, solved_logits = control_net.eval_obs(obs)
     #     print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
-        box_world.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
+        bw.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
 
-    return solved, options, states_between_options
+    assert len(options) == len(states_for_each_option)
+    control_net.train()
+
+    return {'solved': solved,
+            'options': options,
+            'states_between_options': states_between_options,
+            'states_for_each_option': states_for_each_option,
+            'moves_for_each_option': moves_for_each_option}
+
+
+class ListDataset(Dataset):
+    '''
+    Generic Dataset class for data stored in a list.
+    '''
+    def __init__(self, lst):
+        self.lst = lst
+
+    def __len__(self):
+        return len(self.lst)
+
+    def __getitem__(self, idx):
+        return self.lst[idx]
+
+
+def sv_micro_data(n, typ='full_traj', control_net=None):
+    '''
+    typ: 'full_traj', 'from_model', 'ground_truth'
+    '''
+
+    env = bw.BoxWorldEnv()
+    if typ == 'full_traj':
+        # get list of (state, action) pairs from n trajectories
+        data = BoxWorldDataset(env, n=n, traj=False)
+        states, moves = data.states, data.moves
+        options = [0] * len(states)
+    elif typ == 'from_model':
+
+        states, moves, options = [], [], []
+        num_solved = 0
+        for i in range(n):
+            env.reset()
+            out_dict = full_sample_solve(env, control_net)
+            states_for_each_option = out_dict['states_for_each_option']
+            moves_for_each_option = out_dict['moves_for_each_option']
+            options1 = out_dict['options']
+            num_solved += out_dict['solved']
+            assert len(options1) == len(moves_for_each_option)
+            for option_states, option_moves, option in zip(states_for_each_option, moves_for_each_option, options1):
+                states.extend(option_states)
+                moves.extend(option_moves)
+                options.extend([option] * len(option_moves))
+        print(f"Solved {num_solved}/{n} for data creation")
+
+    else:
+        assert typ == 'ground_truth'
+        states, moves, options = [], [], []
+        for i in range(n):
+            traj_states, traj_moves, traj_options = bw.generate_traj_with_options(env)
+            traj_states = [obs_to_tensor(s).to(DEVICE) for s in traj_states]
+            states.extend(traj_states)
+            moves.extend(traj_moves)
+            options.extend(traj_options)
+
+    return ListDataset(list(zip(states, moves, options)))

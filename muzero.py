@@ -114,7 +114,10 @@ def gen_planning_data(env, n, control_net, length):
             env.reset()
             control_net.eval()
             env_copy = env.copy()
-            solved, options, states_between_options = data.full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            out_dict = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            solved = out_dict['solved']
+            options = out_dict['options']
+            states_between_options = out_dict['states_between_options']
             # print(f"options: {options}")
             control_net.train()
 

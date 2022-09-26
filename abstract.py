@@ -652,7 +652,7 @@ class HeteroController(nn.Module):
     def calc_start_logps(self, t_i):
         logps = self.macro_policy_net(t_i)
 
-        if self.cc_neurosym:
+        if hasattr(self, 'cc_neurosym') and self.cc_neurosym:
             t_i = rearrange(t_i, 'B (p C1 C2 two) -> B p C1 C2 two', p=2, C1=self.b, C2=self.b, two=2)
             move_precond_logps = neurosym.precond_logps(t_i).to(DEVICE)
             assert_equal(logps.shape, move_precond_logps.shape)

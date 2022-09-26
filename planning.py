@@ -276,7 +276,10 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
     total_solved = 0
     for i in range(n):
         env.reset()
-        solved, options, _ = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax, render=render)
+        out_dict = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax, render=render)
+        solved = out_dict['solved']
+        options = out_dict['options']
+
         if solved:
             total_solved += 1
             lengths.append(len(options))
@@ -302,7 +305,10 @@ def eval_planner(control_net, env, n):
     for i in range(n):
         env.reset()
         obs = data.obs_to_tensor(env.obs).to(DEVICE)
-        solved, options, _ = data.full_sample_solve(env, control_net, render=False, argmax=True)
+
+        out_dict = data.full_sample_solve(env, control_net, render=False, argmax=True)
+        solved = out_dict['solved']
+        options = out_dict['options']
 
         if solved:
             num_solved += 1
@@ -336,7 +342,9 @@ def eval_planner(control_net, env, n):
 def plan(env, control_net, max_hl_plans=-1):
     env.reset()
 
-    full_sample_solved, options, _ = data.full_sample_solve(env.copy(), control_net, render=False)
+    out_dict = data.full_sample_solve(env.copy(), control_net, render=False)
+    full_sample_solved = out_dict['solved']
+    options = out_dict['options']
     print(f'full sample solved: {full_sample_solved}, options: {options}')
     if full_sample_solved and len(options) > 1:
         global L2_ATTEMPTED
@@ -536,8 +544,8 @@ if __name__ == '__main__':
     depth = 3
     control_net = True  # is the loaded model a control net
     env = box_world.BoxWorldEnv(seed=1)  # , solution_length=(depth, ))
-    # model_id = '1904b5929cfb462ea96ec8e43273f2aa'; control_net = False
-    model_id = 'e81eeb8d642043a88dac10aec68ad853-epoch-249'; control_net = False
+    model_id = '1904b5929cfb462ea96ec8e43273f2aa'; control_net = False
+    # model_id = '72ba65df94854ff484f946b64b527623'; control_net = False
 
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -547,7 +555,7 @@ if __name__ == '__main__':
 
     control_net.tau_noise_std = 0
 
-    n = 10
+    n = 100
     # env = box_world.BoxWorldEnv(solution_length=(6, ))
     # env = box_world.BoxWorldEnv(solution_length=(3, ), num_forward=(1, ))
     env = box_world.BoxWorldEnv()
@@ -555,7 +563,7 @@ if __name__ == '__main__':
     # acc = eval_sampling(control_net, env, n=n, macro=False)
     # print(f'acc: {acc}')
     # acc = eval_sampling(control_net, env, n=n, macro=True, render=True)
-    acc = data.eval_options_model(control_net, env, n=n, render=True, symbolic_print=True)
+    acc = data.eval_options_model(control_net, env, n=n, render=False, symbolic_print=False)
     # print(f'acc: {acc}')
     # acc = eval_planner(control_net, env, n=n)
 

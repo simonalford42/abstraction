@@ -336,20 +336,6 @@ def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> list[tup
     return datas
 
 
-class ListDataset(Dataset):
-    '''
-    Generic Dataset class for data stored in a list.
-    '''
-    def __init__(self, lst):
-        self.lst = lst
-
-    def __len__(self):
-        return len(self.lst)
-
-    def __getitem__(self, idx):
-        return self.lst[idx]
-
-
 # seems like I have to do this outside of the function to get it to work?
 pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
