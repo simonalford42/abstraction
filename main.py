@@ -567,8 +567,9 @@ def boxworld_main():
 
     if params.toy_test:
         # params.n = 100
-        params.n = 1
-        params.traj_updates = 1000
+        params.n = 10
+        params.batch_size = 5
+        params.traj_updates = 500
         params.test_every = 1
         params.save_every = False
         params.no_log = True
