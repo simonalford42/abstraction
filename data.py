@@ -136,6 +136,70 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
     return num_solved / n
 
 
+def eval_options_model2(control_net, env, n=100, argmax=True):
+    """
+    control_net needs to have fn eval_obs that takes in a single observation,
+    and outputs tuple of:
+        (b, a) action logps
+j       (b, 2) stop logps
+        (b, ) start logps
+
+    """
+    control_net.eval()
+    num_solved = 0
+
+    def get_choice(logits, argmax=False):
+        if argmax:
+            return torch.argmax(logits).item()
+        else:
+            return Categorical(logits=logits).sample().item()
+
+    for i in range(n):
+        obs = env.reset()
+        done, solved = False, False
+        t = -1
+        moves_without_moving = 0
+        prev_pos = (-1, -1)
+
+        current_option = None
+
+        while not (done or solved):
+            t += 1
+            obs = obs_to_tensor(obs).to(DEVICE)
+            # (b, a), (b, 2), (b, ), (2, )
+            action_logps, stop_logps, start_logps, _ = control_net.eval_obs(obs, option_start_s=obs)
+
+            if current_option is not None:
+                stop = get_choice(stop_logps[current_option], argmax=argmax)
+
+            new_option = current_option is None or stop == STOP_IX
+            if new_option:
+                current_option = get_choice(start_logps, argmax=argmax)
+
+            a = get_choice(action_logps[current_option], argmax=argmax)
+
+            obs, rew, done, info = env.step(a)
+            solved = env.solved
+
+            pos = bw.player_pos(obs)
+
+            if prev_pos == pos:
+                moves_without_moving += 1
+            else:
+                moves_without_moving = 0
+                prev_pos = pos
+
+            done = done or moves_without_moving >= 5
+
+        if solved:
+            num_solved += 1
+
+    control_net.train()
+    print(f'Solved {num_solved}/{n} episodes')
+
+    return num_solved / n
+
+
 def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False):
     """
     control_net needs to have fn eval_obs that takes in a single observation,

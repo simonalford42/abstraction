@@ -560,7 +560,7 @@ def boxworld_main():
     if not hasattr(params, 'traj_updates'):
         params.traj_updates = 1E8 if (params.fine_tune or params.muzero or params.neurosym) else 1E7  # default: 1E7
 
-    params.model_load_path = 'models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt'
+    params.model_load_path = 'models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt'
 
     params.gumbel_sched = make_gumbel_schedule_fn(params)
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
@@ -610,6 +610,7 @@ def boxworld_main():
 
                 muzero.main(net.control_net, params, data_net=data_net.control_net)
             elif params.sv_micro:
+                params.load = True
                 net = make_net(params).to(DEVICE).control_net
                 assert isinstance(net, abstract.HeteroController)
                 sv_micro_train(params, net)

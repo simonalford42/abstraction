@@ -563,8 +563,14 @@ if __name__ == '__main__':
     # acc = eval_sampling(control_net, env, n=n, macro=False)
     # print(f'acc: {acc}')
     # acc = eval_sampling(control_net, env, n=n, macro=True, render=True)
-    acc = data.eval_options_model(control_net, env, n=n, render=False, symbolic_print=False)
-    # print(f'acc: {acc}')
+    # acc = data.eval_options_model2(control_net, env, n=n)
+    num_solved = 0
+    for i in range(n):
+        env.reset()
+        out_dict = data.full_sample_solve2(env, control_net)
+        num_solved += out_dict['solved']
+
+    print(f'num solved: {num_solved}')
     # acc = eval_planner(control_net, env, n=n)
 
     # test_consistency(env, control_net, n=n)
