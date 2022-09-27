@@ -76,7 +76,6 @@ class MicroNet3(nn.Module):
             return x
 
 
-
 class MicroNet(nn.Module):
     def __init__(self, input_shape, input_channels=3, d=32, out_dim=4, third_conv=False, inter_channels=12):
         super().__init__()

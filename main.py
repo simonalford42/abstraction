@@ -750,7 +750,7 @@ def sv_micro_train(params, control_net):
     '''
     controll net is for data generation, not training
     '''
-    net = abstract.ActionsAndStopsMicroNet(a=4, b=params.b).to(DEVICE)
+    net = abstract.ActionsAndStopsMicroNet(a=4, b=params.b, relational=True).to(DEVICE)
     dataset = data.sv_micro_data(n=params.n, typ=params.sv_micro_data_type, control_net=control_net)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
