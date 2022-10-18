@@ -500,7 +500,7 @@ def boxworld_main():
     parser.add_argument('--num_heads', type=int, default=4)
     parser.add_argument('--state_loss_weight', type=float, default=1.0)
     parser.add_argument('--cc_weight', type=float, default=1.0)
-    parser.add_argument('--fake_cc_neurosym', action='store_true')
+    parser.add_argument('--fake_cc_neurosym', action='store_true', help='hard coded state abstraction fn')
     parser.add_argument('--symbolic_sv', action='store_true')
     parser.add_argument('--micro_net2', action='store_true')
     parser.add_argument('--num_out', type=int, default=None)

@@ -1190,8 +1190,6 @@ def boxworld_controller(typ, params):
         assert_equal(typ, 'hetero')
         # predicate state
         t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS * 2
-        print(f"{t=}")
-        assert False
         # during cc neurosym, we assume certain actions correspond to color movements.
         assert_equal(b, box_world.NUM_COLORS)
 
