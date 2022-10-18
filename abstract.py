@@ -864,13 +864,17 @@ class HeteroController(nn.Module):
         if self.cc_neurosym or self.fake_cc_neurosym:
             t_i3 = repeat(t_i_batch, 'B T t -> B r T b t', r=T, b=self.b)
             macro_trans3 = repeat(macro_trans, '(B T) b t -> B T r b t', B=B, T=T, r=T, b=self.b)
-            # penalty2 = F.mse_loss(t_i3, macro_trans3, reduction='none')
-            # assert_shape(penalty2, (B, T, T, self.b, self.t))
-            # assert_shape(penalty, (B, T, T, self.b, self.t))
-            # assert_equal(penalty2, penalty)
+
+            # split t dim into true/false preds, apply log softmax
+            t_i3 = rearrange(t_i3, 'B T1 T2 b (pcc two) -> B T1 T2 b pcc two', two=2)
+            macro_trans3 = rearrange(macro_trans3, 'B T1 T2 b (pcc two) -> B T1 T2 b pcc two', two=2)
+            t_i3 = F.log_softmax(t_i3, dim=-1)
+            macro_trans3 = F.log_softmax(macro_trans3, dim=-1)
 
             penalty = F.kl_div(t_i3, macro_trans3, log_target=True, reduction='none')
-            assert_shape(penalty, (B, T, T, self.b, self.t))
+            penalty = penalty.sum(dim=-1)
+            assert torch.all(penalty >= -1e-6)
+            assert_shape(penalty, (B, T, T, self.b, self.t // 2))
         else:
             macro_trans2 = rearrange(macro_trans, '(B T) b t -> B T 1 b t', B=B)
             t_i2 = rearrange(t_i_batch, 'B T t -> B 1 T 1 t')
@@ -1189,9 +1193,8 @@ def boxworld_controller(typ, params):
     if params.cc_neurosym or params.fake_cc_neurosym:
         assert_equal(typ, 'hetero')
         # predicate state
+        # two predicates, and then true/false pred for each. 
         t = 2 * box_world.NUM_COLORS * box_world.NUM_COLORS * 2
-        print(f"{t=}")
-        assert False
         # during cc neurosym, we assume certain actions correspond to color movements.
         assert_equal(b, box_world.NUM_COLORS)
 
@@ -1221,6 +1224,7 @@ def boxworld_controller(typ, params):
                                             shrink_loss_scale=params.shrink_loss_scale)
 
     if typ == 'ccts-reduced':
+        macro_trans3 = F.log_softmax(macro_trans3, dim=-1)
         macro_trans_in_dim = b
         model = ConsistencyStopControllerReduced
     elif typ == 'ccts':

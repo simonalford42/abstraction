@@ -517,8 +517,7 @@ def boxworld_main():
         neurosym.CHECK_IXS = [i+1 for i in range(params.num_check)]
     else:
         neurosym.CHECK_IXS = [params.check_ix]
-
-    print(f"{neurosym.CHECK_IXS=}")
+    # print(f"{neurosym.CHECK_IXS=}")
 
     featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
@@ -544,7 +543,7 @@ def boxworld_main():
         if params.ellis:  # more memory available!
             params.batch_size *= 2
         if params.abstract_dim > 64:
-            params.batch_size = int(params.batch_size / 2)
+            params.batch_size = max(1, int(params.batch_size / 2))
 
     if params.cc_neurosym:
         params.model = 'cc'
@@ -750,7 +749,7 @@ def sv_micro_train(params, control_net):
     '''
     controll net is for data generation, not training
     '''
-    net = abstract.ActionsAndStopsMicroNet(a=4, b=params.b).to(DEVICE)
+    net = abstract.ActionsAndStopsMicroNet(a=4, b=params.b, relational=params.relational_micro).to(DEVICE)
     dataset = data.sv_micro_data(n=params.n, typ=params.sv_micro_data_type, control_net=control_net)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
