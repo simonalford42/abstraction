@@ -473,8 +473,6 @@ class CausalNet(nn.Module):
                            causal_pens, lengths, masks, self.abstract_pen)
         solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
         loss = -logp + self.cc_weight * cc + solved_loss
-        # utils.warn('loss is only cc')
-        # return cc
         return loss
 
     def cc_loss_ub(self, s_i, actions):
