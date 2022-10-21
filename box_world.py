@@ -40,12 +40,12 @@ class BoxWorldEnv(gym.Env):
     def __init__(
         self,
         grid_size=12,  # note grid shape is really (grid_size+2, grid_size+2) bc of border
-        solution_length: tuple=(1, 2, 3, 4),
+        solution_length: tuple = (1, 2, 3, 4),
         num_forward=(0, 1, 2, 3, 4),
         num_backward=(0,),
         branch_length=1,
         max_num_steps=120,
-        seed: int = 0,
+        seed=0,
     ):
         self.grid_size = grid_size
         # extra 2 because of border

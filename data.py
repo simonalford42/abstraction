@@ -781,7 +781,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     #     print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
     if render:
-        bw.render_obs(options_trace, title=f'{solved=}', pause=1 if solved else 3)
+        bw.render_obs(obs, title=f'{solved=}', pause=1 if solved else 3)
 
     assert len(options) == len(states_for_each_option)
     control_net.train()

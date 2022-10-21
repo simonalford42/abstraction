@@ -17,4 +17,4 @@ Then install the requirements:
 
 Then you should be good to go.
 
-If you want to edit pycolab code, do `python -m pip uninstall pycolab` and then `cd lib/pycolab && python setup.py develop`.
+If you want to edit pycolab code, do `python -m pip uninstall pycolab` and then `cd lib/pycolab && python setup.py develop`. Edit: there was a way to install pycolab code in "edit mode" where changes to the pcyolab code automatically get updated. I forget what I did there, will update this next time I install somewhere.

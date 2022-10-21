@@ -541,11 +541,11 @@ if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
-    depth = 3
+    depth = 2
     control_net = True  # is the loaded model a control net
-    env = box_world.BoxWorldEnv(seed=1)  # , solution_length=(depth, ))
-    model_id = '7caf148820a04ce3bbd8bbfb43a8cd9c'; control_net = False
-    # model_id = '72ba65df94854ff484f946b64b527623'; control_net = False
+    env = box_world.BoxWorldEnv(seed=1, solution_length=(depth, ))
+    # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
+    model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
 
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -555,7 +555,7 @@ if __name__ == '__main__':
 
     control_net.tau_noise_std = 0
 
-    n = 100
+    n = 10
     # env = box_world.BoxWorldEnv(solution_length=(6, ))
     # env = box_world.BoxWorldEnv(solution_length=(3, ), num_forward=(1, ))
     env = box_world.BoxWorldEnv()
@@ -567,7 +567,7 @@ if __name__ == '__main__':
     num_solved = 0
     for i in range(n):
         env.reset()
-        out_dict = data.full_sample_solve2(env, control_net)
+        out_dict = data.full_sample_solve(env, control_net, render=True)
         num_solved += out_dict['solved']
 
     print(f'num solved: {num_solved}')
