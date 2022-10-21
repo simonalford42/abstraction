@@ -25,7 +25,7 @@ from itertools import chain
 from einops.layers.torch import Rearrange
 
 
-def fine_tune(control_net: nn.Module, params: dict[str, Any]):
+def fine_tune(control_net, params):
     env = box_world.BoxWorldEnv(seed=params.seed)
     dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=params.tau_precompute)
     print(f'{len(dataset)} fine-tuning examples')
@@ -106,7 +106,7 @@ def fine_tune(control_net: nn.Module, params: dict[str, Any]):
         wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
-def learn_options(net: nn.Module, params: dict[str, Any]):
+def learn_options(net, params):
     env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
     dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
@@ -506,7 +506,6 @@ def boxworld_main():
     parser.add_argument('--num_out', type=int, default=None)
     parser.add_argument('--check_ix', type=int, default=-1)
     parser.add_argument('--num_check', type=int, default=0)
-    parser.add_argument('--test', action='store_true')
     parser.add_argument('--sv_micro', action='store_true')
     parser.add_argument('--sv_micro_data_type', type=str, default='full_traj')
     parser.add_argument('--relational_macro', action='store_true')
@@ -517,9 +516,6 @@ def boxworld_main():
         neurosym.CHECK_IXS = [i+1 for i in range(params.num_check)]
     else:
         neurosym.CHECK_IXS = [params.check_ix]
-    # print(f"{neurosym.CHECK_IXS=}")
-
-    featured_params = ['n', 'model', 'abstract_pen', 'fine_tune', 'muzero']
 
     utils.gpu_check()
 
@@ -583,17 +579,11 @@ def boxworld_main():
     if params.muzero:
         params.load = True
 
-    if params.test:
-        test(params)
-        return
-
     with Timing('Completed training'):
         with mlflow.start_run():
             params.id = mlflow.active_run().info.run_id
             print(f"Starting run:\n{mlflow.active_run().info.run_id}")
 
-            for p in featured_params:
-                print(p.upper() + ': \t' + str(getattr(params, p)))
             print(f'{params=}')
 
             wandb.init(project="abstraction",
@@ -624,9 +614,6 @@ def boxworld_main():
                 net = make_net(params).to(DEVICE)
                 learn_options(net, params)
 
-            for p in featured_params:
-                print(p.upper() + ': \t' + str(getattr(params, p)))
-
 
 def neurosym_train(params):
     # seems like I have to do this outside of the function to get it to work?
@@ -636,8 +623,8 @@ def neurosym_train(params):
     env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
 
     if params.symbolic_sv:
-        data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
-        abs_data = data.ListDataset(data)
+        dataset = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
+        abs_data = data.ListDataset(dataset)
         print(f'{len(abs_data)} examples')
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
@@ -677,10 +664,11 @@ def neurosym_train(params):
                                                hidden_dim=128,
                                                num_hidden=2).to(DEVICE)
         else:
-            options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
-                                                num_options=box_world.NUM_COLORS,
-                                                num_heads=params.num_heads,
-                                                hidden_dim=128).to(DEVICE)
+            assert False, 'sv options net w attention gone?'
+            # options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+            #                                     num_options=box_world.NUM_COLORS,
+            #                                     num_heads=params.num_heads,
+            #                                     hidden_dim=128).to(DEVICE)
 
         learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
                                    params)
@@ -700,16 +688,17 @@ def sv_option_pred(params):
                                    hidden_dim=128,
                                    num_hidden=2).to(DEVICE)
     else:
-        net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
-                                    num_options=box_world.NUM_COLORS,
-                                    num_heads=params.num_heads,
-                                    hidden_dim=128).to(DEVICE)
+        assert False, 'sv options net w attention gone?'
+        # net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+        #                             num_options=box_world.NUM_COLORS,
+        #                             num_heads=params.num_heads,
+        #                             hidden_dim=128).to(DEVICE)
 
     print(f"Net has {utils.num_params(net)} parameters")
     option_pred_train(dataloader, net, params)
 
 
-def option_pred_train(dataloader: DataLoader, net, params):
+def option_pred_train(dataloader, net, params):
     optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     loss_fn = nn.CrossEntropyLoss(reduction='mean')
     net.train()
@@ -788,31 +777,6 @@ def sv_micro_train(params, control_net):
         updates += len(dataloader.dataset)
         wandb.log({'loss': train_loss,
                    'acc': acc})
-
-
-
-def test(params):
-    # make a fake cc neurosym HMM Net and a normal one
-    # then compare their losses and such after different inferences
-    params.fake_cc_neurosym = True
-    params.model = 'hmm'
-    fake_hmm_net = make_net(params)
-    params.fake_cc_neurosym = False
-    hmm_net = make_net(params)
-
-    # make dataset
-    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
-    dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
-    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
-
-    # run one inference step, check print statements
-    for s_i_batch, actions_batch, lengths, masks in dataloader:
-        s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
-
-        fake_loss = fake_hmm_net(s_i_batch, actions_batch, lengths, masks)
-        print(f"{fake_loss=}")
-        loss = hmm_net(s_i_batch, actions_batch, lengths, masks)
-        print(f"{loss=}")
 
 
 if __name__ == '__main__':
