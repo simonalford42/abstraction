@@ -344,14 +344,14 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
 
             states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
 
-            # state_embeds = net(states)
-            state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
-            state_embeds = state_embeds.to(DEVICE)
+            state_embeds = net(states)
+            correct_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+            correct_state_embeds = state_embeds.to(DEVICE)
 
             with torch.no_grad():
-                # target_state_embeds = net(target_states)
-                target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
-                target_state_embeds = target_state_embeds.to(DEVICE)
+                target_state_embeds = net(target_states)
+                # correct_target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
+                # correct_target_state_embeds = correct_target_state_embeds.to(DEVICE)
 
             move_logits = options_net(state_embeds)
             move_precond_logps = neurosym.precond_logps(state_embeds)
@@ -361,14 +361,17 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             move_preds = torch.argmax(move_logits, dim=1)
             moves_num_right += (move_preds == moves).sum()
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+            # print(f"{move_precond_logps=}")
+            # print(f"{moves=}")
 
-            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
-            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            # state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            # state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            state_loss = 
 
             # loss = move_loss + params.state_loss_weight * state_loss
             loss = move_loss
             # print(f"{move_loss=}")
-            # assert_equal(state_loss.item(), 0)
+            assert_equal(state_loss.item(), 0)
             # print(f"{state_loss=}")
 
             train_loss += loss.item()
@@ -494,7 +497,7 @@ def boxworld_main():
     parser.add_argument('--neurosym', action='store_true')
     parser.add_argument('--cc_neurosym', action='store_true')
     parser.add_argument('--sv_options', action='store_true')
-    parser.add_argument('--sv_options_net_fc', action='store_true')
+    # parser.add_argument('--sv_options_net_fc', action='store_true')
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
@@ -636,8 +639,8 @@ def neurosym_train(params):
     env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
 
     if params.symbolic_sv:
-        data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
-        abs_data = data.ListDataset(data)
+        dataset = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n, num_out=params.num_out)
+        abs_data = data.ListDataset(dataset)
         print(f'{len(abs_data)} examples')
         dataloader = DataLoader(abs_data, batch_size=params.batch_size, shuffle=True)
 
@@ -671,16 +674,16 @@ def neurosym_train(params):
 
         print(f"Net has {utils.num_params(net)} parameters")
 
-        if params.sv_options_net_fc:
-            options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
-                                               num_options=box_world.NUM_COLORS,
-                                               hidden_dim=128,
-                                               num_hidden=2).to(DEVICE)
-        else:
-            options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
-                                                num_options=box_world.NUM_COLORS,
-                                                num_heads=params.num_heads,
-                                                hidden_dim=128).to(DEVICE)
+        # if params.sv_options_net_fc:
+        options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
+                                           num_options=box_world.NUM_COLORS,
+                                           hidden_dim=128,
+                                           num_hidden=2).to(DEVICE)
+        # else:
+        #     options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+        #                                         num_options=box_world.NUM_COLORS,
+        #                                         num_heads=params.num_heads,
+        #                                         hidden_dim=128).to(DEVICE)
 
         learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
                                    params)
