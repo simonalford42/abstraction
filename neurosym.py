@@ -610,7 +610,7 @@ def print_tensor_preds(t, threshold=0.5):
 class SVOptionNet(nn.Module):
     def __init__(self, num_colors, num_options, hidden_dim, num_hidden=2):
         super().__init__()
-        self.in_shape = (2, num_colors, num_colors)
+        self.in_shape = (2, num_colors, num_colors, 2)
         self.in_dim = np.prod(self.in_shape)
         self.num_options = num_options
         self.hidden_dim = hidden_dim

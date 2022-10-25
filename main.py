@@ -332,58 +332,79 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
     last_save_time = time.time()
 
     while updates < params.traj_updates:
-        train_loss = 0
-        total_state_loss = 0
+        total_loss = 0
+        total_cc_loss = 0
         total_move_loss = 0
-        count = 0
+        total_state_loss = 0
 
-        moves_num_right = 0
-        for states, moves, target_states in dataloader:
-            count += 1
+        move_preds_num_right = 0
+        total_move_preds = 0
+        state_preds_num_right = 0
+        total_state_preds = 0
+
+        for states, moves, next_states in dataloader:
             optimizer.zero_grad()
 
-            states, moves, target_states = states.to(DEVICE), moves.to(DEVICE), target_states.to(DEVICE)
+            states, moves, next_states = states.to(DEVICE), moves.to(DEVICE), next_states.to(DEVICE)
 
-            # state_embeds = net(states)
-            state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
-            state_embeds = state_embeds.to(DEVICE)
+            state_embeds = net(states)
+            correct_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+            correct_state_embeds = correct_state_embeds.to(DEVICE)
 
             with torch.no_grad():
-                # target_state_embeds = net(target_states)
-                target_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(target_states[i]) for i in range(len(target_states))], dim=0)
-                target_state_embeds = target_state_embeds.to(DEVICE)
+                next_state_embeds = net(next_states)
+                # correct_next_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(next_states[i]) for i in range(len(next_states))], dim=0)
+                # correct_next_state_embeds = correct_next_state_embeds.to(DEVICE)
 
             move_logits = options_net(state_embeds)
             move_precond_logps = neurosym.precond_logps(state_embeds)
             assert_equal(move_logits.shape, move_precond_logps.shape)
             move_logits = move_logits * move_precond_logps
-
-            move_preds = torch.argmax(move_logits, dim=1)
-            moves_num_right += (move_preds == moves).sum()
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
 
-            state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
-            state_loss = F.kl_div(state_preds, target_state_embeds, log_target=True, reduction='batchmean')
+            next_state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='batchmean')
 
-            # loss = move_loss + params.state_loss_weight * state_loss
-            loss = move_loss
-            # print(f"{move_loss=}")
-            # assert_equal(state_loss.item(), 0)
-            # print(f"{state_loss=}")
+            # state embeds is (B, p, C, C, 2)
+            assert_equal(state_embeds.shape, correct_state_embeds.shape)
+            assert_equal(state_embeds.shape[-1], 2)
+            state_embeds = F.log_softmax(state_embeds, dim=-1)
+            state_loss = F.kl_div(state_embeds, correct_state_embeds, reduction='none')
+            torch.testing.assert_close(correct_state_embeds, F.log_softmax(correct_state_embeds,
+                dim=-1))
+            state_loss = F.kl_div(state_embeds, correct_state_embeds, log_target=True, reduction='none').sum()
 
-            train_loss += loss.item()
+            loss = (params.move_loss_weight * move_loss
+                    + params.state_loss_weight * state_loss
+                    + params.cc_loss_weight * cc_loss)
+
+            total_loss += loss.item()
             total_move_loss += move_loss.item()
             total_state_loss += state_loss.item()
+            total_cc_loss += cc_loss.item()
+
+            move_preds = torch.argmax(move_logits, dim=1)
+            move_preds_num_right += (move_preds == moves).sum()
+            total_move_preds += moves.numel()
+
+            state_preds = torch.round(state_embeds.exp())
+            correct_state_embeds = torch.round(correct_state_embeds)
+            state_preds_num_right += (state_preds == correct_state_embeds).sum()
+            total_state_preds += state_preds.numel()
 
             loss.backward()
             optimizer.step()
 
-        wandb.log({'loss': train_loss,
-                   'total_move_loss': total_move_loss,
-                   'total_state_loss': total_state_loss})
+        wandb.log({'loss': total_loss,
+                   'move_loss': total_move_loss,
+                   'state_loss': total_state_loss,
+                   'cc_loss': total_cc_loss,
+                   'move_acc': move_preds_num_right / total_move_preds,
+                   'state_acc': state_preds_num_right / total_state_preds})
 
         epoch += 1
         updates += len(dataloader.dataset)
+
 
         if (not params.no_log and params.save_every
                 and (time.time() - last_save_time > (params.save_every * 60))):
@@ -494,11 +515,9 @@ def boxworld_main():
     parser.add_argument('--neurosym', action='store_true')
     parser.add_argument('--cc_neurosym', action='store_true')
     parser.add_argument('--sv_options', action='store_true')
-    parser.add_argument('--sv_options_net_fc', action='store_true')
     parser.add_argument('--dim', type=int, default=64, help='latent dim of relational net')
     parser.add_argument('--num_attn_blocks', type=int, default=2)
     parser.add_argument('--num_heads', type=int, default=4)
-    parser.add_argument('--state_loss_weight', type=float, default=1.0)
     parser.add_argument('--cc_weight', type=float, default=1.0)
     parser.add_argument('--fake_cc_neurosym', action='store_true', help='hard coded state abstraction fn')
     parser.add_argument('--symbolic_sv', action='store_true')
@@ -509,6 +528,9 @@ def boxworld_main():
     parser.add_argument('--sv_micro', action='store_true')
     parser.add_argument('--sv_micro_data_type', type=str, default='full_traj')
     parser.add_argument('--relational_macro', action='store_true')
+    parser.add_argument('--move_loss_weight', type=float, default=1.0, help='neurosym move loss weight')
+    parser.add_argument('--state_loss_weight', type=float, default=1.0, help='neurosym state loss weight')
+    parser.add_argument('--cc_loss_weight', type=float, default=1.0, help='neurosym cc loss weight')
 
     params = parser.parse_args()
 
@@ -658,17 +680,16 @@ def neurosym_train(params):
 
         print(f"Net has {utils.num_params(net)} parameters")
 
-        if params.sv_options_net_fc:
-            options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
-                                               num_options=box_world.NUM_COLORS,
-                                               hidden_dim=128,
-                                               num_hidden=2).to(DEVICE)
-        else:
-            assert False, 'sv options net w attention gone?'
-            # options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
-            #                                     num_options=box_world.NUM_COLORS,
-            #                                     num_heads=params.num_heads,
-            #                                     hidden_dim=128).to(DEVICE)
+        # if params.sv_options_net_fc:
+        options_net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
+                                           num_options=box_world.NUM_COLORS,
+                                           hidden_dim=128,
+                                           num_hidden=2).to(DEVICE)
+        # else:
+        #     options_net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+        #                                         num_options=box_world.NUM_COLORS,
+        #                                         num_heads=params.num_heads,
+        #                                         hidden_dim=128).to(DEVICE)
 
         learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
                                    params)
@@ -682,17 +703,15 @@ def sv_option_pred(params):
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True)
 
-    if params.sv_options_net_fc:
-        net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
-                                   num_options=box_world.NUM_COLORS,
-                                   hidden_dim=128,
-                                   num_hidden=2).to(DEVICE)
-    else:
-        assert False, 'sv options net w attention gone?'
-        # net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
-        #                             num_options=box_world.NUM_COLORS,
-        #                             num_heads=params.num_heads,
-        #                             hidden_dim=128).to(DEVICE)
+    # if params.sv_options_net_fc:
+    net = neurosym.SVOptionNet(num_colors=box_world.NUM_COLORS,
+                               num_options=box_world.NUM_COLORS,
+                               hidden_dim=128,
+                               num_hidden=2).to(DEVICE)
+    # net = neurosym.SVOptionNet2(num_colors=box_world.NUM_COLORS,
+    #                             num_options=box_world.NUM_COLORS,
+    #                             num_heads=params.num_heads,
+    #                             hidden_dim=128).to(DEVICE)
 
     print(f"Net has {utils.num_params(net)} parameters")
     option_pred_train(dataloader, net, params)

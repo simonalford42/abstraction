@@ -7,9 +7,21 @@
 # sbatch run.sh --cc_neurosym --model cc --abstract_pen 1 --relational_micro
 # sbatch run.sh --cc_neurosym --model cc --relational_micro
 
-sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --relational_micro --ellis
-sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --relational_micro --abstract_pen 1 --ellis
-sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis
-sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --ellis
+# sbatch --partition ellis run.sh --model hmm --ellis
+# sbatch --partition ellis run.sh --model hmm --ellis
+# sbatch run.sh --model hmm
+# sbatch run.sh --model hmm
+
+sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 0.0 --cc_loss_weight 0.0 --traj_updates 2E7
+sbatch run.sh --neurosym --move_loss_weight 0.0 --state_loss_weight 1.0 --cc_loss_weight 0.0 --traj_updates 2E7
+sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 1.0 --cc_loss_weight 0.0 --traj_updates 2E7
+sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 1.0 --cc_loss_weight 1.0 --traj_updates 2E7
+sbatch run.sh --neurosym --move_loss_weight 0.0 --state_loss_weight 0.0 --cc_loss_weight 1.0 --traj_updates 2E7
+# sbatch --partition ellis run.sh --neurosym
+
+# sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --relational_micro --ellis
+# sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --relational_micro --abstract_pen 1 --ellis
+# sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --abstract_pen 1 --ellis
+# sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --ellis
 
 # sbatch run.sh --sv_micro --sv_
