@@ -512,6 +512,7 @@ class HeteroController(nn.Module):
         """
         # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
         action_logps, stop_logps, start_logps, _, solved_logits, _ = self.forward_ub(s_i.unsqueeze(0), tau_noise=False)
+        torch.testing.assert
 
         return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
 
