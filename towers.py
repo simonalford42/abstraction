@@ -1,3 +1,6 @@
+from autoencoder import Autoencoder
+
+import os
 import numpy as np
 import random
 import torch
@@ -154,7 +157,85 @@ class TransitionDataset(torch.utils.data.IterableDataset):
             t = random.choice(range(l-1))
             yield s[t], a[t], s[t+1], ons[t], clears[t], strips[t]
 
+class RepresentationLearner(pl.LightningModule):
+    def __init__(self, cnn=False, layers=2, hidden=64, dimension=16, random_features=False, gsm=False):
+        super().__init__()
 
+        self.cnn = cnn
+
+        self.entities = 6
+
+        self.random_features = random_features
+        
+        self.gsm = gsm
+
+        self.steps=0
+
+        # we are going to try and decode the state from this representation
+        self.state_representation = Autoencoder([3,3,3] if cnn else [27],
+                                                dimension=dimension, layers=layers, hidden=hidden,
+                                                loss="bce", stride=1, discrete=gsm)
+        self.state_predictor = nn.Linear(dimension, self.entities*self.entities)
+
+        # and decode the action from this representation
+        self.action_representation = Autoencoder([5,3,3] if cnn else [36],
+                                                 dimension=dimension, layers=layers, hidden=hidden,
+                                                 loss="bce", stride=1, discrete=gsm)
+        self.action_predictor = nn.Linear(dimension, self.entities*self.entities*self.entities)
+
+        
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
+
+    def training_step(self, train_batch, batch_idx):
+        s0, a0, s1, on_gt, clear_gt, a_gt = train_batch
+        B = s0.shape[0]
+
+        if self.cnn:
+            zs, ls = self.state_representation(s0)
+            assert False, "not implemented for cnn because I think that that is overkill"
+            za, la = self.action_representation(s0)
+        else:
+            zs, ls = self.state_representation(s0.view(B, -1))
+            za, la = self.action_representation(torch.concat([a0.view(B, -1), s0.view(B, -1)],1))
+            
+        on_h = torch.sigmoid(self.state_predictor(zs.detach()).view(B, self.entities, self.entities))
+        state_loss = nn.BCELoss(reduction="none")(on_h, on_gt).sum(-1).sum(-1).mean()
+        state_mistakes=(((on_h>0.5)!=(on_gt>0.5))*1.).sum(-1).sum(-1).mean()
+
+        self.log("state_predict_loss", state_loss)
+        self.log("state_mistakes", state_mistakes)
+        self.log("state_ae_likelihood", ls)
+
+        action_h = torch.sigmoid(self.action_predictor(za.detach()).view(B, self.entities, self.entities, self.entities))
+        action_loss = nn.BCELoss(reduction="none")(action_h, a_gt).sum(-1).sum(-1).sum(-1).mean()
+        action_mistakes=(((action_h>0.5)!=(a_gt>0.5))*1.).sum(-1).sum(-1).sum(-1).mean()
+
+        self.log("action_predict_loss", action_loss)
+        self.log("action_mistakes", action_mistakes)
+        self.log("action_ae_likelihood", la)
+        
+        if self.gsm: self.log("temperature", self.state_representation.temperature)
+        
+        self.steps+=1
+        if self.steps%100==0:
+            print("STEP", self.steps,
+                  "\nground truth:\n", on_gt[0], "\npredicted:", (on_h[0]>0.5)*1.,
+                  "\n\n")
+
+        if self.random_features:
+            return state_loss
+        
+        return action_loss + state_loss - ls - la
+        
+        
+        
+        
+            
+            
+        
 class Abstraction(pl.LightningModule):
 
     def __init__(self, hardcode=False, function=False, on_constraints=False, cnn=False, supervise=[], contrastive=False, reward=False, marginal=False, gsm=False, over=False):
@@ -494,6 +575,17 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description = "")
 
+    parser.add_argument("--autoencode", "-a", default=False, action="store_true",
+                        help="pretrain an autoencoder")
+    parser.add_argument("--layers", "-l", default=2, type=int,
+                        help="pretraining layers")
+    parser.add_argument("--hidden", default=64, type=int,
+                        help="pretraining internal dimension")
+    parser.add_argument("--dimension", default=16, type=int,
+                        help="pretraining representation dimension")
+    parser.add_argument("--random", default=False, action="store_true",
+                        help="pretraining with frozen random features, as a control experiment")
+
     parser.add_argument("--contrastive", "-c", default=False, action="store_true",
                         help="various contrastive objectives designed to make the model not predict the exact same abstracts date for everything")
     parser.add_argument("--function", "-f", default=False, action="store_true",
@@ -526,24 +618,37 @@ if __name__ == '__main__':
     arguments = parser.parse_args()
 
     experiment_name = "+".join(
-      [n if True == getattr(arguments,n) else f"{n}={''.join(getattr(arguments,n))}"
+      [n if True == getattr(arguments,n) else \
+       (f"{n}={getattr(arguments,n)}" if isinstance(getattr(arguments,n), int) else f"{n}={''.join(getattr(arguments,n))}")
        for n in sorted(arguments.__dir__())
        if not n.startswith("_") and getattr(arguments,n) ])
     logger = TensorBoardLogger("lightning_logs", name=experiment_name)
+    if os.path.exists(logger.root_dir):
+        assert False, f"already did {logger.root_dir}"
+    
 
-    m = Abstraction(hardcode=arguments.hardcode,
-                    function=arguments.function,
-                    on_constraints=arguments.on_constraints,
-                    supervise=arguments.supervise,
-                    contrastive=arguments.contrastive,
-                    cnn=arguments.cnn,
-                    gsm=arguments.gsm,
-                    marginal=arguments.marginal,
-                    over=arguments.over)
+    if arguments.autoencode:
+        m = RepresentationLearner(cnn=arguments.cnn,
+                                  layers=arguments.layers,
+                                  hidden=arguments.hidden,
+                                  dimension=arguments.dimension,
+                                  gsm=arguments.gsm,
+                                  random_features=arguments.random)
+    else:
+        m = Abstraction(hardcode=arguments.hardcode,
+                        function=arguments.function,
+                        on_constraints=arguments.on_constraints,
+                        supervise=arguments.supervise,
+                        contrastive=arguments.contrastive,
+                        cnn=arguments.cnn,
+                        gsm=arguments.gsm,
+                        marginal=arguments.marginal,
+                        over=arguments.over)
+        
     trainer = pl.Trainer(detect_anomaly=True,
                          gpus=1,
                          logger=logger,
-                         max_epochs=5000)
+                         max_epochs=2000)
     train_loader = DataLoader(TransitionDataset(), batch_size=128)
     trainer.fit(m, train_loader)
 
