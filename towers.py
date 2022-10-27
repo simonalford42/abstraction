@@ -163,6 +163,8 @@ class RepresentationLearner(pl.LightningModule):
 
         self.cnn = cnn
 
+        self.dimension = dimension
+
         self.entities = 6
 
         self.random_features = random_features
@@ -189,7 +191,9 @@ class RepresentationLearner(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         return optimizer
 
-    def training_step(self, train_batch, batch_idx):
+    def training_step(self, train_batch, batch_idx, logger=None):
+        if logger is None: logger = self
+            
         s0, a0, s1, on_gt, clear_gt, a_gt = train_batch
         B = s0.shape[0]
 
@@ -205,19 +209,19 @@ class RepresentationLearner(pl.LightningModule):
         state_loss = nn.BCELoss(reduction="none")(on_h, on_gt).sum(-1).sum(-1).mean()
         state_mistakes=(((on_h>0.5)!=(on_gt>0.5))*1.).sum(-1).sum(-1).mean()
 
-        self.log("state_predict_loss", state_loss)
-        self.log("state_mistakes", state_mistakes)
-        self.log("state_ae_likelihood", ls)
+        logger.log("state_predict_loss", state_loss)
+        logger.log("state_mistakes", state_mistakes)
+        logger.log("state_ae_likelihood", ls)
 
         action_h = torch.sigmoid(self.action_predictor(za.detach()).view(B, self.entities, self.entities, self.entities))
         action_loss = nn.BCELoss(reduction="none")(action_h, a_gt).sum(-1).sum(-1).sum(-1).mean()
         action_mistakes=(((action_h>0.5)!=(a_gt>0.5))*1.).sum(-1).sum(-1).sum(-1).mean()
 
-        self.log("action_predict_loss", action_loss)
-        self.log("action_mistakes", action_mistakes)
-        self.log("action_ae_likelihood", la)
+        logger.log("action_predict_loss", action_loss)
+        logger.log("action_mistakes", action_mistakes)
+        logger.log("action_ae_likelihood", la)
         
-        if self.gsm: self.log("temperature", self.state_representation.temperature)
+        if self.gsm: logger.log("temperature", self.state_representation.temperature)
         
         self.steps+=1
         if self.steps%100==0:
@@ -238,15 +242,17 @@ class RepresentationLearner(pl.LightningModule):
         
 class Abstraction(pl.LightningModule):
 
-    def __init__(self, hardcode=False, function=False, on_constraints=False, cnn=False, supervise=[], contrastive=False, reward=False, marginal=False, gsm=False, over=False):
+    def __init__(self, hardcode=False, function=False, on_constraints=False, cnn=False, supervise=[], contrastive=False, reward=False, marginal=False, gsm=False, over=False, autoencoder=None):
         super().__init__()
 
         self.gsm, self.marginal, self.hardcode, self.function, self.on_constraints, self.cnn, self.supervise, self.contrastive, self.over = gsm, marginal, hardcode, function, on_constraints, cnn, supervise, contrastive, over
 
-        h=256
+        
         self.entities = 6
         self.pegs = 3
         self.step = 0
+        
+        self.autoencoder = autoencoder
 
         if self.over:
             # overparameterize by not hard coding the sizes of the disks
@@ -263,9 +269,14 @@ class Abstraction(pl.LightningModule):
 
         self.dummy = nn.Linear(1,1)
 
-        # create state and action encoders
-        # could be either cnn or mlp
-        if cnn:
+        # create state and action encoders, if we need them because we do not have the encoder/decoder
+        if self.autoencoder:
+            h=autoencoder.dimension
+            # head which outputs abstract action
+            self.action = nn.Sequential(
+                nn.Linear(h, self.entities*self.entities*self.entities),
+                nn.Softmax(-1))
+        elif cnn:
             h=32
             self.state_abstraction = nn.Sequential(
                 nn.Conv2d(3, h, kernel_size=3, stride=1, padding=1),
@@ -290,6 +301,7 @@ class Abstraction(pl.LightningModule):
                 nn.Softmax(-1)
             )
         else:
+            h = 256
             self.state_abstraction = nn.Sequential(nn.Linear(self.pegs**3, h),
                                                nn.ReLU(),
                                                nn.Linear(h, h),
@@ -332,6 +344,16 @@ class Abstraction(pl.LightningModule):
         return optimizer
 
     def training_step(self, train_batch, batch_idx):
+
+        self.step+=1
+        if self.autoencoder:
+            autoencoder_loss = self.autoencoder.training_step(train_batch, batch_idx,
+                                                              logger=self)
+            if self.step < 2000:
+                return autoencoder_loss
+        else:
+            autoencoder_loss = 0
+            
         s0, a0, s1, on_gt, clear_gt, a_gt = train_batch
 
         B = s0.shape[0] # batch size
@@ -436,12 +458,11 @@ class Abstraction(pl.LightningModule):
             print("predicted abstract action", (a_h_0[0] > 0.5)*1)
             print()
             print()
-        self.step+=1
-
+        
         # ignore this hack, hardcode=False for all the experiments we care about
         if self.hardcode:
-            return self.dummy(loss.unsqueeze(0))-self.dummy(loss.unsqueeze(0))+loss
-        return loss
+            return self.dummy(loss.unsqueeze(0))-self.dummy(loss.unsqueeze(0))+loss+autoencoder_loss
+        return loss+autoencoder_loss
 
     def forward(self, states, actions, gsm=False):
         """
@@ -450,7 +471,11 @@ class Abstraction(pl.LightningModule):
 
         gsm: gumbel softmax abstract state-action
         """
-        if self.cnn:
+        B = states.shape[0]
+        
+        if self.autoencoder:
+            tau = self.autoencoder.state_representation.encode(states.view(B, -1))[1]
+        elif self.cnn:
             tau = self.state_abstraction(states.transpose(-1,-3))
         else:
             tau = self.state_abstraction(states.view(*states.shape[:-3], self.pegs**3))
@@ -482,7 +507,11 @@ class Abstraction(pl.LightningModule):
 
         if actions is None: return clear, on
 
-        if arguments.cnn:
+        if self.autoencoder:
+            action = self.autoencoder.action_representation.encode(torch.concat([actions.view(B, -1),
+                                                                                 states.view(B, -1)],1))[1]
+            action = self.action(action)
+        elif arguments.cnn:
             B = states.shape[0]
             states = states.transpose(-1,-3)
 
@@ -502,6 +531,8 @@ class Abstraction(pl.LightningModule):
             action = self.action(torch.concat([ states.view(*states.shape[:-3], self.pegs**3)
                                                 , actions ], -1))
 
+        
+        
         action = action.view(*action.shape[:-1], self.entities, self.entities, self.entities)
         return clear, on, action
 
@@ -627,13 +658,14 @@ if __name__ == '__main__':
         assert False, f"already did {logger.root_dir}"
     
 
-    if arguments.autoencode:
-        m = RepresentationLearner(cnn=arguments.cnn,
+    ae = RepresentationLearner(cnn=arguments.cnn,
                                   layers=arguments.layers,
                                   hidden=arguments.hidden,
                                   dimension=arguments.dimension,
                                   gsm=arguments.gsm,
                                   random_features=arguments.random)
+    if arguments.autoencode:
+        m = ae
     else:
         m = Abstraction(hardcode=arguments.hardcode,
                         function=arguments.function,
@@ -641,14 +673,15 @@ if __name__ == '__main__':
                         supervise=arguments.supervise,
                         contrastive=arguments.contrastive,
                         cnn=arguments.cnn,
-                        gsm=arguments.gsm,
+                        gsm=False, #arguments.gsm,
                         marginal=arguments.marginal,
-                        over=arguments.over)
+                        over=arguments.over,
+                        autoencoder=ae)
         
     trainer = pl.Trainer(detect_anomaly=True,
                          gpus=1,
                          logger=logger,
-                         max_epochs=2000)
+                         max_epochs=20000)
     train_loader = DataLoader(TransitionDataset(), batch_size=128)
     trainer.fit(m, train_loader)
 
