@@ -112,11 +112,16 @@ class State():
                 return s
 
     def random_legal_action(self):
-        return random.choice([(i,j)
-                              for i in range(len(self.rings))
-                              for j in range(len(self.rings))
-                              if i != j and self.step((i,j)) is not None
-        ])
+        return random.choice(self.legal_actions())
+
+    def legal_actions(self):
+        return [(i,j)
+                for i in range(len(self.rings))
+                for j in range(len(self.rings))
+                if i != j and self.step((i,j)) is not None
+        ]
+
+#assert False
 
 
 def rollout(l=10):
@@ -135,6 +140,7 @@ def rollout(l=10):
 
         strips_actions.append(s.strips_action(a))
         s = s.step(a)
+        #assert any(l.rings == s.rings for l in legal_states )
 
     return torch.tensor(np.stack(states)).float(), \
         torch.tensor(np.stack(actions)).float(), \
@@ -147,19 +153,50 @@ class TransitionDataset(torch.utils.data.IterableDataset):
     def __init__(self, start=0, end=1280):
         super(TransitionDataset).__init__()
         assert end > start, "this example code only works with end >= start"
-        self.start = start
-        self.end = end
+        # precompute the set of all legal state transitions
+        legal_states = [ State([[], [], []])]
+        for new_disk in [3,2,1]:
+            legal_states = [ State([ r if j != i else r+[new_disk]
+                                     for j, r in enumerate(s.rings) ])
+                             for s in legal_states for i in range(3) ]
+        self.legal_transitions = [(s, a, s.step(a)) for s in legal_states for a in s.legal_actions() ]
+
+        states, actions, ons, clears, strips_actions = [], [], [], [], []
+        next_states = []
+        for s, a, sp in self.legal_transitions:
+            states.append(s.render())
+            next_states.append(sp.render())
+            action_matrix = np.zeros((3,3))
+            action_matrix[a[0],a[1]] = 1
+            actions.append(action_matrix)
+
+            predicates = s.predicates()
+            ons.append(predicates[0])
+            clears.append(predicates[1])
+
+            strips_actions.append(s.strips_action(a))
+
+            
+
+        self.states, self.next_states, self.actions, self.ons, self.clears, self.strips = \
+            torch.tensor(np.stack(states)).float(), \
+            torch.tensor(np.stack(next_states)).float(), \
+            torch.tensor(np.stack(actions)).float(), \
+            torch.tensor(np.stack(ons)).float(), \
+            torch.tensor(np.stack(clears)).float(), \
+            torch.tensor(np.stack(strips_actions)).float()
+        
+        self.start = 0
+        self.end = len(self.legal_transitions)
 
     def __iter__(self):
-        l = 32
-        for _ in range(128):
-            s, a, ons, clears, strips = rollout(l)
-            t = random.choice(range(l-1))
-            yield s[t], a[t], s[t+1], ons[t], clears[t], strips[t]
+        for t in range(len(self.legal_transitions)):
+            yield self.states[t], self.actions[t], self.next_states[t], self.ons[t], self.clears[t], self.strips[t]
 
 class RepresentationLearner(pl.LightningModule):
     def __init__(self, cnn=False, layers=2, hidden=64, dimension=16, random_features=False, gsm=False):
         super().__init__()
+        self.save_hyperparameters()
 
         self.cnn = cnn
 
@@ -349,8 +386,9 @@ class Abstraction(pl.LightningModule):
         if self.autoencoder:
             autoencoder_loss = self.autoencoder.training_step(train_batch, batch_idx,
                                                               logger=self)
-            if self.step < 2000:
-                return autoencoder_loss
+            if arguments.pretrained:
+                autoencoder_loss = autoencoder_loss.detach()
+            #if self.step < 2000: return autoencoder_loss                
         else:
             autoencoder_loss = 0
             
@@ -475,6 +513,7 @@ class Abstraction(pl.LightningModule):
         
         if self.autoencoder:
             tau = self.autoencoder.state_representation.encode(states.view(B, -1))[1]
+            if arguments.pretrained: tau = tau.detach()
         elif self.cnn:
             tau = self.state_abstraction(states.transpose(-1,-3))
         else:
@@ -510,6 +549,7 @@ class Abstraction(pl.LightningModule):
         if self.autoencoder:
             action = self.autoencoder.action_representation.encode(torch.concat([actions.view(B, -1),
                                                                                  states.view(B, -1)],1))[1]
+            if arguments.pretrained: action = action.detach()
             action = self.action(action)
         elif arguments.cnn:
             B = states.shape[0]
@@ -549,6 +589,28 @@ class Abstraction(pl.LightningModule):
         # move(x,y,z) -> on(x,z)
         add_on = actions.sum(-2)
         # move(x,y,z) -> ~on(x,y)
+        del_on = actions.sum(-1)
+
+        precondition = torch.einsum("bxyz,by,bx,bxy,bz,xz,x->b",
+                                    actions, 1-clear, clear, on, clear, self.smaller, self.is_disk).log()
+
+        def update(old, add, delete):
+            return (1-delete)*(old+add-old*add)
+
+        on = update(on, add_on, del_on)
+        clear = update(clear, add_clear, del_clear)
+
+        return on, clear, precondition
+
+    def simulate2(self, clear, on, actions):
+        """
+        simulate abstract model, given abstract predicates CLEAR/ON to predict those predicates at the next time step
+        """
+
+        
+        # move(x,z) -> on(x,z)
+        add_on = actions
+        # move(x,z) & on() -> ~on(x,y)
         del_on = actions.sum(-1)
 
         precondition = torch.einsum("bxyz,by,bx,bxy,bz,xz,x->b",
@@ -617,6 +679,9 @@ if __name__ == '__main__':
     parser.add_argument("--random", default=False, action="store_true",
                         help="pretraining with frozen random features, as a control experiment")
 
+    parser.add_argument("--pretrained", default=None, 
+                        help="load pretraining checkpoint")
+
     parser.add_argument("--contrastive", "-c", default=False, action="store_true",
                         help="various contrastive objectives designed to make the model not predict the exact same abstracts date for everything")
     parser.add_argument("--function", "-f", default=False, action="store_true",
@@ -652,18 +717,22 @@ if __name__ == '__main__':
       [n if True == getattr(arguments,n) else \
        (f"{n}={getattr(arguments,n)}" if isinstance(getattr(arguments,n), int) else f"{n}={''.join(getattr(arguments,n))}")
        for n in sorted(arguments.__dir__())
-       if not n.startswith("_") and getattr(arguments,n) ])
+       if not n.startswith("_") and getattr(arguments,n) and n != "pretrained" ])
     logger = TensorBoardLogger("lightning_logs", name=experiment_name)
-    if os.path.exists(logger.root_dir):
+    print("LOGGING DIRECTORY", logger.root_dir)
+    if False and  os.path.exists(logger.root_dir):
         assert False, f"already did {logger.root_dir}"
     
-
-    ae = RepresentationLearner(cnn=arguments.cnn,
+    if arguments.pretrained:
+        ae = RepresentationLearner.load_from_checkpoint(arguments.pretrained)
+    else:
+        ae = RepresentationLearner(cnn=arguments.cnn,
                                   layers=arguments.layers,
                                   hidden=arguments.hidden,
                                   dimension=arguments.dimension,
                                   gsm=arguments.gsm,
                                   random_features=arguments.random)
+    assert arguments.function
     if arguments.autoencode:
         m = ae
     else:
@@ -681,9 +750,11 @@ if __name__ == '__main__':
     trainer = pl.Trainer(detect_anomaly=True,
                          gpus=1,
                          logger=logger,
-                         max_epochs=20000)
-    train_loader = DataLoader(TransitionDataset(), batch_size=128)
+                         max_epochs=2000)
+    dataset = TransitionDataset()
+    train_loader = DataLoader(dataset, batch_size=dataset.end)
     trainer.fit(m, train_loader)
+    
 
 
 
