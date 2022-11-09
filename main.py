@@ -351,8 +351,112 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             correct_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
             correct_state_embeds = correct_state_embeds.to(DEVICE)
 
-            with torch.no_grad():
-                next_state_embeds = net(next_states)
+            # with torch.no_grad():
+                # next_state_embeds = net(next_states)
+                # correct_next_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(next_states[i]) for i in range(len(next_states))], dim=0)
+                # correct_next_state_embeds = correct_next_state_embeds.to(DEVICE)
+
+            # move_logits = options_net(state_embeds)
+            # move_precond_logps = neurosym.precond_logps(state_embeds)
+            # assert_equal(move_logits.shape, move_precond_logps.shape)
+            # move_logits = move_logits * move_precond_logps
+            # move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
+
+            # next_state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            # cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='batchmean')
+
+            # state embeds is (B, p, C, C, 2)
+            assert_equal(state_embeds.shape, correct_state_embeds.shape)
+            assert_equal(state_embeds.shape[-1], 2)
+            state_embeds = F.log_softmax(state_embeds, dim=-1)
+            torch.testing.assert_close(correct_state_embeds, F.log_softmax(correct_state_embeds,
+                dim=-1))
+            state_loss = F.kl_div(state_embeds, correct_state_embeds, log_target=True, reduction='none').sum()
+            B, p, C, _, _ = state_embeds.shape
+            state_loss = state_loss / (B * p * C * C)
+
+            loss = 0
+            if params.state_loss:
+                loss = loss + state_loss
+            if params.move_loss:
+                loss = loss + move_loss
+            if params.cc_loss:
+                loss = loss + cc_loss
+
+            total_loss += loss.item()
+            # total_move_loss += move_loss.item()
+            total_state_loss += state_loss.item()
+            # total_cc_loss += cc_loss.item()
+
+            # move_preds = torch.argmax(move_logits, dim=1)
+            # move_preds_num_right += (move_preds == moves).sum()
+            # total_move_preds += moves.numel()
+
+            state_preds = torch.round(state_embeds.exp())
+            correct_state_embeds = torch.round(correct_state_embeds.exp())
+            state_preds_num_right += (state_preds == correct_state_embeds).sum()
+            total_state_preds += state_preds.numel()
+
+
+            loss.backward()
+            optimizer.step()
+
+        wandb.log({'loss': total_loss,
+                   # 'move_loss': total_move_loss,
+                   'state_loss': total_state_loss,
+                   # 'cc_loss': total_cc_loss,
+                   # 'move_acc': move_preds_num_right / total_move_preds,
+                   'state_acc': state_preds_num_right / total_state_preds})
+
+        epoch += 1
+        updates += len(dataloader.dataset)
+
+
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(net, f'models/{params.id}_neurosym-epoch-{epoch}.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
+
+    if not params.no_log and params.save_every:
+        path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
+
+
+def learn_neurosym_world_model2(dataloader: DataLoader, net, options_net, world_model_program, params):
+    optimizer = torch.optim.Adam(chain(net.parameters(), options_net.parameters()), lr=params.lr)
+    options_net.train()
+    net.train()
+
+    params.epochs = int(params.traj_updates / params.n)
+
+    updates = 0
+    epoch = 0
+
+    last_save_time = time.time()
+
+    while updates < params.traj_updates:
+        total_loss = 0
+        total_cc_loss = 0
+        total_move_loss = 0
+        total_state_loss = 0
+
+        move_preds_num_right = 0
+        total_move_preds = 0
+        state_preds_num_right = 0
+        total_state_preds = 0
+
+        for states, moves, next_states in dataloader:
+            optimizer.zero_grad()
+
+            states, moves, next_states = states.to(DEVICE), moves.to(DEVICE), next_states.to(DEVICE)
+
+            state_embeds = net(states)
+            # correct_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(states[i]) for i in range(len(states))], dim=0)
+            # correct_state_embeds = correct_state_embeds.to(DEVICE)
+
+            # with torch.no_grad():
+                # next_state_embeds = net(next_states)
                 # correct_next_state_embeds = torch.stack([neurosym.tensor_to_symbolic_state(next_states[i]) for i in range(len(next_states))], dim=0)
                 # correct_next_state_embeds = correct_next_state_embeds.to(DEVICE)
 
@@ -362,45 +466,44 @@ def learn_neurosym_world_model(dataloader: DataLoader, net, options_net, world_m
             move_logits = move_logits * move_precond_logps
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
 
-            next_state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
-            cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='batchmean')
+            # next_state_preds = neurosym.world_model_step(state_embeds, moves, world_model_program)
+            # cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='batchmean')
 
             # state embeds is (B, p, C, C, 2)
-            assert_equal(state_embeds.shape, correct_state_embeds.shape)
-            assert_equal(state_embeds.shape[-1], 2)
-            state_embeds = F.log_softmax(state_embeds, dim=-1)
-            state_loss = F.kl_div(state_embeds, correct_state_embeds, reduction='none')
-            torch.testing.assert_close(correct_state_embeds, F.log_softmax(correct_state_embeds,
-                dim=-1))
-            state_loss = F.kl_div(state_embeds, correct_state_embeds, log_target=True, reduction='none').sum()
+            # assert_equal(state_embeds.shape, correct_state_embeds.shape)
+            # assert_equal(state_embeds.shape[-1], 2)
+            # state_embeds = F.log_softmax(state_embeds, dim=-1)
+            # state_loss = F.kl_div(state_embeds, correct_state_embeds, reduction='none')
+            # torch.testing.assert_close(correct_state_embeds, F.log_softmax(correct_state_embeds,
+                # dim=-1))
+            # state_loss = F.kl_div(state_embeds, correct_state_embeds, log_target=True, reduction='none').sum()
 
-            loss = (params.move_loss_weight * move_loss
-                    + params.state_loss_weight * state_loss
-                    + params.cc_loss_weight * cc_loss)
+            loss = move_loss
 
             total_loss += loss.item()
-            total_move_loss += move_loss.item()
-            total_state_loss += state_loss.item()
-            total_cc_loss += cc_loss.item()
+            # total_move_loss += move_loss.item()
+            # total_state_loss += state_loss.item()
+            # total_cc_loss += cc_loss.item()
 
             move_preds = torch.argmax(move_logits, dim=1)
             move_preds_num_right += (move_preds == moves).sum()
             total_move_preds += moves.numel()
 
-            state_preds = torch.round(state_embeds.exp())
-            correct_state_embeds = torch.round(correct_state_embeds)
-            state_preds_num_right += (state_preds == correct_state_embeds).sum()
-            total_state_preds += state_preds.numel()
+            # state_preds = torch.round(state_embeds.exp())
+            # correct_state_embeds = torch.round(correct_state_embeds)
+            # state_preds_num_right += (state_preds == correct_state_embeds).sum()
+            # total_state_preds += state_preds.numel()
+
 
             loss.backward()
             optimizer.step()
 
         wandb.log({'loss': total_loss,
                    'move_loss': total_move_loss,
-                   'state_loss': total_state_loss,
-                   'cc_loss': total_cc_loss,
-                   'move_acc': move_preds_num_right / total_move_preds,
-                   'state_acc': state_preds_num_right / total_state_preds})
+                   # 'state_loss': total_state_loss,
+                   # 'cc_loss': total_cc_loss,
+                   'move_acc': move_preds_num_right / total_move_preds})
+                   # 'state_acc': state_preds_num_right / total_state_preds})
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -528,9 +631,9 @@ def boxworld_main():
     parser.add_argument('--sv_micro', action='store_true')
     parser.add_argument('--sv_micro_data_type', type=str, default='full_traj')
     parser.add_argument('--relational_macro', action='store_true')
-    parser.add_argument('--move_loss_weight', type=float, default=1.0, help='neurosym move loss weight')
-    parser.add_argument('--state_loss_weight', type=float, default=1.0, help='neurosym state loss weight')
-    parser.add_argument('--cc_loss_weight', type=float, default=1.0, help='neurosym cc loss weight')
+    parser.add_argument('--move_loss', action='store_true', help='neurosym move loss weight')
+    parser.add_argument('--state_loss', action='store_true', help='neurosym state loss weight')
+    parser.add_argument('--cc_loss', action='store_true', help='neurosym cc loss weight')
 
     params = parser.parse_args()
 
@@ -691,6 +794,7 @@ def neurosym_train(params):
         #                                         num_heads=params.num_heads,
         #                                         hidden_dim=128).to(DEVICE)
 
+        # with torch.autograd.detect_anomaly():
         learn_neurosym_world_model(dataloader, net, options_net, neurosym.BW_WORLD_MODEL_PROGRAM,
                                    params)
 

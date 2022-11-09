@@ -38,6 +38,7 @@ class State():
         h = sum(len(r) for r in self.rings)
         w = len(self.rings)
 
+        # i[a, b, c] says that there is a ring of type c at height b on peg asum
         i = np.zeros((w,h,h))
         for ri, r in enumerate(self.rings):
             for h, c in enumerate(r):
@@ -49,7 +50,9 @@ class State():
         """
         returns STRIPS representation of the state in terms of predicates ON, CLEAR
         """
+        # on[a, b] says whether ring/peg is on another ring/peg
         on = np.zeros((len(self.rings)*2, len(self.rings) *2))
+        # clear[a] says whether ring/peg is clear. first three are rings, second three are pegs
         clear = np.zeros((len(self.rings)*2))
         for r in range(len(self.rings)):
             if len(self.rings[r]) == 0:
@@ -68,16 +71,21 @@ class State():
         """
         strips_action = np.zeros([len(self.rings)*2]*3)
         i,j = a
+        # size of ring on top of peg i
         x = self.rings[i][-1]-1
+        # size of ring on top of peg j, or the peg itself
         if len(self.rings[j]) > 0:
             z = self.rings[j][-1]-1
         else:
             z = j+3
+
+        # new top of peg i, or the peg itself
         if len(self.rings[i]) > 1:
             y = self.rings[i][-2]-1
         else:
             y = i+3
         assert np.sum(strips_action) < 1
+        # move size x on top of size y or peg y. new top of peg x was on is z
         strips_action[x,y,z]=1
 
         assert np.sum(strips_action) == 1
