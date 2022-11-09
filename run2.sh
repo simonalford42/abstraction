@@ -12,11 +12,10 @@
 # sbatch run.sh --model hmm
 # sbatch run.sh --model hmm
 
-sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 0.0 --cc_loss_weight 0.0 --traj_updates 2E7
-sbatch run.sh --neurosym --move_loss_weight 0.0 --state_loss_weight 1.0 --cc_loss_weight 0.0 --traj_updates 2E7
-sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 1.0 --cc_loss_weight 0.0 --traj_updates 2E7
-sbatch run.sh --neurosym --move_loss_weight 1.0 --state_loss_weight 1.0 --cc_loss_weight 1.0 --traj_updates 2E7
-sbatch run.sh --neurosym --move_loss_weight 0.0 --state_loss_weight 0.0 --cc_loss_weight 1.0 --traj_updates 2E7
+sbatch run.sh --neurosym -M -S --lr 1E-5
+sbatch run.sh --neurosym -C --lr 1E-5
+sbatch run.sh --neurosym -C --lr 1E-4
+sbatch run.sh --neurosym -M -S --lr 1E-4
 # sbatch --partition ellis run.sh --neurosym
 
 # sbatch --partition ellis run.sh --fake_cc_neurosym --model hmm --relational_micro --ellis

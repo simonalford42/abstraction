@@ -534,7 +534,7 @@ def world_model_step(state_embeds, moves, world_model_program):
 def world_model_data(env, n) -> list[tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
-    Returns a list of tuples of the form (state, abs_action, next_state)
+    Returns a list of tuples of the form (state, abs_action, next_state, symbolic_state, symbolic_next_state)
     '''
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 
@@ -545,7 +545,13 @@ def world_model_data(env, n) -> list[tuple]:
         check_datalog_consistency(states, moves)
         state_tensors = [data.obs_to_tensor(state) for state in states]
         move_ixs = [bw.COLORS.index(m[0]) for m in moves]
-        datas += list(zip(state_tensors[:-1], move_ixs, state_tensors[1:]))
+        symbolic_states = [tensor_to_symbolic_state(s) for s in state_tensors]
+
+        datas += list(zip(state_tensors[:-1],
+                          move_ixs,
+                          state_tensors[1:],
+                          symbolic_states[:-1],
+                          symbolic_states[1:]))
 
     return datas
 

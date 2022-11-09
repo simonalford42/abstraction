@@ -4,7 +4,7 @@
  # job name
 #SBATCH -J bw
  # output file (%j expands to jobID)
-#SBATCH -o out/bw25_%A.out
+#SBATCH -o out/bw26_%A.out
  # total nodes
 #SBATCH -N 1
  # total cores
