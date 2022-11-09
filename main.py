@@ -424,51 +424,12 @@ def learn_neurosym_world_model(params):
             loss.backward()
             optimizer.step()
 
-        eval_total_cc_loss = 0
-        eval_move_preds_num_right = 0
-        eval_total_move_preds = 0
-        eval_state_preds_num_right = 0
-        eval_total_state_preds = 0
-
-        with torch.no_grad():
-            for states, moves, next_states, correct_state_embeds, correct_next_state_embeds in eval_dataloader:
-                states = states.to(DEVICE)
-                moves = moves.to(DEVICE)
-                next_states = next_states.to(DEVICE)
-                correct_state_embeds = correct_state_embeds.to(DEVICE)
-                correct_next_state_embeds = correct_next_state_embeds.to(DEVICE)
-
-                state_embeds = net(states)
-                next_state_embeds = net(next_states)
-
-                move_logits = options_net(state_embeds)
-                move_precond_logps = neurosym.precond_logps(state_embeds)
-                move_logits = move_logits * move_precond_logps
-
-                next_state_preds = neurosym.world_model_step(state_embeds, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
-                cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='sum')
-                cc_loss = cc_loss / next_state_preds.numel()
-
-                eval_total_cc_loss += cc_loss.item()
-
-                state_preds = torch.round(state_embeds.exp())
-                eval_correct_state_embeds = torch.round(correct_state_embeds.exp())
-                eval_state_preds_num_right += (state_preds == correct_state_embeds).sum()
-                eval_total_state_preds += state_preds.numel()
-
-                move_preds = torch.argmax(move_logits, dim=1)
-                eval_move_preds_num_right += (move_preds == moves).sum()
-                eval_total_move_preds += moves.numel()
-
         wandb.log({'loss': total_loss,
                    'move_loss': total_move_loss,
                    'state_loss': total_state_loss,
                    'cc_loss': total_cc_loss,
                    'move_acc': move_preds_num_right / total_move_preds,
                    'state_acc': state_preds_num_right / total_state_preds,
-                   'eval_move_acc': eval_move_preds_num_right / eval_total_move_preds,
-                   'eval_state_acc': eval_state_preds_num_right / eval_total_state_preds,
-                   'eval_cc_loss': eval_total_cc_loss,
         })
 
         epoch += 1
