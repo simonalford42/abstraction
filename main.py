@@ -383,6 +383,8 @@ def learn_neurosym_world_model(params):
             correct_next_state_embeds = correct_next_state_embeds.to(DEVICE)
 
             state_embeds = net(states)
+            # B, p, C, C, 2
+            assert not torch.any(state_embeds.isnan())
 
             with torch.no_grad():
                 next_state_embeds = net(next_states)
@@ -396,8 +398,23 @@ def learn_neurosym_world_model(params):
             move_loss = F.cross_entropy(move_logits, moves, reduction='mean')
 
             next_state_preds = neurosym.world_model_step(state_embeds, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
-            cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='sum')
-            cc_loss = cc_loss / next_state_preds.numel()
+            cc_loss = F.kl_div(next_state_preds, next_state_embeds, log_target=True, reduction='none')
+            bad_ixs = torch.where(cc_loss > 1)
+            if len(bad_ixs[0]) > 0:
+                print(f"{bad_ixs=}")
+                print(f"{cc_loss[bad_ixs]=}")
+                print(f"{state_embeds[bad_ixs]=}")
+                print(f"{next_state_preds[bad_ixs]=}")
+                print(f"{next_state_embeds[bad_ixs]=}")
+                print(f"{state_embeds[0,0,:3, :3, 0]=}")
+                print(f"{next_state_preds[0,0,:3, :3, 0]=}")
+                print(f"{next_state_embeds[0,0,:3, :3, 0]=}")
+                print(f"{cc_loss[0,0,:3, :3, 0]=}")
+            cc_loss = cc_loss.sum()
+
+
+            # manual balancing so cc loss is same order of magnitude as state loss..
+            cc_loss = 10 * cc_loss / next_state_preds.numel()
 
             loss = torch.tensor(0., requires_grad=True)
             if params.state_loss:
