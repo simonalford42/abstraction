@@ -49,11 +49,11 @@ class WorldModelTrainer(pl.LightningModule):
         self.steps+=1
         self.log("temperature", self.temperature)
 
-        # take the first+last time step
-        last_is_goal = is_goal[:,-1]
+        # take the first time step
         initial_concrete_state = concrete_states[:,0]
                 
-        planning_loss, planning_mistakes = self.model.planning_loss(initial_concrete_state, actions, last_is_goal, self.temperature)
+        planning_loss, planning_mistakes = self.model.planning_loss(initial_concrete_state, actions, is_goal[:,1:], self.temperature)
+        
 
         self.log("planning_loss", planning_loss)
         self.log("planning_mistakes", planning_mistakes)
@@ -188,5 +188,5 @@ if __name__ == '__main__':
         max_epochs=5000)
 
     dataset = RolloutDataset()
-    train_loader = DataLoader(dataset, batch_size=64)
+    train_loader = DataLoader(dataset, batch_size=128)
     trainer.fit(m, train_loader)

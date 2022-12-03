@@ -36,7 +36,7 @@ class CategoricalGumbel(RDistribution):
         self.logits = logits
         
     def sample(self, temperature):
-        return F.gumbel_softmax(self.logits, tau=temperature)
+        return F.gumbel_softmax(self.logits, tau=temperature, hard=False)
 
     def loss(self, other):
         mistakes = torch.argmax(self.logits, -1) != torch.argmax(other.logits, -1)

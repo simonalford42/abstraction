@@ -20,15 +20,27 @@ class Simulator(nn.Module):
     
     def sim(self, abstract_state, actions, temperature):
         """simulates multiple time steps
-        returns RDistribution
-        you can override this instead of sim1"""
+        returns the distribution over abstracts state at each time step, as well as a sample from that distribution
+        
+        abstract_state: [b, *]
+        actions: [b, t, *]
+        temperature: float
+
+        returned lists are of length t, and tell you the abstract state after taking a prefix of the actions
+        """
+
+        distributions = []
+        samples = []
+        
         T = actions.shape[1]
         for t in range(T):
             abstract_state = self.sim1(abstract_state, actions[:,t], temperature)
-            if t != T-1:
-                abstract_state = abstract_state.sample(temperature)
-
-        return abstract_state
+            distributions.append(abstract_state)
+            samples.append(abstract_state.sample(temperature))
+            # we have to simulate another time step, so make sure that will we feed into the simulator is a concrete sample
+            abstract_state = samples[-1]
+                
+        return distributions, samples
 
     def sim1(self, abstract_state, action, temperature):
         """simulates a single action
@@ -54,19 +66,28 @@ class Simulator(nn.Module):
         """
         initial_concrete_state: [b, *]
         actions: [b, t, *]
-        is_goal: [b, ], should be binary
+        is_goal: [b, t], should be binary
 
         simulates actions using the world model starting from the provided initial concrete states
         tries to predict whether or not the final state is a goal state
         loss is binary classification based on this goal state prediction
         """
+
+        assert is_goal.shape[1] == actions.shape[1]
+        assert initial_concrete_state.shape[0] == actions.shape[0]
+        assert is_goal.shape[0] == actions.shape[0]
+        
         initial_abstract_state = self.encode(initial_concrete_state).sample(temperature)
         actions = self.encode_action(actions)
-        final_abstract_state = self.sim(initial_abstract_state, actions, temperature)
-        final_abstract_state = final_abstract_state.sample(temperature)
-        predicted_is_goal = self.predict_goal(final_abstract_state)
+        _, subsequent_abstract_states = self.sim(initial_abstract_state, actions, temperature)
+        
+        assert len(subsequent_abstract_states) == actions.shape[1]
+        subsequent_abstract_states = torch.stack(subsequent_abstract_states).transpose(0,1).contiguous()        
+        
+        predicted_is_goal = self.predict_goal(subsequent_abstract_states)
         loss = nn.BCEWithLogitsLoss(reduction="none")(predicted_is_goal, is_goal)
         mistakes = ((((predicted_is_goal>0.)*1 - (is_goal>0.5)*1).abs() > 0.5)*1).sum()
+        
         return loss.mean(), mistakes
 
     def causal_consistency_loss(self, s0, a, s1, temperature):
@@ -79,10 +100,10 @@ class Simulator(nn.Module):
         initial_abstract_state = self.encode(s0).sample(temperature)
         final_abstract_state_distribution = self.encode(s1)
         
-        a = self.encode_action(a.unsqueeze(1))
-        predicted_final_abstract_state = self.sim(initial_abstract_state, a, temperature)
+        a = self.encode_action(a)
+        predicted_final_abstract_state = self.sim1(initial_abstract_state, a, temperature)
 
-        pre = -self.precondition_log_prob(initial_abstract_state, a.squeeze(1))
+        pre = -self.precondition_log_prob(initial_abstract_state, a)
 
         return *predicted_final_abstract_state.loss(final_abstract_state_distribution), pre
 
@@ -132,25 +153,6 @@ class NeuralSimulator(Simulator):
             assert h.shape[0] == B
             assert h.shape[-1] == 2
             return CategoricalGumbel(h)
-
-    def sim(self, abstract_state, actions, temperature):
-        """
-        abstract_state: [batch, dimension*layers]
-        actions: [batch, #steps, dimension]
-        returns: [batch, dimension*layers]
-        """
-        if self.gsm:
-            T = actions.shape[1]
-            for t in range(T):
-                abstract_state = self.sim1(abstract_state, actions[:,t], temperature)
-                if t != T-1:
-                    abstract_state = abstract_state.sample(temperature)
-
-            return abstract_state
-
-        else:
-            o, h = self.rnn(actions, abstract_state.unsqueeze(0))
-            return DeltaDistribution(h.squeeze(0))
 
     def predict_goal(self, abstract_states):
         if self.gsm:
