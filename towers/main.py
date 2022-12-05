@@ -34,7 +34,7 @@ class WorldModelTrainer(pl.LightningModule):
         
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
         return optimizer
 
     @property
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     trainer = pl.Trainer(#detect_anomaly=True,
         gpus=1,
         logger=logger,
-        max_epochs=5000)
+        max_epochs=50000)
 
     dataset = RolloutDataset()
     train_loader = DataLoader(dataset, batch_size=128)

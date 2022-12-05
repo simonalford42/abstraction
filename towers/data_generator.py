@@ -32,7 +32,7 @@ class RolloutDataset(torch.utils.data.IterableDataset):
     def rollout(self):
         s = random.choice(self.legal_states)
         states = [s.render()]
-        goals = [s.is_goal]
+        goals = [[len(s.rings[p]) == 3 for p in range(3) ]]
         actions = []
 
         for _ in range(self.length):
@@ -41,7 +41,7 @@ class RolloutDataset(torch.utils.data.IterableDataset):
             s, (_, action_vector, new_state_vector) = self.transitions[s][a]
             actions.append(action_vector)
             states.append(new_state_vector)
-            goals.append(s.is_goal)
+            goals.append([len(s.rings[p]) == 3 for p in range(3) ])
 
         return torch.tensor(np.stack(states)).float(), \
             torch.tensor(np.stack(actions)).float(), \

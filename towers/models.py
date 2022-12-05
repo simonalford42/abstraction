@@ -66,7 +66,7 @@ class Simulator(nn.Module):
         """
         initial_concrete_state: [b, *]
         actions: [b, t, *]
-        is_goal: [b, t], should be binary
+        is_goal: [b, t, *], should be binary. last dimension ranges over possible goals
 
         simulates actions using the world model starting from the provided initial concrete states
         tries to predict whether or not the final state is a goal state
@@ -87,8 +87,8 @@ class Simulator(nn.Module):
         predicted_is_goal = self.predict_goal(subsequent_abstract_states)
         loss = nn.BCEWithLogitsLoss(reduction="none")(predicted_is_goal, is_goal)
         mistakes = ((((predicted_is_goal>0.)*1 - (is_goal>0.5)*1).abs() > 0.5)*1).sum()
-        
-        return loss.mean(), mistakes
+                
+        return loss.sum(-1).sum(-1).mean(), mistakes
 
     def causal_consistency_loss(self, s0, a, s1, temperature):
         """
@@ -113,7 +113,8 @@ class Simulator(nn.Module):
         predicted_is_goal = self.predict_goal(abstract_state)
         loss = nn.BCEWithLogitsLoss(reduction="none")(predicted_is_goal, is_goal)
         mistakes = ((((predicted_is_goal>0.)*1 - (is_goal>0.5)*1).abs() > 0.5)*1).sum()
-        return loss.mean(), mistakes
+                
+        return loss.sum(-1).mean(), mistakes
 
 class NeuralSimulator(Simulator):
     def __init__(self, dimension=64, layers=1,
@@ -131,7 +132,7 @@ class NeuralSimulator(Simulator):
                        num_layers=layers,
                        batch_first=True)
         
-        self.goal_predictor = nn.Linear(dimension*layers, 1)
+        self.goal_predictor = nn.Linear(dimension*layers, self.n_goals)
 
         self.gsm = gsm
         self.steps = 1
@@ -158,7 +159,7 @@ class NeuralSimulator(Simulator):
         if self.gsm:
             abstract_states = abstract_states.view(*abstract_states.shape[:-2],
                                                    self.n_variables*self.n_categories)            
-        return self.goal_predictor(abstract_states).squeeze(-1)
+        return self.goal_predictor(abstract_states)
 
 class NeuralHanoiSimulator(NeuralSimulator):
     def __init__(self, dimension=64, layers=1, gsm=False, vanilla=False):
@@ -177,6 +178,9 @@ class NeuralHanoiSimulator(NeuralSimulator):
     @property
     def n_categories(self):
         return self.state_representation.n_categories
+
+    @property
+    def n_goals(self): return 3
 
     def encode_action(self, action):
         # flatten last three dimensions
@@ -219,13 +223,29 @@ class ProgramHanoiSimulator(Simulator):
         if self.infer_options:
             self.predict_option = nn.Linear(self.entities**3, self.entities**3)
         
-
+    @property
+    def n_goals(self): return 3
 
     def encode_action(self, action):
         if self.infer_options:
             option = self.predict_option(action.view(*action.shape[:-3], self.entities**3))
-            option = torch.softmax(option, -1)
-            return option.view(*action.shape)
+
+            option = option.view(*action.shape)
+            # action(x,y,z)
+            # x is disk
+            option = option + self.is_disk.unsqueeze(-1).unsqueeze(-1).log()
+            # x smaller than y
+            option = option + self.smaller.unsqueeze(-1).log()
+            # x smaller than z
+            option = option + self.smaller.unsqueeze(-2).log()
+            # y!=z
+            option = option + (1-torch.eye(self.entities)).unsqueeze(0).log().to(option.device)
+
+            # normalize, which requires reshaping
+            option = torch.softmax(option.view(*action.shape[:-3], self.entities**3), -1).\
+                     view(*action.shape[:-3], self.entities, self.entities, self.entities)
+            
+            return option
         else:
             return action
     
@@ -233,13 +253,18 @@ class ProgramHanoiSimulator(Simulator):
         B = concrete_states.shape[0]
         
         distribution = self.state_representation(concrete_states.view(B, -1))
-        distribution = torch.log_softmax(distribution.view(B, 3, 6), -1)
+        distribution = distribution.view(B, 3, 6)
+        distribution = self.smaller[:3,:].log()+distribution
+        distribution = torch.log_softmax(distribution, -1)
 
         return CategoricalGumbel(distribution)
         
     def predict_goal(self, abstract_states):
-        goal_probability = \
-            abstract_states[..., 0, 1]*abstract_states[..., 1, 2]*abstract_states[..., 2, 3]
+        smallest_disks_on_each_other = abstract_states[..., 0, 1]*abstract_states[..., 1, 2]
+        biggest_disk_on_peg = abstract_states[..., 2, 3:]
+        
+        goal_probability = smallest_disks_on_each_other.unsqueeze(-1)*biggest_disk_on_peg
+        
         e = 1e-5
         goal_probability = (1-2*e)*goal_probability + e
         # inverse sigmoid
@@ -255,26 +280,22 @@ class ProgramHanoiSimulator(Simulator):
     def precondition_log_prob(self, state, action):
         on, clear = self.state_to_on_and_clear_predicates(state)
 
-        action_precondition = torch.einsum("bxyz,by,bx,bxy,bz,xz,x->b",
+        action_precondition = torch.einsum("bxyz,by,bx,bxy,bz,xz,xy,x->b",
                                            action, 1-clear, clear, on, clear,
-                                           self.smaller, self.is_disk)
+                                           self.smaller, self.smaller, self.is_disk)
 
         # no two disks are on the same thing
         # for all x, by construction, \sum_y on(x,y) = 1
         # but we don't have that for all y, \sum_x on(x,y) <= 1
         # can enforce this by saying for all y, for all x!=x', ~(on(x,y) and on(x,y))
         x_pairs = [(0,1), (0,2), (1,2)]
-        invariant1 = [ 1 - state[:,x,:]*state[:,xp,:] for x,xp in x_pairs ]
-
-        # if you are on something than you must be smaller than it
-        invariant2 = (1-self.smaller[:3]).unsqueeze(0) * (1-state+1e-6).log()
+        invariant = [ 1 - state[:,x,:]*state[:,xp,:] for x,xp in x_pairs ]
 
         # sum, log, smoothing for numerical stability, average of across batch
         action_precondition = (action_precondition+1e-6).log().mean()
-        invariant1 = sum([ (i+1e-6).log() for i in invariant1 ]).mean()
-        invariant2 = invariant2.mean()
-                
-        return action_precondition + invariant1 + invariant2
+        invariant = sum([ (i+1e-6).log() for i in invariant ]).mean()
+                        
+        return action_precondition + invariant
         
     
 
