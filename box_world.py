@@ -1,15 +1,18 @@
 import queue
 import copy
 
-from typing import Any, Optional, List, Tuple
+from typing import Any, Optional, List, Tuple, Dict, Set
 import gym
 import argparse
 import numpy as np
 import pycolab
 import matplotlib
 import matplotlib.pyplot as plt
-from utils import assert_equal
+import torch
+from torch.nn import functional as F
+from utils import assert_equal, assert_shape
 from pycolab.examples.research.box_world import box_world as bw
+from einops import rearrange
 
 POS = Tuple[int, int]
 
@@ -32,6 +35,41 @@ NUM_ASCII = len(ASCII)
 DEFAULT_GRID_SIZE = (14, 14)
 
 
+class GymWrapper(gym.Env):
+    """
+    Wrapper for BoxWorldEnv that more closely follows gym.Env API to enable using with DreamerV2.
+    see dreamerv2/envs.py GymWrapper to see what it's expecting.
+    """
+    def __init__(self, env):
+        self.env = env
+
+    @property
+    def action_space(self):
+        return gym.spaces.Discrete(4)
+
+    @property
+    def observation_space(self):
+        w = self.env.obs_width
+        return gym.spaces.Box(low=0, high=255, shape=(w, w, 3))
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        # obs is a np array of characters.
+        obs = self.process_obs(obs)
+        return obs, reward, done, info
+
+
+    def process_obs(self, obs):
+        obs = to_color_obs(obs).astype(np.uint8)
+        assert_shape(obs, (self.env.obs_width, self.env.obs_width, 3))
+        return obs
+
+    def reset(self):
+        obs = self.env.reset()
+        obs = self.process_obs(obs)
+        return obs
+
+
 class BoxWorldEnv(gym.Env):
     """
     OpenAI gym interface for the BoxWorld env implemented by DeepMind as part of their pycolab game engine.
@@ -49,7 +87,8 @@ class BoxWorldEnv(gym.Env):
     ):
         self.grid_size = grid_size
         # extra 2 because of border
-        self.shape = (grid_size + 2, grid_size + 2)
+        self.obs_width = grid_size + 2
+
         self.solution_length = solution_length
         if max(solution_length) + 1 >= bw.NUM_COLORS:
             print(f'WARNING: current # colors limits solution length to be at most {bw.NUM_COLORS - 2}')
@@ -60,9 +99,6 @@ class BoxWorldEnv(gym.Env):
         self.max_num_steps = max_num_steps
         self.seed = seed
         self.random_state = np.random.RandomState(seed)
-
-        # self.action_space = spaces.Discrete(4)
-        # self.observation_space = spaces.Box(low=0, high=100, shape=np.zeros(self.shape))
 
         self.obs = self.reset()
 
@@ -112,6 +148,23 @@ class BoxWorldEnv(gym.Env):
         self.done = done
         self.solved = reward == bw.REWARD_GOAL
         return obs, reward, done, dict()
+
+
+def obs_to_tensor(obs) -> torch.Tensor:
+    obs = torch.tensor([[ascii_to_int(a) for a in row]
+                       for row in obs])
+    obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
+    assert_equal(obs.shape[-1], NUM_ASCII)
+    obs = rearrange(obs, 'h w c -> c h w')
+    return obs
+
+
+def tensor_to_obs(obs):
+    obs = rearrange(obs, 'c h w -> h w c')
+    obs = torch.argmax(obs, dim=-1)
+    obs = np.array([[int_to_ascii(i) for i in row]
+                     for row in obs])
+    return obs
 
 
 def hex_to_rgb(hex: str) -> Tuple[int]:
@@ -242,7 +295,7 @@ def play_game(env):
     # render_obs(obs, pause=5)
 
 
-def get_dominoes(obs) -> dict[str, POS]:
+def get_dominoes(obs) -> Dict[str, POS]:
     """
      {'aT': (3, 3), etc.}
         The location value is where the agent wants to go.
@@ -282,7 +335,7 @@ def get_dominoes(obs) -> dict[str, POS]:
     return dominoes
 
 
-def get_goal_domino(dominoes: set[str]) -> str:
+def get_goal_domino(dominoes: Set[str]) -> str:
     for d in dominoes:
         if d[0] == '*':
             return d
@@ -294,8 +347,8 @@ def get_held_key(obs) -> Optional[str]:
     return obs[0, 0] if obs[0, 0] != bw.BORDER else None
 
 
-def get_tree(domino_pos_map: dict[str, POS],
-             held_key: Optional[str]) -> Tuple[set[str], dict[str, dict[str, int]]]:
+def get_tree(domino_pos_map: Dict[str, POS],
+             held_key: Optional[str]) -> Tuple[Set[str], Dict[str, Dict[str, int]]]:
     """
     returns nodes, adj_matrix where nodes are one or two character ascii strings
     for the dominoes.
@@ -316,7 +369,7 @@ def get_tree(domino_pos_map: dict[str, POS],
     return nodes, adj_matrix
 
 
-def is_valid_solution_path(path: List[str], dominoes: set[str], held_key: str) -> bool:
+def is_valid_solution_path(path: List[str], dominoes: Set[str], held_key: str) -> bool:
     if path[0] != bw.PLAYER:
         return False
     if any([p not in dominoes for p in path]):
@@ -335,7 +388,7 @@ class NoPathError(Exception):
     pass
 
 
-def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> List:
+def dijkstra(nodes: set, adj_matrix: Dict[Any, Dict[Any, int]], start, goal) -> List:
     """
     nodes: set of items
     adj_matrix: map from item to map of adjacent_node: weight_to_node pairs (may be directed graph)
@@ -387,7 +440,7 @@ def dijkstra(nodes: set, adj_matrix: dict[Any, dict[Any, int]], start, goal) -> 
     return get_path_to(goal)
 
 
-def make_move_graph(obs, goal_pos) -> Tuple[set[POS], dict[POS, dict[POS, int]]]:
+def make_move_graph(obs, goal_pos) -> Tuple[Set[POS], Dict[POS, Dict[POS, int]]]:
     # nodes that can be walked through:
     # - "self"
     # - background
@@ -403,7 +456,7 @@ def make_move_graph(obs, goal_pos) -> Tuple[set[POS], dict[POS, dict[POS, int]]]
     return nodes, adj_matrix
 
 
-def player_pos(obs) -> tuple[int, int]:
+def player_pos(obs) -> Tuple[int, int]:
     return tuple(np.argwhere(obs == bw.PLAYER)[0])
 
 
@@ -604,4 +657,3 @@ if __name__ == '__main__':
     env = BoxWorldEnv(**vars(FLAGS))
     while True:
         play_game(env)
-    # profile_traj_generation2(env)

@@ -15,8 +15,9 @@ import math
 from collections import namedtuple, Counter
 from data import SOLVED_IX
 from box_world import BoxWorldEnv
+import box_world as bw
 from dataclasses import dataclass, field
-from typing import Any, Generator, Optional
+from typing import Any, Generator, Optional, Tuple, List
 import wandb
 
 
@@ -55,7 +56,7 @@ def eval_abstract_policy_fake(t, control_net: HeteroController, s, env: BoxWorld
     return action_logps, torch.stack(new_taus), torch.stack(new_solved_logps), new_states, new_envs
 
 
-def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, timeout=float('inf'),) -> Generator[Optional[tuple[list[int], float, float]], None, None]:
+def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, timeout=float('inf'),) -> Generator[Optional[Tuple[List[int], float, float]], None, None]:
     """
     uses low level controller to calc prob of high level actions, so "best case" for planning.
     unfortunately is too memory intensive.
@@ -118,7 +119,7 @@ def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, time
 
 
 def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
-            ) -> Generator[Optional[tuple[list[int], float, float]], None, None]:
+            ) -> Generator[Optional[Tuple[List[int], float, float]], None, None]:
     """
     Best first search with the high level controller abstract policy.
     solved threshold: probability that we solved the task needed to return something
@@ -210,7 +211,7 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=F
         else:
             pos_visits[pos] = 1
 
-        s = data.obs_to_tensor(obs).to(DEVICE)
+        s = bw.obs_to_tensor(obs).to(DEVICE)
         first_step = False
 
     return actions, s, done
@@ -221,8 +222,8 @@ def is_solved_by_options(env, control_net, options):
     return solved
 
 
-def llc_plan(options, control_net, env, render=False) -> tuple[list[list], list, bool]:
-    s = data.obs_to_tensor(env.obs).to(DEVICE)
+def llc_plan(options, control_net, env, render=False) -> Tuple[List[List], List, bool]:
+    s = bw.obs_to_tensor(env.obs).to(DEVICE)
     all_actions = []
     states_between_options = [s]  # s0 option s1 option s2 ... s_n.
     # print(f'LLC for plan: {abstract_actions}')
@@ -284,18 +285,63 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
             total_solved += 1
             lengths.append(len(options))
 
-    # print(f'Full sample solved {len(lengths)}/{n}')
-    # print(Counter(lengths))
+    print(f'Full sample solved {len(lengths)}/{n}')
+    print(Counter(lengths))
 
     return total_solved
+
+
+# def eval_planner_rnn(control_net, rnn, env, n):
+#     control_net.eval()
+#     rnn.eval()
+
+#     num_solved = 0
+#     lengths = []
+#     correct_with_length = {i: 0 for i in range(env.max_num_steps)}
+#     for i in range(n):
+#         env.reset()
+#         obs = bw.obs_to_tensor(env.obs).to(DEVICE)
+
+#         out_dict = data.full_sample_solve(env, control_net, render=False, argmax=True)
+#         solved = out_dict['solved']
+#         options = out_dict['options']
+
+#         if solved:
+#             num_solved += 1
+#             lengths.append(len(options))
+
+#             t = control_net.tau_embed(obs)
+#             matches = True
+#             for i in range(1, len(options)):
+#                 t_i_pred, _ = rnn(
+#                 t = control_net.macro_transition(t, options[i-1])
+#                 start_logps = control_net.macro_policy_net(t.unsqueeze(0))[0]
+#                 b = torch.argmax(start_logps)
+#                 if b != options[i]:
+#                     matches = False
+#             if matches:
+#                 correct_with_length[len(options)] += 1
+
+#     control_net.train()
+
+#     print(f'Solved {num_solved}/{n}.')
+#     print(f"lengths: {lengths}")
+#     wandb.log({'test/acc': num_solved/n})
+#     lengths = Counter(lengths)
+#     if num_solved > 0:
+#         for i in range(max(lengths) + 1):
+#             if lengths[i] > 0:
+#                 length_acc = correct_with_length[i] / lengths[i]
+#                 print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={length_acc:.2f}')
+#                 wandb.log({f'test/length_{i}_acc': length_acc})
 
 
 def eval_planner(control_net, env, n):
     control_net.eval()
 
-    # solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
-    # solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
-    # print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
+    solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
+    solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
+    print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
     # wandb.log({'test/model_acc': solved_with_model/n,
                # 'test/simulator_acc': solved_with_sim/n})
 
@@ -304,7 +350,7 @@ def eval_planner(control_net, env, n):
     correct_with_length = {i: 0 for i in range(env.max_num_steps)}
     for i in range(n):
         env.reset()
-        obs = data.obs_to_tensor(env.obs).to(DEVICE)
+        obs = bw.obs_to_tensor(env.obs).to(DEVICE)
 
         out_dict = data.full_sample_solve(env, control_net, render=False, argmax=True)
         solved = out_dict['solved']
@@ -328,15 +374,15 @@ def eval_planner(control_net, env, n):
     control_net.train()
 
     print(f'Solved {num_solved}/{n}.')
-    print(f"lengths: {lengths}")
-    wandb.log({'test/acc': num_solved/n})
+    # print(f"lengths: {lengths}")
+    # wandb.log({'test/acc': num_solved/n})
     lengths = Counter(lengths)
     if num_solved > 0:
         for i in range(max(lengths) + 1):
             if lengths[i] > 0:
                 length_acc = correct_with_length[i] / lengths[i]
                 print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={length_acc:.2f}')
-                wandb.log({f'test/length_{i}_acc': length_acc})
+                # wandb.log({f'test/length_{i}_acc': length_acc})
 
 
 def plan(env, control_net, max_hl_plans=-1):
@@ -350,7 +396,7 @@ def plan(env, control_net, max_hl_plans=-1):
         global L2_ATTEMPTED
         L2_ATTEMPTED += 1
 
-    s = data.obs_to_tensor(env.obs).to(DEVICE)
+    s = bw.obs_to_tensor(env.obs).to(DEVICE)
     # hl_plan_gen = hlc_bfs(s, control_net, timeout=100)
     # hl_plan_gen = hlc_bfs_fake(s, control_net, env, timeout=100)
     hl_plan_gen = fake_hl_planner(s, control_net)
@@ -498,9 +544,11 @@ RANKINGS = []
 
 
 def check_plan_rankings(env, control_net, depth, n):
+    control_net.eval()
+
     for i in range(n):
         env.reset()
-        obs = data.obs_to_tensor(env.obs).to(DEVICE)
+        obs = bw.obs_to_tensor(env.obs).to(DEVICE)
 
         for d in range(depth+1):
             plans = itertools.product(range(control_net.b), repeat=d)
@@ -511,6 +559,8 @@ def check_plan_rankings(env, control_net, depth, n):
                 n_plans += 1
                 actions, _, solved = llc_plan(options, control_net, env.copy())
                 if solved and len(actions) < len(options):
+                    # the task is solved in fewer than depth options, so this wasn't a good example
+                    print('solved early')
                     break
 
                 logp = plan_logp(options, obs, control_net, skip_first=True)
@@ -520,6 +570,7 @@ def check_plan_rankings(env, control_net, depth, n):
 
             if d < 3 and n_solved > 0:
                 break
+
             elif n_solved > 0:
                 print(f'For depth={d}, solved w/ {n_solved}/{n_plans} plans')
 
@@ -536,16 +587,17 @@ def check_plan_rankings(env, control_net, depth, n):
                         # print(f'{rank=}, {options=}, {logp=}')
                 break
 
+    control_net.train()
+
 
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
-    depth = 2
-    control_net = True  # is the loaded model a control net
-    env = box_world.BoxWorldEnv(seed=1, solution_length=(depth, ))
     # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
-    model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
+    # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
+    model_id = '7cb8b7caf4ce4f13bd5c10c52d553332-epoch-618_control'; control_net = True
+    rnn_model_id = '7cb8b7caf4ce4f13bd5c10c52d553332-epoch-618_rnn'
 
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -555,29 +607,20 @@ if __name__ == '__main__':
 
     control_net.tau_noise_std = 0
 
-    n = 10
-    # env = box_world.BoxWorldEnv(solution_length=(6, ))
-    # env = box_world.BoxWorldEnv(solution_length=(3, ), num_forward=(1, ))
-    env = box_world.BoxWorldEnv()
+    rnn = utils.load_model(f'models/{rnn_model_id}.pt')
+    control_net.add_rnn(rnn)
 
-    # acc = eval_sampling(control_net, env, n=n, macro=False)
-    # print(f'acc: {acc}')
-    # acc = eval_sampling(control_net, env, n=n, macro=True, render=True)
-    # acc = data.eval_options_model2(control_net, env, n=n)
-    num_solved = 0
-    for i in range(n):
-        env.reset()
-        out_dict = data.full_sample_solve(env, control_net, render=True)
-        num_solved += out_dict['solved']
+    depth = 3
+    env = box_world.BoxWorldEnv(seed=1, solution_length=(depth, ))
+    n = 100
 
-    print(f'num solved: {num_solved}')
     # acc = eval_planner(control_net, env, n=n)
-
     # test_consistency(env, control_net, n=n)
-    # eval_sampling(control_net, env, n=100)
+    eval_sampling(control_net, env, n=100, render=True)
     # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
-    # check_plan_rankings(env, control_net, depth=depth, n=100)
 
+    # check_plan_rankings(env, control_net, depth=depth, n=100)
     # RANKINGS = sorted(RANKINGS)
+    # print(f"{RANKINGS=}")
     # plt.plot(RANKINGS)
     # plt.show()

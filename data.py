@@ -12,6 +12,7 @@ import box_world as bw
 import random
 import wandb
 import neurosym
+from typing import List, Tuple
 
 
 STOP_IX = 0
@@ -46,7 +47,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
         while not (done or solved):
             t += 1
             bw.render_obs(obs, pause=0.1)
-            obs = obs_to_tensor(obs)
+            obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
@@ -101,7 +102,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
                 done = True
 
         if solved:
-            obs = obs_to_tensor(obs)
+            obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
 
             if check_solved:
@@ -165,7 +166,7 @@ j       (b, 2) stop logps
 
         while not (done or solved):
             t += 1
-            obs = obs_to_tensor(obs).to(DEVICE)
+            obs = bw.obs_to_tensor(obs).to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, _ = control_net.eval_obs(obs, option_start_s=obs)
 
@@ -236,7 +237,7 @@ j       (b, 2) stop logps
 
         while not (done or solved):
             t += 1
-            obs = obs_to_tensor(obs)
+            obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
             action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
@@ -326,7 +327,7 @@ j       (b, 2) stop logps
             # animate.save_video(video_obss, f'new_video{i}')
 
         if solved:
-            obs = obs_to_tensor(obs)
+            obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
 
             if check_solved:
@@ -384,7 +385,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
             t += 1
             if renderer is not None:
                 renderer(obs)
-            obs = obs_to_tensor(obs)
+            obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             action_logps, _, _ = net.eval_obs(obs)
             action_logps = action_logps[0]
@@ -400,24 +401,7 @@ def eval_model(net, env, n=100, renderer: Callable = None):
     return num_solved/n
 
 
-def obs_to_tensor(obs) -> torch.Tensor:
-    obs = torch.tensor([[bw.ascii_to_int(a) for a in row]
-                       for row in obs])
-    obs = F.one_hot(obs, num_classes=bw.NUM_ASCII).to(torch.float)
-    assert_equal(obs.shape[-1], bw.NUM_ASCII)
-    obs = rearrange(obs, 'h w c -> c h w')
-    return obs
-
-
-def tensor_to_obs(obs):
-    obs = rearrange(obs, 'c h w -> h w c')
-    obs = torch.argmax(obs, dim=-1)
-    obs = np.array([[bw.int_to_ascii(i) for i in row]
-                     for row in obs])
-    return obs
-
-
-def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]):
+def latent_traj_collate(batch: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]):
     '''
     takes (states, options, solveds) as input
     states can be either abstract or microscopic.
@@ -457,7 +441,7 @@ def latent_traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, torch.Tens
     return torch.stack(states_batch), torch.stack(options_batch), torch.stack(solveds_batch), lengths, torch.stack(masks)
 
 
-def traj_collate(batch: list[tuple[torch.Tensor, torch.Tensor, int]]):
+def traj_collate(batch: List[Tuple[torch.Tensor, torch.Tensor, int]]):
     """
     batch is a list of (states, moves, length, masks) tuples.
     """
@@ -539,7 +523,6 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
             options = out_dict['options']
             states_between_options = out_dict['states_between_options']
 
-
             control_net.train()
 
             # if not solved:
@@ -567,6 +550,8 @@ class PlanningDataset(Dataset):
         states, options, solveds = zip(*sorted(zip(states, options, solveds),
                                                key=lambda t: t[0].shape[0]))
         self.states, self.options, self.solveds = [list(x) for x in [states, options, solveds]]
+
+        self.max_T = max(len(options) for options in self.options)
 
     def __len__(self):
         return len(self.states)
@@ -615,12 +600,12 @@ class BoxWorldDataset(Dataset):
         self.traj = traj
 
         # ignore last state
-        self.states = [obs_to_tensor(s)
+        self.states = [bw.obs_to_tensor(s)
                        for states, _ in self.data for s in states[:-1]]
         self.moves = [torch.tensor(m) for _, moves in self.data for m in moves]
         assert_equal(len(self.states), len(self.moves))
 
-        self.traj_states = [torch.stack([obs_to_tensor(s) for s in states]) for states, _ in self.data]
+        self.traj_states = [torch.stack([bw.obs_to_tensor(s) for s in states]) for states, _ in self.data]
         self.traj_moves = [torch.stack([torch.tensor(m) for m in moves]) for _, moves in self.data]
 
         if shuffle:
@@ -693,7 +678,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     current_option = None
 
     while not (done or solved):
-        obs = obs_to_tensor(obs).to(DEVICE)
+        obs = bw.obs_to_tensor(obs).to(DEVICE)
         # (b, a), (b, 2), (b, ), (2, )
         action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
 
@@ -769,7 +754,10 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
         if moves_without_moving >= 5:
             done = True
 
-    obs = obs_to_tensor(obs).to(DEVICE)
+    if render:
+        bw.render_obs(obs, title=f'{solved=}', pause=1 if solved else 3)
+
+    obs = bw.obs_to_tensor(obs).to(DEVICE)
     states_between_options.append(obs)
 
     states_for_each_option.append(option_states)
@@ -780,8 +768,6 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     #     _, _, _, solved_logits = control_net.eval_obs(obs)
     #     print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
 
-    if render:
-        bw.render_obs(obs, title=f'{solved=}', pause=1 if solved else 3)
 
     assert len(options) == len(states_for_each_option)
     control_net.train()
@@ -841,7 +827,7 @@ def sv_micro_data(n, typ='full_traj', control_net=None):
         states, moves, options = [], [], []
         for i in range(n):
             traj_states, traj_moves, traj_options = bw.generate_traj_with_options(env)
-            traj_states = [obs_to_tensor(s).to(DEVICE) for s in traj_states]
+            traj_states = [bw.obs_to_tensor(s).to(DEVICE) for s in traj_states]
             states.extend(traj_states)
             moves.extend(traj_moves)
             options.extend(traj_options)

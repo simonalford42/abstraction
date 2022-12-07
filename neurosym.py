@@ -13,9 +13,9 @@ import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
-import box_world
 import einops
 import modules
+from typing import Dict, List, Tuple
 
 CHECK_IXS = [0]
 
@@ -106,7 +106,7 @@ def get_post_transition_facts():
     return all_facts
 
 
-def transition_datalog(abs_obs: dict[str, list[tuple[str, str]]], abs_action: tuple[str]):
+def transition_datalog(abs_obs: Dict[str, List[Tuple[str, str]]], abs_action: Tuple[str]):
     '''
     abs_obs: dict of facts, {'predicate': [args]}
     abs_action: a tuple of args for the built-in 'action' predicate
@@ -285,7 +285,7 @@ def parse_symbolic_tensor2(state):
     return a, b
 
 
-def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> list[tuple]:
+def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> List[Tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
     Returns a list of tuples of the form (obs_tensor, symbolic_tensor)
@@ -297,7 +297,7 @@ def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> list[tup
     for traj in trajs:
         states, moves = traj
         check_datalog_consistency(states, moves)
-        state_tensors = [data.obs_to_tensor(state) for state in states]
+        state_tensors = [bw.obs_to_tensor(state) for state in states]
         abs_states = [abstractify(state) for state in states]
         embed_states = [tensorize_symbolic_state(abs_state, num_out=num_out)
                         for abs_state in abs_states]
@@ -531,7 +531,7 @@ def world_model_step(state_embeds, moves, world_model_program):
     return new_log_P
 
 
-def world_model_data(env, n) -> list[tuple]:
+def world_model_data(env, n) -> List[Tuple]:
     '''
     Creates symbolic state abstraction data for n episodes of the environment.
     Returns a list of tuples of the form (state, abs_action, next_state, symbolic_state, symbolic_next_state)
@@ -543,7 +543,7 @@ def world_model_data(env, n) -> list[tuple]:
     for traj in trajs:
         states, moves = traj
         check_datalog_consistency(states, moves)
-        state_tensors = [data.obs_to_tensor(state) for state in states]
+        state_tensors = [bw.obs_to_tensor(state) for state in states]
         move_ixs = [bw.COLORS.index(m[0]) for m in moves]
         symbolic_states = [tensor_to_symbolic_state(s) for s in state_tensors]
 
@@ -556,7 +556,7 @@ def world_model_data(env, n) -> list[tuple]:
     return datas
 
 
-def option_sv_data(env, n) -> list[tuple]:
+def option_sv_data(env, n) -> List[Tuple]:
     trajs: list[list] = [bw.generate_abstract_traj(env) for _ in range(n)]
 
     datas = []
@@ -577,7 +577,7 @@ def tensor_to_symbolic_state(state) -> torch.Tensor:
     if (state == 0).all():
         a =  torch.zeros((2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
     else:
-        obs_state = data.tensor_to_obs(state)
+        obs_state = bw.tensor_to_obs(state)
         abstract_state = abstractify(obs_state)
         symbolic_state = tensorize_symbolic_state(abstract_state)
         one_minus = 1 - symbolic_state

@@ -8,6 +8,7 @@ from torch import tensor
 import abstract
 import hmm
 import box_world
+import box_world as bw
 from hmm import cc_loss_brute, cc_loss_ub, hmm_fw_ub
 from data import CONTINUE_IX, STOP_IX
 from utils import DEVICE, assert_equal, assert_shape
@@ -540,8 +541,8 @@ def test_hmm_and_cc():
     causal_net = hmm.CausalNet(control_net, cc_weight=0.)
     hmm_net = hmm.HmmNet(control_net)
 
-    env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=20, traj=True, batch_size=1)
+    env = bw.BoxWorldEnv()
+    dataloader = bw.box_world_dataloader(env=env, n=20, traj=True, batch_size=1)
 
     causal_net.to(DEVICE)
     hmm_net.to(DEVICE)
@@ -557,8 +558,8 @@ def test_hmm_batched():
     control_net = abstract.boxworld_homocontroller(b=3)
     net = hmm.HmmNet(control_net)
 
-    env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=100, traj=True, batch_size=10)
+    env = bw.BoxWorldEnv()
+    dataloader = bw.box_world_dataloader(env=env, n=100, traj=True, batch_size=10)
 
     net.to(DEVICE)
     optimizer = torch.optim.Adam(net.parameters(), lr=1E-4)
@@ -601,8 +602,8 @@ def test_hmm_batched():
 
 #     net = hmm.HmmNet(control_net)
 
-#     env = box_world.BoxWorldEnv(seed=1)
-#     dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+#     env = bw.BoxWorldEnv(seed=1)
+#     dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
 #     net.to(DEVICE)
 
@@ -640,8 +641,8 @@ def test_ccts_batched():
 
     net = hmm.HmmNet(control_net)
 
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = bw.BoxWorldEnv(seed=1)
+    dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     net.to(DEVICE)
 
@@ -677,8 +678,8 @@ def test_macro_transitions():
 
     control_net = abstract.boxworld_controller(b=b, typ='hetero', t=t)
 
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=1)
+    env = bw.BoxWorldEnv(seed=1)
+    dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=1)
 
     control_net.to(DEVICE)
 
@@ -695,21 +696,21 @@ def test_macro_transitions():
 
 
 def test_latent_gen():
-    data = box_world.BoxWorldDataset(box_world.BoxWorldEnv(seed=0), n=100, traj=True, shuffle=False)
-    dataloader = torch.utils.data.DataLoader(data, batch_size=32, shuffle=False, collate_fn=box_world.traj_collate)
+    data = bw.BoxWorldDataset(bw.BoxWorldEnv(seed=0), n=100, traj=True, shuffle=False)
+    dataloader = torch.utils.data.DataLoader(data, batch_size=32, shuffle=False, collate_fn=bw.traj_collate)
     model_load_path = 'models/e14b78d01cc548239ffd57286e59e819.pt'
     net = utils.load_model(model_load_path)
-    all_t_i, all_b_i = box_world.calc_latents(dataloader, net.control_net)
-    test_env = box_world.BoxWorldEnv(seed=0)
+    all_t_i, all_b_i = bw.calc_latents(dataloader, net.control_net)
+    test_env = bw.BoxWorldEnv(seed=0)
 
-    acc = box_world.eval_options_model(net.control_net, test_env, n=100)
+    acc = bw.eval_options_model(net.control_net, test_env, n=100)
     print(f'acc: {acc}')
 
-    test_env = box_world.BoxWorldEnv(seed=0)
+    test_env = bw.BoxWorldEnv(seed=0)
     total_solved = 0
     for s_i, t_i, b_i in zip(data.traj_states, all_t_i, all_b_i):
         obs = test_env.reset()
-        obs = box_world.obs_to_tensor(obs)
+        obs = bw.obs_to_tensor(obs)
         torch.testing.assert_close(s_i[0], obs)
         actions, solved = planning.llc_plan(s_i[0], b_i, net.control_net, test_env)
         if solved:
@@ -729,8 +730,8 @@ def test_solved_batched():
 
     net = hmm.CausalNet(control_net, cc_weight=1.)
 
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = bw.BoxWorldEnv(seed=1)
+    dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     net.to(DEVICE)
 
@@ -767,8 +768,8 @@ def test_cc_batched():
 
     net = hmm.CausalNet(control_net, cc_weight=1.)
 
-    env = box_world.BoxWorldEnv(seed=1)
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = bw.BoxWorldEnv(seed=1)
+    dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     net.to(DEVICE)
 
@@ -800,8 +801,8 @@ def test_actions_batch():
     B = 5
     control_net = abstract.boxworld_controller(b=b)
 
-    env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=10, traj=True, batch_size=B)
+    env = bw.BoxWorldEnv()
+    dataloader = bw.box_world_dataloader(env=env, n=10, traj=True, batch_size=B)
 
     control_net.to(DEVICE)
 
@@ -833,8 +834,8 @@ def test_cc_batched2():
     B = 10
     control_net = abstract.boxworld_controller(b=b)
 
-    env = box_world.BoxWorldEnv()
-    dataloader = box_world.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
+    env = bw.BoxWorldEnv()
+    dataloader = bw.box_world_dataloader(env=env, n=50, traj=True, batch_size=B)
 
     control_net.to(DEVICE)
 
@@ -879,14 +880,14 @@ def test_cc_batched2():
 
 
 def test_symbolic_state():
-    env = box_world.BoxWorldEnv()
+    env = bw.BoxWorldEnv()
     n = 100
     for i in range(n):
-        states, moves = box_world.generate_traj(env)
+        states, moves = bw.generate_traj(env)
 
         for s in states:
             s1 = neurosym.tensorize_symbolic_state(neurosym.abstractify(s))
-            s2 = neurosym.tensor_to_symbolic_state(data.obs_to_tensor(s))
+            s2 = neurosym.tensor_to_symbolic_state(bw.obs_to_tensor(s))
             assert_equal(s1, s2)
 
 

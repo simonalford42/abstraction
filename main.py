@@ -23,7 +23,151 @@ import neurosym
 from pyDatalog import pyDatalog as pyd
 from itertools import chain
 from einops.layers.torch import Rearrange
+from einops import rearrange
 import os
+
+
+def fine_tune_rnn(control_net, params):
+    nll_loss = nn.NLLLoss(reduction='none')
+
+    rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
+    env = box_world.BoxWorldEnv(seed=params.seed)
+    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=params.tau_precompute)
+    print(f'{len(dataset)} fine-tuning examples')
+    params.epochs = int(params.traj_updates / len(dataset))
+
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
+                            collate_fn=data.latent_traj_collate)
+
+    optimizer = torch.optim.Adam(chain(rnn.parameters(), control_net.parameters()), lr=params.lr)
+
+    last_test_time = False
+    last_save_time = time.time()
+    epoch = 0
+    updates = 0
+
+    while updates < params.traj_updates:
+        if hasattr(dataloader.dataset, 'shuffle'):
+            dataloader.dataset.shuffle(batch_size=params.batch_size)
+
+        train_loss = 0
+
+        first = True
+
+        option_num_correct = torch.zeros(dataset.max_T).to(DEVICE)
+        solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
+        option_num_total = torch.zeros(dataset.max_T).to(DEVICE)
+        solved_num_total = 0
+        b = params.b
+        t = control_net.t
+
+        for states, options, solveds, lengths, masks in dataloader:
+            states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
+
+            option_one_hots = F.one_hot(options, num_classes=b).float().to(DEVICE)
+
+            B, T_plus_one, *s = states.shape
+            T = T_plus_one - 1
+            assert_shape(options, (B, T))
+            assert_shape(solveds, (B, T + 1))
+            assert_shape(masks, (B, T + 1))
+
+            states_flattened = states.reshape(B * (T + 1), *s)
+            t_i_flattened = control_net.tau_net(states_flattened)
+            t_i = t_i_flattened.reshape(B, T + 1, t)
+
+            # https://stackoverflow.com/questions/48915810/what-does-contiguous-do-in-pytorch
+            t0 = t_i[None, :, 0].contiguous()
+            # apparently the required shape for the hidden state:
+            # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+            assert_shape(t0, (1, B, params.abstract_dim))
+
+            t_i_preds, _ = rnn(option_one_hots, t0)
+            assert_shape(t_i_preds, (B, T, t))
+            # concat t0 to front
+            t0 = t_i[:, 0:1]
+            assert_shape(t0, (B, 1, t))
+            t_i_preds = torch.concat([t0, t_i_preds], dim=1)
+            assert_shape(t_i_preds, (B, T + 1, t))
+
+            t_i_preds_flattened = t_i_preds.reshape(B * (T + 1), t)
+            solved_logps = control_net.solved_net(t_i_preds_flattened).reshape(B, T + 1, 2)
+            option_logps = control_net.macro_policy_net(t_i_preds_flattened).reshape(B, T + 1, b)
+
+            # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
+            option_logps, solved_logps = [rearrange(x, 'N d C -> N C d') for x in
+                                                   [option_logps, solved_logps]]
+
+            option_logps = option_logps[:, :, :-1]
+            assert_shape(option_logps, (B, b, T))
+            assert_shape(options, (B, T))
+            assert_shape(solveds, (B, T + 1))
+            # cc_loss = ((t_i_preds - t_i) ** 2).sum(dim=-1)
+            solved_loss = nll_loss(solved_logps, solveds)
+            option_loss = nll_loss(option_logps, options)
+
+            option_preds = torch.argmax(option_logps, dim=1)
+            solved_preds = torch.argmax(solved_logps, dim=1)
+            assert_shape(option_preds, (B, T))
+
+            # masks[:, :T+1] = 1, which is one more than the number of options.
+            # to get correct mask, take masks[:, 1:]
+            matched = ((option_preds == options) * masks[:, 1:]).sum(dim=0)
+            solved_matched = ((solved_preds == solveds) * masks).sum(dim=0)
+            option_num_correct[:len(matched)] += matched
+            solved_num_correct[:len(solved_matched)] += solved_matched
+            tried = masks[:, 1:].sum(dim=0)
+            option_num_total[:len(tried)] += tried
+            solved_num_total += masks.sum()
+
+            loss = option_loss.sum() + solved_loss.sum()
+
+            train_loss += loss.item()
+            # solved and option loss
+            loss = loss / (2 * sum(lengths))
+
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            updates += B
+
+        for i in range(len(option_num_total)):
+            if option_num_total[i] == 0:
+                option_num_total[i] = 1
+
+        acc_dict = {f'acc{i}': (0 if (option_num_total[i] == 0)
+                                  else option_num_correct[i] / option_num_total[i])
+                    for i in range(len(option_num_correct))}
+        wandb.log({'loss': train_loss,
+                   'acc': option_num_correct.sum() / option_num_total.sum(),
+                   'solved_acc': solved_num_correct.sum() / solved_num_total,
+                   **acc_dict})
+
+        # if (params.test_every
+        #         and (not last_test_time
+        #              or (time.time() - last_test_time > (params.test_every * 60)))):
+        #     last_test_time = time.time()
+        #     utils.warn('fixed test env seed')
+        #     planning.eval_planner(
+        #         control_net, box_world.BoxWorldEnv(seed=env.seed), n=params.num_test,
+        #         # control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params.num_test,
+        #     )
+
+        if (not params.no_log and params.save_every
+                and (time.time() - last_save_time > (params.save_every * 60))):
+            last_save_time = time.time()
+            path = utils.save_model(control_net, f'models/{params.id}-epoch-{epoch}_control.pt')
+            path2 = utils.save_model(rnn, f'models/{params.id}-epoch-{epoch}_rnn.pt')
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
+            wandb.log({'models': wandb.Table(columns=['path'], data=[[path2]])})
+
+        epoch += 1
+
+    if not params.no_log and params.save_every:
+        path = utils.save_model(control_net, f'models/{params.id}_control.pt')
+        path2 = utils.save_model(rnn, f'models/{params.id}_rnn.pt')
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
+        wandb.log({'models': wandb.Table(columns=['path'], data=[[path2]])})
 
 
 def fine_tune(control_net, params):
@@ -222,7 +366,6 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
                   + f"({time.time() - start:.1f}s)")
 
 
-
 def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, params):
     """
     Train a basic supervised model.
@@ -303,7 +446,7 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
                         obs_info = obs_info[:3]
                     for obs, pred_keys, target_keys in obs_info:
                         # convert from tensor to ascii
-                        ascii_obs = data.tensor_to_obs(obs)
+                        ascii_obs = box_world.tensor_to_obs(obs)
                         print(f"{pred_keys=}")
                         print(f"{target_keys=}")
                         print(ascii_obs)
@@ -412,7 +555,6 @@ def learn_neurosym_world_model(params):
                 print(f"{cc_loss[0,0,:3, :3, 0]=}")
             cc_loss = cc_loss.sum()
 
-
             # manual balancing so cc loss is same order of magnitude as state loss..
             cc_loss = 10 * cc_loss / next_state_preds.numel()
 
@@ -447,7 +589,7 @@ def learn_neurosym_world_model(params):
                    'cc_loss': total_cc_loss,
                    'move_acc': move_preds_num_right / total_move_preds,
                    'state_acc': state_preds_num_right / total_state_preds,
-        })
+                   })
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -607,8 +749,8 @@ def boxworld_main():
         params.b = box_world.NUM_COLORS
 
     if params.fine_tune and not params.load:
-        print('WARNING: params.load = False, creating new model')
-        # params.load = True
+        # print('WARNING: params.load = False, creating new model')
+        params.load = True
 
     if not hasattr(params, 'traj_updates'):
         params.traj_updates = 1E8 if (params.fine_tune or params.muzero or params.neurosym) else 1E7  # default: 1E7
@@ -663,7 +805,8 @@ def boxworld_main():
                 assert isinstance(net, abstract.HeteroController)
                 sv_micro_train(params, net)
             elif params.fine_tune:
-                fine_tune(net.control_net, params)
+                net = make_net(params).to(DEVICE)
+                fine_tune_rnn(net.control_net, params)
             elif params.neurosym:
                 neurosym_train(params)
             elif params.sv_options:

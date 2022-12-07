@@ -230,6 +230,14 @@ class HeteroController(nn.Module):
         self.fake_cc_neurosym = fake_cc_neurosym
         # only needed if cc_neurosym is True
         self.world_model_program = world_model_program
+        self.using_rnn = False
+
+    def add_rnn(self, rnn):
+        '''
+        Adds rnn to be the macro transition net. see def macro_transition
+        '''
+        self.rnn = rnn
+        self.using_rnn = True
 
     def world_model_program_step(self, states, moves):
         return neurosym.world_model_step(states, moves, self.world_model_program)
@@ -273,7 +281,7 @@ class HeteroController(nn.Module):
 
         return logps
 
-    def forward_ub(self, s_i, tau_noise=True):
+    def forward_ub(self, s_i, tau_noise=True, calc_cc=True):
         """
         s_i: (T, s) tensor of states
         outputs:
@@ -294,12 +302,17 @@ class HeteroController(nn.Module):
 
         action_logps, stop_logps = self.micro_net(s_i)
         start_logps = self.calc_start_logps(noised_t_i)  # (T, b) aka P(b | t)
-        causal_pens = self.calc_causal_pens_ub(t_i, noised_t_i)  # (T, T, b)
+
+        if not calc_cc:
+            causal_pens = None
+        else:
+            causal_pens = self.calc_causal_pens_ub(t_i, noised_t_i)  # (T, T, b)
+
         solved = self.solved_net(noised_t_i)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved, t_i
 
-    def forward_b(self, s_i_batch, tau_noise=True):
+    def forward_b(self, s_i_batch, tau_noise=True, calc_cc=True):
         """
         s_i: (B, T, s) tensor of states
         outputs:
@@ -335,7 +348,10 @@ class HeteroController(nn.Module):
         start_logps = self.calc_start_logps(noised_t_i_flattened).reshape(B, T, self.b)
         solved = self.solved_net(noised_t_i_flattened).reshape(B, T, 2)
 
-        causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
+        if not calc_cc:
+            causal_pens = None
+        else:
+            causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
 
         return action_logps, stop_logps, start_logps, causal_pens, solved, t_i
 
@@ -344,8 +360,22 @@ class HeteroController(nn.Module):
         Calculate a single abstract transition. Useful for test-time.
         Does not apply noise to abstract state.
         """
-        return self.macro_transitions(t.unsqueeze(0),
-                                      torch.tensor([b], device=DEVICE)).reshape(self.t)
+        if hasattr(self, 'using_rnn') and self.using_rnn:
+            option_one_hot = F.one_hot(torch.tensor(b), num_classes=self.b).float().to(DEVICE)
+            option_one_hot = rearrange(option_one_hot, 'b -> 1 1 b')
+
+            # apparently the required shape for the hidden state:
+            # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+            t0 = rearrange(t, 't -> 1 1 t')
+
+            t_i_preds, _ = self.rnn(option_one_hot, t0)
+            assert_shape(t_i_preds, (1, 1, self.t))
+            t_pred = t_i_preds[0,0]
+            return t_pred
+
+        else:
+            return self.macro_transitions(t.unsqueeze(0),
+                                          torch.tensor([b], device=DEVICE)).reshape(self.t)
 
     def tau_embed(self, s):
         """
@@ -395,25 +425,38 @@ class HeteroController(nn.Module):
             t_i: (T, t) batch of abstract states
             bs: 1D tensor of actions to try
         """
-        if hasattr(self, 'cc_neurosym') and self.cc_neurosym:
-            return self.neurosym_macro_transitions(t_i, bs)
-
         T = t_i.shape[0]
         nb = bs.shape[0]
-        # calculate transition for each t_i + b pair
-        t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
-        b_onehots0 = F.one_hot(bs, num_classes=self.b)
-        b_onehots = b_onehots0.repeat(T, 1)
-        # b_onehots2 = repeat(b_onehots0, 'nb b -> (repeat nb) b', repeat=T)
-        # assert torch.all(b_onehots == b_onehots2)
-        # b is 'less significant', changes in 'inner loop'
-        t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
-        # assert_equal(t_i2.shape, (T * nb, self.t + self.b))
-        # (T * nb, t + b) -> (T * nb, t)
-        t_i2 = self.macro_transition_net(t_i2)
-        # more stable for alpha to compute Delta, then add original t
-        new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
-        return new_t_i
+
+        if hasattr(self, 'using_rnn') and self.using_rnn:
+            # apparently the required shape for the hidden state:
+            # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+            t0 = repeat(t_i, 'T t -> 1 (T repeat) t', repeat=nb)
+            b_onehots = repeat(F.one_hot(bs, num_classes=self.b).float(),
+                               'nb b -> (T nb) 1 b', T=T).to(DEVICE)
+
+            t_i_preds, _ = self.rnn(b_onehots, t0)
+            assert_shape(t_i_preds, (T * nb, 1, self.t))
+            new_t_i = rearrange(t_i_preds, '(T nb) 1 t -> T nb t', T=T)
+            return new_t_i
+
+        elif hasattr(self, 'cc_neurosym') and self.cc_neurosym:
+            return self.neurosym_macro_transitions(t_i, bs)
+        else:
+            # calculate transition for each t_i + b pair
+            t_i2 = repeat(t_i, 'T t -> (T repeat) t', repeat=nb)
+            b_onehots0 = F.one_hot(bs, num_classes=self.b)
+            b_onehots = b_onehots0.repeat(T, 1)
+            # b_onehots2 = repeat(b_onehots0, 'nb b -> (repeat nb) b', repeat=T)
+            # assert torch.all(b_onehots == b_onehots2)
+            # b is 'less significant', changes in 'inner loop'
+            t_i2 = torch.cat((t_i2, b_onehots), dim=1)  # (T*nb, t + b)
+            # assert_equal(t_i2.shape, (T * nb, self.t + self.b))
+            # (T * nb, t + b) -> (T * nb, t)
+            t_i2 = self.macro_transition_net(t_i2)
+            # more stable for alpha to compute Delta, then add original t
+            new_t_i = rearrange(t_i2, '(T nb) t -> T nb t', T=T) + t_i[:, None, :]
+            return new_t_i
 
     def macro_transitions2(self, t_i, bs):
         """
@@ -423,6 +466,9 @@ class HeteroController(nn.Module):
             t_i: (T, t) batch of abstract states
             bs: (T, ) tensor of actions for each abstract state
         """
+        if hasattr(self, 'using_rnn') and self.using_rnn:
+            raise RuntimeError('macro transitions has not been implemented for RNN world model')
+
         T = t_i.shape[0]
         assert_shape(t_i, (T, self.t))
         assert_shape(bs, (T, ))
@@ -511,7 +557,7 @@ class HeteroController(nn.Module):
             (2, ) solved logits (solved is at abstract.SOLVED_IX)
         """
         # (1, b, a), (1, b, 2), (1, b), (1, 1, b), (1, 2)
-        action_logps, stop_logps, start_logps, _, solved_logits, _ = self.forward_ub(s_i.unsqueeze(0), tau_noise=False)
+        action_logps, stop_logps, start_logps, _, solved_logits, _ = self.forward_ub(s_i.unsqueeze(0), tau_noise=False, calc_cc=False)
 
         return action_logps[0], stop_logps[0], start_logps[0], solved_logits[0]
 
@@ -775,7 +821,7 @@ class NormModule(nn.Module):
         self.dim = dim
 
     def forward(self, x):
-        utils.warn('tau norm dim disabled')
+        # utils.warn('tau norm dim disabled')
         return F.normalize(x, dim=-1, p=self.p)  # * self.dim
 
 
