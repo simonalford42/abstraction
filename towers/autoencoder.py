@@ -79,7 +79,7 @@ class Autoencoder(nn.Module):
             z = self.fc1(self.encoder(x).view(B,-1))
         else:
             z = self.fc(self.encoder(x))
-        z_original = z # before adding noise
+        z_original = z # before adding noise and doing SM
         if self.discrete:
             self.steps+=1
             z = z.view(B, self.n_variables, self.n_categories)
