@@ -41,7 +41,6 @@ def fine_tune_rnn(control_net, params):
 
     optimizer = torch.optim.Adam(chain(rnn.parameters(), control_net.parameters()), lr=params.lr)
 
-    last_test_time = False
     last_save_time = time.time()
     epoch = 0
     updates = 0
@@ -51,8 +50,6 @@ def fine_tune_rnn(control_net, params):
             dataloader.dataset.shuffle(batch_size=params.batch_size)
 
         train_loss = 0
-
-        first = True
 
         option_num_correct = torch.zeros(dataset.max_T).to(DEVICE)
         solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
@@ -198,7 +195,6 @@ def fine_tune(control_net, params):
 
         train_loss = 0
 
-        first = True
         for states, options, solveds, lengths, masks in dataloader:
             states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
 
@@ -343,7 +339,7 @@ def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None,
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
             loss = net(s_i_batch, actions_batch, lengths, masks)
             # if isinstance(net, ShrinkingRelationalDRLNet):
-                # loss += net.shrink_loss()
+            #    loss += net.shrink_loss()
 
             train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR
@@ -389,7 +385,6 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
         spotwise_correct = None
 
         train_loss = 0
-        start = time.time()
         for inputs, targets in dataloader:
             optimizer.zero_grad()
 
@@ -450,10 +445,6 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
                         print(f"{pred_keys=}")
                         print(f"{target_keys=}")
                         print(ascii_obs)
-                        with torch.no_grad():
-                            preds2 = net(obs.unsqueeze(0), prnt=True)
-
-
 
         epoch += 1
         updates += len(dataloader.dataset)
@@ -497,10 +488,8 @@ def learn_neurosym_world_model(params):
     updates = 0
     epoch = 0
 
-    last_save_time = time.time()
-
-    eval_dataset = torch.load('data/abstract-eval-100')
-    eval_dataloader = DataLoader(eval_dataset, batch_size=params.batch_size, shuffle=True)
+    # eval_dataset = torch.load('data/abstract-eval-100')
+    # eval_dataloader = DataLoader(eval_dataset, batch_size=params.batch_size, shuffle=True)
     # eval_env = box_world.BoxWorldEnv(seed=2)
     # eval_dataset = data.ListDataset(neurosym.world_model_data(env, n=100))
     # torch.save(eval_dataset, 'data/abstract-eval-100')
@@ -953,4 +942,6 @@ def sv_micro_train(params, control_net):
 
 
 if __name__ == '__main__':
+    test: str = 3
+
     boxworld_main()

@@ -6,6 +6,8 @@ numpy==1.21.2
 torch>=1.9.1
 torchvision>=0.10.1
 mypy
+psutil
+pyDatalog
 lib/pycolab
 lib/Relational_DRL/env/gym-box-world
 pytorch-lightning

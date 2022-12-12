@@ -12,7 +12,6 @@ import box_world as bw
 import random
 import wandb
 import neurosym
-from typing import List, Tuple
 
 
 STOP_IX = 0
@@ -125,8 +124,8 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
 
     if check_cc:
         cc_loss_avg = sum(cc_losses) / len(cc_losses)
-    if check_solved:
-        solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
+    # if check_solved:
+        # solved_acc = 0 if not num_solved else correct_solved_preds / num_solved
         # print(f'Correct solved pred: {solved_acc:.2f}')
 
     control_net.train()
@@ -738,7 +737,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
 
         if render:
             title = f'option={current_option}'
-            pause = 1 if new_option else 0.01
+            pause = 1 if new_option else 0.25
             if new_option:
                 title += f' (new option = {current_option})'
             bw.render_obs(obs, title=title, pause=pause)
@@ -767,7 +766,6 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     #     check that we predicted that we solved
     #     _, _, _, solved_logits = control_net.eval_obs(obs)
     #     print(f'END solved prob: {torch.exp(solved_logits[SOLVED_IX])}')
-
 
     assert len(options) == len(states_for_each_option)
     control_net.train()

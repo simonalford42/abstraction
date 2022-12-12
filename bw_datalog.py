@@ -1,4 +1,5 @@
 import box_world as bw
+from pyDatalog import pyDatalog as pyd
 import data
 import utils
 from pyDatalog import pyDatalog as pyd

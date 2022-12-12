@@ -741,7 +741,7 @@ class SeparateNetsHomoController(nn.Module):
         start_logits = []
         for out in outs:
             action_logps = out[:, :, :self.a]
-            stop_logps = out[:, :, self.a : self.a+2]
+            stop_logps = out[:, :, self.a:self.a+2]
             start_logp = out[:, :, -1:]
             action_logits.append(action_logps)
             stop_logits.append(stop_logps)
@@ -882,17 +882,9 @@ def boxworld_controller(typ, params):
                                             dim=params.dim,
                                             shrink_loss_scale=params.shrink_loss_scale)
 
-    if typ == 'ccts-reduced':
-        macro_trans3 = F.log_softmax(macro_trans3, dim=-1)
-        macro_trans_in_dim = b
-        model = ConsistencyStopControllerReduced
-    elif typ == 'ccts':
-        macro_trans_in_dim = b + t
-        model = ConsistencyStopController
-    else:
-        assert typ == 'hetero'
-        macro_trans_in_dim = b + t
-        model = HeteroController
+    assert typ == 'hetero'
+    macro_trans_in_dim = b + t
+    model = HeteroController
 
     tau_module = NormModule(p=tau_lp_norm, dim=t)
     tau_net = boxworld_relational_net(out_dim=t, dim=params.dim)

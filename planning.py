@@ -19,6 +19,8 @@ import box_world as bw
 from dataclasses import dataclass, field
 from typing import Any, Generator, Optional, Tuple, List
 import wandb
+from torch.distributions import Categorical
+from data import STOP_IX
 
 
 @dataclass(order=True)
@@ -343,7 +345,7 @@ def eval_planner(control_net, env, n):
     solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
     print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
     # wandb.log({'test/model_acc': solved_with_model/n,
-               # 'test/simulator_acc': solved_with_sim/n})
+    #           'test/simulator_acc': solved_with_sim/n})
 
     num_solved = 0
     lengths = []
@@ -454,13 +456,9 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
     obs = env.obs
     options_trace = obs  # as we move, we color over squares in this where we moved, to render later
     done, solved = False, False
-    option_at_step_i = []  # option at step i
     options = []
-    moves_without_moving = 0
     prev_pos = (-1, -1)
     op_new_tau = None
-    op_new_tau_solved_prob = None
-    moves = []
     states_between_options = []
 
     current_option = None
@@ -486,7 +484,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
                 tau = op_new_tau
 
             if current_option is not None:
-                causal_consistency = ((tau - op_new_tau)**2).sum()
+                # causal_consistency = ((tau - op_new_tau)**2).sum()
                 # print(f'causal_consistency: {causal_consistency}')
                 options_trace[prev_pos] = 'e'
 
@@ -547,6 +545,7 @@ def check_plan_rankings(env, control_net, depth, n):
     control_net.eval()
 
     for i in range(n):
+        print(f"{i=}")
         env.reset()
         obs = bw.obs_to_tensor(env.obs).to(DEVICE)
 
@@ -596,8 +595,8 @@ if __name__ == '__main__':
 
     # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
     # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
-    model_id = '7cb8b7caf4ce4f13bd5c10c52d553332-epoch-618_control'; control_net = True
-    rnn_model_id = '7cb8b7caf4ce4f13bd5c10c52d553332-epoch-618_rnn'
+    model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
+    rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
 
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -616,10 +615,11 @@ if __name__ == '__main__':
 
     # acc = eval_planner(control_net, env, n=n)
     # test_consistency(env, control_net, n=n)
-    eval_sampling(control_net, env, n=100, render=True)
+    eval_sampling(control_net, env, n=n, render=False, macro=True)
+
     # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
 
-    # check_plan_rankings(env, control_net, depth=depth, n=100)
+    # check_plan_rankings(env, control_net, depth=depth, n=n)
     # RANKINGS = sorted(RANKINGS)
     # print(f"{RANKINGS=}")
     # plt.plot(RANKINGS)

@@ -58,7 +58,6 @@ class GymWrapper(gym.Env):
         obs = self.process_obs(obs)
         return obs, reward, done, info
 
-
     def process_obs(self, obs):
         obs = to_color_obs(obs).astype(np.uint8)
         assert_shape(obs, (self.env.obs_width, self.env.obs_width, 3))
@@ -239,9 +238,9 @@ def render_obs(obs, title=None, pause=0.0001):
     plt.imshow(color_array / 255)
     if title:
         plt.title(title)
-    fig.canvas.draw()
     plt.xticks([])
     plt.yticks([])
+    fig.canvas.draw()
     plt.pause(pause)
 
 

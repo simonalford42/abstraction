@@ -5,7 +5,6 @@ import numpy as np
 import random
 import data
 import utils
-from pyDatalog import pyDatalog as pyd
 from modules import RelationalDRLNet
 from utils import assert_equal, DEVICE, assert_shape, log1minus
 import torch
@@ -16,6 +15,7 @@ from einops import rearrange
 import einops
 import modules
 from typing import Dict, List, Tuple
+# import datalog
 
 CHECK_IXS = [0]
 
@@ -76,67 +76,6 @@ def abstractify(obs):
     return out
 
 
-def get_post_transition_facts():
-    """
-    returns dict of facts. key is the predicate and values are list of arg tuples
-    """
-    all_facts = {}
-    # action facts don't get passed on
-    for predicate in [held_key, domino, neg_held_key, neg_domino]:
-        for arity in [1, 2]:
-            try:
-                args = [X, Y] if arity == 2 else [X]
-                facts: list[tuple] = predicate(*args).ask()
-                facts = sorted(facts)
-                all_facts[str(predicate)] = facts
-            except AttributeError:
-                pass
-
-    neg_pairs = [('neg_held_key', 'held_key'),
-                  ('neg_domino', 'domino')]
-    for neg_predicate, predicate in neg_pairs:
-        if neg_predicate in all_facts:
-            for args in all_facts[neg_predicate]:
-                if args in all_facts[predicate]:
-                    all_facts[predicate].remove(args)
-                    if len(all_facts[predicate]) == 0:
-                        del all_facts[predicate]
-            del all_facts[neg_predicate]
-
-    return all_facts
-
-
-def transition_datalog(abs_obs: Dict[str, List[Tuple[str, str]]], abs_action: Tuple[str]):
-    '''
-    abs_obs: dict of facts, {'predicate': [args]}
-    abs_action: a tuple of args for the built-in 'action' predicate
-    returns a new abs_obs.
-    '''
-    pyd.clear()
-    # pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
-    + action(*abs_action)
-    if 'held_key' in abs_obs:
-        for args in abs_obs['held_key']:
-            + held_key(*args)
-    if 'domino' in abs_obs:
-        for args in abs_obs['domino']:
-            + domino(*args)
-
-    held_key(Y) <= held_key(X) & domino(X, Y) & action(Y)
-    neg_held_key(X) <= held_key(X) & domino(X, Y) & action(Y)
-    neg_domino(X, Y) <= held_key(X) & domino(X, Y) & action(Y)
-
-    return get_post_transition_facts()
-
-
-def check_datalog_consistency(states, moves):
-    abs_states = [abstractify(state) for state in states]
-    abs_moves = [(move[0].lower(), ) for move in moves]
-    for i, (abs_state, abs_move) in enumerate(zip(abs_states, abs_moves)):
-        abs_state2 = transition_datalog(abs_state, abs_move)
-        assert_equal(abs_state2, abs_states[i+1])
-
-
 def tensorize_symbolic_state2(abs_state, n_dominoes=1):
     '''
     Input: dict of facts, {'held_key': [args], 'domino': [args]}
@@ -147,7 +86,6 @@ def tensorize_symbolic_state2(abs_state, n_dominoes=1):
         A[0, i, 1] is always 0
     '''
     if n_dominoes == 1:
-        colors = bw.COLORS
         out = torch.tensor([0.])
         if 'domino' in abs_state:
             if ('a', 'b') in abs_state['domino']:
@@ -178,9 +116,6 @@ def precond_logps(state_embeds, world_model_program=BW_WORLD_MODEL_PROGRAM):
 
     B, C = log_P.shape[0], log_P.shape[2]
     assert_shape(log_P, (B, 2, C, C, 2))
-
-    log_P1 = log_P[:, :, :, :, STATE_EMBED_TRUE_IX]
-    log_P0 = log_P[:, :, :, :, STATE_EMBED_FALSE_IX]
 
     # pre args is either 'X', 'Y', or 'XY'
     precondition_logps = torch.zeros((B, C, C), device=log_P.device)
@@ -296,7 +231,7 @@ def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> List[Tup
     datas = []
     for traj in trajs:
         states, moves = traj
-        check_datalog_consistency(states, moves)
+        # datalog.check_datalog_consistency(states, moves)
         state_tensors = [bw.obs_to_tensor(state) for state in states]
         abs_states = [abstractify(state) for state in states]
         embed_states = [tensorize_symbolic_state(abs_state, num_out=num_out)
@@ -334,10 +269,6 @@ def supervised_symbolic_state_abstraction_data(env, n, num_out=None) -> List[Tup
     print(f"dataset {total_positive=}")
     print(f"dataset {total_negative=}")
     return datas
-
-
-# seems like I have to do this outside of the function to get it to work?
-pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
 
 def world_model_step_prob(state_embeds, moves, world_model_program):
@@ -542,7 +473,7 @@ def world_model_data(env, n) -> List[Tuple]:
     datas = []
     for traj in trajs:
         states, moves = traj
-        check_datalog_consistency(states, moves)
+        # datalog.check_datalog_consistency(states, moves)
         state_tensors = [bw.obs_to_tensor(state) for state in states]
         move_ixs = [bw.COLORS.index(m[0]) for m in moves]
         symbolic_states = [tensor_to_symbolic_state(s) for s in state_tensors]
@@ -575,7 +506,7 @@ def tensor_to_symbolic_state(state) -> torch.Tensor:
     Output: a (2, C, C, 2) tensor
     '''
     if (state == 0).all():
-        a =  torch.zeros((2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
+        a = torch.zeros((2, bw.NUM_COLORS, bw.NUM_COLORS, 2))
     else:
         obs_state = bw.tensor_to_obs(state)
         abstract_state = abstractify(obs_state)
