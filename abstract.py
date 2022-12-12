@@ -417,9 +417,10 @@ class HeteroController(nn.Module):
 
     def macro_transitions(self, t_i, bs):
         """
+        For each state, applies each option, producting a new abstract state.
+
         Returns (T, |bs|, self.t) batch of new abstract states for each option applied.
         Does not apply noise to abstract state.
-
 
         Args:
             t_i: (T, t) batch of abstract states
@@ -460,18 +461,32 @@ class HeteroController(nn.Module):
 
     def macro_transitions2(self, t_i, bs):
         """
+        Elementwise transition between option b_i and state t_i.
+
         Returns (T, self.t) batch of new abstract states.
 
         Args:
             t_i: (T, t) batch of abstract states
             bs: (T, ) tensor of actions for each abstract state
         """
-        if hasattr(self, 'using_rnn') and self.using_rnn:
-            raise RuntimeError('macro transitions has not been implemented for RNN world model')
-
         T = t_i.shape[0]
         assert_shape(t_i, (T, self.t))
         assert_shape(bs, (T, ))
+
+
+        if hasattr(self, 'using_rnn') and self.using_rnn:
+            print('havent tested rnn macro_transitions2 yet, please test before using')
+            assert False
+            # apparently the required shape for the hidden state:
+            # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+            t0 = rearrange(t_i, 'T t -> 1 T t')
+            b_onehots = F.one_hot(bs, num_classes=self.b).float().to(DEVICE)
+            assert_shape(b_onehots, (T, self.b))
+            t_i_preds, _ = self.rnn(b_onehots, t0)
+            assert_shape(t_i_preds, (T, 1, self.t))
+            new_t_i = rearrange(t_i_preds, 'T 1 t -> T t')
+            return new_t_i
+
         b_onehots = F.one_hot(bs, num_classes=self.b)
         assert_shape(b_onehots, (T, self.b))
         t_i2 = torch.cat((t_i, b_onehots), dim=1)
@@ -669,7 +684,7 @@ class HomoController(nn.Module):
 
         return action_logps, stop_logps, start_logps, None, 'None', None
 
-    def eval_obs(self, s_i, option_start_s=None):
+    def eval_obs(self, s_i):
         """
         For evaluation when we act for a single state.
 

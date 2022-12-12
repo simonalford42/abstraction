@@ -49,7 +49,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
             obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -106,7 +106,7 @@ def eval_options_model_interactive(control_net, env, n=100, option='silent'):
 
             if check_solved:
                 # check that we predicted that we solved
-                _, _, _, solved_logits = control_net.eval_obs(obs, option_start_s)
+                _, _, _, solved_logits = control_net.eval_obs(obs)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
 
                 if not is_solved_pred:
@@ -167,7 +167,7 @@ j       (b, 2) stop logps
             t += 1
             obs = bw.obs_to_tensor(obs).to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, _ = control_net.eval_obs(obs, option_start_s=obs)
+            action_logps, stop_logps, start_logps, _ = control_net.eval_obs(obs)
 
             if current_option is not None:
                 stop = get_choice(stop_logps[current_option], argmax=argmax)
@@ -239,7 +239,7 @@ j       (b, 2) stop logps
             obs = bw.obs_to_tensor(obs)
             obs = obs.to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs, option_start_s=obs)
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -331,7 +331,7 @@ j       (b, 2) stop logps
 
             if check_solved:
                 # check that we predicted that we solved
-                _, _, _, solved_logits = control_net.eval_obs(obs, option_start_s)
+                _, _, _, solved_logits = control_net.eval_obs(obs)
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
 
                 if not is_solved_pred:
