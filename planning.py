@@ -21,6 +21,9 @@ from typing import Any, Generator, Optional, Tuple, List
 import wandb
 from torch.distributions import Categorical
 from data import STOP_IX
+from torch.utils.data import DataLoader
+import torch.nn.functional as F
+from einops import rearrange
 
 
 @dataclass(order=True)
@@ -590,9 +593,16 @@ def check_plan_rankings(env, control_net, depth, n):
 
 
 def check_macro(env, control_net):
-    dataset = data.PlanningDataset(env, control_net, n=500, tau_precompute=params.tau_precompute)
-    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
+    dataset = data.PlanningDataset(env, control_net, n=500, tau_precompute=False)
+    dataloader = DataLoader(dataset, batch_size=64, shuffle=True,
                             collate_fn=data.latent_traj_collate)
+
+    option_num_correct = torch.zeros(dataset.max_T).to(DEVICE)
+    solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
+    option_num_total = torch.zeros(dataset.max_T).to(DEVICE)
+    solved_num_total = 0
+    b = control_net.b
+    t = control_net.t
 
     for states, options, solveds, lengths, masks in dataloader:
         states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
@@ -613,7 +623,7 @@ def check_macro(env, control_net):
         t0 = t_i[None, :, 0].contiguous()
         # apparently the required shape for the hidden state:
         # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
-        assert_shape(t0, (1, B, params.abstract_dim))
+        assert_shape(t0, (1, B, 32))
 
         t_i_preds, _ = rnn(option_one_hots, t0)
         assert_shape(t_i_preds, (B, T, t))
@@ -688,9 +698,10 @@ if __name__ == '__main__':
     env = box_world.BoxWorldEnv(seed=1, solution_length=(depth, ))
     n = 100
 
+    check_macro(env, control_net)
     # acc = eval_planner(control_net, env, n=n)
     # test_consistency(env, control_net, n=n)
-    eval_sampling(control_net, env, n=n, render=False, macro=True)
+    # eval_sampling(control_net, env, n=n, render=False, macro=True)
 
     # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
 

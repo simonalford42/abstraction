@@ -32,7 +32,7 @@ def fine_tune_rnn(control_net, params):
 
     rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
     env = box_world.BoxWorldEnv(seed=params.seed)
-    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=params.tau_precompute)
+    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=False)
     print(f'{len(dataset)} fine-tuning examples')
     params.epochs = int(params.traj_updates / len(dataset))
 
