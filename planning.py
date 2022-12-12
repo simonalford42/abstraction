@@ -590,6 +590,81 @@ def check_plan_rankings(env, control_net, depth, n):
     control_net.train()
 
 
+def check_macro(env, control_net):
+    dataset = data.PlanningDataset(env, control_net, n=500, tau_precompute=params.tau_precompute)
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
+                            collate_fn=data.latent_traj_collate)
+
+    for states, options, solveds, lengths, masks in dataloader:
+        states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
+
+        option_one_hots = F.one_hot(options, num_classes=b).float().to(DEVICE)
+
+        B, T_plus_one, *s = states.shape
+        T = T_plus_one - 1
+        assert_shape(options, (B, T))
+        assert_shape(solveds, (B, T + 1))
+        assert_shape(masks, (B, T + 1))
+
+        states_flattened = states.reshape(B * (T + 1), *s)
+        t_i_flattened = control_net.tau_net(states_flattened)
+        t_i = t_i_flattened.reshape(B, T + 1, t)
+
+        # https://stackoverflow.com/questions/48915810/what-does-contiguous-do-in-pytorch
+        t0 = t_i[None, :, 0].contiguous()
+        # apparently the required shape for the hidden state:
+        # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+        assert_shape(t0, (1, B, params.abstract_dim))
+
+        t_i_preds, _ = rnn(option_one_hots, t0)
+        assert_shape(t_i_preds, (B, T, t))
+        # concat t0 to front
+        t0 = t_i[:, 0:1]
+        assert_shape(t0, (B, 1, t))
+        t_i_preds = torch.concat([t0, t_i_preds], dim=1)
+        assert_shape(t_i_preds, (B, T + 1, t))
+
+        t_i_preds_flattened = t_i_preds.reshape(B * (T + 1), t)
+        solved_logps = control_net.solved_net(t_i_preds_flattened).reshape(B, T + 1, 2)
+        option_logps = control_net.macro_policy_net(t_i_preds_flattened).reshape(B, T + 1, b)
+
+        # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
+        option_logps, solved_logps = [rearrange(x, 'N d C -> N C d') for x in
+                                               [option_logps, solved_logps]]
+
+        option_logps = option_logps[:, :, :-1]
+        assert_shape(option_logps, (B, b, T))
+        assert_shape(options, (B, T))
+        assert_shape(solveds, (B, T + 1))
+
+        option_preds = torch.argmax(option_logps, dim=1)
+        solved_preds = torch.argmax(solved_logps, dim=1)
+        assert_shape(option_preds, (B, T))
+
+        # masks[:, :T+1] = 1, which is one more than the number of options.
+        # to get correct mask, take masks[:, 1:]
+        matched = ((option_preds == options) * masks[:, 1:]).sum(dim=0)
+        solved_matched = ((solved_preds == solveds) * masks).sum(dim=0)
+        option_num_correct[:len(matched)] += matched
+        solved_num_correct[:len(solved_matched)] += solved_matched
+        tried = masks[:, 1:].sum(dim=0)
+        option_num_total[:len(tried)] += tried
+        solved_num_total += masks.sum()
+
+    for i in range(len(option_num_total)):
+        if option_num_total[i] == 0:
+            option_num_total[i] = 1
+
+    acc = option_num_correct.sum() / option_num_total.sum()
+    solved_acc = solved_num_correct.sum() / solved_num_total
+    acc_dict = {f'acc{i}': (0 if (option_num_total[i] == 0)
+                              else option_num_correct[i] / option_num_total[i])
+                for i in range(len(option_num_correct))}
+    print(f"{acc=}")
+    print(f"{solved_acc=}")
+    print(f"{acc_dict=}")
+
+
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)

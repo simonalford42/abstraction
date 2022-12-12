@@ -120,6 +120,9 @@ def fine_tune_rnn(control_net, params):
             option_num_total[:len(tried)] += tried
             solved_num_total += masks.sum()
 
+            # let's try blocking out the loss for the masked elements..
+            option_loss = option_loss * masks[:, 1:]
+            solved_loss = solved_loss * masks
             loss = option_loss.sum() + solved_loss.sum()
 
             train_loss += loss.item()
@@ -709,6 +712,7 @@ def boxworld_main():
     parser.add_argument('-M', '--move_loss', action='store_true', help='neurosym move loss weight')
     parser.add_argument('-S', '--state_loss', action='store_true', help='neurosym state loss weight')
     parser.add_argument('-C', '--cc_loss', action='store_true', help='neurosym cc loss weight')
+    parser.add_argument('--rnn_macro', action='store_true', help='use RNN macro transition function in CC options learning')
 
     params = parser.parse_args()
 
@@ -813,6 +817,9 @@ def boxworld_main():
                 sv_option_pred(params)
             else:
                 net = make_net(params).to(DEVICE)
+                if params.rnn_macro:
+                    rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
+                    net.control_net.add_rnn(rnn)
                 learn_options(net, params)
 
 
