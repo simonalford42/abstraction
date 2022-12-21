@@ -12,6 +12,7 @@ import box_world as bw
 import random
 import wandb
 import neurosym
+import animate
 
 
 STOP_IX = 0
@@ -232,14 +233,12 @@ j       (b, 2) stop logps
 
         current_option = None
         tau_goal = None
-        done_video = False
 
         while not (done or solved):
             t += 1
-            obs = bw.obs_to_tensor(obs)
-            obs = obs.to(DEVICE)
+            tensor_obs = bw.obs_to_tensor(obs).to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(tensor_obs)
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -251,12 +250,10 @@ j       (b, 2) stop logps
                     stop = torch.argmax(stop_logps[current_option]).item()
                 else:
                     stop = Categorical(logits=stop_logps[current_option]).sample().item()
-                if stop == STOP_IX:
-                    done_video = True
             new_option = current_option is None or stop == STOP_IX
             if new_option:
                 if check_cc:
-                    tau = control_net.tau_embed(obs)
+                    tau = control_net.tau_embed(tensor_obs)
                 if current_option is not None:
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
@@ -266,7 +263,7 @@ j       (b, 2) stop logps
                     current_option = torch.argmax(start_logps).item()
                 else:
                     current_option = Categorical(logits=start_logps).sample().item()
-                option_start_s = obs
+                option_start_s = tensor_obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
             else:
@@ -275,7 +272,7 @@ j       (b, 2) stop logps
                     options_trace[prev_pos] = 'm'
 
             if symbolic_print and new_option:
-                tau = control_net.tau_embed(obs)
+                tau = control_net.tau_embed(tensor_obs)
                 tau = rearrange(tau, '(p c1 c2 two) -> p c1 c2 two', p=2, c1=bw.NUM_COLORS, c2=bw.NUM_COLORS, two=2)
                 tau = tau[:, :, :, neurosym.STATE_EMBED_TRUE_IX]
                 held_keys, dominos = neurosym.parse_symbolic_tensor2(tau)
@@ -293,6 +290,7 @@ j       (b, 2) stop logps
                 a = Categorical(logits=action_logps[current_option]).sample().item()
             option_map[current_option].append(a)
 
+            prev_obs = obs
             obs, rew, done, info = env.step(a)
             solved = env.solved
 
@@ -306,23 +304,27 @@ j       (b, 2) stop logps
                 done = True
 
             if render:
-                title = f'Executing option {current_option}'
-                pause = 1.6 if new_option else 0.1
-                # pause = 0.2
                 if new_option:
                     title = f'Starting new option: {current_option}'
+                    # pause = 1.6
+                    pause = 1.0
+                    bw.render_obs(prev_obs, title=title, pause=pause)
+                    video_obss.append((prev_obs, title, pause))
+
+                title = f'Executing option {current_option}'
+                # pause = 0.2
+                pause = 0.05
                 option_map[current_option].append((obs, title, pause))
                 bw.render_obs(obs, title=title, pause=pause)
-                if not done_video:
-                    video_obss.append((obs, title, pause))
+                video_obss.append((obs, title, pause))
 
         if render:
             if solved:
                 title = 'Solved episode'
             else:
                 title = 'Episode terminated (did not solve)'
-            bw.render_obs(obs, title=title, pause=1)
-            # video_obss.append((obs, title, 2))
+            # bw.render_obs(obs, title=title, pause=1)
+            video_obss.append((obs, title, 2))
             # animate.save_video(video_obss, f'new_video{i}')
 
         if solved:
@@ -517,7 +519,7 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
 
             control_net.eval()
 
-            out_dict = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            out_dict = greedy_solve(env.copy(), control_net, argmax=True, render=False)
             solved = out_dict['solved']
             options = out_dict['options']
             states_between_options = out_dict['states_between_options']
@@ -650,7 +652,7 @@ class BoxWorldDataset(Dataset):
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
 
 
-def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
+def greedy_solve(env, control_net, render=False, macro=False, argmax=True):
     """
     macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
     argmax: select options, actions, etc by argmax not by sampling.
@@ -737,7 +739,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
 
         if render:
             title = f'option={current_option}'
-            pause = 1 if new_option else 0.25
+            pause = 0.5 if new_option else 0.01
             if new_option:
                 title += f' (new option = {current_option})'
             bw.render_obs(obs, title=title, pause=pause)
@@ -808,7 +810,7 @@ def sv_micro_data(n, typ='full_traj', control_net=None):
         num_solved = 0
         for i in range(n):
             env.reset()
-            out_dict = full_sample_solve(env, control_net)
+            out_dict = greedy_solve(env, control_net)
             states_for_each_option = out_dict['states_for_each_option']
             moves_for_each_option = out_dict['moves_for_each_option']
             options1 = out_dict['options']

@@ -1,4 +1,5 @@
 import time
+import argparse
 import random
 import itertools
 import numpy as np
@@ -32,98 +33,7 @@ class PrioritizedItem:
     item: Any = field(compare=False)
 
 
-def eval_abstract_policy_fake(t, control_net: HeteroController, s, env: BoxWorldEnv):
-    new_taus = []
-    new_solved_logps = []
-    new_states = []
-    new_envs = []
-
-    action_logps = control_net.macro_policy_net(t.unsqueeze(0)).reshape((control_net.b, ))
-    for b in range(control_net.b):
-        env2 = env.copy()
-        out = llc_sampler(s, b, control_net, env2)
-        if out is None:
-            action_logps[b] = float('-inf')
-            new_states.append(s)
-            new_taus.append(t.detach())
-            new_envs.append(env2)
-            solved_logps = torch.zeros(2)
-            solved_logps[data.SOLVED_IX] = float('-inf')
-            new_solved_logps.append(solved_logps)
-        else:
-            actions, s, solved = out
-            new_states.append(s)
-            t = control_net.tau_embed(s)
-            new_taus.append(t)
-            new_envs.append(env2)
-            new_solved_logps.append(control_net.solved_logps(t))
-
-    return action_logps, torch.stack(new_taus), torch.stack(new_solved_logps), new_states, new_envs
-
-
-def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, timeout=float('inf'),) -> Generator[Optional[Tuple[List[int], float, float]], None, None]:
-    """
-    uses low level controller to calc prob of high level actions, so "best case" for planning.
-    unfortunately is too memory intensive.
-    """
-    temp = 1
-    start_time = time.time()
-    Node = namedtuple("Node", "t prev b logp solved_logp s env")
-    solved_logp_threshold = math.log(solved_threshold)
-    # print(f'solved_logp_threshold: {solved_logp_threshold}')
-    start_tau = control_net.tau_embed(s0)
-    start_solved_logp = control_net.solved_logps(start_tau)[SOLVED_IX]
-    # print(f'start_solved_prob: {torch.exp(start_solved_logp)}')
-    start = Node(t=control_net.tau_embed(s0), prev=None, b=None, logp=0.0, solved_logp=start_solved_logp, env=env.copy(), s=s0)
-    num_actions = control_net.b
-    expand_queue: PriorityQueue[Node] = PriorityQueue()
-    expand_queue.put(PrioritizedItem(-start.logp, start))
-
-    def expand(node: Node):
-        # for each b action, gives new output
-        action_logps, new_taus, solved_logps, new_states, new_envs = eval_abstract_policy_fake(node.t, control_net, node.s, node.env)
-
-        solved_logps = solved_logps[:, SOLVED_IX]
-        # print(f'(start) action_logps: {action_logps}')
-        # print(f'solved probs: {torch.exp(solved_logps)}')
-
-        logps = action_logps + node.logp
-        logps = logps * temp
-        # print(f'logps: {logps}')
-        # print(f'probs: {torch.exp(logps)}')
-
-        assert_shape(logps, (num_actions, ))
-        nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp, s=s, env=env3)
-                 for (tau, b, logp, solved_logp, s, env3)
-                 in zip(new_taus, range(num_actions), logps, solved_logps, new_states, new_envs)]
-
-        for node in nodes:
-            expand_queue.put(PrioritizedItem(-node.logp, node))
-
-    def get_path(node: Node):
-        states, actions = [], []
-        while node is not None:
-            states.append(node.t)
-            actions.append(node.b)
-            node = node.prev
-        return states[::-1], actions[:-1][::-1]
-
-    while True:
-        if (time.time() - start_time) > timeout:
-            yield
-
-        node = expand_queue.get().item
-
-        if node.solved_logp >= solved_logp_threshold:
-            states, actions = get_path(node)
-            # print(f'HLC solved with path {actions=}')
-            yield actions, node.logp, node.solved_logp
-
-        # print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
-        expand(node)
-
-
-def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
+def hlc_bfs(s0, control_net, timeout=float('inf'), depth: int=-1
             ) -> Generator[Optional[Tuple[List[int], float, float]], None, None]:
     """
     Best first search with the high level controller abstract policy.
@@ -133,13 +43,11 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
     """
     temp = 1
     start_time = time.time()
-    Node = namedtuple("Node", "t prev b logp solved_logp")
-    solved_logp_threshold = math.log(solved_threshold)
-    # print(f'solved_logp_threshold: {solved_logp_threshold}')
+    Node = namedtuple("Node", "t prev b logp solved_logp depth")
+    solved_logp_threshold = math.log(0.5)
     start_tau = control_net.tau_embed(s0)
     start_solved_logp = control_net.solved_logps(start_tau)[SOLVED_IX]
-    # print(f'start_solved_prob: {torch.exp(start_solved_logp)}')
-    start = Node(t=control_net.tau_embed(s0), prev=None, b=None, logp=0.0, solved_logp=start_solved_logp)
+    start = Node(t=control_net.tau_embed(s0), prev=None, b=None, logp=0.0, solved_logp=start_solved_logp, depth=0)
     num_actions = control_net.b
     expand_queue: PriorityQueue[Node] = PriorityQueue()
     expand_queue.put(PrioritizedItem(-start.logp, start))
@@ -149,16 +57,15 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
         action_logps, new_taus, solved_logps = control_net.eval_abstract_policy(node.t)
 
         solved_logps = solved_logps[:, SOLVED_IX]
-        # print(f'(start) action_logps: {action_logps}')
-        # print(f'solved probs: {torch.exp(solved_logps)}')
 
         logps = action_logps + node.logp
         logps = logps * temp
-        # print(f'logps: {logps}')
-        # print(f'probs: {torch.exp(logps)}')
+        if depth > 0 and node.depth >= depth:
+            # set all logps to negative inf
+            logps = torch.full_like(logps, -float('inf'))
 
         assert_shape(logps, (num_actions, ))
-        nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp)
+        nodes = [Node(t=tau, prev=node, b=b, logp=logp, solved_logp=solved_logp, depth=node.depth + 1)
                  for (tau, b, logp, solved_logp)
                  in zip(new_taus, range(num_actions), logps, solved_logps)]
 
@@ -175,20 +82,25 @@ def hlc_bfs(s0, control_net, solved_threshold=0.001, timeout=float('inf')
 
     while True:
         if (time.time() - start_time) > timeout:
+            print('timed out')
             return
 
         node = expand_queue.get().item
+        # print(f'checking node ({node.b=}, {node.logp=}, {node.solved_logp=})')
 
         if node.solved_logp >= solved_logp_threshold:
             states, actions = get_path(node)
-            print(f'HLC solved with path {actions=}')
+            # print(f'HL plan proposes path {actions=} with prob {node.solved_logp.exp()}')
             yield actions, node.logp, node.solved_logp
 
-        print(f'expanding node Node({node.b=}, {node.logp=}, {node.solved_logp=})')
         expand(node)
 
 
 def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=False):
+    """
+    Sample actions from the low level controller until we finish or hit a loop.
+    Returns actions: list, final state, done: bool, looped: bool.
+    """
     actions = []
     done = env.done
     first_step = True
@@ -209,22 +121,17 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=F
             box_world.render_obs(obs, pause=pause)
 
         pos = box_world.player_pos(obs)
+        s = bw.obs_to_tensor(obs).to(DEVICE)
         if pos in pos_visits:
             pos_visits[pos] += 1
             if pos_visits[pos] > 5:
-                return
+                return actions, s, done, True
         else:
             pos_visits[pos] = 1
 
-        s = bw.obs_to_tensor(obs).to(DEVICE)
         first_step = False
 
-    return actions, s, done
-
-
-def is_solved_by_options(env, control_net, options):
-    _, _, solved = llc_plan(options, control_net, env)
-    return solved
+    return actions, s, done, False
 
 
 def llc_plan(options, control_net, env, render=False) -> Tuple[List[List], List, bool]:
@@ -234,9 +141,9 @@ def llc_plan(options, control_net, env, render=False) -> Tuple[List[List], List,
     # print(f'LLC for plan: {abstract_actions}')
     for b in options:
         out = llc_sampler(s, b, control_net, env, render=render)
-        if out is None:
+        actions, s, done, looped = out
+        if looped:
             break
-        actions, s, done = out
         # print(f'LL plan for b={b}: {actions}')
         all_actions.append(actions)
         states_between_options.append(s)
@@ -246,22 +153,88 @@ def llc_plan(options, control_net, env, render=False) -> Tuple[List[List], List,
     return all_actions, states_between_options, env.solved
 
 
-def multiple_plan(env, control_net, timeout, n):
+def multiple_plan(env, control_net, n, depth, timeout):
     num_solved = 0
-    solve_times = []
-    for i in range(n):
-        solved, time = plan(env, control_net)
-        if solved:
-            global L2_ATTEMPTED, L2_SOLVED
-            # if L2_ATTEMPTED > 0:
-            #     print(f'acc={L2_SOLVED}/{L2_ATTEMPTED}={L2_SOLVED/L2_ATTEMPTED:.2f}')
-            num_solved += 1
-            solve_times.append(time)
+    num_tried = 0
 
-    global BETTER
-    print(f'Solved {num_solved}/{n}, including {BETTER} that full sample did not')
-    solve_times = sorted(solve_times)
-    return solve_times
+    for i in range(n):
+        env.reset()
+        print(f'Planning for new task {i}')
+
+        # 1. greedy solve.
+        out_dict = data.greedy_solve(env.copy(), control_net, render=False)
+        options = out_dict['options']
+        if out_dict['solved']:
+            print(f'greedy solved with options: {options}; skipping planning')
+            continue
+        else:
+            print(f'greedy FAILED with options: {options}')
+
+        if depth >= 4:
+            print('Skipping checking all plans for depth >= 4')
+        else:
+            rankings = check_all_plans(env.copy(), control_net, depth=depth)
+            print(f"{rankings=}")
+            if rankings is not None and len(rankings) == 0:
+                print('No solving plans found; skipping planning')
+                continue
+
+        solved, time = plan(env.copy(), control_net, depth=depth, timeout=timeout)
+        num_tried += 1
+        num_solved += solved
+        print(f'Solved {num_solved}/{num_tried}')
+
+
+def multiple_random_shooting(env, control_net, n, depth):
+    for i in range(n):
+        env.reset()
+        print(f'Random shooting for new task {i}')
+
+        # 1. greedy solve.
+        out_dict = data.greedy_solve(env.copy(), control_net, render=False)
+        options = out_dict['options']
+        if out_dict['solved']:
+            print(f'greedy solved with options: {options}; skipping planning')
+            continue
+        else:
+            print(f'greedy FAILED with options: {options}')
+
+        rankings = check_all_plans(env.copy(), control_net, depth=3)
+        print(f"{rankings=}")
+        if rankings is not None and len(rankings) == 0:
+            print('No solving depth 3 plans found; skipping planning')
+            continue
+
+        start = time.time()
+        while (time.time() - start) < 100:
+            options, solved = random_shooting(env.copy(), control_net, depth=depth)
+            if solved:
+                print(f'Solved with options {options}')
+                break
+            else:
+                print(f'Failed with options {options}')
+
+
+def check_planning_possible(env, control_net, n):
+    possible = []
+    greedy_solved = 0
+
+    for i in range(n):
+        print(i)
+        env.reset()
+        # 1. greedy solve.
+        out_dict = data.greedy_solve(env.copy(), control_net, render=False)
+        if out_dict['solved']:
+            greedy_solved += 1
+            continue
+
+        rankings = check_all_plans(env.copy(), control_net, depth=3)
+        if rankings:
+            possible.append((out_dict['options'], rankings))
+
+    print(f'Number possible to solve = {len(possible)}/{n}')
+    print(f'Greedy solved {greedy_solved}/{n}')
+    print(possible)
 
 
 def fake_hl_planner(s, control_net):
@@ -282,7 +255,7 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
     total_solved = 0
     for i in range(n):
         env.reset()
-        out_dict = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax, render=render)
+        out_dict = data.greedy_solve(env.copy(), control_net, macro=macro, argmax=argmax, render=render)
         solved = out_dict['solved']
         options = out_dict['options']
 
@@ -296,57 +269,12 @@ def eval_sampling(control_net, env, n, macro=False, argmax=False, render=False):
     return total_solved
 
 
-# def eval_planner_rnn(control_net, rnn, env, n):
-#     control_net.eval()
-#     rnn.eval()
-
-#     num_solved = 0
-#     lengths = []
-#     correct_with_length = {i: 0 for i in range(env.max_num_steps)}
-#     for i in range(n):
-#         env.reset()
-#         obs = bw.obs_to_tensor(env.obs).to(DEVICE)
-
-#         out_dict = data.full_sample_solve(env, control_net, render=False, argmax=True)
-#         solved = out_dict['solved']
-#         options = out_dict['options']
-
-#         if solved:
-#             num_solved += 1
-#             lengths.append(len(options))
-
-#             t = control_net.tau_embed(obs)
-#             matches = True
-#             for i in range(1, len(options)):
-#                 t_i_pred, _ = rnn(
-#                 t = control_net.macro_transition(t, options[i-1])
-#                 start_logps = control_net.macro_policy_net(t.unsqueeze(0))[0]
-#                 b = torch.argmax(start_logps)
-#                 if b != options[i]:
-#                     matches = False
-#             if matches:
-#                 correct_with_length[len(options)] += 1
-
-#     control_net.train()
-
-#     print(f'Solved {num_solved}/{n}.')
-#     print(f"lengths: {lengths}")
-#     wandb.log({'test/acc': num_solved/n})
-#     lengths = Counter(lengths)
-#     if num_solved > 0:
-#         for i in range(max(lengths) + 1):
-#             if lengths[i] > 0:
-#                 length_acc = correct_with_length[i] / lengths[i]
-#                 print(f'\t{i}: {correct_with_length[i]}/{lengths[i]}={length_acc:.2f}')
-#                 wandb.log({f'test/length_{i}_acc': length_acc})
-
-
 def eval_planner(control_net, env, n):
     control_net.eval()
 
-    solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
-    solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
-    print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
+    # solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
+    # solved_with_sim = eval_sampling(control_net, env.copy(), n, macro=False, argmax=False)
+    # print(f'For sampling, solved {solved_with_model}/{n} with abstract model, {solved_with_sim}/{n} with simulator')
     # wandb.log({'test/model_acc': solved_with_model/n,
     #           'test/simulator_acc': solved_with_sim/n})
 
@@ -357,7 +285,7 @@ def eval_planner(control_net, env, n):
         env.reset()
         obs = bw.obs_to_tensor(env.obs).to(DEVICE)
 
-        out_dict = data.full_sample_solve(env, control_net, render=False, argmax=True)
+        out_dict = data.greedy_solve(env, control_net, render=False, argmax=True)
         solved = out_dict['solved']
         options = out_dict['options']
 
@@ -390,121 +318,23 @@ def eval_planner(control_net, env, n):
                 # wandb.log({f'test/length_{i}_acc': length_acc})
 
 
-def plan(env, control_net, max_hl_plans=-1):
-    env.reset()
-
-    out_dict = data.full_sample_solve(env.copy(), control_net, render=False)
-    full_sample_solved = out_dict['solved']
-    options = out_dict['options']
-    print(f'full sample solved: {full_sample_solved}, options: {options}')
-    if full_sample_solved and len(options) > 1:
-        global L2_ATTEMPTED
-        L2_ATTEMPTED += 1
-
+def plan(env, control_net, depth, timeout):
     s = bw.obs_to_tensor(env.obs).to(DEVICE)
-    # hl_plan_gen = hlc_bfs(s, control_net, timeout=100)
-    # hl_plan_gen = hlc_bfs_fake(s, control_net, env, timeout=100)
+    # hl_plan_gen = hlc_bfs(s, control_net, timeout=timeout, depth=depth)
     hl_plan_gen = fake_hl_planner(s, control_net)
-    plan_num = 0
-    try:
-        while plan_num != max_hl_plans:
-            plan_num += 1
+    tried = 0
+
+    while True:
+        try:
             (options, logp, solved_logp) = next(hl_plan_gen)
-            # print(f'HL proposal: options: {options}, solved logp: {solved_logp}, logp: {logp}')
+            tried += 1
             actions, _, solved = llc_plan(options, control_net, env.copy())
             if solved:
                 print(f'Solved with plan {options[:len(actions)]}')
-                if len(actions) > 1:
-                    global L2_SOLVED
-                    L2_SOLVED += 1
-                if not full_sample_solved:
-                    # print('BETTER')
-                    global BETTER
-                    BETTER += 1
                 return True, time.time()
-    except StopIteration:
-        pass
-
-    print('Failed to solve')
-    return False, 0
-
-
-def test_tau_solved(tau, tau2, control_net):
-    tau, tau2 = tau.detach().numpy(), tau2.detach().numpy()
-    n = 15
-    taus = [(1 - i/(n-1)) * tau + i/(n-1) * tau2 for i in range(n)]
-    solved_probs = [torch.exp(control_net.solved_logps(torch.tensor(t_i))[SOLVED_IX]).item() for t_i in taus]
-    ccs = [((t - tau)**2).sum() for t in taus]
-    taus = [np.concatenate((t, np.array([p, cc]))) for t, p, cc in zip(taus, solved_probs, ccs)]
-    taus = np.array(taus)
-    fig, ax = plt.subplots()
-    ax.imshow(taus)
-
-    # Loop over data dimensions and create text annotations.
-    for j in range(n):
-        for i in range(len(tau)):
-            ax.text(i, j, f'{taus[j][i].item():.2f}', ha="center", va="center", color="w", fontsize=6)
-        ax.text(len(tau), j, f'{np.log(solved_probs[j]):.2f}', ha="center", va="center", color="w", fontsize=6)
-        ax.text(len(tau)+1, j, f'{ccs[j]:.4f}', ha="center", va="center", color="w", fontsize=6)
-
-    plt.show()
-    input()
-
-
-def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
-    """
-    macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
-    argmax: select options, actions, etc by argmax not by sampling.
-    """
-    obs = env.obs
-    options_trace = obs  # as we move, we color over squares in this where we moved, to render later
-    done, solved = False, False
-    options = []
-    prev_pos = (-1, -1)
-    op_new_tau = None
-    states_between_options = []
-
-    current_option = None
-
-    while not (done or solved):
-        obs = box_world.obs_to_tensor(obs).to(DEVICE)
-        # (b, a), (b, 2), (b, ), (2, )
-        action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
-
-        if current_option is not None:
-            if argmax:
-                stop = torch.argmax(stop_logps[current_option]).item()
-            else:
-                stop = Categorical(logits=stop_logps[current_option]).sample().item()
-        new_option = current_option is None or stop == STOP_IX
-        if new_option:
-            states_between_options.append(obs)  # starts out empty, adds before each option, then adds final at end
-            if current_option is not None and macro:
-                start_logps = control_net.macro_policy_net(op_new_tau)
-
-            tau = control_net.tau_embed(obs)
-            if macro and op_new_tau is not None:
-                tau = op_new_tau
-
-            if current_option is not None:
-                # causal_consistency = ((tau - op_new_tau)**2).sum()
-                # print(f'causal_consistency: {causal_consistency}')
-                options_trace[prev_pos] = 'e'
-
-            if argmax:
-                current_option = torch.argmax(start_logps).item()
-            else:
-                current_option = Categorical(logits=start_logps).sample().item()
-
-            op_start_logps, op_new_taus, op_solved_logps = control_net.eval_abstract_policy(tau)
-            op_new_tau = op_new_taus[current_option]
-            # op_new_tau_solved_prob = torch.exp(op_solved_logps[current_option, box_world.SOLVED_IX])
-            # print(f'solved prob from option: {op_new_tau_solved_prob}')
-            options.append(current_option)
-        else:
-            # dont overwrite 'new option' dot from earlier
-            if options_trace[prev_pos] != 'e':
-                options_trace[prev_pos] = 'm'
+        except StopIteration:
+            print(f'Failed to solve after trying {tried} plans')
+            return False, 0
 
 
 def plan_logp(options, s0, control_net: HeteroController, skip_first=False):
@@ -534,7 +364,7 @@ def test_llc_stochasticity():
 
     for i in range(5):
         env.reset()
-        solved, options, _ = data.full_sample_solve(env.copy(), control_net, render=True)
+        solved, options, _ = data.greedy_solve(env.copy(), control_net, render=True)
         print(f'solved: {solved} options: {options}')
         if solved:
             for i in range(3):
@@ -544,145 +374,95 @@ def test_llc_stochasticity():
 RANKINGS = []
 
 
-def check_plan_rankings(env, control_net, depth, n):
-    control_net.eval()
+def check_all_plans(env, control_net, depth):
+    obs = bw.obs_to_tensor(env.obs).to(DEVICE)
 
+    plans = itertools.product(range(control_net.b), repeat=depth)
+    rankings = []
+    n_solved = 0
+    n_plans = 0
+    for options in plans:
+        n_plans += 1
+        actions, _, solved = llc_plan(options, control_net, env.copy())
+        if solved:
+            print(f'{options=}')
+        if solved and len(actions) < len(options):
+            # the task is solved in fewer than depth options, so this wasn't a good example
+            print(f'Solved early with options={options[:len(actions)]}')
+            return
+
+        logp = plan_logp(options, obs, control_net, skip_first=True)
+        rankings.append((options, logp, solved))
+        if solved:
+            n_solved += 1
+
+    rankings = sorted(rankings, key=lambda t: -t[1])
+    rankings = [(*r, i) for i, r in enumerate(rankings)]
+    rankings = [r for r in rankings if r[2]]
+    return rankings
+
+
+def check_plan_rankings(env, control_net, depth, n):
     for i in range(n):
         print(f"{i=}")
         env.reset()
-        obs = bw.obs_to_tensor(env.obs).to(DEVICE)
-
-        for d in range(depth+1):
-            plans = itertools.product(range(control_net.b), repeat=d)
-            rankings = []
-            n_solved = 0
-            n_plans = 0
-            for options in plans:
-                n_plans += 1
-                actions, _, solved = llc_plan(options, control_net, env.copy())
-                if solved and len(actions) < len(options):
-                    # the task is solved in fewer than depth options, so this wasn't a good example
-                    print('solved early')
-                    break
-
-                logp = plan_logp(options, obs, control_net, skip_first=True)
-                rankings.append((options, logp, solved))
-                if solved:
-                    n_solved += 1
-
-            if d < 3 and n_solved > 0:
-                break
-
-            elif n_solved > 0:
-                print(f'For depth={d}, solved w/ {n_solved}/{n_plans} plans')
-
-                rankings = sorted(rankings, key=lambda t: -t[1])
-                solved_rankings = []
-                for rank, (options, logp, solved) in enumerate(rankings):
-                    if solved:
-                        solved_rankings.append((rank, options, logp))
-                        global RANKINGS
-                        RANKINGS.append(rank)
-                        print(f'SOLVED {rank=}, {options=}, {logp=}')
-                        break
-                    # else:
-                        # print(f'{rank=}, {options=}, {logp=}')
-                break
-
-    control_net.train()
+        rankings = check_all_plans(env, control_net)
+        print(f"{rankings=}")
 
 
-def check_macro(env, control_net):
-    dataset = data.PlanningDataset(env, control_net, n=500, tau_precompute=False)
-    dataloader = DataLoader(dataset, batch_size=64, shuffle=True,
-                            collate_fn=data.latent_traj_collate)
+def random_shooting(env, control_net, depth, sample_size=100):
+    def random_trajectory(init_state, control_net, max_steps=depth):
+        trajectory = []
+        logp = 0.0
+        t = control_net.tau_embed(init_state)
+        for i in range(max_steps):
+            action_logps = control_net.macro_policy_net(t.unsqueeze(0))[0]
+            action = Categorical(logits=action_logps).sample().item()
+            trajectory.append(action)
+            logp = logp * action_logps[action]
+            t = control_net.macro_transition(t, action)
+        return trajectory, logp
 
-    option_num_correct = torch.zeros(dataset.max_T).to(DEVICE)
-    solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
-    option_num_total = torch.zeros(dataset.max_T).to(DEVICE)
-    solved_num_total = 0
-    b = control_net.b
-    t = control_net.t
+    action_traj: List[List[int]] = []
+    option_traj = []
 
-    for states, options, solveds, lengths, masks in dataloader:
-        states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
+    """
+    1. sample sample_size random trajectories
+    2. for each trajectory, compute the logp
+    3. choose the trajectory with the highest overall logp
+    4. take the first action in the trajectory
+    5. repeat from new state
+    6. repeat until solved or finished (or visit an already seen state).
+    """
+    current_state = bw.obs_to_tensor(env.obs).to(DEVICE)
+    done = False
+    while (len(option_traj) <= depth) and (not done):
+        box_world.render_obs(env.obs, pause=1, title='current state in random shooting')
+        trajectories = [random_trajectory(current_state, control_net) for _ in range(sample_size)]
+        print('Random shoots:', Counter([str(t[0]) for t in trajectories]))
+        best_trajectory = max(trajectories, key=lambda t: t[1])
+        option = best_trajectory[0][0]
+        option_traj.append(option)
+        actions, current_state, done, _ = llc_sampler(current_state, option, control_net, env, render=False)
+        action_traj.append(actions)
 
-        option_one_hots = F.one_hot(options, num_classes=b).float().to(DEVICE)
-
-        B, T_plus_one, *s = states.shape
-        T = T_plus_one - 1
-        assert_shape(options, (B, T))
-        assert_shape(solveds, (B, T + 1))
-        assert_shape(masks, (B, T + 1))
-
-        states_flattened = states.reshape(B * (T + 1), *s)
-        t_i_flattened = control_net.tau_net(states_flattened)
-        t_i = t_i_flattened.reshape(B, T + 1, t)
-
-        # https://stackoverflow.com/questions/48915810/what-does-contiguous-do-in-pytorch
-        t0 = t_i[None, :, 0].contiguous()
-        # apparently the required shape for the hidden state:
-        # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
-        assert_shape(t0, (1, B, 32))
-
-        t_i_preds, _ = rnn(option_one_hots, t0)
-        assert_shape(t_i_preds, (B, T, t))
-        # concat t0 to front
-        t0 = t_i[:, 0:1]
-        assert_shape(t0, (B, 1, t))
-        t_i_preds = torch.concat([t0, t_i_preds], dim=1)
-        assert_shape(t_i_preds, (B, T + 1, t))
-
-        t_i_preds_flattened = t_i_preds.reshape(B * (T + 1), t)
-        solved_logps = control_net.solved_net(t_i_preds_flattened).reshape(B, T + 1, 2)
-        option_logps = control_net.macro_policy_net(t_i_preds_flattened).reshape(B, T + 1, b)
-
-        # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
-        option_logps, solved_logps = [rearrange(x, 'N d C -> N C d') for x in
-                                               [option_logps, solved_logps]]
-
-        option_logps = option_logps[:, :, :-1]
-        assert_shape(option_logps, (B, b, T))
-        assert_shape(options, (B, T))
-        assert_shape(solveds, (B, T + 1))
-
-        option_preds = torch.argmax(option_logps, dim=1)
-        solved_preds = torch.argmax(solved_logps, dim=1)
-        assert_shape(option_preds, (B, T))
-
-        # masks[:, :T+1] = 1, which is one more than the number of options.
-        # to get correct mask, take masks[:, 1:]
-        matched = ((option_preds == options) * masks[:, 1:]).sum(dim=0)
-        solved_matched = ((solved_preds == solveds) * masks).sum(dim=0)
-        option_num_correct[:len(matched)] += matched
-        solved_num_correct[:len(solved_matched)] += solved_matched
-        tried = masks[:, 1:].sum(dim=0)
-        option_num_total[:len(tried)] += tried
-        solved_num_total += masks.sum()
-
-    for i in range(len(option_num_total)):
-        if option_num_total[i] == 0:
-            option_num_total[i] = 1
-
-    acc = option_num_correct.sum() / option_num_total.sum()
-    solved_acc = solved_num_correct.sum() / solved_num_total
-    acc_dict = {f'acc{i}': (0 if (option_num_total[i] == 0)
-                              else option_num_correct[i] / option_num_total[i])
-                for i in range(len(option_num_correct))}
-    print(f"{acc=}")
-    print(f"{solved_acc=}")
-    print(f"{acc_dict=}")
+    return option_traj, env.solved
 
 
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
+    rnn_model_id = None
     # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
     # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
+
     model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
     rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
 
+    # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
+    model_id = '59534f21b71d4420a9c692d22f856588'; control_net = False
+#
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
         control_net = net
@@ -690,23 +470,33 @@ if __name__ == '__main__':
         control_net = net.control_net
 
     control_net.tau_noise_std = 0
+    control_net.eval()
 
-    rnn = utils.load_model(f'models/{rnn_model_id}.pt')
-    control_net.add_rnn(rnn)
+    if rnn_model_id:
+        rnn = utils.load_model(f'models/{rnn_model_id}.pt')
+        control_net.add_rnn(rnn)
 
-    depth = 3
-    env = box_world.BoxWorldEnv(seed=1, solution_length=(depth, ))
-    n = 100
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--random_shooting', action='store_true')
+    parser.add_argument('-d', '--depth', default=3, type=int)
+    parser.add_argument('-sd', '--search_depth', default=0, type=int)
+    parser.add_argument('-n', '--n', default=100, type=int)
+    args = parser.parse_args()
+    if args.search_depth == 0:
+        args.search_depth = args.depth
 
-    check_macro(env, control_net)
-    # acc = eval_planner(control_net, env, n=n)
-    # test_consistency(env, control_net, n=n)
-    # eval_sampling(control_net, env, n=n, render=False, macro=True)
+    # env = box_world.BoxWorldEnv(seed=3, solution_length=(args.depth, ))
+    env = box_world.BoxWorldEnv(seed=3, solution_length=(2, ))
 
-    # solve_times = multiple_plan(env, control_net, timeout=600, n=n)
+    with torch.no_grad():
+        data.eval_options_model(control_net, env, n=args.n, render=True)
+        # check_macro(env, control_net)
+        # acc = eval_planner(control_net, env, n=n)
+        # test_consistency(env, control_net, n=n)
+        # eval_sampling(control_net, env, n=n, render=False, macro=True)
+        # check_planning_possible(env, control_net, n=n)
 
-    # check_plan_rankings(env, control_net, depth=depth, n=n)
-    # RANKINGS = sorted(RANKINGS)
-    # print(f"{RANKINGS=}")
-    # plt.plot(RANKINGS)
-    # plt.show()
+        # if args.random_shooting:
+            # solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
+        # else:
+            # solve_times = multiple_plan(env, control_net, n=args.n, depth=args.search_depth, timeout=30)

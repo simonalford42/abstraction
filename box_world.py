@@ -193,7 +193,7 @@ def ascii_to_color(ascii: str):
         return color_name_to_rgb('dimgrey')
     else:
         i = COLORS.index(ascii)
-        colors = ['blue', 'red', 'orange', 'green', 'cyan', 'purple', 'yellow', 'green',
+        colors = ['blue', 'red', 'orange', 'green', 'cyan', 'purple', 'yellow', 'pink',
                   'brown', 'maroon', 'gold', 'olive', 'limegreen', 'dodgerblue', 'indigo', 'violet',
                   'orangered', 'greenyellow', 'darkgreen', 'darkblue', 'magenta'][:len(COLORS)]
         return color_name_to_rgb(colors[i])
@@ -271,7 +271,7 @@ def play_game(env):
     print(NUM_COLORS)
     print('Enter wasd to move, q to quit')
     while not done:
-        # render_obs(obs)
+        render_obs(obs)
         print_obs(obs)
         key = input()
         if key.lower() == 'q':

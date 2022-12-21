@@ -6,6 +6,15 @@
 # sbatch run.sh --model cc
 
 # sbatch run.sh --model sv
-sbatch run.sh --model hmm --abstract_pen 1.0 --lr 3E-4 --traj_updates 1E8
-sbatch run.sh --model hmm --abstract_pen 1.0 --lr 1E-4 --traj_updates 1E8
-sbatch run.sh --model hmm --abstract_pen 1.0 --lr 8E-4 --traj_updates 1E8
+sbatch run.sh --model hmm --solution_length 1
+sbatch run.sh --model hmm --solution_length 2
+sbatch run.sh --model hmm --solution_length 3
+sbatch run.sh --model hmm --solution_length 4
+sbatch run.sh --model hmm --solution_length 5
+sbatch run.sh --model hmm --solution_length (2, 3)
+sbatch run.sh --model hmm --solution_length (2, 4)
+sbatch run.sh --model hmm --solution_length (1, 3, 5)
+sbatch run.sh --model hmm --b 50
+sbatch run.sh --model hmm --b 50
+sbatch run.sh --model hmm --b 20
+sbatch run.sh --model hmm --b 20
