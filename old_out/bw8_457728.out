@@ -1,0 +1,38 @@
+Starting run:
+aa63b783adf24d72a8a95e0898c14f0e
+train
+Evaluating model on 200 episodes
+Solved 36/200 episodes
+Evaluating model on 200 episodes
+Solved 44/200 episodes
+Evaluating model on 200 episodes
+Solved 53/200 episodes
+Evaluating model on 200 episodes
+Solved 46/200 episodes
+Evaluating model on 200 episodes
+Solved 38/200 episodes
+Evaluating model on 200 episodes
+Solved 54/200 episodes
+Evaluating model on 200 episodes
+Solved 168/200 episodes
+Evaluating model on 200 episodes
+Solved 189/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+slurmstepd: error: *** JOB 457728 ON ellis-compute-01 CANCELLED AT 2022-03-23T23:13:24 ***

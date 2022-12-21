@@ -1,0 +1,37 @@
+Starting run:
+2c2dc9a899d34e7395f39ef51d215e12
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 600, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': False, 'homo': False, 'sv': False, 'save_every': False, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'causal', 'device': 'NVIDIA GeForce RTX 3090', 'id': '2c2dc9a899d34e7395f39ef51d215e12'}
+train
+Net has 205330 parameters
+Epoch 0	 test acc 0.065
+Epoch 20	 test acc 0.165
+Epoch 40	 test acc 0.215
+Epoch 60	 test acc 0.145
+Epoch 80	 test acc 0.225
+Epoch 100	 test acc 0.155
+Epoch 120	 test acc 0.215
+Epoch 140	 test acc 0.34
+Epoch 160	 test acc 0.445
+Epoch 180	 test acc 0.585
+Epoch 200	 test acc 0.63
+Epoch 220	 test acc 0.68
+Epoch 240	 test acc 0.73
+Epoch 260	 test acc 0.855
+Epoch 280	 test acc 0.825
+Epoch 300	 test acc 0.85
+Epoch 320	 test acc 0.825
+Epoch 340	 test acc 0.8
+Epoch 360	 test acc 0.75
+Epoch 380	 test acc 0.81
+Epoch 400	 test acc 0.86
+Epoch 420	 test acc 0.83
+Epoch 440	 test acc 0.915
+Epoch 460	 test acc 0.825
+Epoch 480	 test acc 0.855
+Epoch 500	 test acc 0.75
+Epoch 520	 test acc 0.88
+Epoch 540	 test acc 0.85
+Epoch 560	 test acc 0.735
+Epoch 580	 test acc 0.825
+Saved model at models/2c2dc9a899d34e7395f39ef51d215e12.pt
+Completed training in 70592.0 seconds

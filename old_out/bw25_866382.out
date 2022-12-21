@@ -1,0 +1,52 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+58baf2403a75455b82cae94671580604
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=256, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, relational_macro=False, batch_size=32, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='58baf2403a75455b82cae94671580604')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220922_174340-1w7k2vn3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run upbeat-aardvark-516
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/1w7k2vn3
+Net has 226852 parameters
+WARNING: tau norm dim disabled
+Solved 6/200 episodes, CC loss avg = 0.015498461282885309
+Solved 118/200 episodes, CC loss avg = 0.021671644247854588
+Solved 126/200 episodes, CC loss avg = 0.019736632739699132
+Saved model at models/58baf2403a75455b82cae94671580604-epoch-197.pt
+Solved 117/200 episodes, CC loss avg = 0.021424438136616826
+Solved 128/200 episodes, CC loss avg = 0.02325889206115614
+Solved 125/200 episodes, CC loss avg = 0.022713530593766615
+Saved model at models/58baf2403a75455b82cae94671580604-epoch-396.pt
+Solved 114/200 episodes, CC loss avg = 0.02299034523585921
+Solved 121/200 episodes, CC loss avg = 0.02306957588837351
+Saved model at models/58baf2403a75455b82cae94671580604.pt
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 27573.5 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: \ 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: | 0.002 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: / 0.002 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: - 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: \ 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: | 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: / 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: - 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: \ 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: | 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▇█▇██▇█
+wandb: loss █▅▅▄▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.605
+wandb: loss 62063.72799
+wandb: 
+wandb: Synced upbeat-aardvark-516: https://wandb.ai/simonalford42/abstraction/runs/1w7k2vn3
+wandb: Synced 6 W&B file(s), 3 media file(s), 3 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220922_174340-1w7k2vn3/logs

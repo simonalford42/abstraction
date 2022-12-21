@@ -1,0 +1,60 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-82
+outer sv
+params: {'epochs': 200, 'lr': 0.0008, 'n': 5000, 'batch_size': 10}
+Net has 37803 parameters
+Round 0
+epoch: 0	train loss: 160584.61240386963	(35.8s)
+epoch: 10	train loss: 61297.74897003174	(37.4s)
+epoch: 20	train loss: 54804.043142318726	(37.4s)
+epoch: 30	train loss: 51115.52641773224	(37.0s)
+epoch: 40	train loss: 48695.30824971199	(37.0s)
+epoch: 50	train loss: 47207.63749742508	(37.2s)
+epoch: 60	train loss: 45671.83758401871	(37.1s)
+epoch: 70	train loss: 40828.2549393177	(37.1s)
+epoch: 80	train loss: 37016.1506652236	(36.9s)
+epoch: 90	train loss: 33320.31536668539	(37.1s)
+epoch: 100	train loss: 29389.456097841263	(37.6s)
+epoch: 110	train loss: 23986.22800499201	(36.8s)
+epoch: 120	train loss: 19737.507212370634	(36.9s)
+epoch: 130	train loss: 17679.42041566223	(37.1s)
+epoch: 140	train loss: 16159.194285951555	(37.4s)
+epoch: 150	train loss: 14076.834458712488	(37.3s)
+epoch: 160	train loss: 12090.396457768977	(36.7s)
+epoch: 170	train loss: 11328.54066323489	(37.2s)
+epoch: 180	train loss: 10431.02880243212	(37.2s)
+epoch: 190	train loss: 8278.686121214181	(37.5s)
+Evaluating model on 200 episodes
+Solved 192/200 episodes
+Evaluated model in 20.6 seconds
+Round 1
+epoch: 0	train loss: 7045.556722888723	(36.7s)
+epoch: 10	train loss: 5246.645750628784	(37.8s)
+epoch: 20	train loss: 4764.570164140314	(37.6s)
+epoch: 30	train loss: 3176.712939484045	(37.5s)
+epoch: 40	train loss: 3183.4510212242603	(37.2s)
+epoch: 50	train loss: 2972.7514426885173	(36.8s)
+epoch: 60	train loss: 3310.205933945719	(37.0s)
+epoch: 70	train loss: 2065.3865561475977	(36.9s)
+epoch: 80	train loss: 2437.5850564069115	(36.8s)
+Run AB-82 received abort signal. Exiting
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 158 operations to synchronize with Neptune. Do not kill this process.
+Still waiting for the remaining 12 operations (92.41% done). Please wait.
+Still waiting for the remaining 24 operations (84.81% done). Please wait.
+Still waiting for the remaining 15 operations (90.51% done). Please wait.
+Still waiting for the remaining 30 operations (81.01% done). Please wait.
+Still waiting for the remaining 15 operations (90.51% done). Please wait.
+Still waiting for the remaining 18 operations (88.61% done). Please wait.
+Still waiting for the remaining 12 operations (92.41% done). Please wait.
+Still waiting for the remaining 18 operations (88.61% done). Please wait.
+Still waiting for the remaining 27 operations (82.91% done). Please wait.
+epoch: 90	train loss: 1834.5312883812003	(37.3s)
+Still waiting for the remaining 43 operations (72.78% done). Please wait.
+Still waiting for the remaining 18 operations (88.61% done). Please wait.
+Still waiting for the remaining 21 operations (86.71% done). Please wait.
+Still waiting for the remaining 15 operations (90.51% done). Please wait.
+Still waiting for the remaining 18 operations (88.61% done). Please wait.
+Still waiting for the remaining 30 operations (81.01% done). Please wait.
+Still waiting for the remaining 15 operations (90.51% done). Please wait.
+slurmstepd: error: *** JOB 456604 ON nikola-compute-03 CANCELLED AT 2022-03-23T14:26:49 ***

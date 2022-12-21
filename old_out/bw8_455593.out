@@ -1,0 +1,83 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-53
+params: {'epochs': 100, 'lr': 0.0008, 'n': 100, 'batch_size': 10}
+Net has 205330 parameters
+Round 0
+Non-disk data
+Generated trajectories in 1.6 seconds
+epoch: 0	train loss: 3876.8583221435547	(1.7s)
+epoch: 10	train loss: 2840.112892150879	(1.1s)
+epoch: 20	train loss: 2824.7213745117188	(1.1s)
+epoch: 30	train loss: 2815.2518615722656	(1.1s)
+epoch: 40	train loss: 2562.7089920043945	(1.1s)
+epoch: 50	train loss: 1890.025520324707	(1.1s)
+epoch: 60	train loss: 1589.7038917541504	(1.1s)
+epoch: 70	train loss: 1531.2028884887695	(1.1s)
+epoch: 80	train loss: 1267.4367294311523	(1.1s)
+epoch: 90	train loss: 1115.380823135376	(1.1s)
+Solved 7/200 episodes
+Evaluated model in 22.4 seconds
+Round 1
+Non-disk data
+Generated trajectories in 1.5 seconds
+epoch: 0	train loss: 2161.7784118652344	(1.1s)
+epoch: 10	train loss: 1491.4304389953613	(1.1s)
+epoch: 20	train loss: 1337.999698638916	(1.1s)
+epoch: 30	train loss: 1111.174560546875	(1.1s)
+epoch: 40	train loss: 957.2304134368896	(1.1s)
+epoch: 50	train loss: 883.9290752410889	(1.1s)
+epoch: 60	train loss: 797.2726211547852	(1.1s)
+epoch: 70	train loss: 670.7224826812744	(1.1s)
+epoch: 80	train loss: 631.8349189758301	(1.1s)
+epoch: 90	train loss: 532.185546875	(1.1s)
+Solved 9/200 episodes
+Evaluated model in 22.6 seconds
+Round 2
+Non-disk data
+Generated trajectories in 1.3 seconds
+epoch: 0	train loss: 2856.146255493164	(1.1s)
+epoch: 10	train loss: 1284.37202835083	(1.1s)
+epoch: 20	train loss: 968.8088150024414	(1.0s)
+epoch: 30	train loss: 910.2538375854492	(1.1s)
+epoch: 40	train loss: 754.1011142730713	(1.1s)
+epoch: 50	train loss: 640.0289554595947	(1.1s)
+epoch: 60	train loss: 631.4321823120117	(1.0s)
+epoch: 70	train loss: 487.41717529296875	(1.0s)
+epoch: 80	train loss: 441.5405607223511	(1.1s)
+epoch: 90	train loss: 509.2938976287842	(1.0s)
+Solved 6/200 episodes
+Evaluated model in 17.8 seconds
+Round 3
+Non-disk data
+Generated trajectories in 1.4 seconds
+epoch: 0	train loss: 3300.9288635253906	(1.1s)
+epoch: 10	train loss: 1315.5190162658691	(1.1s)
+epoch: 20	train loss: 973.270336151123	(1.1s)
+epoch: 30	train loss: 825.3010635375977	(1.1s)
+epoch: 40	train loss: 686.1883449554443	(1.1s)
+epoch: 50	train loss: 592.728925704956	(1.1s)
+epoch: 60	train loss: 573.766429901123	(1.1s)
+epoch: 70	train loss: 554.7538547515869	(1.1s)
+epoch: 80	train loss: 402.82145404815674	(1.1s)
+epoch: 90	train loss: 458.20812129974365	(1.1s)
+Solved 5/200 episodes
+Evaluated model in 25.4 seconds
+Round 4
+Non-disk data
+Generated trajectories in 1.4 seconds
+epoch: 0	train loss: 2867.998779296875	(1.1s)
+epoch: 10	train loss: 1289.8083839416504	(1.1s)
+epoch: 20	train loss: 904.8304138183594	(1.1s)
+epoch: 30	train loss: 943.5256233215332	(1.1s)
+epoch: 40	train loss: 578.3061370849609	(1.1s)
+epoch: 50	train loss: 578.0129127502441	(1.1s)
+epoch: 60	train loss: 411.4160375595093	(1.1s)
+epoch: 70	train loss: 549.9873733520508	(1.1s)
+epoch: 80	train loss: 452.76116466522217	(1.1s)
+epoch: 90	train loss: 402.42020416259766	(1.1s)
+Solved 11/200 episodes
+Evaluated model in 18.9 seconds
+Completed training in 665.9 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 8 operations to synchronize with Neptune. Do not kill this process.
+All 8 operations synced, thanks for waiting!

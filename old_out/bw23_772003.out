@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 6, in <module>
+    import planning
+  File "/home/sca63/abstraction/planning.py", line 8, in <module>
+    import box_world
+  File "/home/sca63/abstraction/box_world.py", line 16, in <module>
+    COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
+AttributeError: module 'pycolab.examples.research.box_world.box_world' has no attribute 'NUM_COLORS'

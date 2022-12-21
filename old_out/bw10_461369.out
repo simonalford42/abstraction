@@ -1,0 +1,24 @@
+Starting run:
+4e0c3fbdb3314dcf9c98332e6a7f21f8
+params: {'n': 5000, 'lr': 0.0008, 'epochs': 2500, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 100, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN Xp', 'id': '4e0c3fbdb3314dcf9c98332e6a7f21f8'}
+train
+Net has 37803 parameters
+Solved 8/200 episodes
+Epoch 0	 test acc 0.04
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-0.pt
+Solved 47/200 episodes
+Epoch 100	 test acc 0.235
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-100.pt
+Solved 67/200 episodes
+Epoch 200	 test acc 0.335
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-200.pt
+Solved 178/200 episodes
+Epoch 300	 test acc 0.89
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-300.pt
+Solved 199/200 episodes
+Epoch 400	 test acc 0.995
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-400.pt
+Solved 200/200 episodes
+Epoch 500	 test acc 1.0
+Saved model at models/4e0c3fbdb3314dcf9c98332e6a7f21f8-epoch-500.pt
+slurmstepd: error: *** JOB 461369 ON sablab-gpu-04 CANCELLED AT 2022-03-28T14:28:30 DUE TO PREEMPTION ***

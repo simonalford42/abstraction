@@ -1,0 +1,88 @@
+Starting run:
+15ef0c93b66c43439dea56738985832b
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 1, 'neptune': False, 'no_log': False, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '15ef0c93b66c43439dea56738985832b'}
+train
+Net has 206996 parameters
+Correct solved pred %: 1.00
+Epoch 0	 test acc 0.005
+reloading data
+Correct solved pred %: 1.00
+Epoch 100	 test acc 0.155
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 200	 test acc 0.165
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 300	 test acc 0.19
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 400	 test acc 0.245
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 500	 test acc 0.31
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 600	 test acc 0.395
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 700	 test acc 0.49
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 800	 test acc 0.515
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 900	 test acc 0.54
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-900.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1000	 test acc 0.67
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1000.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1100	 test acc 0.79
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1200	 test acc 0.815
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1300	 test acc 0.845
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1400	 test acc 0.87
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1500	 test acc 0.86
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1600	 test acc 0.885
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1700	 test acc 0.935
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1800	 test acc 0.925
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1800.pt
+reloading data
+i=tensor([9], device='cuda:0')
+fw: tensor([-658.4005], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-658.4007], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-658.4006], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([-6.1035e-05], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([-6.1035e-05], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-658.4006], device='cuda:0', grad_fn=<IndexBackward0>)
+Correct solved pred %: 1.00
+Epoch 1900	 test acc 0.875
+Saved model at models/15ef0c93b66c43439dea56738985832b-epoch-1900.pt
+Saved model at models/15ef0c93b66c43439dea56738985832b.pt
+Completed training in 123747.3 seconds

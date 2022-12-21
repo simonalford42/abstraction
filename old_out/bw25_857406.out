@@ -1,0 +1,121 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce GTX 1080 Ti
+cuda:0
+Passed GPU check
+Starting run:
+951d44ea6cdd45e0966d46baf062d20c
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, relational_macro=True, batch_size=16, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce GTX 1080 Ti', id='951d44ea6cdd45e0966d46baf062d20c')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220917_164450-1a5su99m
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run fanciful-microwave-492
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/1a5su99m
+Net has 187361 parameters
+WARNING: tau norm dim disabled
+Solved 3/200 episodes, CC loss avg = 159.56965188785475
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-22.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-45.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-69.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-92.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-115.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-138.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-161.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-184.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-207.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-231.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-254.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-277.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Saved model at models/951d44ea6cdd45e0966d46baf062d20c-epoch-300.pt
+Solved 0/200 episodes, CC loss avg = nan
+Solved 0/200 episodes, CC loss avg = nan
+Completed training in 152084.1 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 729, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 605, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 144, in learn_options
+    loss = net(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 455, in forward
+    return self.cc_loss(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/abstraction/hmm.py", line 464, in cc_loss
+    action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i_batch, batched=True)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/abstract.py", line 647, in forward
+    return self.forward_b(s_i_batch, tau_noise=tau_noise)
+  File "/home/sca63/abstraction/abstract.py", line 724, in forward_b
+    causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
+  File "/home/sca63/abstraction/abstract.py", line 860, in calc_causal_pens_b
+    macro_trans = self.macro_transitions(noised_t_i_flattened,
+  File "/home/sca63/abstraction/abstract.py", line 785, in macro_transitions
+    return self.neurosym_macro_transitions(t_i, bs)
+  File "/home/sca63/abstraction/abstract.py", line 769, in neurosym_macro_transitions
+    out = self.world_model_program_step(t_i2, b_repeats)
+  File "/home/sca63/abstraction/abstract.py", line 621, in world_model_program_step
+    return neurosym.world_model_step(states, moves, self.world_model_program)
+  File "/home/sca63/abstraction/neurosym.py", line 465, in world_model_step
+    assert max(moves) <= C - 1 and min(moves) >= 0, f'moves must be in [0, {C-1}] but instead are {[min(moves), max(moves)]}'
+KeyboardInterrupt
+wandb: Waiting for W&B process to finish... (failed 255). Press Control-C to abort syncing.
+wandb: - 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: \ 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: | 0.006 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.006 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: loss ▁                                       
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.0
+wandb: loss nan
+wandb: 
+wandb: Synced fanciful-microwave-492: https://wandb.ai/simonalford42/abstraction/runs/1a5su99m
+wandb: Synced 6 W&B file(s), 13 media file(s), 13 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220917_164450-1a5su99m/logs

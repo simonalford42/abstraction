@@ -1,0 +1,19 @@
+Starting run:
+7beeddec68f5416783334ed218f7cf30
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 1600, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 50, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': '7beeddec68f5416783334ed218f7cf30'}
+train
+Net has 37803 parameters
+Solved 25/200 episodes
+Epoch 0	 test acc 0.125
+Saved model at models/7beeddec68f5416783334ed218f7cf30-epoch-0.pt
+Solved 38/200 episodes
+Epoch 50	 test acc 0.19
+Solved 53/200 episodes
+Epoch 100	 test acc 0.265
+Saved model at models/7beeddec68f5416783334ed218f7cf30-epoch-100.pt
+Solved 41/200 episodes
+Epoch 150	 test acc 0.205
+Solved 38/200 episodes
+Epoch 200	 test acc 0.19
+Saved model at models/7beeddec68f5416783334ed218f7cf30-epoch-200.pt
+slurmstepd: error: *** JOB 461048 ON gadikota-compute-01 CANCELLED AT 2022-03-28T04:01:13 DUE TO TIME LIMIT ***

@@ -1,0 +1,308 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-55
+params: {'epochs': 10, 'lr': 0.0008, 'n': 100, 'batch_size': 10}
+Net has 205330 parameters
+Round 0
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 3876.8570709228516	(1.8s)
+Solved 1/200 episodes
+Evaluated model in 44.0 seconds
+Round 1
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 2851.95548248291	(1.6s)
+Solved 2/200 episodes
+Evaluated model in 46.6 seconds
+Round 2
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 2833.71248626709	(1.6s)
+Solved 0/200 episodes
+Evaluated model in 50.0 seconds
+Round 3
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 2805.672103881836	(1.6s)
+Solved 2/200 episodes
+Evaluated model in 55.1 seconds
+Round 4
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 2486.966064453125	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 55.6 seconds
+Round 5
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 2172.6766204833984	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 53.0 seconds
+Round 6
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1907.5599212646484	(1.6s)
+Solved 7/200 episodes
+Evaluated model in 42.8 seconds
+Round 7
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1811.0882110595703	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 42.0 seconds
+Round 8
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1643.813808441162	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 35.9 seconds
+Round 9
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1634.2327194213867	(1.6s)
+Solved 11/200 episodes
+Evaluated model in 39.8 seconds
+Round 10
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1496.1912803649902	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 35.8 seconds
+Round 11
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1517.0327033996582	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 26.8 seconds
+Round 12
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1354.8456649780273	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 26.3 seconds
+Round 13
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1257.069637298584	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 23.1 seconds
+Round 14
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1262.6013488769531	(1.6s)
+Solved 7/200 episodes
+Evaluated model in 26.9 seconds
+Round 15
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1024.4677639007568	(1.6s)
+Solved 8/200 episodes
+Evaluated model in 21.3 seconds
+Round 16
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1010.9646911621094	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 27.2 seconds
+Round 17
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 983.7041091918945	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 22.6 seconds
+Round 18
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 883.0523109436035	(1.6s)
+Solved 9/200 episodes
+Evaluated model in 25.9 seconds
+Round 19
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 782.973461151123	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 25.3 seconds
+Round 20
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 788.0957889556885	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 25.0 seconds
+Round 21
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 633.2931528091431	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 21.1 seconds
+Round 22
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 705.419849395752	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 21.1 seconds
+Round 23
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 623.6515302658081	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 20.4 seconds
+Round 24
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 605.0963230133057	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 20.7 seconds
+Round 25
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 549.7728471755981	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 26.4 seconds
+Round 26
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 507.59965419769287	(1.6s)
+Solved 7/200 episodes
+Evaluated model in 22.5 seconds
+Round 27
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 413.91701221466064	(1.6s)
+Solved 7/200 episodes
+Evaluated model in 21.4 seconds
+Round 28
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 453.24810791015625	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 19.8 seconds
+Round 29
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 443.16776943206787	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 23.1 seconds
+Round 30
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 338.29178190231323	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 22.6 seconds
+Round 31
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 374.52130365371704	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 23.2 seconds
+Round 32
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 399.6390323638916	(1.6s)
+Solved 2/200 episodes
+Evaluated model in 21.0 seconds
+Round 33
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 328.3808250427246	(1.7s)
+Solved 5/200 episodes
+Evaluated model in 19.7 seconds
+Round 34
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 304.782742023468	(1.6s)
+Solved 8/200 episodes
+Evaluated model in 27.2 seconds
+Round 35
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 288.2973392009735	(1.6s)
+Solved 4/200 episodes
+Evaluated model in 21.7 seconds
+Round 36
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 267.794264793396	(1.6s)
+Solved 9/200 episodes
+Evaluated model in 23.8 seconds
+Round 37
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 262.48633575439453	(1.6s)
+Solved 7/200 episodes
+Evaluated model in 22.0 seconds
+Round 38
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 327.8659710884094	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 25.6 seconds
+Round 39
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 220.00531101226807	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 20.1 seconds
+Round 40
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 227.49150478839874	(1.6s)
+Solved 5/200 episodes
+Evaluated model in 20.9 seconds
+Round 41
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 233.8320152759552	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 23.6 seconds
+Round 42
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 203.81198120117188	(1.6s)
+Solved 6/200 episodes
+Evaluated model in 26.5 seconds
+Round 43
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 230.13145112991333	(1.6s)
+Solved 2/200 episodes
+Evaluated model in 22.0 seconds
+Round 44
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 286.3384017944336	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 24.3 seconds
+Round 45
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 282.20864152908325	(1.6s)
+Solved 2/200 episodes
+Evaluated model in 25.3 seconds
+Round 46
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 198.25339031219482	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 28.0 seconds
+Round 47
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 244.08267450332642	(1.6s)
+Solved 8/200 episodes
+Evaluated model in 26.6 seconds
+Round 48
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 177.5471147298813	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 28.9 seconds
+Round 49
+Disk data, n=100
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 184.73814463615417	(1.6s)
+Solved 3/200 episodes
+Evaluated model in 23.0 seconds
+Completed training in 2237.3 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 8 operations to synchronize with Neptune. Do not kill this process.
+All 8 operations synced, thanks for waiting!

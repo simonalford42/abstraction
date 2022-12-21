@@ -1,0 +1,3 @@
+Using torch device NVIDIA RTX A6000
+slurmstepd: error: *** JOB 834919 ON ellis-compute-02 CANCELLED AT 2022-09-02T11:55:13 ***
+slurmstepd: error: proctrack_p_wait: Unable to destroy container 1758810 in cgroup plugin, giving up after 128 sec

@@ -1,0 +1,2 @@
+Using torch device NVIDIA RTX A6000
+slurmstepd: error: *** JOB 824959 ON ellis-compute-02 CANCELLED AT 2022-08-23T09:17:18 ***

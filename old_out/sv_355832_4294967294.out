@@ -1,0 +1,217 @@
+Training on NVIDIA TITAN Xp
+Net has 36600 parameters
+Round 1
+generating trajectories
+trajectories generated
+Generated trajectories in 83.1 seconds
+80595 examples
+/home/sca63/.conda/envs/py3.9/lib/python3.9/site-packages/torch/nn/modules/conv.py:439: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:660.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 1.369126796722412	acc: 0.275	(8.0s)
+epoch: 50	train loss: 0.8146837949752808	acc: 0.620	(8.6s)
+epoch: 100	train loss: 0.7353408336639404	acc: 0.655	(8.7s)
+epoch: 150	train loss: 0.7084439396858215	acc: 0.702	(8.6s)
+epoch: 200	train loss: 0.6139262914657593	acc: 0.749	(8.6s)
+epoch: 250	train loss: 0.4404313564300537	acc: 0.788	(8.5s)
+epoch: 300	train loss: 0.39960289001464844	acc: 0.812	(8.6s)
+epoch: 350	train loss: 0.35742372274398804	acc: 0.826	(8.6s)
+epoch: 400	train loss: 0.39124706387519836	acc: 0.836	(8.5s)
+epoch: 450	train loss: 0.4205639958381653	acc: 0.842	(8.6s)
+Evaluating model on 100 episodes
+Solved 4/100 episodes; Counter({2: 85, 0: 8, 1: 5, 3: 2}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 56, 0: 27, 1: 17}) are path dists
+Evaluated model in 48.3 seconds
+Round 2
+generating trajectories
+trajectories generated
+Generated trajectories in 83.2 seconds
+81121 examples
+epoch: 0	train loss: 0.4577050507068634	acc: 0.804	(8.0s)
+epoch: 50	train loss: 0.37869489192962646	acc: 0.848	(8.6s)
+epoch: 100	train loss: 0.32592037320137024	acc: 0.858	(8.8s)
+epoch: 150	train loss: 0.29619696736335754	acc: 0.868	(8.6s)
+epoch: 200	train loss: 0.3840465843677521	acc: 0.874	(8.7s)
+epoch: 250	train loss: 0.31545549631118774	acc: 0.881	(8.7s)
+epoch: 300	train loss: 0.2977496385574341	acc: 0.883	(8.6s)
+epoch: 350	train loss: 0.28984755277633667	acc: 0.889	(8.7s)
+epoch: 400	train loss: 0.18210344016551971	acc: 0.892	(8.8s)
+epoch: 450	train loss: 0.27121126651763916	acc: 0.897	(8.9s)
+Evaluating model on 100 episodes
+Solved 1/100 episodes; Counter({2: 84, 1: 9, 0: 5, 3: 2}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 67, 0: 20, 1: 13}) are path dists
+Evaluated model in 49.2 seconds
+Round 3
+generating trajectories
+trajectories generated
+Generated trajectories in 82.7 seconds
+80755 examples
+epoch: 0	train loss: 0.447378545999527	acc: 0.832	(8.0s)
+epoch: 50	train loss: 0.3071649372577667	acc: 0.878	(8.6s)
+epoch: 100	train loss: 0.24759849905967712	acc: 0.889	(8.5s)
+epoch: 150	train loss: 0.2518480122089386	acc: 0.899	(8.6s)
+epoch: 200	train loss: 0.25005051493644714	acc: 0.905	(8.7s)
+epoch: 250	train loss: 0.205750972032547	acc: 0.909	(8.7s)
+epoch: 300	train loss: 0.1562894731760025	acc: 0.913	(8.6s)
+epoch: 350	train loss: 0.13456054031848907	acc: 0.917	(8.6s)
+epoch: 400	train loss: 0.15138311684131622	acc: 0.921	(8.7s)
+epoch: 450	train loss: 0.26936593651771545	acc: 0.924	(8.7s)
+Evaluating model on 100 episodes
+Solved 1/100 episodes; Counter({2: 86, 1: 8, 0: 6}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 76, 0: 12, 1: 12}) are path dists
+Evaluated model in 50.0 seconds
+Round 4
+generating trajectories
+trajectories generated
+Generated trajectories in 82.9 seconds
+81131 examples
+epoch: 0	train loss: 0.3879986107349396	acc: 0.845	(8.0s)
+epoch: 50	train loss: 0.21555227041244507	acc: 0.895	(8.6s)
+epoch: 100	train loss: 0.23383502662181854	acc: 0.906	(8.7s)
+epoch: 150	train loss: 0.2703479826450348	acc: 0.913	(8.6s)
+epoch: 200	train loss: 0.21298861503601074	acc: 0.920	(8.7s)
+epoch: 250	train loss: 0.2221851944923401	acc: 0.923	(8.7s)
+epoch: 300	train loss: 0.20407487452030182	acc: 0.929	(8.7s)
+epoch: 350	train loss: 0.1469084918498993	acc: 0.934	(8.7s)
+epoch: 400	train loss: 0.15825922787189484	acc: 0.936	(8.6s)
+epoch: 450	train loss: 0.13190068304538727	acc: 0.940	(8.8s)
+Evaluating model on 100 episodes
+Solved 1/100 episodes; Counter({2: 87, 0: 7, 1: 5, 3: 1}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 64, 0: 23, 1: 12, 3: 1}) are path dists
+Evaluated model in 50.6 seconds
+Round 5
+generating trajectories
+trajectories generated
+Generated trajectories in 83.6 seconds
+80523 examples
+epoch: 0	train loss: 0.4036693572998047	acc: 0.860	(8.0s)
+epoch: 50	train loss: 0.18026958405971527	acc: 0.909	(8.7s)
+epoch: 100	train loss: 0.22034142911434174	acc: 0.921	(8.7s)
+epoch: 150	train loss: 0.2459936887025833	acc: 0.929	(8.4s)
+epoch: 200	train loss: 0.14545369148254395	acc: 0.934	(8.7s)
+epoch: 250	train loss: 0.2144465297460556	acc: 0.940	(8.7s)
+epoch: 300	train loss: 0.1955295354127884	acc: 0.944	(8.7s)
+epoch: 350	train loss: 0.11800765991210938	acc: 0.945	(8.7s)
+epoch: 400	train loss: 0.11292443424463272	acc: 0.949	(8.6s)
+epoch: 450	train loss: 0.16117516160011292	acc: 0.953	(8.5s)
+Evaluating model on 100 episodes
+Solved 3/100 episodes; Counter({2: 79, 0: 11, 1: 7, 3: 3}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 73, 0: 18, 1: 8, 3: 1}) are path dists
+Evaluated model in 50.5 seconds
+Round 6
+generating trajectories
+trajectories generated
+Generated trajectories in 82.8 seconds
+80520 examples
+epoch: 0	train loss: 0.37379589676856995	acc: 0.870	(8.0s)
+epoch: 50	train loss: 0.09989102184772491	acc: 0.921	(8.7s)
+epoch: 100	train loss: 0.2126169353723526	acc: 0.930	(8.3s)
+epoch: 150	train loss: 0.1503719538450241	acc: 0.938	(8.5s)
+epoch: 200	train loss: 0.11064353585243225	acc: 0.943	(8.7s)
+epoch: 250	train loss: 0.16790683567523956	acc: 0.948	(8.6s)
+epoch: 300	train loss: 0.1594773828983307	acc: 0.952	(8.7s)
+epoch: 350	train loss: 0.09842560440301895	acc: 0.953	(8.4s)
+epoch: 400	train loss: 0.10399633646011353	acc: 0.956	(8.6s)
+epoch: 450	train loss: 0.07382950186729431	acc: 0.957	(8.6s)
+Evaluating model on 100 episodes
+Solved 1/100 episodes; Counter({2: 85, 0: 11, 1: 4}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 74, 1: 13, 0: 13}) are path dists
+Evaluated model in 50.8 seconds
+Round 7
+generating trajectories
+trajectories generated
+Generated trajectories in 83.3 seconds
+80585 examples
+epoch: 0	train loss: 0.27913716435432434	acc: 0.874	(8.1s)
+epoch: 50	train loss: 0.2722926139831543	acc: 0.923	(8.7s)
+epoch: 100	train loss: 0.11199069768190384	acc: 0.934	(8.7s)
+epoch: 150	train loss: 0.09945522248744965	acc: 0.941	(8.7s)
+epoch: 200	train loss: 0.12871132791042328	acc: 0.945	(8.9s)
+epoch: 250	train loss: 0.2145460844039917	acc: 0.950	(8.7s)
+epoch: 300	train loss: 0.11296079307794571	acc: 0.954	(8.6s)
+epoch: 350	train loss: 0.11551162600517273	acc: 0.955	(8.7s)
+epoch: 400	train loss: 0.11308510601520538	acc: 0.956	(8.7s)
+epoch: 450	train loss: 0.09218361228704453	acc: 0.959	(8.7s)
+Evaluating model on 100 episodes
+Solved 2/100 episodes; Counter({2: 77, 0: 12, 1: 9, 3: 2}) are path dists
+Evaluating model on 100 episodes
+Solved 2/100 episodes; Counter({2: 71, 0: 21, 1: 8}) are path dists
+Evaluated model in 49.8 seconds
+Round 8
+generating trajectories
+trajectories generated
+Generated trajectories in 82.7 seconds
+80799 examples
+epoch: 0	train loss: 0.2923099994659424	acc: 0.880	(8.2s)
+epoch: 50	train loss: 0.18111607432365417	acc: 0.928	(8.7s)
+epoch: 100	train loss: 0.16443075239658356	acc: 0.939	(8.9s)
+epoch: 150	train loss: 0.17751283943653107	acc: 0.946	(8.7s)
+epoch: 200	train loss: 0.08365530520677567	acc: 0.952	(8.7s)
+epoch: 250	train loss: 0.14088189601898193	acc: 0.954	(8.8s)
+epoch: 300	train loss: 0.11485166102647781	acc: 0.959	(8.7s)
+epoch: 350	train loss: 0.06514568626880646	acc: 0.958	(8.8s)
+epoch: 400	train loss: 0.11071985960006714	acc: 0.965	(8.6s)
+epoch: 450	train loss: 0.12860539555549622	acc: 0.961	(8.7s)
+Evaluating model on 100 episodes
+Solved 3/100 episodes; Counter({2: 86, 1: 6, 0: 5, 3: 3}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 77, 0: 13, 1: 9, 3: 1}) are path dists
+Evaluated model in 50.8 seconds
+Round 9
+generating trajectories
+trajectories generated
+Generated trajectories in 83.0 seconds
+79833 examples
+epoch: 0	train loss: 0.4450528919696808	acc: 0.888	(8.1s)
+epoch: 50	train loss: 0.13887275755405426	acc: 0.934	(8.7s)
+epoch: 100	train loss: 0.15543921291828156	acc: 0.945	(8.6s)
+epoch: 150	train loss: 0.13378669321537018	acc: 0.953	(8.7s)
+epoch: 200	train loss: 0.11828337609767914	acc: 0.956	(8.7s)
+epoch: 250	train loss: 0.11914920061826706	acc: 0.961	(8.5s)
+epoch: 300	train loss: 0.11602234840393066	acc: 0.964	(8.9s)
+epoch: 350	train loss: 0.068757563829422	acc: 0.966	(8.6s)
+epoch: 400	train loss: 0.09438025951385498	acc: 0.967	(8.6s)
+epoch: 450	train loss: 0.08089648932218552	acc: 0.971	(8.3s)
+Evaluating model on 100 episodes
+Solved 3/100 episodes; Counter({2: 77, 0: 11, 1: 7, 3: 5}) are path dists
+Evaluating model on 100 episodes
+Solved 0/100 episodes; Counter({2: 66, 0: 21, 1: 11, 3: 2}) are path dists
+Evaluated model in 50.2 seconds
+Round 10
+generating trajectories
+trajectories generated
+Generated trajectories in 82.9 seconds
+80355 examples
+epoch: 0	train loss: 0.30942434072494507	acc: 0.892	(8.0s)
+epoch: 50	train loss: 0.1284056305885315	acc: 0.938	(8.7s)
+epoch: 100	train loss: 0.13832947611808777	acc: 0.948	(8.8s)
+epoch: 150	train loss: 0.13753394782543182	acc: 0.956	(8.5s)
+epoch: 200	train loss: 0.060096729546785355	acc: 0.959	(8.6s)
+epoch: 250	train loss: 0.09399044513702393	acc: 0.965	(8.6s)
+epoch: 300	train loss: 0.07379724830389023	acc: 0.968	(8.5s)
+epoch: 350	train loss: 0.11456428468227386	acc: 0.972	(8.6s)
+epoch: 400	train loss: 0.055729012936353683	acc: 0.972	(8.7s)
+epoch: 450	train loss: 0.08458501845598221	acc: 0.972	(8.6s)
+Evaluating model on 100 episodes
+Solved 3/100 episodes; Counter({2: 84, 1: 8, 0: 6, 4: 1, 3: 1}) are path dists
+Evaluating model on 100 episodes
+Solved 2/100 episodes; Counter({2: 73, 0: 18, 1: 8, 3: 1}) are path dists
+Evaluated model in 50.3 seconds
+Round 11
+generating trajectories
+trajectories generated
+Generated trajectories in 83.4 seconds
+81136 examples
+epoch: 0	train loss: 0.4553646743297577	acc: 0.897	(8.2s)
+epoch: 50	train loss: 0.1157890185713768	acc: 0.940	(8.8s)
+epoch: 100	train loss: 0.16434849798679352	acc: 0.951	(8.7s)
+epoch: 150	train loss: 0.0638560876250267	acc: 0.957	(8.5s)
+epoch: 200	train loss: 0.1153503805398941	acc: 0.962	(8.8s)
+epoch: 250	train loss: 0.10808248072862625	acc: 0.963	(8.5s)
+epoch: 300	train loss: 0.0736757144331932	acc: 0.968	(8.5s)
+slurmstepd: error: *** JOB 355832 ON hariharan-compute-02 CANCELLED AT 2022-01-05T12:06:36 ***

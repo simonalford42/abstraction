@@ -1,0 +1,8 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-23
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-0.pt
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-10.pt
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-20.pt
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-30.pt
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-40.pt
+Saved model at models/9866b5c81bc341baa8ad6716e05e964e-epoch-50.pt
+slurmstepd: error: *** JOB 446334 ON ellis-compute-01 CANCELLED AT 2022-03-16T11:34:11 ***

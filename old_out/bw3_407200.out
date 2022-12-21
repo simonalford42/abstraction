@@ -1,0 +1,590 @@
+Using torch device NVIDIA GeForce RTX 3090
+hmm training!
+params: {'epochs': 50, 'lr': 0.0008, 'n': 2000}
+Net has 39623 parameters
+Round 0
+Generated trajectories in 28.2 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 43744.984375	(56.2s)
+epoch: 10	train loss: 16595.900390625	(56.2s)
+epoch: 20	train loss: 14489.064453125	(56.3s)
+epoch: 30	train loss: 13736.0361328125	(56.4s)
+epoch: 40	train loss: 13039.4677734375	(56.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 1
+Generated trajectories in 27.8 seconds
+epoch: 0	train loss: 13793.92578125	(56.4s)
+epoch: 10	train loss: 12535.4921875	(56.7s)
+epoch: 20	train loss: 11658.498046875	(56.7s)
+epoch: 30	train loss: 11425.83984375	(56.3s)
+epoch: 40	train loss: 11152.1484375	(56.5s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 2
+Generated trajectories in 27.6 seconds
+epoch: 0	train loss: 13391.291015625	(55.9s)
+epoch: 10	train loss: 12008.03125	(56.1s)
+epoch: 20	train loss: 11231.453125	(56.1s)
+epoch: 30	train loss: 11158.64453125	(56.1s)
+epoch: 40	train loss: 10711.8623046875	(56.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 3
+Generated trajectories in 27.3 seconds
+epoch: 0	train loss: 12614.490234375	(55.8s)
+epoch: 10	train loss: 11317.1455078125	(56.2s)
+epoch: 20	train loss: 10754.1865234375	(56.1s)
+epoch: 30	train loss: 10987.75	(56.1s)
+epoch: 40	train loss: 10495.5849609375	(56.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 4
+Generated trajectories in 27.7 seconds
+epoch: 0	train loss: 12577.302734375	(56.2s)
+epoch: 10	train loss: 11231.18359375	(56.6s)
+epoch: 20	train loss: 11295.712890625	(56.8s)
+epoch: 30	train loss: 10789.474609375	(56.6s)
+epoch: 40	train loss: 10344.2451171875	(56.5s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 5
+Generated trajectories in 27.5 seconds
+epoch: 0	train loss: 12421.0927734375	(56.4s)
+epoch: 10	train loss: 11958.5791015625	(56.8s)
+epoch: 20	train loss: 11285.5478515625	(56.8s)
+epoch: 30	train loss: 10661.490234375	(56.6s)
+epoch: 40	train loss: 10600.736328125	(56.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 6
+Generated trajectories in 27.6 seconds
+epoch: 0	train loss: 12593.064453125	(56.8s)
+epoch: 10	train loss: 12447.36328125	(56.9s)
+epoch: 20	train loss: 12053.43359375	(56.9s)
+epoch: 30	train loss: 11273.001953125	(56.9s)
+epoch: 40	train loss: 11471.1611328125	(57.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 7
+Generated trajectories in 28.0 seconds
+epoch: 0	train loss: 13799.6318359375	(57.1s)
+epoch: 10	train loss: 12237.8203125	(57.4s)
+epoch: 20	train loss: 11866.1005859375	(57.4s)
+epoch: 30	train loss: 12082.4765625	(57.3s)
+epoch: 40	train loss: 11258.1279296875	(57.4s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 8
+Generated trajectories in 27.4 seconds
+epoch: 0	train loss: 12224.4091796875	(56.3s)
+epoch: 10	train loss: 11188.6943359375	(56.4s)
+epoch: 20	train loss: 12449.1240234375	(56.3s)
+epoch: 30	train loss: 11861.7294921875	(56.4s)
+epoch: 40	train loss: 13199.0322265625	(56.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 9
+Generated trajectories in 28.1 seconds
+epoch: 0	train loss: 13213.3173828125	(57.3s)
+epoch: 10	train loss: 12045.1474609375	(57.4s)
+epoch: 20	train loss: 13997.046875	(57.4s)
+epoch: 30	train loss: 11964.826171875	(57.5s)
+epoch: 40	train loss: 11964.6669921875	(57.5s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 10
+Generated trajectories in 27.7 seconds
+epoch: 0	train loss: 13661.13671875	(56.7s)
+epoch: 10	train loss: 11836.0556640625	(56.8s)
+epoch: 20	train loss: 12690.486328125	(56.8s)
+epoch: 30	train loss: 12356.5498046875	(56.8s)
+epoch: 40	train loss: 12091.0849609375	(56.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 11
+Generated trajectories in 28.1 seconds
+epoch: 0	train loss: 13707.619140625	(57.0s)
+epoch: 10	train loss: 12563.7646484375	(57.4s)
+epoch: 20	train loss: 12590.76171875	(57.3s)
+epoch: 30	train loss: 12330.572265625	(57.2s)
+epoch: 40	train loss: 11969.7978515625	(57.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 12
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 13508.99609375	(57.5s)
+epoch: 10	train loss: 13151.93359375	(57.9s)
+epoch: 20	train loss: 17706.244140625	(57.8s)
+epoch: 30	train loss: 13757.5078125	(57.5s)
+epoch: 40	train loss: 13306.5302734375	(57.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 13
+Generated trajectories in 27.8 seconds
+epoch: 0	train loss: 14147.1708984375	(56.9s)
+epoch: 10	train loss: 12597.470703125	(56.8s)
+epoch: 20	train loss: 12392.5849609375	(58.8s)
+epoch: 30	train loss: 12469.4111328125	(58.2s)
+epoch: 40	train loss: 11994.080078125	(58.4s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 14
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 14535.0673828125	(59.1s)
+epoch: 10	train loss: 13744.8681640625	(59.4s)
+epoch: 20	train loss: 12583.0068359375	(57.8s)
+epoch: 30	train loss: 12429.08203125	(58.2s)
+epoch: 40	train loss: 13749.779296875	(56.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 15
+Generated trajectories in 27.7 seconds
+epoch: 0	train loss: 18181.421875	(56.6s)
+epoch: 10	train loss: 13300.48046875	(56.7s)
+epoch: 20	train loss: 15148.6181640625	(56.7s)
+epoch: 30	train loss: 13069.1142578125	(56.8s)
+epoch: 40	train loss: 15463.9208984375	(56.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 16
+Generated trajectories in 27.8 seconds
+epoch: 0	train loss: 13685.4189453125	(56.5s)
+epoch: 10	train loss: 17653.55078125	(56.7s)
+epoch: 20	train loss: 13823.56640625	(56.9s)
+epoch: 30	train loss: 13761.6748046875	(57.0s)
+epoch: 40	train loss: 14729.4912109375	(56.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 17
+Generated trajectories in 27.6 seconds
+epoch: 0	train loss: 19584.283203125	(56.3s)
+epoch: 10	train loss: 26709.025390625	(56.0s)
+epoch: 20	train loss: 17499.5	(56.6s)
+epoch: 30	train loss: 15869.02734375	(56.5s)
+epoch: 40	train loss: 17392.861328125	(56.4s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 18
+Generated trajectories in 27.6 seconds
+epoch: 0	train loss: 15115.4990234375	(56.6s)
+epoch: 10	train loss: 16487.681640625	(55.4s)
+epoch: 20	train loss: 19717.287109375	(55.4s)
+epoch: 30	train loss: 19758.337890625	(55.6s)
+epoch: 40	train loss: 15223.76953125	(55.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 19
+Generated trajectories in 27.1 seconds
+epoch: 0	train loss: 15217.7421875	(56.1s)
+epoch: 10	train loss: 14767.4619140625	(56.5s)
+epoch: 20	train loss: 15061.8720703125	(56.3s)
+epoch: 30	train loss: 14924.9990234375	(56.2s)
+epoch: 40	train loss: 14283.8955078125	(56.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 20
+Generated trajectories in 27.0 seconds
+epoch: 0	train loss: 14764.392578125	(55.7s)
+epoch: 10	train loss: 14054.3544921875	(55.5s)
+epoch: 20	train loss: 14229.5234375	(55.9s)
+epoch: 30	train loss: 17162.5234375	(55.5s)
+epoch: 40	train loss: 16424.6015625	(55.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 21
+Generated trajectories in 27.1 seconds
+epoch: 0	train loss: 17577.068359375	(55.8s)
+epoch: 10	train loss: 16352.4345703125	(55.7s)
+epoch: 20	train loss: 22165.01953125	(56.9s)
+epoch: 30	train loss: 17426.34375	(57.3s)
+epoch: 40	train loss: 23089.39453125	(56.8s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 22
+Generated trajectories in 27.6 seconds
+epoch: 0	train loss: 26306.919921875	(56.7s)
+epoch: 10	train loss: 25892.099609375	(56.9s)
+epoch: 20	train loss: 17413.939453125	(56.8s)
+epoch: 30	train loss: 19423.060546875	(56.9s)
+epoch: 40	train loss: 17412.81640625	(56.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 23
+Generated trajectories in 27.9 seconds
+epoch: 0	train loss: 17307.041015625	(57.4s)
+epoch: 10	train loss: 21913.88671875	(57.6s)
+epoch: 20	train loss: 16811.734375	(57.6s)
+epoch: 30	train loss: 18077.271484375	(57.5s)
+epoch: 40	train loss: 19305.78515625	(57.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 24
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 23633.787109375	(57.7s)
+epoch: 10	train loss: 20511.986328125	(57.8s)
+epoch: 20	train loss: 20701.86328125	(57.9s)
+epoch: 30	train loss: 22993.60546875	(57.9s)
+epoch: 40	train loss: 24226.958984375	(57.5s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 25
+Generated trajectories in 28.6 seconds
+epoch: 0	train loss: 23327.349609375	(58.1s)
+epoch: 10	train loss: 23510.568359375	(57.7s)
+epoch: 20	train loss: 26988.2578125	(56.5s)
+epoch: 30	train loss: 23738.298828125	(57.3s)
+epoch: 40	train loss: 25371.802734375	(56.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 26
+Generated trajectories in 26.8 seconds
+epoch: 0	train loss: 26030.890625	(55.5s)
+epoch: 10	train loss: 23910.271484375	(57.1s)
+epoch: 20	train loss: 22087.654296875	(57.2s)
+epoch: 30	train loss: 21792.73828125	(57.2s)
+epoch: 40	train loss: 22475.05078125	(57.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 27
+Generated trajectories in 28.1 seconds
+epoch: 0	train loss: 24684.69921875	(57.3s)
+epoch: 10	train loss: 25345.65625	(58.0s)
+epoch: 20	train loss: 25074.79296875	(57.8s)
+epoch: 30	train loss: 23910.890625	(57.8s)
+epoch: 40	train loss: 24284.966796875	(57.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 28
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 24748.50390625	(57.8s)
+epoch: 10	train loss: 24678.6640625	(57.8s)
+epoch: 20	train loss: 24189.0546875	(57.9s)
+epoch: 30	train loss: 24302.60546875	(57.8s)
+epoch: 40	train loss: 23088.083984375	(57.8s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 29
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 23053.591796875	(57.9s)
+epoch: 10	train loss: 22610.55078125	(57.6s)
+epoch: 20	train loss: 22233.478515625	(58.1s)
+epoch: 30	train loss: 22313.615234375	(58.2s)
+epoch: 40	train loss: 22139.90625	(57.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 30
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 27385.99609375	(57.9s)
+epoch: 10	train loss: 22508.814453125	(58.2s)
+epoch: 20	train loss: 24434.19140625	(57.5s)
+epoch: 30	train loss: 22012.681640625	(57.9s)
+epoch: 40	train loss: 20185.169921875	(58.0s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 31
+Generated trajectories in 28.5 seconds
+epoch: 0	train loss: 20343.20703125	(58.1s)
+epoch: 10	train loss: 21734.869140625	(58.1s)
+epoch: 20	train loss: 21131.255859375	(58.0s)
+epoch: 30	train loss: 20360.794921875	(57.8s)
+epoch: 40	train loss: 24526.8359375	(57.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 32
+Generated trajectories in 27.9 seconds
+epoch: 0	train loss: 21882.970703125	(56.9s)
+epoch: 10	train loss: 21622.697265625	(56.6s)
+epoch: 20	train loss: 22626.552734375	(56.6s)
+epoch: 30	train loss: 28210.798828125	(56.7s)
+epoch: 40	train loss: 22187.0625	(56.8s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 33
+Generated trajectories in 28.5 seconds
+epoch: 0	train loss: 23867.59765625	(58.3s)
+epoch: 10	train loss: 22233.697265625	(58.1s)
+epoch: 20	train loss: 23287.009765625	(58.2s)
+epoch: 30	train loss: 25339.333984375	(58.0s)
+epoch: 40	train loss: 26499.591796875	(58.0s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 34
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 22391.70703125	(57.7s)
+epoch: 10	train loss: 22078.048828125	(57.4s)
+epoch: 20	train loss: 21970.01171875	(57.5s)
+epoch: 30	train loss: 20904.150390625	(57.7s)
+epoch: 40	train loss: 20488.849609375	(57.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 35
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 22153.224609375	(58.1s)
+epoch: 10	train loss: 21380.74609375	(57.8s)
+epoch: 20	train loss: 20215.193359375	(57.7s)
+epoch: 30	train loss: 20474.111328125	(57.8s)
+epoch: 40	train loss: 20969.03515625	(58.0s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 36
+Generated trajectories in 28.0 seconds
+epoch: 0	train loss: 21880.84375	(57.3s)
+epoch: 10	train loss: 19452.189453125	(57.3s)
+epoch: 20	train loss: 19372.220703125	(57.5s)
+epoch: 30	train loss: 22452.94140625	(57.3s)
+epoch: 40	train loss: 23672.900390625	(57.3s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 37
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 23794.603515625	(58.5s)
+epoch: 10	train loss: 22119.423828125	(58.2s)
+epoch: 20	train loss: 22090.46484375	(58.2s)
+epoch: 30	train loss: 29348.80859375	(58.4s)
+epoch: 40	train loss: 25600.8203125	(58.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 38
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 25776.873046875	(58.1s)
+epoch: 10	train loss: 23045.76953125	(57.9s)
+epoch: 20	train loss: 21811.73828125	(57.7s)
+epoch: 30	train loss: 21058.033203125	(57.8s)
+epoch: 40	train loss: 22670.337890625	(58.0s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 39
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 19296.5546875	(58.0s)
+epoch: 10	train loss: 20739.36328125	(58.2s)
+epoch: 20	train loss: 22562.9765625	(57.9s)
+epoch: 30	train loss: 23907.603515625	(57.9s)
+epoch: 40	train loss: 21484.810546875	(58.0s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 40
+Generated trajectories in 28.5 seconds
+epoch: 0	train loss: 23376.5625	(57.9s)
+epoch: 10	train loss: 24234.1015625	(57.7s)
+epoch: 20	train loss: 23564.572265625	(58.0s)
+epoch: 30	train loss: 23434.302734375	(57.9s)
+epoch: 40	train loss: 21974.431640625	(57.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 41
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 19136.744140625	(58.1s)
+epoch: 10	train loss: 21287.193359375	(57.7s)
+epoch: 20	train loss: 25846.833984375	(57.8s)
+epoch: 30	train loss: 22072.84765625	(58.1s)
+epoch: 40	train loss: 22439.58203125	(57.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 42
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 19919.880859375	(58.0s)
+epoch: 10	train loss: 21519.017578125	(57.9s)
+epoch: 20	train loss: 21614.193359375	(57.7s)
+epoch: 30	train loss: 22342.5546875	(57.5s)
+epoch: 40	train loss: 20597.5390625	(57.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 43
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 21527.82421875	(58.3s)
+epoch: 10	train loss: 21079.72265625	(58.1s)
+epoch: 20	train loss: 21127.47265625	(58.3s)
+epoch: 30	train loss: 20974.517578125	(58.0s)
+epoch: 40	train loss: 22128.20703125	(58.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 44
+Generated trajectories in 28.7 seconds
+epoch: 0	train loss: 22729.0	(58.5s)
+epoch: 10	train loss: 21037.216796875	(58.3s)
+epoch: 20	train loss: 22521.9375	(58.6s)
+epoch: 30	train loss: 22068.3125	(58.3s)
+epoch: 40	train loss: 23251.83984375	(58.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 45
+Generated trajectories in 28.5 seconds
+epoch: 0	train loss: 23763.759765625	(58.6s)
+epoch: 10	train loss: 22539.48828125	(58.3s)
+epoch: 20	train loss: 21988.25	(58.3s)
+epoch: 30	train loss: 29146.69140625	(58.4s)
+epoch: 40	train loss: 25373.330078125	(58.4s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 46
+Generated trajectories in 27.8 seconds
+epoch: 0	train loss: 30088.359375	(57.4s)
+epoch: 10	train loss: 32137.427734375	(57.3s)
+epoch: 20	train loss: 30772.22265625	(57.4s)
+epoch: 30	train loss: 30183.498046875	(57.4s)
+epoch: 40	train loss: 28431.111328125	(57.4s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 47
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 25578.248046875	(58.1s)
+epoch: 10	train loss: 27281.578125	(58.0s)
+epoch: 20	train loss: 26433.466796875	(58.0s)
+epoch: 30	train loss: 27953.556640625	(58.0s)
+epoch: 40	train loss: 23234.916015625	(57.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 48
+Generated trajectories in 28.1 seconds
+epoch: 0	train loss: 24110.783203125	(58.0s)
+epoch: 10	train loss: 21158.037109375	(57.8s)
+epoch: 20	train loss: 28199.681640625	(57.9s)
+epoch: 30	train loss: 26184.724609375	(57.8s)
+epoch: 40	train loss: 28534.869140625	(57.8s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 49
+Generated trajectories in 28.6 seconds
+epoch: 0	train loss: 27572.677734375	(58.3s)
+epoch: 10	train loss: 31806.205078125	(58.1s)
+epoch: 20	train loss: 33694.01171875	(58.0s)
+epoch: 30	train loss: 29218.095703125	(58.2s)
+epoch: 40	train loss: 27584.560546875	(58.3s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 50
+Generated trajectories in 27.9 seconds
+epoch: 0	train loss: 31960.24609375	(57.4s)
+epoch: 10	train loss: 27780.533203125	(57.5s)
+epoch: 20	train loss: 27090.9296875	(57.5s)
+epoch: 30	train loss: 25069.033203125	(57.4s)
+epoch: 40	train loss: 24912.923828125	(57.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 51
+Generated trajectories in 28.5 seconds
+epoch: 0	train loss: 28136.78515625	(58.3s)
+epoch: 10	train loss: 31094.640625	(58.0s)
+epoch: 20	train loss: 29842.904296875	(58.0s)
+epoch: 30	train loss: 30672.671875	(58.3s)
+epoch: 40	train loss: 33157.16796875	(58.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 52
+Generated trajectories in 28.2 seconds
+epoch: 0	train loss: 31706.90234375	(58.2s)
+epoch: 10	train loss: 29357.70703125	(57.9s)
+epoch: 20	train loss: 28010.40234375	(57.7s)
+epoch: 30	train loss: 28714.001953125	(57.9s)
+epoch: 40	train loss: 29030.37109375	(58.1s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 53
+Generated trajectories in 28.4 seconds
+epoch: 0	train loss: 28140.064453125	(58.0s)
+epoch: 10	train loss: 26308.44921875	(58.1s)
+epoch: 20	train loss: 25262.828125	(57.9s)
+epoch: 30	train loss: 25932.060546875	(57.8s)
+epoch: 40	train loss: 25147.28515625	(57.9s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 54
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 26017.20703125	(58.0s)
+epoch: 10	train loss: 24870.287109375	(57.8s)
+epoch: 20	train loss: 24967.447265625	(58.1s)
+epoch: 30	train loss: 24714.431640625	(58.0s)
+epoch: 40	train loss: 23713.119140625	(57.7s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 55
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 25560.625	(57.7s)
+epoch: 10	train loss: 23590.037109375	(57.3s)
+epoch: 20	train loss: 23717.171875	(57.4s)
+epoch: 30	train loss: 23540.673828125	(57.5s)
+epoch: 40	train loss: 22910.84765625	(57.6s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 56
+Generated trajectories in 27.9 seconds
+epoch: 0	train loss: 25308.9375	(57.3s)
+epoch: 10	train loss: 23762.505859375	(57.3s)
+epoch: 20	train loss: 24294.974609375	(57.5s)
+epoch: 30	train loss: 35749.1328125	(57.4s)
+epoch: 40	train loss: 22861.005859375	(57.2s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 57
+Generated trajectories in 27.8 seconds
+epoch: 0	train loss: 23048.1484375	(57.9s)
+epoch: 10	train loss: 22651.27734375	(57.8s)
+epoch: 20	train loss: 22079.296875	(57.8s)
+epoch: 30	train loss: 22586.28515625	(57.8s)
+epoch: 40	train loss: 23631.57421875	(57.8s)
+skipping testing abstract model since b != 1
+Saved model for run
+7a320cda38a842828d8e6b29e30c3912 with name model
+Round 58
+Generated trajectories in 28.3 seconds
+epoch: 0	train loss: 25224.529296875	(58.0s)
+slurmstepd: error: *** JOB 407200 ON ellis-compute-01 CANCELLED AT 2022-02-01T22:37:16 ***

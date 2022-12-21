@@ -1,0 +1,86 @@
+args: Namespace(cnn=True, test=False)
+Training on NVIDIA GeForce RTX 2080 Ti
+Net has 30260 parameters
+Round 1
+Generated trajectories in 56.0 seconds
+132870 examples
+epoch: 0	train loss: 1.3148847818374634	acc: 0.322	(7.0s)
+epoch: 200	train loss: 0.48202940821647644	acc: 0.841	(6.5s)
+epoch: 400	train loss: 0.2023860216140747	acc: 0.866	(6.6s)
+epoch: 600	train loss: 0.34828615188598633	acc: 0.879	(6.4s)
+epoch: 800	train loss: 0.2757156193256378	acc: 0.887	(6.5s)
+Evaluating model on 100 episodes
+Solved 35/100 episodes; Counter({1: 64, 0: 22, 2: 13, 4: 1}) is the distribution of the number of found keys each time
+Evaluated model in 17.5 seconds
+Round 2
+Generated trajectories in 55.5 seconds
+131498 examples
+epoch: 0	train loss: 0.7227693200111389	acc: 0.687	(6.4s)
+epoch: 200	train loss: 0.43972718715667725	acc: 0.855	(6.5s)
+epoch: 400	train loss: 0.46634167432785034	acc: 0.872	(6.3s)
+epoch: 600	train loss: 0.24356016516685486	acc: 0.883	(6.4s)
+epoch: 800	train loss: 0.33885568380355835	acc: 0.887	(6.4s)
+Evaluating model on 100 episodes
+Solved 29/100 episodes; Counter({1: 76, 0: 11, 2: 11, 3: 2}) is the distribution of the number of found keys each time
+Evaluated model in 18.2 seconds
+Round 3
+Generated trajectories in 54.7 seconds
+131791 examples
+epoch: 0	train loss: 0.7461321353912354	acc: 0.693	(6.5s)
+epoch: 200	train loss: 0.40432989597320557	acc: 0.853	(6.4s)
+epoch: 400	train loss: 0.2925592362880707	acc: 0.870	(6.3s)
+epoch: 600	train loss: 0.2992251515388489	acc: 0.879	(6.6s)
+epoch: 800	train loss: 0.3107229471206665	acc: 0.883	(6.3s)
+Evaluating model on 100 episodes
+Solved 36/100 episodes; Counter({1: 67, 0: 17, 2: 15, 3: 1}) is the distribution of the number of found keys each time
+Evaluated model in 17.1 seconds
+Round 4
+Generated trajectories in 55.0 seconds
+132572 examples
+epoch: 0	train loss: 0.6753377914428711	acc: 0.705	(6.5s)
+epoch: 200	train loss: 0.34702062606811523	acc: 0.854	(6.3s)
+epoch: 400	train loss: 0.22524400055408478	acc: 0.870	(6.7s)
+epoch: 600	train loss: 0.3262750804424286	acc: 0.878	(6.7s)
+epoch: 800	train loss: 0.37344637513160706	acc: 0.884	(6.5s)
+Evaluating model on 100 episodes
+Solved 38/100 episodes; Counter({1: 70, 0: 20, 2: 10}) is the distribution of the number of found keys each time
+Evaluated model in 16.4 seconds
+Round 5
+Generated trajectories in 54.9 seconds
+132005 examples
+epoch: 0	train loss: 0.7541999220848083	acc: 0.710	(6.5s)
+epoch: 200	train loss: 0.3508843183517456	acc: 0.853	(6.4s)
+epoch: 400	train loss: 0.30004099011421204	acc: 0.869	(6.7s)
+epoch: 600	train loss: 0.34173446893692017	acc: 0.878	(6.4s)
+epoch: 800	train loss: 0.25620004534721375	acc: 0.882	(6.3s)
+Evaluating model on 100 episodes
+Solved 44/100 episodes; Counter({1: 62, 0: 25, 2: 11, 3: 2}) is the distribution of the number of found keys each time
+Evaluated model in 16.4 seconds
+Round 6
+Generated trajectories in 54.6 seconds
+130857 examples
+epoch: 0	train loss: 0.8652773499488831	acc: 0.717	(6.7s)
+epoch: 200	train loss: 0.28354403376579285	acc: 0.853	(6.5s)
+epoch: 400	train loss: 0.36077719926834106	acc: 0.870	(6.3s)
+epoch: 600	train loss: 0.21857979893684387	acc: 0.876	(6.6s)
+epoch: 800	train loss: 0.15896865725517273	acc: 0.882	(6.6s)
+Evaluating model on 100 episodes
+Solved 30/100 episodes; Counter({1: 67, 0: 19, 2: 10, 3: 4}) is the distribution of the number of found keys each time
+Evaluated model in 19.1 seconds
+Round 7
+Generated trajectories in 56.2 seconds
+131662 examples
+epoch: 0	train loss: 0.7326359152793884	acc: 0.722	(7.4s)
+epoch: 200	train loss: 0.49358266592025757	acc: 0.852	(6.7s)
+epoch: 400	train loss: 0.3561480641365051	acc: 0.867	(6.7s)
+epoch: 600	train loss: 0.3879663944244385	acc: 0.876	(6.5s)
+epoch: 800	train loss: 0.31534919142723083	acc: 0.881	(6.7s)
+Evaluating model on 100 episodes
+Solved 39/100 episodes; Counter({1: 72, 0: 15, 2: 13}) is the distribution of the number of found keys each time
+Evaluated model in 16.9 seconds
+Round 8
+Generated trajectories in 55.9 seconds
+132125 examples
+epoch: 0	train loss: 0.6939195990562439	acc: 0.722	(6.9s)
+epoch: 200	train loss: 0.42564570903778076	acc: 0.850	(6.7s)
+slurmstepd: error: *** JOB 366650 ON snavely-compute-01 CANCELLED AT 2022-01-11T14:00:14 DUE TO PREEMPTION ***

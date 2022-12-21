@@ -1,0 +1,79 @@
+relational net params=41898
+Starting run:
+abbd0be7e6634f249ba01eb9a5d5cc1d
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN X (Pascal)', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': 'abbd0be7e6634f249ba01eb9a5d5cc1d'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.0
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-0.pt
+reloading data
+Epoch 100	 test acc 0.165
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-100.pt
+reloading data
+Epoch 200	 test acc 0.215
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-200.pt
+reloading data
+Epoch 300	 test acc 0.23
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-300.pt
+reloading data
+Epoch 400	 test acc 0.15
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-400.pt
+reloading data
+Epoch 500	 test acc 0.2
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-500.pt
+reloading data
+Epoch 600	 test acc 0.7
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-600.pt
+reloading data
+Epoch 700	 test acc 0.745
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-700.pt
+reloading data
+Epoch 800	 test acc 0.775
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-800.pt
+reloading data
+Epoch 900	 test acc 0.93
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-900.pt
+reloading data
+Epoch 1000	 test acc 0.97
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1000.pt
+reloading data
+Epoch 1100	 test acc 0.985
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1100.pt
+reloading data
+Epoch 1200	 test acc 0.995
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1200.pt
+reloading data
+Epoch 1300	 test acc 0.995
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1300.pt
+reloading data
+Epoch 1400	 test acc 0.995
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1400.pt
+reloading data
+Epoch 1500	 test acc 0.97
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1500.pt
+reloading data
+Epoch 1600	 test acc 0.98
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1600.pt
+reloading data
+Epoch 1700	 test acc 0.985
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1700.pt
+reloading data
+Epoch 1800	 test acc 0.965
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1800.pt
+reloading data
+Epoch 1900	 test acc 0.965
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d-epoch-1900.pt
+Saved model at models/abbd0be7e6634f249ba01eb9a5d5cc1d.pt
+Completed training in 72108.9 seconds
+repeating
+relational net params=41898
+Loaded model from models/119740d4f6d54480909834cfe7b713b9.pt
+Starting run:
+a699e064883640949a8ccba264473987
+params: {'n': 10000, 'num_test': 200, 'traj_updates': 10000.0, 'num_tests': 2, 'num_saves': 1, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN X (Pascal)', 'epochs': 1, 'test_every': 1, 'save_every': 1, 'id': 'a699e064883640949a8ccba264473987'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.09
+Saved model at models/a699e064883640949a8ccba264473987-epoch-0.pt
+Saved model at models/a699e064883640949a8ccba264473987.pt
+Completed training in 103.3 seconds

@@ -1,0 +1,73 @@
+Using torch device NVIDIA TITAN Xp
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+d6ca796b81f144a59fc085c71cd1baf0
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=21, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=40000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN Xp', id='d6ca796b81f144a59fc085c71cd1baf0')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220816_094621-3g6mdnyb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run driven-armadillo-301
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/3g6mdnyb
+Net has 486853 parameters
+WARNING: tau norm dim disabled
+Completed training in 405.5 seconds
+Traceback (most recent call last):
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/einops.py", line 381, in reduce
+    recipe = _prepare_transformation_recipe(pattern, reduction, axes_lengths=hashable_axes_lengths)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/einops.py", line 222, in _prepare_transformation_recipe
+    left = ParsedExpression(left)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/parsing.py", line 85, in __init__
+    add_axis_name(current_identifier)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/parsing.py", line 51, in add_axis_name
+    raise EinopsError('Indexing expression contains duplicate dimension "{}"'.format(x))
+einops.EinopsError: Indexing expression contains duplicate dimension "C"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 617, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 535, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 144, in learn_options
+    loss = net(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 455, in forward
+    return self.cc_loss(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/abstraction/hmm.py", line 464, in cc_loss
+    action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i_batch, batched=True)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/abstract.py", line 646, in forward
+    return self.forward_b(s_i_batch, tau_noise=tau_noise)
+  File "/home/sca63/abstraction/abstract.py", line 705, in forward_b
+    causal_pens = self.calc_causal_pens_b(t_i, noised_t_i_flattened)  # (B, T, T, b)
+  File "/home/sca63/abstraction/abstract.py", line 835, in calc_causal_pens_b
+    macro_trans = self.macro_transitions(noised_t_i_flattened,
+  File "/home/sca63/abstraction/abstract.py", line 760, in macro_transitions
+    return self.neurosym_macro_transitions(t_i, bs)
+  File "/home/sca63/abstraction/abstract.py", line 740, in neurosym_macro_transitions
+    t_i2 = repeat(t_i, 'T (p C C 2) -> (T repeat) p C C 2', repeat=nb, p=2, C=box_world.NUM_COLORS)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/einops.py", line 502, in repeat
+    return reduce(tensor, pattern, reduction='repeat', **axes_lengths)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/einops/einops.py", line 390, in reduce
+    raise EinopsError(message + '\n {}'.format(e))
+einops.EinopsError:  Error while processing repeat-reduction pattern "T (p C C 2) -> (T repeat) p C C 2".
+ Input tensor shape: torch.Size([448, 1764]). Additional info: {'repeat': 21, 'p': 2, 'C': 21}.
+ Indexing expression contains duplicate dimension "C"
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: - 0.001 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: | 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: / 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: - 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: \ 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: | 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: / 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb: - 0.017 MB of 0.017 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced driven-armadillo-301: https://wandb.ai/simonalford42/abstraction/runs/3g6mdnyb
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220816_094621-3g6mdnyb/logs

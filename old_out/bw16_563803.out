@@ -1,0 +1,332 @@
+MODEL:	 cc
+N:	 20000
+ABSTRACT_PEN:	 0.5
+Starting run:
+d84c60aeecf44fab96c1a05a15537f49
+params: {'n': 20000, 'traj_updates': 100000000.0, 'num_saves': 4, 'num_tests': 100, 'num_test': 200, 'lr': 0.0005, 'batch_size': 32, 'abstract_pen': 0.5, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': False, 'variable_abstract_pen': False, 'tau_precompute': False, 'replace_trans_net': False, 'batch_norm': False, 'device': 'NVIDIA GeForce RTX 2080 Ti', 'epochs': 5000, 'test_every': 50, 'save_every': 1250, 'id': 'd84c60aeecf44fab96c1a05a15537f49'}
+Net has 236788 parameters
+WARNING: tau norm dim disabled
+train_loss: 635153.5430755615
+Solved 0/200 episodes, CC loss avg = 0.034482212531253914
+Epoch 0	 test acc 0.0
+train_loss: 231035.33768463135
+train_loss: 183153.73962402344
+train_loss: 162799.43900680542
+train_loss: 150823.59580612183
+train_loss: 143079.06547927856
+Solved 30/200 episodes, CC loss avg = 0.010560219135873582
+Epoch 50	 test acc 0.15
+train_loss: 136238.6989517212
+train_loss: 128150.13943099976
+train_loss: 117253.42629241943
+train_loss: 111950.02840805054
+train_loss: 107045.62449645996
+Solved 77/200 episodes, CC loss avg = 0.008418350948287719
+Epoch 100	 test acc 0.385
+train_loss: 102718.04039764404
+train_loss: 96760.59255218506
+train_loss: 92253.95601272583
+train_loss: 87868.20837783813
+train_loss: 86387.69072723389
+Solved 82/200 episodes, CC loss avg = 0.008474557139327142
+Epoch 150	 test acc 0.41
+train_loss: 83794.65814781189
+train_loss: 81736.34571456909
+train_loss: 79361.64879608154
+train_loss: 78478.6171131134
+train_loss: 75298.27939987183
+Solved 78/200 episodes, CC loss avg = 0.008242368891678556
+Epoch 200	 test acc 0.39
+train_loss: 74874.01414680481
+train_loss: 72741.33440208435
+train_loss: 71446.2562713623
+train_loss: 70107.37815856934
+train_loss: 68606.13406944275
+Solved 82/200 episodes, CC loss avg = 0.009357702441273683
+Epoch 250	 test acc 0.41
+train_loss: 67232.4566192627
+train_loss: 66911.87853622437
+train_loss: 66379.3175239563
+train_loss: 65195.55438423157
+train_loss: 64034.30261802673
+Solved 77/200 episodes, CC loss avg = 0.008081951594643066
+Epoch 300	 test acc 0.385
+train_loss: 63915.20150375366
+train_loss: 62601.21124649048
+train_loss: 61939.014766693115
+train_loss: 61865.84943771362
+train_loss: 61185.54974937439
+Solved 82/200 episodes, CC loss avg = 0.008620326838746077
+Epoch 350	 test acc 0.41
+train_loss: 61294.776710510254
+train_loss: 58557.54439544678
+train_loss: 58336.25177192688
+train_loss: 58677.75826072693
+train_loss: 57010.84732055664
+Solved 81/200 episodes, CC loss avg = 0.008622533845706005
+Epoch 400	 test acc 0.405
+train_loss: 56687.876569747925
+train_loss: 55448.58424758911
+train_loss: 56598.52738761902
+train_loss: 55216.50751686096
+train_loss: 55867.93539237976
+Solved 83/200 episodes, CC loss avg = 0.007992038170291808
+Epoch 450	 test acc 0.415
+train_loss: 55934.56266403198
+train_loss: 54806.52970504761
+train_loss: 55624.724924087524
+train_loss: 53362.82187271118
+train_loss: 51941.19562339783
+Solved 83/200 episodes, CC loss avg = 0.00755740287147737
+Epoch 500	 test acc 0.415
+train_loss: 55064.02718734741
+train_loss: 55625.58699798584
+train_loss: 55036.14430999756
+train_loss: 53257.03105354309
+train_loss: 51605.986852645874
+Solved 84/200 episodes, CC loss avg = 0.008092562166630802
+Epoch 550	 test acc 0.42
+train_loss: 52836.9049949646
+train_loss: 50762.351972579956
+train_loss: 50881.21222496033
+train_loss: 51670.89554977417
+train_loss: 52002.04349899292
+Solved 87/200 episodes, CC loss avg = 0.02036999345149584
+Epoch 600	 test acc 0.435
+train_loss: 51936.12959289551
+train_loss: 51164.81522369385
+train_loss: 52199.17020988464
+train_loss: 52659.4652671814
+train_loss: 49702.776372909546
+Solved 98/200 episodes, CC loss avg = 0.007802436929265135
+Epoch 650	 test acc 0.49
+train_loss: 50401.40178489685
+train_loss: 48870.184297561646
+train_loss: 52612.789627075195
+train_loss: 51459.03560256958
+train_loss: 48201.55609512329
+Solved 92/200 episodes, CC loss avg = 0.008443567423082098
+Epoch 700	 test acc 0.46
+train_loss: 49400.669160842896
+train_loss: 49320.43741798401
+train_loss: 50381.58031272888
+train_loss: 48502.03359603882
+train_loss: 48722.4836769104
+Solved 75/200 episodes, CC loss avg = 0.00936111134086626
+Epoch 750	 test acc 0.375
+train_loss: 48777.43964767456
+train_loss: 47243.21075820923
+train_loss: 50559.58727836609
+train_loss: 48928.647216796875
+train_loss: 48452.21001243591
+Solved 87/200 episodes, CC loss avg = 0.007198261141158396
+Epoch 800	 test acc 0.435
+train_loss: 48761.049322128296
+train_loss: 49040.27521324158
+train_loss: 48664.19182395935
+train_loss: 49447.884492874146
+train_loss: 47659.09539222717
+Solved 85/200 episodes, CC loss avg = 0.00830981378863416
+Epoch 850	 test acc 0.425
+train_loss: 49866.279373168945
+train_loss: 48803.112884521484
+train_loss: 48365.26687049866
+train_loss: 47259.4916267395
+train_loss: 49029.67058944702
+Solved 99/200 episodes, CC loss avg = 0.007884745563835656
+Epoch 900	 test acc 0.495
+train_loss: 46686.24420928955
+train_loss: 47043.35269355774
+train_loss: 47633.18447113037
+train_loss: 48119.34635734558
+train_loss: 47112.55297470093
+Solved 82/200 episodes, CC loss avg = 0.010966655061991409
+Epoch 950	 test acc 0.41
+train_loss: 48273.54800796509
+train_loss: 47526.08154296875
+train_loss: 49738.522691726685
+train_loss: 47865.226888656616
+train_loss: 46398.05333900452
+Solved 79/200 episodes, CC loss avg = 0.007769218114737462
+Epoch 1000	 test acc 0.395
+train_loss: 48091.582458496094
+train_loss: 46793.8981590271
+train_loss: 47314.241455078125
+train_loss: 47375.26990509033
+train_loss: 48928.3918094635
+Solved 84/200 episodes, CC loss avg = 0.017637381530022634
+Epoch 1050	 test acc 0.42
+train_loss: 48213.67304229736
+train_loss: 46146.528396606445
+train_loss: 46924.11601829529
+train_loss: 48758.90287590027
+train_loss: 48202.36817741394
+Solved 88/200 episodes, CC loss avg = 0.008213922970952064
+Epoch 1100	 test acc 0.44
+train_loss: 44930.74920082092
+train_loss: 45573.729820251465
+train_loss: 48376.47636604309
+train_loss: 45849.46908569336
+train_loss: 46364.19425582886
+Solved 86/200 episodes, CC loss avg = 0.0075900729150388665
+Epoch 1150	 test acc 0.43
+train_loss: 45156.42226600647
+train_loss: 45001.515771865845
+train_loss: 45726.41924858093
+train_loss: 44291.71074295044
+train_loss: 46392.99301338196
+Solved 82/200 episodes, CC loss avg = 0.007222943423323951
+Epoch 1200	 test acc 0.41
+train_loss: 44399.804542541504
+train_loss: 45569.82767486572
+train_loss: 46856.90989494324
+train_loss: 46810.72968864441
+train_loss: 46780.49940490723
+Solved 80/200 episodes, CC loss avg = 0.00852956683737841
+Epoch 1250	 test acc 0.4
+Saved model at models/d84c60aeecf44fab96c1a05a15537f49-epoch-1250.pt
+train_loss: 45731.253620147705
+train_loss: 44576.903606414795
+train_loss: 46381.98904800415
+train_loss: 46413.474449157715
+train_loss: 44470.870750427246
+Solved 92/200 episodes, CC loss avg = 0.007260112501617701
+Epoch 1300	 test acc 0.46
+train_loss: 45661.61598396301
+train_loss: 44469.100118637085
+train_loss: 44106.34651565552
+train_loss: 46838.277643203735
+train_loss: 47232.747146606445
+Solved 95/200 episodes, CC loss avg = 0.007979994904386938
+Epoch 1350	 test acc 0.475
+train_loss: 46101.27726364136
+train_loss: 46687.14128494263
+train_loss: 47209.73678588867
+train_loss: 48236.87606048584
+train_loss: 45395.263677597046
+Solved 84/200 episodes, CC loss avg = 0.007494606847636575
+Epoch 1400	 test acc 0.42
+train_loss: 46392.39597320557
+train_loss: 46439.59421539307
+train_loss: 45159.71541595459
+train_loss: 46201.25471496582
+train_loss: 49101.38906669617
+Solved 95/200 episodes, CC loss avg = 0.007804449158480994
+Epoch 1450	 test acc 0.475
+train_loss: 46287.746461868286
+train_loss: 44000.5274848938
+train_loss: 46382.373233795166
+train_loss: 44978.52601623535
+train_loss: 44906.95365142822
+Solved 82/200 episodes, CC loss avg = 0.007946284729657737
+Epoch 1500	 test acc 0.41
+train_loss: 43875.08372306824
+train_loss: 45267.27954483032
+train_loss: 44737.984899520874
+train_loss: 45844.20514678955
+train_loss: 45614.348627090454
+Solved 80/200 episodes, CC loss avg = 0.008037070955660875
+Epoch 1550	 test acc 0.4
+train_loss: 44500.17286491394
+train_loss: 45894.06796455383
+train_loss: 44144.68112373352
+train_loss: 44583.89354515076
+train_loss: 45878.93404006958
+Solved 85/200 episodes, CC loss avg = 0.007091663780655661
+Epoch 1600	 test acc 0.425
+train_loss: 46657.76764678955
+train_loss: 43030.630447387695
+train_loss: 44244.68251991272
+train_loss: 42690.99876976013
+train_loss: 44394.29283332825
+Solved 98/200 episodes, CC loss avg = 0.006873893165742325
+Epoch 1650	 test acc 0.49
+train_loss: 46629.81425285339
+train_loss: 43763.05215835571
+train_loss: 43665.6868019104
+train_loss: 46515.448711395264
+train_loss: 45514.37077713013
+Solved 95/200 episodes, CC loss avg = 0.010758033938441162
+Epoch 1700	 test acc 0.475
+train_loss: 44570.29457473755
+train_loss: 43823.33107185364
+train_loss: 44455.11333847046
+train_loss: 46716.21602630615
+train_loss: 44025.42160606384
+Solved 91/200 episodes, CC loss avg = 0.007848719291408826
+Epoch 1750	 test acc 0.455
+train_loss: 44899.10775184631
+train_loss: 45265.33482551575
+train_loss: 42257.01559257507
+train_loss: 45680.18628311157
+train_loss: 45237.34359359741
+Solved 74/200 episodes, CC loss avg = 0.007503358796851766
+Epoch 1800	 test acc 0.37
+train_loss: 43695.87768363953
+train_loss: 43773.23265838623
+train_loss: 45001.301149368286
+train_loss: 44764.9031829834
+train_loss: 46116.34286880493
+Solved 86/200 episodes, CC loss avg = 0.010708773009283173
+Epoch 1850	 test acc 0.43
+train_loss: 45607.38314437866
+train_loss: 48983.79269218445
+train_loss: 43377.420108795166
+train_loss: 43251.4970664978
+train_loss: 44263.27896499634
+Solved 98/200 episodes, CC loss avg = 0.008168973102057638
+Epoch 1900	 test acc 0.49
+train_loss: 46258.51396560669
+train_loss: 47213.60596656799
+train_loss: 43248.74396896362
+train_loss: 44485.526861190796
+train_loss: 45529.12985610962
+Solved 84/200 episodes, CC loss avg = 0.006602083782750915
+Epoch 1950	 test acc 0.42
+train_loss: 43755.56056404114
+train_loss: 44107.190393447876
+train_loss: 45373.243463516235
+train_loss: 44815.993644714355
+train_loss: 49708.62801170349
+Solved 86/200 episodes, CC loss avg = 0.0071603890435373895
+Epoch 2000	 test acc 0.43
+train_loss: 45974.10884666443
+train_loss: 45894.06399536133
+train_loss: 44039.98892593384
+train_loss: 43445.34755516052
+train_loss: 43297.5237827301
+Solved 86/200 episodes, CC loss avg = 0.0076866853827924795
+Epoch 2050	 test acc 0.43
+train_loss: 45031.974699020386
+train_loss: 45123.66872406006
+train_loss: 45865.52011489868
+train_loss: 44787.996894836426
+train_loss: 45275.75114059448
+Solved 87/200 episodes, CC loss avg = 0.007647471848725416
+Epoch 2100	 test acc 0.435
+train_loss: 47132.48858451843
+train_loss: 44729.40127372742
+train_loss: 44689.92456436157
+train_loss: 45569.338289260864
+train_loss: 44880.85657501221
+Solved 90/200 episodes, CC loss avg = 0.01502689945664315
+Epoch 2150	 test acc 0.45
+train_loss: 44080.13281440735
+train_loss: 42382.15111732483
+train_loss: 45886.55307006836
+train_loss: 45765.98083305359
+train_loss: 45143.41626930237
+Solved 87/200 episodes, CC loss avg = 0.007766697897580419
+Epoch 2200	 test acc 0.435
+train_loss: 44202.88511657715
+train_loss: 46566.1804561615
+train_loss: 47771.73859977722
+train_loss: 43909.7416267395
+train_loss: 44441.24902534485
+Solved 88/200 episodes, CC loss avg = 0.011557959251142193
+Epoch 2250	 test acc 0.44
+train_loss: 45752.891328811646
+train_loss: 44994.79310417175
+train_loss: 44630.666049957275
+train_loss: 47038.41438293457
+slurmstepd: error: *** JOB 563803 ON gadikota-compute-01 CANCELLED AT 2022-05-14T15:15:35 DUE TO TIME LIMIT ***

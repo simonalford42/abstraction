@@ -1,0 +1,27 @@
+Starting run:
+b65e6a261ac04f28a2faa84d32b21c73
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'test_every': 500000.0, 'save_every': 500000.0, 'id': 'b65e6a261ac04f28a2faa84d32b21c73'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.135
+Saved model at models/b65e6a261ac04f28a2faa84d32b21c73-epoch-0.pt
+Saved model at models/b65e6a261ac04f28a2faa84d32b21c73.pt
+Completed training in 38963.8 seconds
+repeating
+Starting run:
+38ac4458830e468f9043dc7dd5947f5c
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'test_every': 500000.0, 'save_every': 500000.0, 'id': '38ac4458830e468f9043dc7dd5947f5c'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.0
+Saved model at models/38ac4458830e468f9043dc7dd5947f5c-epoch-0.pt
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+slurmstepd: error: *** JOB 462296 ON ellis-compute-01 CANCELLED AT 2022-03-30T10:19:41 ***

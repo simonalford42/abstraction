@@ -1,0 +1,62 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 3090
+cuda:0
+Passed GPU check
+Starting run:
+7caf148820a04ce3bbd8bbfb43a8cd9c
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, relational_macro=False, batch_size=32, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='7caf148820a04ce3bbd8bbfb43a8cd9c')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220916_174251-2kcp6p3j
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run fresh-lion-491
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2kcp6p3j
+Net has 154724 parameters
+WARNING: tau norm dim disabled
+Solved 4/200 episodes, CC loss avg = 0.02574956581189657
+Solved 125/200 episodes, CC loss avg = 0.013130265058952904
+Solved 124/200 episodes, CC loss avg = 0.012854218608687738
+Saved model at models/7caf148820a04ce3bbd8bbfb43a8cd9c-epoch-113.pt
+Solved 122/200 episodes, CC loss avg = 0.012595162855377267
+Solved 146/200 episodes, CC loss avg = 0.010321415514740891
+Solved 141/200 episodes, CC loss avg = 0.010269045321133676
+Saved model at models/7caf148820a04ce3bbd8bbfb43a8cd9c-epoch-221.pt
+Solved 144/200 episodes, CC loss avg = 0.00880890496599655
+Solved 125/200 episodes, CC loss avg = 0.007599710129934868
+Solved 142/200 episodes, CC loss avg = 0.008821173675574034
+Saved model at models/7caf148820a04ce3bbd8bbfb43a8cd9c-epoch-327.pt
+Solved 142/200 episodes, CC loss avg = 0.0077536650769161495
+Solved 138/200 episodes, CC loss avg = 0.007359252956424219
+Solved 144/200 episodes, CC loss avg = 0.00785956176516361
+Saved model at models/7caf148820a04ce3bbd8bbfb43a8cd9c-epoch-433.pt
+Solved 142/200 episodes, CC loss avg = 0.0067358717050228735
+Solved 148/200 episodes, CC loss avg = 0.007055348198155589
+Saved model at models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 50525.0 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: \ 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: | 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: / 0.003 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: - 0.003 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: \ 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: | 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: / 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: - 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: \ 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: | 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: / 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: - 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▇▇▇███▇██████
+wandb: loss █▆▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.74
+wandb: loss 61224.8454
+wandb: 
+wandb: Synced fresh-lion-491: https://wandb.ai/simonalford42/abstraction/runs/2kcp6p3j
+wandb: Synced 6 W&B file(s), 5 media file(s), 5 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220916_174251-2kcp6p3j/logs

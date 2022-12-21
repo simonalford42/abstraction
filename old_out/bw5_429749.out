@@ -1,0 +1,307 @@
+Using torch device NVIDIA GeForce RTX 3090
+hmm training!
+b: 10
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 41898 parameters
+Round 0
+Generated trajectories in 71.8 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 115474.8125	(23.9s)
+epoch: 20	train loss: 31221.41015625	(23.5s)
+epoch: 40	train loss: 27584.076171875	(23.5s)
+epoch: 60	train loss: 25847.677734375	(23.5s)
+epoch: 80	train loss: 23889.8125	(23.5s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 27/200 episodes
+Evaluated model in 12.6 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-0
+Round 1
+Generated trajectories in 71.7 seconds
+epoch: 0	train loss: 25831.94140625	(23.3s)
+epoch: 20	train loss: 22137.896484375	(23.5s)
+epoch: 40	train loss: 20540.76171875	(23.4s)
+epoch: 60	train loss: 19374.591796875	(23.5s)
+epoch: 80	train loss: 18900.6171875	(23.5s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 37/200 episodes
+Evaluated model in 11.2 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-1
+Round 2
+Generated trajectories in 71.1 seconds
+epoch: 0	train loss: 23503.453125	(23.4s)
+epoch: 20	train loss: 19284.173828125	(23.6s)
+epoch: 40	train loss: 18318.564453125	(23.5s)
+epoch: 60	train loss: 17756.201171875	(23.7s)
+epoch: 80	train loss: 16891.015625	(23.6s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 33/200 episodes
+Evaluated model in 12.1 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-2
+Round 3
+Generated trajectories in 71.7 seconds
+epoch: 0	train loss: 22984.05859375	(23.6s)
+epoch: 20	train loss: 18362.12890625	(23.7s)
+epoch: 40	train loss: 17562.779296875	(23.7s)
+epoch: 60	train loss: 16464.408203125	(23.7s)
+epoch: 80	train loss: 18043.0703125	(23.7s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 45/200 episodes
+Evaluated model in 11.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-3
+Round 4
+Generated trajectories in 71.7 seconds
+epoch: 0	train loss: 22415.357421875	(23.5s)
+epoch: 20	train loss: 17815.966796875	(23.7s)
+epoch: 40	train loss: 16489.07421875	(23.9s)
+epoch: 60	train loss: 16081.2890625	(23.8s)
+epoch: 80	train loss: 15362.7607421875	(23.8s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 33/200 episodes
+Evaluated model in 11.9 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-4
+Round 5
+Generated trajectories in 71.0 seconds
+epoch: 0	train loss: 22421.439453125	(23.4s)
+epoch: 20	train loss: 18535.30078125	(23.5s)
+epoch: 40	train loss: 17045.572265625	(23.5s)
+epoch: 60	train loss: 15737.072265625	(23.5s)
+epoch: 80	train loss: 14823.8740234375	(23.5s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 34/200 episodes
+Evaluated model in 12.2 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-5
+Round 6
+Generated trajectories in 71.4 seconds
+epoch: 0	train loss: 21662.66796875	(23.4s)
+epoch: 20	train loss: 18309.927734375	(23.7s)
+epoch: 40	train loss: 15791.435546875	(23.7s)
+epoch: 60	train loss: 14671.7724609375	(23.6s)
+epoch: 80	train loss: 16888.634765625	(23.7s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 38/200 episodes
+Evaluated model in 11.3 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-6
+Round 7
+Generated trajectories in 71.7 seconds
+epoch: 0	train loss: 21967.966796875	(23.7s)
+epoch: 20	train loss: 17418.271484375	(23.8s)
+epoch: 40	train loss: 13698.8935546875	(24.0s)
+epoch: 60	train loss: 7469.99853515625	(23.8s)
+epoch: 80	train loss: 3916.33984375	(24.0s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 148/200 episodes
+Evaluated model in 13.8 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-7
+Round 8
+Generated trajectories in 72.0 seconds
+epoch: 0	train loss: 5607.0634765625	(23.8s)
+epoch: 20	train loss: 2581.6591796875	(23.9s)
+epoch: 40	train loss: 3160.712158203125	(24.0s)
+epoch: 60	train loss: 3725.836181640625	(23.9s)
+epoch: 80	train loss: 1165.8992919921875	(24.0s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 178/200 episodes
+Evaluated model in 14.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-8
+Round 9
+Generated trajectories in 72.0 seconds
+epoch: 0	train loss: 4171.75439453125	(23.7s)
+epoch: 20	train loss: 1710.6497802734375	(23.8s)
+epoch: 40	train loss: 1675.1116943359375	(23.8s)
+epoch: 60	train loss: 2890.47998046875	(24.0s)
+epoch: 80	train loss: 2160.218505859375	(24.1s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 164/200 episodes
+Evaluated model in 14.3 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-9
+Round 10
+Generated trajectories in 72.2 seconds
+epoch: 0	train loss: 3582.126953125	(23.7s)
+epoch: 20	train loss: 2740.19287109375	(23.8s)
+epoch: 40	train loss: 1099.60400390625	(23.9s)
+epoch: 60	train loss: 1914.8377685546875	(23.8s)
+epoch: 80	train loss: 730.7908325195312	(23.8s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 189/200 episodes
+Evaluated model in 15.0 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-10
+Round 11
+Generated trajectories in 71.5 seconds
+epoch: 0	train loss: 3274.43408203125	(23.6s)
+epoch: 20	train loss: 1288.300048828125	(23.8s)
+epoch: 40	train loss: 1107.6824951171875	(23.8s)
+epoch: 60	train loss: 1621.8206787109375	(23.8s)
+epoch: 80	train loss: 1637.6197509765625	(23.9s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 184/200 episodes
+Evaluated model in 15.4 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-11
+Round 12
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 3039.51611328125	(23.9s)
+epoch: 20	train loss: 1052.2362060546875	(24.1s)
+epoch: 40	train loss: 1498.8802490234375	(24.1s)
+epoch: 60	train loss: 936.6427612304688	(24.1s)
+epoch: 80	train loss: 705.4909057617188	(24.0s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 183/200 episodes
+Evaluated model in 14.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-12
+Round 13
+Generated trajectories in 71.5 seconds
+epoch: 0	train loss: 2893.9130859375	(23.8s)
+epoch: 20	train loss: 1081.7064208984375	(23.8s)
+epoch: 40	train loss: 942.2954711914062	(23.9s)
+epoch: 60	train loss: 905.4747314453125	(23.7s)
+epoch: 80	train loss: 741.765380859375	(23.8s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 188/200 episodes
+Evaluated model in 14.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-13
+Round 14
+Generated trajectories in 72.9 seconds
+epoch: 0	train loss: 2937.599853515625	(23.9s)
+epoch: 20	train loss: 1262.3162841796875	(24.0s)
+epoch: 40	train loss: 2109.66064453125	(24.1s)
+epoch: 60	train loss: 3826.393798828125	(24.0s)
+epoch: 80	train loss: 1200.869140625	(24.1s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 185/200 episodes
+Evaluated model in 15.2 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-14
+Round 15
+Generated trajectories in 71.4 seconds
+epoch: 0	train loss: 2680.209716796875	(23.6s)
+epoch: 20	train loss: 1158.0830078125	(23.6s)
+epoch: 40	train loss: 1312.0294189453125	(23.0s)
+epoch: 60	train loss: 1144.4700927734375	(24.1s)
+epoch: 80	train loss: 1416.6865234375	(27.0s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 185/200 episodes
+Evaluated model in 17.6 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-15
+Round 16
+Generated trajectories in 83.8 seconds
+epoch: 0	train loss: 2724.40283203125	(27.2s)
+epoch: 20	train loss: 782.004150390625	(27.2s)
+epoch: 40	train loss: 1330.0499267578125	(27.2s)
+epoch: 60	train loss: 6369.0986328125	(27.2s)
+epoch: 80	train loss: 1166.9459228515625	(27.2s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 182/200 episodes
+Evaluated model in 19.2 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-16
+Round 17
+Generated trajectories in 84.7 seconds
+epoch: 0	train loss: 3171.92138671875	(27.2s)
+epoch: 20	train loss: 935.360107421875	(27.5s)
+epoch: 40	train loss: 1168.0947265625	(27.2s)
+epoch: 60	train loss: 1035.44384765625	(27.4s)
+epoch: 80	train loss: 1066.560302734375	(27.4s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 193/200 episodes
+Evaluated model in 18.1 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-17
+Round 18
+Generated trajectories in 84.0 seconds
+epoch: 0	train loss: 3699.116455078125	(27.0s)
+epoch: 20	train loss: 1852.02783203125	(27.1s)
+epoch: 40	train loss: 920.9488525390625	(27.2s)
+epoch: 60	train loss: 2980.3740234375	(27.2s)
+epoch: 80	train loss: 756.688720703125	(27.3s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 193/200 episodes
+Evaluated model in 18.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-18
+Round 19
+Generated trajectories in 84.9 seconds
+epoch: 0	train loss: 2126.19091796875	(27.3s)
+epoch: 20	train loss: 892.5223388671875	(27.3s)
+epoch: 40	train loss: 560.8193969726562	(27.4s)
+epoch: 60	train loss: 871.4444580078125	(27.3s)
+epoch: 80	train loss: 536.3355712890625	(27.4s)
+Evaluating model on 200 episodes
+options for eval 0: []
+options for eval 1: []
+options for eval 2: []
+Solved 185/200 episodes
+Evaluated model in 18.5 seconds
+Saved model for run
+4eb7f7fccd5149248f9bde216aa736fb with name round-19

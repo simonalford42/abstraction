@@ -1,0 +1,30 @@
+Starting run:
+9a67376213644fefab8187e027f00616
+params: {'n': 5000, 'lr': 0.0008, 'epochs': 2500, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 100, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA A100-PCIE-40GB', 'id': '9a67376213644fefab8187e027f00616'}
+train
+Net has 37803 parameters
+Solved 0/200 episodes
+Epoch 0	 test acc 0.0
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-0.pt
+Solved 40/200 episodes
+Epoch 100	 test acc 0.2
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-100.pt
+Solved 61/200 episodes
+Epoch 200	 test acc 0.305
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-200.pt
+Solved 60/200 episodes
+Epoch 300	 test acc 0.3
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-300.pt
+Solved 64/200 episodes
+Epoch 400	 test acc 0.32
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-400.pt
+Solved 60/200 episodes
+Epoch 500	 test acc 0.3
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-500.pt
+Solved 194/200 episodes
+Epoch 600	 test acc 0.97
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-600.pt
+Solved 199/200 episodes
+Epoch 700	 test acc 0.995
+Saved model at models/9a67376213644fefab8187e027f00616-epoch-700.pt
+slurmstepd: error: *** JOB 461151 ON snavely-compute-02 CANCELLED AT 2022-03-28T05:02:13 DUE TO TIME LIMIT ***

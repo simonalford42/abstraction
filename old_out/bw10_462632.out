@@ -1,0 +1,13 @@
+Starting run:
+4ec9c6e40c83428fb1d15e31e0b6a32c
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN Xp', 'test_every': 500000.0, 'save_every': 500000.0, 'id': '4ec9c6e40c83428fb1d15e31e0b6a32c'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.0
+Saved model at models/4ec9c6e40c83428fb1d15e31e0b6a32c-epoch-0.pt
+reloading data
+reloading data
+reloading data
+reloading data
+reloading data
+slurmstepd: error: *** JOB 462632 ON sablab-gpu-07 CANCELLED AT 2022-03-30T07:18:03 DUE TO PREEMPTION ***

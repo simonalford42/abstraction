@@ -1,0 +1,57 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-76
+outer sv
+params: {'epochs': 10, 'lr': 0.0008, 'n': 50000, 'batch_size': 10}
+Net has 37803 parameters
+Non-disk data
+Generated trajectories in 717.1 seconds
+Round 0
+epoch: 0	train loss: 838358.987991333	(103.6s)
+Evaluating model on 200 episodes
+Solved 35/200 episodes
+Evaluated model in 33.5 seconds
+Round 1
+epoch: 0	train loss: 407889.8519451171	(102.6s)
+Round 2
+epoch: 0	train loss: 391266.763527222	(103.1s)
+Round 3
+epoch: 0	train loss: 382217.00631086156	(101.6s)
+Round 4
+epoch: 0	train loss: 97546.53150193207	(103.4s)
+Round 5
+epoch: 0	train loss: 58814.59095163027	(101.0s)
+Round 6
+epoch: 0	train loss: 35070.78396146617	(103.3s)
+Round 7
+epoch: 0	train loss: 18659.535373057006	(101.2s)
+Round 8
+epoch: 0	train loss: 17278.686617436084	(101.1s)
+Round 9
+epoch: 0	train loss: 15368.893631160825	(102.3s)
+Round 10
+epoch: 0	train loss: 24233.039116167325	(103.4s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluated model in 13.0 seconds
+Round 11
+epoch: 0	train loss: 19989.428468127917	(101.3s)
+Round 12
+epoch: 0	train loss: 14642.556572176676	(103.5s)
+Round 13
+epoch: 0	train loss: 17951.401767262603	(103.0s)
+Round 14
+epoch: 0	train loss: 16323.866362066998	(103.0s)
+Round 15
+epoch: 0	train loss: 24806.54814978919	(104.3s)
+Round 16
+epoch: 0	train loss: 29234.000292374752	(103.1s)
+Round 17
+epoch: 0	train loss: 23651.64870450832	(103.4s)
+Round 18
+epoch: 0	train loss: 28670.243241934106	(103.1s)
+Round 19
+epoch: 0	train loss: 24845.762929187156	(103.1s)
+Completed training in 21329.1 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 55 operations to synchronize with Neptune. Do not kill this process.
+All 55 operations synced, thanks for waiting!

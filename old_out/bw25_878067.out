@@ -1,0 +1,47 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA TITAN Xp
+Starting run:
+96f8d9abee504719a9a2613d24fbdc43
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, sv_micro=True, sv_micro_data_type='ground_truth', relational_macro=False, traj_updates=1000000000.0, batch_size=32, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA TITAN Xp', id='96f8d9abee504719a9a2613d24fbdc43')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220927_135626-2rnjmwvn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run robust-capybara-552
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2rnjmwvn
+Loaded model from models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt
+Completed training in 94068.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 820, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 617, in boxworld_main
+    sv_micro_train(params, net)
+  File "/home/sca63/abstraction/main.py", line 785, in sv_micro_train
+    loss.backward()
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/_tensor.py", line 396, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/autograd/__init__.py", line 173, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt
+wandb: Waiting for W&B process to finish... (failed 255). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.012 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ██████████████▇█▄▅▂▅▃▃▄▃▄▂▅▂▂▁▄▂▁▃▅▅▅▄▅▅
+wandb: loss ▂▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▅▄▇▄▆▆▆▆▅▇▄▇▇█▅▇█▆▅▄▄▅▄▅
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.77955
+wandb: loss 8903.50393
+wandb: 
+wandb: Synced robust-capybara-552: https://wandb.ai/simonalford42/abstraction/runs/2rnjmwvn
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220927_135626-2rnjmwvn/logs

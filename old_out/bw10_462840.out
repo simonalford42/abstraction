@@ -1,0 +1,24 @@
+Starting run:
+948a2db370ea4a6b848b6a015236fe32
+params: {'n': 50000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce GTX TITAN X', 'epochs': 200, 'test_every': 10, 'save_every': 10, 'id': '948a2db370ea4a6b848b6a015236fe32'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.13
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-0.pt
+Epoch 10	 test acc 0.185
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-10.pt
+Epoch 20	 test acc 0.245
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-20.pt
+Epoch 30	 test acc 0.185
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-30.pt
+Epoch 40	 test acc 0.14
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-40.pt
+Epoch 50	 test acc 0.15
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-50.pt
+Epoch 60	 test acc 0.15
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-60.pt
+Epoch 70	 test acc 0.21
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-70.pt
+Epoch 80	 test acc 0.195
+Saved model at models/948a2db370ea4a6b848b6a015236fe32-epoch-80.pt
+slurmstepd: error: *** JOB 462840 ON nikola-compute-01 CANCELLED AT 2022-03-30T21:55:27 ***

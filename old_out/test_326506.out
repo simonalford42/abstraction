@@ -1,0 +1,147 @@
+job number = 0
+args.lr: 0.0001
+args.big: True
+args.batch_size: 64
+args.all_conv: True
+Training on NVIDIA GeForce RTX 3090
+generating trajectories
+trajectories generated
+round 0
+net has 36236 parameters
+epoch: 0	train loss: 1.379980206489563	(0.2s)
+epoch: 1	train loss: 1.2757614850997925	(0.1s)
+epoch: 2	train loss: 1.1552863121032715	(0.1s)
+epoch: 3	train loss: 1.1564291715621948	(0.1s)
+epoch: 4	train loss: 1.0609050989151	(0.1s)
+epoch: 5	train loss: 1.000583529472351	(0.1s)
+epoch: 6	train loss: 1.0487998723983765	(0.1s)
+epoch: 7	train loss: 0.9889450073242188	(0.1s)
+epoch: 8	train loss: 0.9441379308700562	(0.1s)
+epoch: 9	train loss: 0.9351149201393127	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 1
+net has 36236 parameters
+epoch: 0	train loss: 1.062859058380127	(0.1s)
+epoch: 1	train loss: 1.0237724781036377	(0.1s)
+epoch: 2	train loss: 0.912388265132904	(0.1s)
+epoch: 3	train loss: 0.808643102645874	(0.1s)
+epoch: 4	train loss: 0.9166820645332336	(0.1s)
+epoch: 5	train loss: 0.8118285536766052	(0.1s)
+epoch: 6	train loss: 0.7209665775299072	(0.1s)
+epoch: 7	train loss: 0.8753259181976318	(0.1s)
+epoch: 8	train loss: 0.7111978530883789	(0.1s)
+epoch: 9	train loss: 0.707478404045105	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 2
+net has 36236 parameters
+epoch: 0	train loss: 0.8225862383842468	(0.1s)
+epoch: 1	train loss: 0.6519594788551331	(0.1s)
+epoch: 2	train loss: 0.6948703527450562	(0.1s)
+epoch: 3	train loss: 0.702193021774292	(0.1s)
+epoch: 4	train loss: 0.9072219729423523	(0.1s)
+epoch: 5	train loss: 0.8009950518608093	(0.1s)
+epoch: 6	train loss: 0.7174748778343201	(0.1s)
+epoch: 7	train loss: 0.5658530592918396	(0.1s)
+epoch: 8	train loss: 0.6932968497276306	(0.1s)
+epoch: 9	train loss: 0.8312833905220032	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 3
+net has 36236 parameters
+epoch: 0	train loss: 0.5940747857093811	(0.1s)
+epoch: 1	train loss: 0.679455041885376	(0.1s)
+epoch: 2	train loss: 0.5670003294944763	(0.1s)
+epoch: 3	train loss: 0.6455407738685608	(0.1s)
+epoch: 4	train loss: 0.6870594620704651	(0.1s)
+epoch: 5	train loss: 0.6855666637420654	(0.1s)
+epoch: 6	train loss: 0.5452799201011658	(0.1s)
+epoch: 7	train loss: 0.5190386176109314	(0.1s)
+epoch: 8	train loss: 0.5430782437324524	(0.1s)
+epoch: 9	train loss: 0.661431610584259	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 4
+net has 36236 parameters
+epoch: 0	train loss: 0.5906429290771484	(0.1s)
+epoch: 1	train loss: 0.5012538433074951	(0.1s)
+epoch: 2	train loss: 0.5147847533226013	(0.1s)
+epoch: 3	train loss: 0.5367672443389893	(0.1s)
+epoch: 4	train loss: 0.562247633934021	(0.1s)
+epoch: 5	train loss: 0.6069587469100952	(0.1s)
+epoch: 6	train loss: 0.4779578447341919	(0.1s)
+epoch: 7	train loss: 0.5704197287559509	(0.1s)
+epoch: 8	train loss: 0.5132937431335449	(0.1s)
+epoch: 9	train loss: 0.5456004738807678	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 5
+net has 36236 parameters
+epoch: 0	train loss: 0.6517912745475769	(0.1s)
+epoch: 1	train loss: 0.594219982624054	(0.1s)
+epoch: 2	train loss: 0.6160053014755249	(0.1s)
+epoch: 3	train loss: 0.5634039640426636	(0.1s)
+epoch: 4	train loss: 0.47780707478523254	(0.1s)
+epoch: 5	train loss: 0.5041652321815491	(0.1s)
+epoch: 6	train loss: 0.5143675208091736	(0.1s)
+epoch: 7	train loss: 0.42026081681251526	(0.1s)
+epoch: 8	train loss: 0.5558882355690002	(0.1s)
+epoch: 9	train loss: 0.607215940952301	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 6
+net has 36236 parameters
+epoch: 0	train loss: 0.5978395342826843	(0.1s)
+epoch: 1	train loss: 0.6467595100402832	(0.1s)
+epoch: 2	train loss: 0.5852577090263367	(0.1s)
+epoch: 3	train loss: 0.3803277313709259	(0.1s)
+epoch: 4	train loss: 0.5035800337791443	(0.1s)
+epoch: 5	train loss: 0.5565191507339478	(0.1s)
+epoch: 6	train loss: 0.4278284013271332	(0.1s)
+epoch: 7	train loss: 0.43986746668815613	(0.1s)
+epoch: 8	train loss: 0.35330602526664734	(0.1s)
+epoch: 9	train loss: 0.42329609394073486	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 7
+net has 36236 parameters
+epoch: 0	train loss: 0.606544554233551	(0.1s)
+epoch: 1	train loss: 0.5558439493179321	(0.1s)
+epoch: 2	train loss: 0.6156104803085327	(0.1s)
+epoch: 3	train loss: 0.48143646121025085	(0.1s)
+epoch: 4	train loss: 0.45506638288497925	(0.1s)
+epoch: 5	train loss: 0.4145604074001312	(0.1s)
+epoch: 6	train loss: 0.5080788731575012	(0.1s)
+epoch: 7	train loss: 0.41459691524505615	(0.1s)
+epoch: 8	train loss: 0.4712456464767456	(0.1s)
+epoch: 9	train loss: 0.41307544708251953	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 8
+net has 36236 parameters
+epoch: 0	train loss: 0.5102698802947998	(0.1s)
+epoch: 1	train loss: 0.521238386631012	(0.1s)
+epoch: 2	train loss: 0.5352613925933838	(0.1s)
+epoch: 3	train loss: 0.37995436787605286	(0.1s)
+epoch: 4	train loss: 0.4172128736972809	(0.1s)
+epoch: 5	train loss: 0.4505497217178345	(0.1s)
+epoch: 6	train loss: 0.5487287640571594	(0.1s)
+epoch: 7	train loss: 0.39144718647003174	(0.1s)
+epoch: 8	train loss: 0.4953996539115906	(0.1s)
+epoch: 9	train loss: 0.4029187858104706	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 9
+net has 36236 parameters
+epoch: 0	train loss: 0.44073283672332764	(0.1s)
+epoch: 1	train loss: 0.3827448785305023	(0.1s)
+epoch: 2	train loss: 0.5919195413589478	(0.1s)
+epoch: 3	train loss: 0.3590693175792694	(0.1s)
+epoch: 4	train loss: 0.47380658984184265	(0.1s)
+epoch: 5	train loss: 0.37307512760162354	(0.1s)
+epoch: 6	train loss: 0.4271218478679657	(0.1s)
+epoch: 7	train loss: 0.3574851155281067	(0.1s)
+epoch: 8	train loss: 0.32542669773101807	(0.1s)
+epoch: 9	train loss: 0.37754690647125244	(0.1s)
+Evaluating model on 50 episodes

@@ -1,0 +1,47 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-72
+Solved 37/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-0.pt
+Solved 40/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-10.pt
+Solved 50/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-20.pt
+Solved 48/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-30.pt
+Solved 33/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-40.pt
+Solved 41/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-50.pt
+Solved 39/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-60.pt
+Solved 49/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-70.pt
+Solved 47/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-80.pt
+Solved 34/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-90.pt
+Solved 37/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-100.pt
+Solved 35/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-110.pt
+Solved 40/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-120.pt
+Solved 30/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-130.pt
+Solved 35/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-140.pt
+Solved 44/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-150.pt
+Solved 46/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-160.pt
+Solved 41/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-170.pt
+Solved 40/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-180.pt
+Solved 38/200 episodes
+Saved model at models/006337568e24498a8c26e359ed7a28b0-epoch-190.pt
+Saved model at models/006337568e24498a8c26e359ed7a28b0.pt
+Completed training in 20634.9 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 265 operations to synchronize with Neptune. Do not kill this process.
+All 265 operations synced, thanks for waiting!

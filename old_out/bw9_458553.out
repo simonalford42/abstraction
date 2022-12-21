@@ -1,0 +1,103 @@
+Starting run:
+df900d4b3df244899fb92a4c32d7c6aa
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 1600, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'id': 'df900d4b3df244899fb92a4c32d7c6aa'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.025
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-0.pt
+Epoch 20	 test acc 0.155
+Epoch 40	 test acc 0.215
+Epoch 60	 test acc 0.18
+Epoch 80	 test acc 0.175
+Epoch 100	 test acc 0.11
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-100.pt
+Epoch 120	 test acc 0.145
+Epoch 140	 test acc 0.215
+Epoch 160	 test acc 0.185
+Epoch 180	 test acc 0.155
+Epoch 200	 test acc 0.15
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-200.pt
+Epoch 220	 test acc 0.18
+Epoch 240	 test acc 0.185
+Epoch 260	 test acc 0.19
+Epoch 280	 test acc 0.225
+Epoch 300	 test acc 0.16
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-300.pt
+Epoch 320	 test acc 0.2
+Epoch 340	 test acc 0.18
+Epoch 360	 test acc 0.16
+Epoch 380	 test acc 0.19
+Epoch 400	 test acc 0.225
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-400.pt
+Epoch 420	 test acc 0.17
+Epoch 440	 test acc 0.155
+Epoch 460	 test acc 0.17
+Epoch 480	 test acc 0.205
+Epoch 500	 test acc 0.23
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-500.pt
+Epoch 520	 test acc 0.195
+Epoch 540	 test acc 0.165
+Epoch 560	 test acc 0.19
+Epoch 580	 test acc 0.205
+Epoch 600	 test acc 0.19
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-600.pt
+Epoch 620	 test acc 0.2
+Epoch 640	 test acc 0.175
+Epoch 660	 test acc 0.205
+Epoch 680	 test acc 0.2
+Epoch 700	 test acc 0.205
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-700.pt
+Epoch 720	 test acc 0.19
+Epoch 740	 test acc 0.2
+Epoch 760	 test acc 0.19
+Epoch 780	 test acc 0.14
+Epoch 800	 test acc 0.19
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-800.pt
+Epoch 820	 test acc 0.215
+Epoch 840	 test acc 0.215
+Epoch 860	 test acc 0.205
+Epoch 880	 test acc 0.175
+Epoch 900	 test acc 0.165
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-900.pt
+Epoch 920	 test acc 0.2
+Epoch 940	 test acc 0.195
+Epoch 960	 test acc 0.195
+Epoch 980	 test acc 0.17
+Epoch 1000	 test acc 0.205
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1000.pt
+Epoch 1020	 test acc 0.215
+Epoch 1040	 test acc 0.16
+Epoch 1060	 test acc 0.115
+Epoch 1080	 test acc 0.205
+Epoch 1100	 test acc 0.155
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1100.pt
+Epoch 1120	 test acc 0.125
+Epoch 1140	 test acc 0.205
+Epoch 1160	 test acc 0.215
+Epoch 1180	 test acc 0.16
+Epoch 1200	 test acc 0.235
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1200.pt
+Epoch 1220	 test acc 0.19
+Epoch 1240	 test acc 0.135
+Epoch 1260	 test acc 0.135
+Epoch 1280	 test acc 0.185
+Epoch 1300	 test acc 0.125
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1300.pt
+Epoch 1320	 test acc 0.22
+Epoch 1340	 test acc 0.155
+Epoch 1360	 test acc 0.21
+Epoch 1380	 test acc 0.21
+Epoch 1400	 test acc 0.18
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1400.pt
+Epoch 1420	 test acc 0.22
+Epoch 1440	 test acc 0.175
+Epoch 1460	 test acc 0.2
+Epoch 1480	 test acc 0.17
+Epoch 1500	 test acc 0.225
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa-epoch-1500.pt
+Epoch 1520	 test acc 0.125
+Epoch 1540	 test acc 0.17
+Epoch 1560	 test acc 0.14
+Epoch 1580	 test acc 0.185
+Saved model at models/df900d4b3df244899fb92a4c32d7c6aa.pt
+Completed training in 77295.5 seconds

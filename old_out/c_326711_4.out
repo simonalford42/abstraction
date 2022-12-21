@@ -1,0 +1,12 @@
+job number = 4
+args.lr: 0.0001
+args.big: False
+args.batch_size: 64
+args.all_conv: True
+Training on NVIDIA TITAN Xp
+generating trajectories
+trajectories generated
+round 0
+net has 15212 parameters
+epoch: 0	train loss: 1.3954330682754517	(17.9s)
+epoch: 1	train loss: 1.3268662691116333	(18.4s)

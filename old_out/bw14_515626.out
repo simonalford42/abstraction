@@ -1,0 +1,75 @@
+MODEL:	 cc
+ABSTRACT_PEN:	 1.0
+TAU_NOISE:	 0.0
+Starting run:
+16274526929543cda6ed14d3c920b998
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 64, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': True, 'freeze': False, 'hidden_dim': 128, 'num_hidden': 4, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '16274526929543cda6ed14d3c920b998'}
+train
+Net has 311452 parameters
+Solved 1/200 episodes, CC loss avg = 0.03429635793602903
+Epoch 0	 test acc 0.005
+reloading data
+Solved 18/200 episodes, CC loss avg = 0.017293623230351066
+Epoch 100	 test acc 0.09
+reloading data
+Solved 33/200 episodes, CC loss avg = 0.011806121790868929
+Epoch 200	 test acc 0.165
+reloading data
+Solved 39/200 episodes, CC loss avg = 0.011034852376117973
+Epoch 300	 test acc 0.195
+reloading data
+Solved 39/200 episodes, CC loss avg = 0.012583905860138508
+Epoch 400	 test acc 0.195
+reloading data
+Solved 35/200 episodes, CC loss avg = 0.012714939453430954
+Epoch 500	 test acc 0.175
+Saved model at models/16274526929543cda6ed14d3c920b998-epoch-500.pt
+reloading data
+Solved 50/200 episodes, CC loss avg = 0.013448572917311722
+Epoch 600	 test acc 0.25
+reloading data
+Solved 65/200 episodes, CC loss avg = 0.01116610178528999
+Epoch 700	 test acc 0.325
+reloading data
+Solved 61/200 episodes, CC loss avg = 0.01427560926805849
+Epoch 800	 test acc 0.305
+reloading data
+Solved 67/200 episodes, CC loss avg = 0.012145240912717703
+Epoch 900	 test acc 0.335
+reloading data
+Solved 68/200 episodes, CC loss avg = 0.014128024114848887
+Epoch 1000	 test acc 0.34
+Saved model at models/16274526929543cda6ed14d3c920b998-epoch-1000.pt
+reloading data
+Solved 58/200 episodes, CC loss avg = 0.013674351769862005
+Epoch 1100	 test acc 0.29
+reloading data
+Solved 67/200 episodes, CC loss avg = 0.014219255491344033
+Epoch 1200	 test acc 0.335
+reloading data
+Solved 87/200 episodes, CC loss avg = 0.015539288315894916
+Epoch 1300	 test acc 0.435
+reloading data
+Solved 90/200 episodes, CC loss avg = 0.015172689343307866
+Epoch 1400	 test acc 0.45
+reloading data
+Solved 88/200 episodes, CC loss avg = 0.01596927166806955
+Epoch 1500	 test acc 0.44
+Saved model at models/16274526929543cda6ed14d3c920b998-epoch-1500.pt
+reloading data
+Solved 100/200 episodes, CC loss avg = 0.015826865454881073
+Epoch 1600	 test acc 0.5
+reloading data
+Solved 107/200 episodes, CC loss avg = 0.015161526011753178
+Epoch 1700	 test acc 0.535
+reloading data
+Solved 103/200 episodes, CC loss avg = 0.01625768229395109
+Epoch 1800	 test acc 0.515
+reloading data
+Solved 96/200 episodes, CC loss avg = 0.015251013364997396
+Epoch 1900	 test acc 0.48
+Saved model at models/16274526929543cda6ed14d3c920b998.pt
+Completed training in 33975.5 seconds
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+TAU_NOISE: 	0.0

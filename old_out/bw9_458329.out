@@ -1,0 +1,94 @@
+Starting run:
+d0c2bb9c0c874bb48fb87f541806e6f3
+params: {'n': 10000, 'lr': 0.0003, 'epochs': 4000, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': False, 'sv': False, 'save_every': 400, 'test_every': 40, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': 'd0c2bb9c0c874bb48fb87f541806e6f3'}
+train
+Net has 205330 parameters
+Epoch 0	 test acc 0.025
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-0.pt
+Epoch 40	 test acc 0.175
+Epoch 80	 test acc 0.215
+Epoch 120	 test acc 0.2
+Epoch 160	 test acc 0.185
+Epoch 200	 test acc 0.115
+Epoch 240	 test acc 0.2
+Epoch 280	 test acc 0.26
+Epoch 320	 test acc 0.19
+Epoch 360	 test acc 0.25
+Epoch 400	 test acc 0.165
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-400.pt
+Epoch 440	 test acc 0.225
+Epoch 480	 test acc 0.255
+Epoch 520	 test acc 0.225
+Epoch 560	 test acc 0.285
+Epoch 600	 test acc 0.335
+Epoch 640	 test acc 0.325
+Epoch 680	 test acc 0.36
+Epoch 720	 test acc 0.405
+Epoch 760	 test acc 0.34
+Epoch 800	 test acc 0.42
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-800.pt
+Epoch 840	 test acc 0.495
+Epoch 880	 test acc 0.46
+Epoch 920	 test acc 0.565
+Epoch 960	 test acc 0.555
+Epoch 1000	 test acc 0.53
+Epoch 1040	 test acc 0.57
+Epoch 1080	 test acc 0.65
+Epoch 1120	 test acc 0.6
+Epoch 1160	 test acc 0.6
+Epoch 1200	 test acc 0.615
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-1200.pt
+Epoch 1240	 test acc 0.645
+Epoch 1280	 test acc 0.735
+Epoch 1320	 test acc 0.705
+Epoch 1360	 test acc 0.76
+Epoch 1400	 test acc 0.725
+Epoch 1440	 test acc 0.83
+Epoch 1480	 test acc 0.77
+Epoch 1520	 test acc 0.8
+Epoch 1560	 test acc 0.84
+Epoch 1600	 test acc 0.85
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-1600.pt
+Epoch 1640	 test acc 0.84
+Epoch 1680	 test acc 0.915
+Epoch 1720	 test acc 0.915
+Epoch 1760	 test acc 0.895
+Epoch 1800	 test acc 0.89
+Epoch 1840	 test acc 0.92
+Epoch 1880	 test acc 0.93
+Epoch 1920	 test acc 0.88
+Epoch 1960	 test acc 0.95
+Epoch 2000	 test acc 0.595
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-2000.pt
+Epoch 2040	 test acc 0.565
+Epoch 2080	 test acc 0.545
+Epoch 2120	 test acc 0.52
+Epoch 2160	 test acc 0.635
+Epoch 2200	 test acc 0.61
+Epoch 2240	 test acc 0.62
+Epoch 2280	 test acc 0.67
+Epoch 2320	 test acc 0.64
+Epoch 2360	 test acc 0.725
+Epoch 2400	 test acc 0.685
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-2400.pt
+Epoch 2440	 test acc 0.655
+Epoch 2480	 test acc 0.65
+Epoch 2520	 test acc 0.68
+Epoch 2560	 test acc 0.7
+Epoch 2600	 test acc 0.69
+Epoch 2640	 test acc 0.775
+Epoch 2680	 test acc 0.745
+Epoch 2720	 test acc 0.735
+Epoch 2760	 test acc 0.755
+Epoch 2800	 test acc 0.8
+Saved model at models/d0c2bb9c0c874bb48fb87f541806e6f3-epoch-2800.pt
+Epoch 2840	 test acc 0.83
+Epoch 2880	 test acc 0.82
+Epoch 2920	 test acc 0.86
+Epoch 2960	 test acc 0.87
+Epoch 3000	 test acc 0.88
+Epoch 3040	 test acc 0.95
+Epoch 3080	 test acc 0.915
+Epoch 3120	 test acc 0.91
+Epoch 3160	 test acc 0.88
+slurmstepd: error: *** JOB 458329 ON sun-compute-01 CANCELLED AT 2022-03-26T16:10:36 DUE TO TIME LIMIT ***

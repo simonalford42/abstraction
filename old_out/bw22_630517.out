@@ -1,0 +1,33 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+Starting run:
+545f8fc9b9dd4e5297be816805145b63
+N: 	100
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	True
+params=Namespace(n=100, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=True, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(4,), muzero=True, muzero_scratch=False, num_test=200, test_every=60.0, save_every=180, batch_size=32, traj_updates=100000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='545f8fc9b9dd4e5297be816805145b63')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.20
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220701_152304-2zocln82
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run rare-planet-98
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2zocln82
+WARNING: tau norm dim disabled
+Completed training in 45.7 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 388, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 377, in boxworld_main
+    muzero.main(net.control_net, params, data_net=data_net.control_net)
+  File "/home/sca63/abstraction/muzero.py", line 157, in main
+    fine_tune(control_net, params, data_net)
+  File "/home/sca63/abstraction/muzero.py", line 33, in fine_tune
+    if params.freeze_tau:
+AttributeError: 'Namespace' object has no attribute 'freeze_tau'
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: - 0.001 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: \ 0.007 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: | 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: / 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: - 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: \ 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: | 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb: / 0.013 MB of 0.013 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced rare-planet-98: https://wandb.ai/simonalford42/abstraction/runs/2zocln82
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220701_152304-2zocln82/logs

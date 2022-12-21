@@ -1,0 +1,82 @@
+Starting run:
+85b3d577bf1146069a74d4d393e01691
+params: {'n': 20000, 'lr': 0.0008, 'epochs': 200, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': False, 'homo': False, 'sv': True, 'save_every': False, 'test_every': 10, 'num_test': 200, 'no_log': True, 'disk_data': False, 'no_outer': True, 'model_type': 'sv', 'device': 'NVIDIA TITAN Xp', 'id': '85b3d577bf1146069a74d4d393e01691'}
+train
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Epoch 0	 test acc 0.215
+Evaluating model on 200 episodes
+Solved 47/200 episodes
+Epoch 10	 test acc 0.235
+Evaluating model on 200 episodes
+Solved 56/200 episodes
+Epoch 20	 test acc 0.28
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Epoch 30	 test acc 0.25
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Epoch 40	 test acc 0.225
+Evaluating model on 200 episodes
+Solved 33/200 episodes
+Epoch 50	 test acc 0.165
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Epoch 60	 test acc 0.205
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Epoch 70	 test acc 0.225
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Epoch 80	 test acc 0.215
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Epoch 90	 test acc 0.225
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Epoch 100	 test acc 0.195
+Evaluating model on 200 episodes
+Solved 47/200 episodes
+Epoch 110	 test acc 0.235
+Evaluating model on 200 episodes
+Solved 61/200 episodes
+Epoch 120	 test acc 0.305
+Evaluating model on 200 episodes
+Solved 54/200 episodes
+Epoch 130	 test acc 0.27
+Evaluating model on 200 episodes
+Solved 62/200 episodes
+Epoch 140	 test acc 0.31
+Evaluating model on 200 episodes
+Solved 74/200 episodes
+Epoch 150	 test acc 0.37
+Evaluating model on 200 episodes
+Solved 144/200 episodes
+Epoch 160	 test acc 0.72
+Evaluating model on 200 episodes
+Solved 161/200 episodes
+Epoch 170	 test acc 0.805
+Evaluating model on 200 episodes
+Solved 162/200 episodes
+Epoch 180	 test acc 0.81
+Evaluating model on 200 episodes
+Solved 174/200 episodes
+Epoch 190	 test acc 0.87
+Saved model at models/85b3d577bf1146069a74d4d393e01691.pt
+Completed training in 16687.5 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 294, in <module>
+    box_world.eval_options_model(net, env, n=50)
+  File "/home/sca63/abstraction/main.py", line 278, in boxworld_main
+    
+  File "/home/sca63/abstraction/main.py", line 77, in train
+    run['model'] = path
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/fluent.py", line 526, in log_metrics
+    MlflowClient().log_batch(run_id=run_id, metrics=metrics_arr, params=[], tags=[])
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/client.py", line 918, in log_batch
+    self._tracking_client.log_batch(run_id, metrics, params, tags)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/_tracking_service/client.py", line 305, in log_batch
+    _validate_metric(metric.key, metric.value, metric.timestamp, metric.step)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/utils/validation.py", line 113, in _validate_metric
+    raise MlflowException(
+mlflow.exceptions.MlflowException: Got invalid value models/85b3d577bf1146069a74d4d393e01691.pt for metric 'final model path' (timestamp=1648109351347). Please specify value as a valid double (64-bit floating point)

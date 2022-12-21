@@ -1,0 +1,60 @@
+relational net params=41898
+Starting run:
+5fa942f98f7f4b54b498496a595bf571
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce GTX TITAN X', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '5fa942f98f7f4b54b498496a595bf571'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.0
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-0.pt
+reloading data
+Epoch 100	 test acc 0.195
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-100.pt
+reloading data
+Epoch 200	 test acc 0.195
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-200.pt
+reloading data
+Epoch 300	 test acc 0.19
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-300.pt
+reloading data
+Epoch 400	 test acc 0.145
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-400.pt
+reloading data
+Epoch 500	 test acc 0.095
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-500.pt
+reloading data
+Epoch 600	 test acc 0.14
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-600.pt
+reloading data
+Epoch 700	 test acc 0.2
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-700.pt
+reloading data
+Epoch 800	 test acc 0.135
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-800.pt
+reloading data
+Epoch 900	 test acc 0.135
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-900.pt
+reloading data
+Epoch 1000	 test acc 0.145
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1000.pt
+reloading data
+Epoch 1100	 test acc 0.175
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1100.pt
+reloading data
+Epoch 1200	 test acc 0.165
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1200.pt
+reloading data
+Epoch 1300	 test acc 0.14
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1300.pt
+reloading data
+Epoch 1400	 test acc 0.16
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1400.pt
+reloading data
+Epoch 1500	 test acc 0.15
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1500.pt
+reloading data
+Epoch 1600	 test acc 0.17
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1600.pt
+reloading data
+Epoch 1700	 test acc 0.175
+Saved model at models/5fa942f98f7f4b54b498496a595bf571-epoch-1700.pt
+slurmstepd: error: *** JOB 463552 ON nikola-compute-01 CANCELLED AT 2022-03-31T23:27:37 ***

@@ -1,0 +1,59 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-12
+Using torch device NVIDIA GeForce RTX 3090
+epoch: 0
+batch
+batch
+Evaluating model on 10 episodes
+epoch: 0	train loss: 420.44818115234375	(6.0s)
+Saved model at models/temp_save__14.pt
+epoch: 1
+batch
+batch
+epoch: 1	train loss: 410.8793029785156	(0.2s)
+Saved model at models/temp_save__15.pt
+epoch: 2
+batch
+batch
+epoch: 2	train loss: 404.28997802734375	(0.2s)
+Saved model at models/temp_save__16.pt
+epoch: 3
+batch
+batch
+epoch: 3	train loss: 398.9477233886719	(0.2s)
+Saved model at models/temp_save__17.pt
+epoch: 4
+batch
+batch
+epoch: 4	train loss: 394.294677734375	(0.2s)
+Saved model at models/temp_save__18.pt
+epoch: 5
+batch
+batch
+Evaluating model on 10 episodes
+epoch: 5	train loss: 390.5047607421875	(6.1s)
+Saved model at models/temp_save__19.pt
+epoch: 6
+batch
+batch
+epoch: 6	train loss: 387.46600341796875	(0.2s)
+Saved model at models/temp_save__20.pt
+epoch: 7
+batch
+batch
+epoch: 7	train loss: 385.2281188964844	(0.2s)
+Saved model at models/temp_save__21.pt
+epoch: 8
+batch
+batch
+epoch: 8	train loss: 383.57147216796875	(0.2s)
+Saved model at models/temp_save__22.pt
+epoch: 9
+batch
+batch
+epoch: 9	train loss: 381.956787109375	(0.2s)
+Saved model at models/temp_save__23.pt
+Completed training in 14.1 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 49 operations to synchronize with Neptune. Do not kill this process.
+All 49 operations synced, thanks for waiting!

@@ -1,0 +1,106 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-91
+Starting run:
+e45e4925ac6245e1b1c5d89df208e7a9
+train
+Evaluating model on 200 episodes
+Solved 18/200 episodes
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluating model on 200 episodes
+Solved 60/200 episodes
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluating model on 200 episodes
+Solved 34/200 episodes
+Evaluating model on 200 episodes
+Solved 29/200 episodes
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Evaluating model on 200 episodes
+Solved 31/200 episodes
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Evaluating model on 200 episodes
+Solved 46/200 episodes
+Evaluating model on 200 episodes
+Solved 61/200 episodes
+Evaluating model on 200 episodes
+Solved 118/200 episodes
+Evaluating model on 200 episodes
+Solved 128/200 episodes
+Evaluating model on 200 episodes
+Solved 134/200 episodes
+Evaluating model on 200 episodes
+Solved 147/200 episodes
+Evaluating model on 200 episodes
+Solved 163/200 episodes
+Evaluating model on 200 episodes
+Solved 152/200 episodes
+Evaluating model on 200 episodes
+Solved 185/200 episodes
+Evaluating model on 200 episodes
+Solved 185/200 episodes
+Evaluating model on 200 episodes
+Solved 194/200 episodes
+Evaluating model on 200 episodes
+Solved 196/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 195/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 194/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Saved model at models/582146796d3744679643b163f839b3fb.pt
+Completed training in 9352.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 278, in <module>
+    batch_size=params['batch_size'],
+  File "/home/sca63/abstraction/main.py", line 266, in boxworld_main
+    print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+  File "/home/sca63/abstraction/main.py", line 72, in train
+    run['models'].log(path)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/fluent.py", line 526, in log_metrics
+    MlflowClient().log_batch(run_id=run_id, metrics=metrics_arr, params=[], tags=[])
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/client.py", line 918, in log_batch
+    self._tracking_client.log_batch(run_id, metrics, params, tags)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/_tracking_service/client.py", line 305, in log_batch
+    _validate_metric(metric.key, metric.value, metric.timestamp, metric.step)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/utils/validation.py", line 113, in _validate_metric
+    raise MlflowException(
+mlflow.exceptions.MlflowException: Got invalid value models/582146796d3744679643b163f839b3fb.pt for metric 'final model path' (timestamp=1648080226393). Please specify value as a valid double (64-bit floating point)
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 503 operations to synchronize with Neptune. Do not kill this process.
+All 503 operations synced, thanks for waiting!

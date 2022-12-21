@@ -1,0 +1,996 @@
+Using torch device NVIDIA GeForce RTX 3090
+traj-level training without hmm
+Net has 37803 parameters
+Round 0
+Generated trajectories in 84.7 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 184076.21875	acc: 0.268	(9.2s)
+epoch: 100	train loss: 69097.8828125	acc: 0.776	(8.8s)
+epoch: 200	train loss: 62097.43359375	acc: 0.802	(8.9s)
+epoch: 300	train loss: 58676.49609375	acc: 0.813	(8.9s)
+epoch: 400	train loss: 56336.1953125	acc: 0.819	(8.9s)
+Evaluating model on 100 episodes
+Solved 23/100 episodes; avg steps taken in solved episodes: 28.4
+Evaluated model in 18.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 1
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 64659.22265625	acc: 0.792	(8.8s)
+epoch: 100	train loss: 54263.56640625	acc: 0.824	(8.9s)
+epoch: 200	train loss: 51599.42578125	acc: 0.833	(8.9s)
+epoch: 300	train loss: 49706.75390625	acc: 0.838	(9.0s)
+epoch: 400	train loss: 48441.78125	acc: 0.842	(8.9s)
+Evaluating model on 100 episodes
+Solved 28/100 episodes; avg steps taken in solved episodes: 33.6
+Evaluated model in 19.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 2
+Generated trajectories in 84.6 seconds
+epoch: 0	train loss: 63601.1171875	acc: 0.797	(8.8s)
+epoch: 100	train loss: 50405.9453125	acc: 0.834	(8.9s)
+epoch: 200	train loss: 47903.26953125	acc: 0.842	(8.9s)
+epoch: 300	train loss: 46231.95703125	acc: 0.848	(8.9s)
+epoch: 400	train loss: 44887.421875	acc: 0.853	(8.9s)
+Evaluating model on 100 episodes
+Solved 32/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 17.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 3
+Generated trajectories in 84.0 seconds
+epoch: 0	train loss: 63600.828125	acc: 0.799	(8.8s)
+epoch: 100	train loss: 47543.8828125	acc: 0.842	(8.9s)
+epoch: 200	train loss: 45414.23828125	acc: 0.849	(8.8s)
+epoch: 300	train loss: 43167.6484375	acc: 0.857	(8.9s)
+epoch: 400	train loss: 41795.8203125	acc: 0.861	(8.8s)
+Evaluating model on 100 episodes
+Solved 20/100 episodes; avg steps taken in solved episodes: 24.3
+Evaluated model in 17.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 4
+Generated trajectories in 84.1 seconds
+epoch: 0	train loss: 64200.65234375	acc: 0.798	(8.8s)
+epoch: 100	train loss: 46887.9140625	acc: 0.845	(8.9s)
+epoch: 200	train loss: 43958.0625	acc: 0.855	(8.9s)
+epoch: 300	train loss: 42094.47265625	acc: 0.861	(8.8s)
+Evaluating model on 100 episodes
+Solved 24/100 episodes; avg steps taken in solved episodes: 32.5
+Evaluated model in 16.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 5
+Generated trajectories in 83.9 seconds
+epoch: 0	train loss: 64621.30859375	acc: 0.799	(8.8s)
+epoch: 100	train loss: 47666.0390625	acc: 0.842	(8.9s)
+epoch: 200	train loss: 44021.11328125	acc: 0.853	(8.9s)
+epoch: 300	train loss: 42116.1171875	acc: 0.860	(8.9s)
+Evaluating model on 100 episodes
+Solved 32/100 episodes; avg steps taken in solved episodes: 21.0
+Evaluated model in 16.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 6
+Generated trajectories in 83.8 seconds
+epoch: 0	train loss: 62938.4921875	acc: 0.802	(8.8s)
+epoch: 100	train loss: 45538.4140625	acc: 0.847	(8.9s)
+epoch: 200	train loss: 42219.58984375	acc: 0.860	(8.9s)
+epoch: 300	train loss: 40043.97265625	acc: 0.868	(8.9s)
+Evaluating model on 100 episodes
+Solved 32/100 episodes; avg steps taken in solved episodes: 24.7
+Evaluated model in 16.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 7
+Generated trajectories in 84.3 seconds
+epoch: 0	train loss: 63877.0859375	acc: 0.802	(8.9s)
+epoch: 100	train loss: 45106.1640625	acc: 0.851	(8.9s)
+epoch: 200	train loss: 42086.42578125	acc: 0.861	(9.0s)
+epoch: 300	train loss: 40117.63671875	acc: 0.868	(8.9s)
+Evaluating model on 100 episodes
+Solved 28/100 episodes; avg steps taken in solved episodes: 28.5
+Evaluated model in 19.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 8
+Generated trajectories in 84.0 seconds
+epoch: 0	train loss: 61971.58203125	acc: 0.806	(8.8s)
+epoch: 100	train loss: 43176.68359375	acc: 0.856	(8.9s)
+epoch: 200	train loss: 39428.1796875	acc: 0.869	(8.9s)
+Evaluating model on 100 episodes
+Solved 33/100 episodes; avg steps taken in solved episodes: 23.6
+Evaluated model in 16.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 9
+Generated trajectories in 84.6 seconds
+epoch: 0	train loss: 62040.875	acc: 0.811	(8.9s)
+epoch: 100	train loss: 42674.06640625	acc: 0.860	(9.0s)
+epoch: 200	train loss: 39279.671875	acc: 0.872	(9.0s)
+Evaluating model on 100 episodes
+Solved 28/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 19.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 10
+Generated trajectories in 84.5 seconds
+epoch: 0	train loss: 59387.99609375	acc: 0.817	(8.9s)
+epoch: 100	train loss: 40052.66796875	acc: 0.869	(9.0s)
+epoch: 200	train loss: 36656.44140625	acc: 0.881	(8.9s)
+Evaluating model on 100 episodes
+Solved 28/100 episodes; avg steps taken in solved episodes: 20.6
+Evaluated model in 15.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 11
+Generated trajectories in 84.9 seconds
+epoch: 0	train loss: 58409.01171875	acc: 0.823	(8.9s)
+epoch: 100	train loss: 39243.75	acc: 0.873	(8.9s)
+epoch: 200	train loss: 35763.8671875	acc: 0.885	(8.9s)
+Evaluating model on 100 episodes
+Solved 32/100 episodes; avg steps taken in solved episodes: 23.6
+Evaluated model in 17.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 12
+Generated trajectories in 84.9 seconds
+epoch: 0	train loss: 55917.24609375	acc: 0.832	(8.9s)
+epoch: 100	train loss: 37589.53125	acc: 0.879	(9.0s)
+Evaluating model on 100 episodes
+Solved 41/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 14.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 13
+Generated trajectories in 84.8 seconds
+epoch: 0	train loss: 53631.13671875	acc: 0.836	(8.9s)
+epoch: 100	train loss: 36130.0390625	acc: 0.882	(8.9s)
+Evaluating model on 100 episodes
+Solved 39/100 episodes; avg steps taken in solved episodes: 25.4
+Evaluated model in 14.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 14
+Generated trajectories in 85.3 seconds
+epoch: 0	train loss: 52222.96875	acc: 0.841	(8.9s)
+epoch: 100	train loss: 35324.9921875	acc: 0.887	(8.9s)
+Evaluating model on 100 episodes
+Solved 44/100 episodes; avg steps taken in solved episodes: 23.1
+Evaluated model in 15.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 15
+Generated trajectories in 84.5 seconds
+epoch: 0	train loss: 49955.30078125	acc: 0.847	(8.9s)
+epoch: 100	train loss: 32401.185546875	acc: 0.897	(8.9s)
+Evaluating model on 100 episodes
+Solved 45/100 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 17.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 16
+Generated trajectories in 85.2 seconds
+epoch: 0	train loss: 45647.83203125	acc: 0.862	(8.9s)
+Evaluating model on 100 episodes
+Solved 70/100 episodes; avg steps taken in solved episodes: 28.6
+Evaluated model in 8.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 17
+Generated trajectories in 84.0 seconds
+epoch: 0	train loss: 29487.607421875	acc: 0.916	(8.9s)
+Evaluating model on 100 episodes
+Solved 72/100 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 18
+Generated trajectories in 84.7 seconds
+epoch: 0	train loss: 25542.904296875	acc: 0.928	(8.9s)
+Evaluating model on 100 episodes
+Solved 72/100 episodes; avg steps taken in solved episodes: 26.9
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 19
+Generated trajectories in 85.2 seconds
+epoch: 0	train loss: 23211.078125	acc: 0.935	(8.9s)
+Evaluating model on 100 episodes
+Solved 86/100 episodes; avg steps taken in solved episodes: 27.2
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 20
+Generated trajectories in 85.7 seconds
+epoch: 0	train loss: 22974.3671875	acc: 0.936	(8.9s)
+Evaluating model on 100 episodes
+Solved 78/100 episodes; avg steps taken in solved episodes: 25.5
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 21
+Generated trajectories in 86.0 seconds
+epoch: 0	train loss: 21713.76953125	acc: 0.939	(8.9s)
+Evaluating model on 100 episodes
+Solved 86/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 22
+Generated trajectories in 85.0 seconds
+epoch: 0	train loss: 20174.302734375	acc: 0.943	(8.8s)
+Evaluating model on 100 episodes
+Solved 80/100 episodes; avg steps taken in solved episodes: 25.1
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 23
+Generated trajectories in 85.7 seconds
+epoch: 0	train loss: 20855.333984375	acc: 0.942	(8.9s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 24
+Generated trajectories in 86.0 seconds
+epoch: 0	train loss: 20250.24609375	acc: 0.943	(8.9s)
+Evaluating model on 100 episodes
+Solved 81/100 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 25
+Generated trajectories in 86.8 seconds
+epoch: 0	train loss: 19649.4296875	acc: 0.945	(9.0s)
+Evaluating model on 100 episodes
+Solved 81/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 26
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 18988.484375	acc: 0.947	(8.9s)
+Evaluating model on 100 episodes
+Solved 85/100 episodes; avg steps taken in solved episodes: 26.9
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 27
+Generated trajectories in 85.3 seconds
+epoch: 0	train loss: 19107.056640625	acc: 0.948	(8.9s)
+Evaluating model on 100 episodes
+Solved 80/100 episodes; avg steps taken in solved episodes: 27.3
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 28
+Generated trajectories in 86.2 seconds
+epoch: 0	train loss: 18236.72265625	acc: 0.949	(8.9s)
+Evaluating model on 100 episodes
+Solved 81/100 episodes; avg steps taken in solved episodes: 24.5
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 29
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 18287.8046875	acc: 0.949	(9.0s)
+Evaluating model on 100 episodes
+Solved 79/100 episodes; avg steps taken in solved episodes: 26.8
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 30
+Generated trajectories in 85.2 seconds
+epoch: 0	train loss: 18048.216796875	acc: 0.950	(9.0s)
+Evaluating model on 100 episodes
+Solved 80/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 31
+Generated trajectories in 86.1 seconds
+epoch: 0	train loss: 18294.375	acc: 0.949	(9.0s)
+Evaluating model on 100 episodes
+Solved 80/100 episodes; avg steps taken in solved episodes: 26.8
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 32
+Generated trajectories in 85.4 seconds
+epoch: 0	train loss: 16725.884765625	acc: 0.953	(8.9s)
+Evaluating model on 100 episodes
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.9
+Evaluated model in 6.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 33
+Generated trajectories in 86.7 seconds
+epoch: 0	train loss: 16984.26953125	acc: 0.953	(9.0s)
+Evaluating model on 100 episodes
+Solved 84/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 34
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 17167.677734375	acc: 0.953	(9.0s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 35
+Generated trajectories in 85.4 seconds
+epoch: 0	train loss: 17291.201171875	acc: 0.952	(9.0s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.6
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 36
+Generated trajectories in 85.6 seconds
+epoch: 0	train loss: 16308.52734375	acc: 0.955	(9.0s)
+Evaluating model on 100 episodes
+Solved 85/100 episodes; avg steps taken in solved episodes: 28.3
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 37
+Generated trajectories in 87.7 seconds
+epoch: 0	train loss: 16823.369140625	acc: 0.955	(9.1s)
+Evaluating model on 100 episodes
+Solved 82/100 episodes; avg steps taken in solved episodes: 24.5
+Evaluated model in 6.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 38
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 16275.232421875	acc: 0.956	(9.1s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 24.8
+Evaluated model in 6.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 39
+Generated trajectories in 87.5 seconds
+epoch: 0	train loss: 16149.6337890625	acc: 0.956	(9.1s)
+Evaluating model on 100 episodes
+Solved 83/100 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 40
+Generated trajectories in 88.3 seconds
+epoch: 0	train loss: 15746.771484375	acc: 0.957	(9.1s)
+Evaluating model on 100 episodes
+Solved 82/100 episodes; avg steps taken in solved episodes: 24.3
+Evaluated model in 6.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 41
+Generated trajectories in 87.4 seconds
+epoch: 0	train loss: 14854.3466796875	acc: 0.959	(9.1s)
+Evaluating model on 100 episodes
+Solved 88/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 42
+Generated trajectories in 87.3 seconds
+epoch: 0	train loss: 15154.3095703125	acc: 0.960	(9.1s)
+Evaluating model on 100 episodes
+Solved 80/100 episodes; avg steps taken in solved episodes: 27.8
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 43
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 14736.423828125	acc: 0.960	(9.0s)
+Evaluating model on 100 episodes
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 6.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 44
+Generated trajectories in 87.7 seconds
+epoch: 0	train loss: 15355.3046875	acc: 0.959	(9.1s)
+Evaluating model on 100 episodes
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.5
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 45
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 14228.3544921875	acc: 0.961	(9.1s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 46
+Generated trajectories in 87.2 seconds
+epoch: 0	train loss: 14349.830078125	acc: 0.962	(9.1s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 28.9
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 47
+Generated trajectories in 87.7 seconds
+epoch: 0	train loss: 14102.8359375	acc: 0.963	(9.1s)
+Evaluating model on 100 episodes
+Solved 92/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 48
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 14316.767578125	acc: 0.961	(9.1s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 49
+Generated trajectories in 88.1 seconds
+epoch: 0	train loss: 14223.19921875	acc: 0.963	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.3
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 50
+Generated trajectories in 87.4 seconds
+epoch: 0	train loss: 14236.6552734375	acc: 0.962	(9.0s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 51
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 13482.595703125	acc: 0.964	(9.1s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 27.9
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 52
+Generated trajectories in 88.2 seconds
+epoch: 0	train loss: 13940.6416015625	acc: 0.963	(9.1s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 53
+Generated trajectories in 88.1 seconds
+epoch: 0	train loss: 13893.6123046875	acc: 0.964	(9.2s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.2
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 54
+Generated trajectories in 87.2 seconds
+epoch: 0	train loss: 13218.720703125	acc: 0.965	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 55
+Generated trajectories in 87.0 seconds
+epoch: 0	train loss: 12694.9072265625	acc: 0.967	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.9
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 56
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 13822.8916015625	acc: 0.964	(9.1s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 57
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 12878.2724609375	acc: 0.966	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 58
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 13122.431640625	acc: 0.966	(9.1s)
+Evaluating model on 100 episodes
+Solved 83/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 59
+Generated trajectories in 87.2 seconds
+epoch: 0	train loss: 12573.7138671875	acc: 0.967	(9.1s)
+Evaluating model on 100 episodes
+Solved 90/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 60
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 12783.9619140625	acc: 0.967	(9.1s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 61
+Generated trajectories in 87.8 seconds
+epoch: 0	train loss: 12898.0126953125	acc: 0.966	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.0
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 62
+Generated trajectories in 87.3 seconds
+epoch: 0	train loss: 11874.8896484375	acc: 0.969	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 28.0
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 63
+Generated trajectories in 86.7 seconds
+epoch: 0	train loss: 11742.9599609375	acc: 0.970	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 64
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 11583.9365234375	acc: 0.970	(9.0s)
+Evaluating model on 100 episodes
+Solved 90/100 episodes; avg steps taken in solved episodes: 28.7
+Evaluated model in 7.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 65
+Generated trajectories in 86.6 seconds
+epoch: 0	train loss: 11823.68359375	acc: 0.969	(9.0s)
+Evaluating model on 100 episodes
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.3
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 66
+Generated trajectories in 87.8 seconds
+epoch: 0	train loss: 11581.4130859375	acc: 0.970	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 67
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 11997.2685546875	acc: 0.970	(9.1s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 27.0
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 68
+Generated trajectories in 87.8 seconds
+epoch: 0	train loss: 11484.8876953125	acc: 0.971	(9.1s)
+Evaluating model on 100 episodes
+Solved 95/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 69
+Generated trajectories in 86.7 seconds
+epoch: 0	train loss: 11477.8076171875	acc: 0.970	(9.1s)
+Evaluating model on 100 episodes
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 70
+Generated trajectories in 86.6 seconds
+epoch: 0	train loss: 11071.02734375	acc: 0.971	(9.0s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 71
+Generated trajectories in 87.7 seconds
+epoch: 0	train loss: 11476.4072265625	acc: 0.971	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 72
+Generated trajectories in 86.3 seconds
+epoch: 0	train loss: 11250.4677734375	acc: 0.972	(9.1s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 6.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 73
+Generated trajectories in 86.4 seconds
+epoch: 0	train loss: 11034.140625	acc: 0.972	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.0
+Evaluated model in 6.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 74
+Generated trajectories in 87.4 seconds
+epoch: 0	train loss: 11182.55078125	acc: 0.972	(9.2s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.0
+Evaluated model in 7.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 75
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 10931.130859375	acc: 0.972	(9.0s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.9
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 76
+Generated trajectories in 86.1 seconds
+epoch: 0	train loss: 11111.1767578125	acc: 0.972	(9.1s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 7.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 77
+Generated trajectories in 85.8 seconds
+epoch: 0	train loss: 10735.3154296875	acc: 0.973	(9.0s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Evaluated model in 6.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 78
+Generated trajectories in 86.2 seconds
+epoch: 0	train loss: 11080.7724609375	acc: 0.972	(9.1s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.4
+Evaluated model in 6.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 79
+Generated trajectories in 86.2 seconds
+epoch: 0	train loss: 10398.087890625	acc: 0.974	(9.0s)
+Evaluating model on 100 episodes
+Solved 93/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 7.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 80
+Generated trajectories in 86.7 seconds
+epoch: 0	train loss: 10630.7001953125	acc: 0.974	(9.1s)
+Evaluating model on 100 episodes
+Solved 98/100 episodes; avg steps taken in solved episodes: 28.4
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 81
+Generated trajectories in 86.3 seconds
+epoch: 0	train loss: 10543.3056640625	acc: 0.973	(9.0s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 82
+Generated trajectories in 86.1 seconds
+epoch: 0	train loss: 10009.93359375	acc: 0.976	(9.0s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 6.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 83
+Generated trajectories in 86.4 seconds
+epoch: 0	train loss: 10883.13671875	acc: 0.974	(9.0s)
+Evaluating model on 100 episodes
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.0
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 84
+Generated trajectories in 85.5 seconds
+epoch: 0	train loss: 9817.4296875	acc: 0.975	(8.9s)
+Evaluating model on 100 episodes
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.1
+Evaluated model in 6.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 85
+Generated trajectories in 87.9 seconds
+epoch: 0	train loss: 10513.1142578125	acc: 0.974	(9.1s)
+Evaluating model on 100 episodes
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.8
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 86
+Generated trajectories in 86.8 seconds
+epoch: 0	train loss: 10066.341796875	acc: 0.975	(9.0s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 87
+Generated trajectories in 87.2 seconds
+epoch: 0	train loss: 10008.583984375	acc: 0.974	(9.1s)
+Evaluating model on 100 episodes
+Solved 92/100 episodes; avg steps taken in solved episodes: 28.7
+Evaluated model in 8.5 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 88
+Generated trajectories in 88.1 seconds
+epoch: 0	train loss: 10285.3037109375	acc: 0.975	(9.1s)
+Evaluating model on 100 episodes
+Solved 92/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 89
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 9825.2412109375	acc: 0.975	(9.1s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.6
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 90
+Generated trajectories in 87.6 seconds
+epoch: 0	train loss: 9760.7978515625	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.4
+Evaluated model in 6.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 91
+Generated trajectories in 87.8 seconds
+epoch: 0	train loss: 9474.0322265625	acc: 0.977	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.0
+Evaluated model in 6.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 92
+Generated trajectories in 86.5 seconds
+epoch: 0	train loss: 9728.416015625	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.9
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 93
+Generated trajectories in 87.3 seconds
+epoch: 0	train loss: 9784.4072265625	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 7.2 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 94
+Generated trajectories in 86.6 seconds
+epoch: 0	train loss: 9731.3076171875	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 99/100 episodes; avg steps taken in solved episodes: 27.4
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 95
+Generated trajectories in 87.5 seconds
+epoch: 0	train loss: 9472.08203125	acc: 0.977	(9.0s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 28.2
+Evaluated model in 7.6 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 96
+Generated trajectories in 87.1 seconds
+epoch: 0	train loss: 9701.3291015625	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 7.8 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 97
+Generated trajectories in 95.5 seconds
+epoch: 0	train loss: 9667.435546875	acc: 0.976	(9.6s)
+Evaluating model on 100 episodes
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 7.9 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 98
+Generated trajectories in 95.9 seconds
+epoch: 0	train loss: 9442.849609375	acc: 0.977	(9.6s)
+Evaluating model on 100 episodes
+Solved 94/100 episodes; avg steps taken in solved episodes: 29.4
+Evaluated model in 7.7 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 99
+Generated trajectories in 87.2 seconds
+epoch: 0	train loss: 9807.947265625	acc: 0.976	(9.1s)
+Evaluating model on 100 episodes
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.6
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 100
+Generated trajectories in 86.8 seconds
+epoch: 0	train loss: 9300.1083984375	acc: 0.977	(9.1s)
+Evaluating model on 100 episodes
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 7.3 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 101
+Generated trajectories in 86.8 seconds
+epoch: 0	train loss: 9184.7734375	acc: 0.978	(9.1s)
+Evaluating model on 100 episodes
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.6
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 102
+Generated trajectories in 88.7 seconds
+epoch: 0	train loss: 9794.00390625	acc: 0.977	(9.2s)
+Evaluating model on 100 episodes
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 7.0 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 103
+Generated trajectories in 87.0 seconds
+epoch: 0	train loss: 8908.0	acc: 0.978	(9.1s)
+Evaluating model on 100 episodes
+Solved 99/100 episodes; avg steps taken in solved episodes: 26.8
+Evaluated model in 7.4 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 104
+Generated trajectories in 88.0 seconds
+epoch: 0	train loss: 9537.1318359375	acc: 0.977	(9.1s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 7.1 seconds
+Saved model for run
+8cf03086331a456e9f1610fac5555d39 with name model
+Round 105
+Generated trajectories in 88.1 seconds
+epoch: 0	train loss: 9433.615234375	acc: 0.977	(9.2s)
+/var/spool/slurmd/job405594/slurm_script: line 17: 935854 Killed                  python -u main.py
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=405594.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
+
+Solved 23/100 episodes; avg steps taken in solved episodes: 28.4
+Solved 28/100 episodes; avg steps taken in solved episodes: 33.6
+Solved 32/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 20/100 episodes; avg steps taken in solved episodes: 24.3
+Solved 24/100 episodes; avg steps taken in solved episodes: 32.5
+Solved 32/100 episodes; avg steps taken in solved episodes: 21.0
+Solved 32/100 episodes; avg steps taken in solved episodes: 24.7
+Solved 28/100 episodes; avg steps taken in solved episodes: 28.5
+Solved 33/100 episodes; avg steps taken in solved episodes: 23.6
+Solved 28/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 28/100 episodes; avg steps taken in solved episodes: 20.6
+Solved 32/100 episodes; avg steps taken in solved episodes: 23.6
+Solved 41/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 39/100 episodes; avg steps taken in solved episodes: 25.4
+Solved 44/100 episodes; avg steps taken in solved episodes: 23.1
+Solved 45/100 episodes; avg steps taken in solved episodes: 26.5
+Solved 70/100 episodes; avg steps taken in solved episodes: 28.6
+Solved 72/100 episodes; avg steps taken in solved episodes: 26.7
+Solved 72/100 episodes; avg steps taken in solved episodes: 26.9
+Solved 86/100 episodes; avg steps taken in solved episodes: 27.2
+Solved 78/100 episodes; avg steps taken in solved episodes: 25.5
+Solved 86/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 80/100 episodes; avg steps taken in solved episodes: 25.1
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 81/100 episodes; avg steps taken in solved episodes: 26.7
+Solved 81/100 episodes; avg steps taken in solved episodes: 25.7
+Solved 85/100 episodes; avg steps taken in solved episodes: 26.9
+Solved 80/100 episodes; avg steps taken in solved episodes: 27.3
+Solved 81/100 episodes; avg steps taken in solved episodes: 24.5
+Solved 79/100 episodes; avg steps taken in solved episodes: 26.8
+Solved 80/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 80/100 episodes; avg steps taken in solved episodes: 26.8
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.9
+Solved 84/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.7
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.6
+Solved 85/100 episodes; avg steps taken in solved episodes: 28.3
+Solved 82/100 episodes; avg steps taken in solved episodes: 24.5
+Solved 89/100 episodes; avg steps taken in solved episodes: 24.8
+Solved 83/100 episodes; avg steps taken in solved episodes: 26.4
+Solved 82/100 episodes; avg steps taken in solved episodes: 24.3
+Solved 88/100 episodes; avg steps taken in solved episodes: 26.2
+Solved 80/100 episodes; avg steps taken in solved episodes: 27.8
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.2
+Solved 85/100 episodes; avg steps taken in solved episodes: 25.5
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 91/100 episodes; avg steps taken in solved episodes: 28.9
+Solved 92/100 episodes; avg steps taken in solved episodes: 26.2
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.3
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Solved 89/100 episodes; avg steps taken in solved episodes: 27.9
+Solved 89/100 episodes; avg steps taken in solved episodes: 25.7
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.2
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.5
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.9
+Solved 93/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.2
+Solved 83/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 90/100 episodes; avg steps taken in solved episodes: 26.2
+Solved 91/100 episodes; avg steps taken in solved episodes: 26.7
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.0
+Solved 96/100 episodes; avg steps taken in solved episodes: 28.0
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.7
+Solved 90/100 episodes; avg steps taken in solved episodes: 28.7
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.3
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 97/100 episodes; avg steps taken in solved episodes: 27.0
+Solved 95/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 89/100 episodes; avg steps taken in solved episodes: 26.2
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 91/100 episodes; avg steps taken in solved episodes: 25.8
+Solved 94/100 episodes; avg steps taken in solved episodes: 25.0
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.0
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.9
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.4
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.3
+Solved 93/100 episodes; avg steps taken in solved episodes: 25.4
+Solved 93/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 98/100 episodes; avg steps taken in solved episodes: 28.4
+Solved 97/100 episodes; avg steps taken in solved episodes: 26.2
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.2
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.0
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.1
+Solved 91/100 episodes; avg steps taken in solved episodes: 27.8
+Solved 94/100 episodes; avg steps taken in solved episodes: 26.5
+Solved 92/100 episodes; avg steps taken in solved episodes: 28.7
+Solved 92/100 episodes; avg steps taken in solved episodes: 25.7
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.6
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.4
+Solved 96/100 episodes; avg steps taken in solved episodes: 25.0
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.9
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.1
+Solved 99/100 episodes; avg steps taken in solved episodes: 27.4
+Solved 96/100 episodes; avg steps taken in solved episodes: 28.2
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.2
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.7
+Solved 94/100 episodes; avg steps taken in solved episodes: 29.4
+Solved 95/100 episodes; avg steps taken in solved episodes: 25.6
+Solved 96/100 episodes; avg steps taken in solved episodes: 26.3
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.6
+Solved 98/100 episodes; avg steps taken in solved episodes: 25.8
+Solved 99/100 episodes; avg steps taken in solved episodes: 26.8
+Solved 97/100 episodes; avg steps taken in solved episodes: 25.7

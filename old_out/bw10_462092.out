@@ -1,0 +1,25 @@
+Starting run:
+975f74494a114cb9bc3aa89f529f6a56
+params: {'n': 5000, 'lr': 0.0008, 'epochs': 2000, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 100, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'id': '975f74494a114cb9bc3aa89f529f6a56'}
+train
+Net has 41898 parameters
+reloading data
+Epoch 0	 test acc 0.0
+Saved model at models/975f74494a114cb9bc3aa89f529f6a56-epoch-0.pt
+reloading data
+Epoch 100	 test acc 0.205
+Saved model at models/975f74494a114cb9bc3aa89f529f6a56-epoch-100.pt
+reloading data
+Completed training in 4056.1 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 305, in <module>
+  File "/home/sca63/abstraction/main.py", line 299, in boxworld_main
+  File "/home/sca63/abstraction/main.py", line 33, in train
+    # if epoch % 100 == 0:
+  File "/home/sca63/abstraction/box_world.py", line 686, in __init__
+    
+  File "/home/sca63/abstraction/box_world.py", line 686, in <listcomp>
+    
+  File "/home/sca63/abstraction/box_world.py", line 445, in generate_traj
+    raise RuntimeError(f'Bigger length found: {len(moves)}')
+RuntimeError: Bigger length found: 66

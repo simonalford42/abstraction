@@ -1,0 +1,125 @@
+Starting run:
+dd14e1288dcd4b7daa2c4b222376d01d
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'noise': 0.005, 'neptune': False, 'no_log': False, 'eval': False, 'device': 'NVIDIA RTX A6000', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': 'dd14e1288dcd4b7daa2c4b222376d01d'}
+train
+Net has 206996 parameters
+Correct solved pred: 0.00
+correct_solved_preds: 0
+Solved 1/200 episodes
+Epoch 0	 test acc 0.005
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 27
+Solved 27/200 episodes
+Epoch 100	 test acc 0.135
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-100.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 48
+Solved 48/200 episodes
+Epoch 200	 test acc 0.24
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-200.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 51
+Solved 51/200 episodes
+Epoch 300	 test acc 0.255
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-300.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 61
+Solved 61/200 episodes
+Epoch 400	 test acc 0.305
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-400.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 75
+Solved 75/200 episodes
+Epoch 500	 test acc 0.375
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-500.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 88
+Solved 88/200 episodes
+Epoch 600	 test acc 0.44
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-600.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 96
+Solved 96/200 episodes
+Epoch 700	 test acc 0.48
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-700.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 104
+Solved 104/200 episodes
+Epoch 800	 test acc 0.52
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-800.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 96
+Solved 96/200 episodes
+Epoch 900	 test acc 0.48
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-900.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 93
+Solved 93/200 episodes
+Epoch 1000	 test acc 0.465
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1000.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 94
+Solved 94/200 episodes
+Epoch 1100	 test acc 0.47
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1100.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 109
+Solved 109/200 episodes
+Epoch 1200	 test acc 0.545
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1200.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 113
+Solved 113/200 episodes
+Epoch 1300	 test acc 0.565
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1300.pt
+reloading data
+Correct solved pred: 0.98
+correct_solved_preds: 119
+Solved 121/200 episodes
+Epoch 1400	 test acc 0.605
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1400.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 111
+Solved 111/200 episodes
+Epoch 1500	 test acc 0.555
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1500.pt
+reloading data
+Correct solved pred: 0.99
+correct_solved_preds: 116
+Solved 117/200 episodes
+Epoch 1600	 test acc 0.585
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1600.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 113
+Solved 113/200 episodes
+Epoch 1700	 test acc 0.565
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1700.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 123
+Solved 123/200 episodes
+Epoch 1800	 test acc 0.615
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1800.pt
+reloading data
+Correct solved pred: 1.00
+correct_solved_preds: 107
+Solved 107/200 episodes
+Epoch 1900	 test acc 0.535
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d-epoch-1900.pt
+Saved model at models/dd14e1288dcd4b7daa2c4b222376d01d.pt
+Completed training in 149883.5 seconds

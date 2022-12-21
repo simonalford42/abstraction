@@ -1,0 +1,10 @@
+job number = 13
+args.lr: 1e-05
+args.big: False
+args.batch_size: 64
+args.all_conv: False
+Training on NVIDIA GeForce RTX 2080 Ti
+generating trajectories
+trajectories generated
+round 0
+net has 36600 parameters

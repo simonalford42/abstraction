@@ -1,0 +1,99 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA RTX A5000
+cuda:0
+Passed GPU check
+Starting run:
+4f84ca8c0c0640b7a5edbe876e233ea1
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, relational_macro=False, batch_size=16, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA RTX A5000', id='4f84ca8c0c0640b7a5edbe876e233ea1')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220916_172119-2kekgrcw
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run charmed-wood-489
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2kekgrcw
+Net has 197665 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes, CC loss avg = 158.4071781215383
+Solved 15/200 episodes, CC loss avg = 157.59434305826824
+Solved 42/200 episodes, CC loss avg = 157.5911400204613
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-35.pt
+Solved 45/200 episodes, CC loss avg = 157.58646681043837
+Solved 33/200 episodes, CC loss avg = 157.58563232421875
+Solved 28/200 episodes, CC loss avg = 157.5852813720703
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-71.pt
+Solved 34/200 episodes, CC loss avg = 157.58523559570312
+Solved 36/200 episodes, CC loss avg = 157.58526611328125
+Solved 35/200 episodes, CC loss avg = 157.5849151611328
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-107.pt
+Solved 33/200 episodes, CC loss avg = 157.58485412597656
+Solved 32/200 episodes, CC loss avg = 157.58489990234375
+Solved 22/200 episodes, CC loss avg = 157.58489990234375
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-142.pt
+Solved 31/200 episodes, CC loss avg = 157.5848388671875
+Solved 29/200 episodes, CC loss avg = 157.5849609375
+Solved 28/200 episodes, CC loss avg = 157.5848388671875
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-177.pt
+Solved 45/200 episodes, CC loss avg = 157.5848388671875
+Solved 33/200 episodes, CC loss avg = 157.58477783203125
+Solved 30/200 episodes, CC loss avg = 157.58477783203125
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-212.pt
+Solved 31/200 episodes, CC loss avg = 157.5847625732422
+Solved 23/200 episodes, CC loss avg = 157.58480834960938
+Solved 29/200 episodes, CC loss avg = 157.58477783203125
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-248.pt
+Solved 30/200 episodes, CC loss avg = 157.58474731445312
+Solved 33/200 episodes, CC loss avg = 157.584716796875
+Solved 48/200 episodes, CC loss avg = 157.58482360839844
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-284.pt
+Solved 29/200 episodes, CC loss avg = 157.58480834960938
+Solved 47/200 episodes, CC loss avg = 157.58474731445312
+Solved 41/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-320.pt
+Solved 36/200 episodes, CC loss avg = 157.58474731445312
+Solved 36/200 episodes, CC loss avg = 157.58474731445312
+Solved 27/200 episodes, CC loss avg = 157.58474731445312
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-356.pt
+Solved 36/200 episodes, CC loss avg = 157.58474731445312
+Solved 35/200 episodes, CC loss avg = 157.58477783203125
+Solved 43/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-392.pt
+Solved 41/200 episodes, CC loss avg = 157.58474731445312
+Solved 33/200 episodes, CC loss avg = 157.58473205566406
+Solved 34/200 episodes, CC loss avg = 157.5846710205078
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-428.pt
+Solved 47/200 episodes, CC loss avg = 157.584716796875
+Solved 38/200 episodes, CC loss avg = 157.58468627929688
+Solved 33/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1-epoch-464.pt
+Solved 29/200 episodes, CC loss avg = 157.5846710205078
+Solved 33/200 episodes, CC loss avg = 157.71120273365693
+Solved 28/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/4f84ca8c0c0640b7a5edbe876e233ea1.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 152892.9 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: \ 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: | 0.006 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.006 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▃▇█▆▅▆▆▆▆▆▄▆▅▅█▆▅▆▄▅▆█▅█▇▆▆▅▆▆▇▇▆▆█▇▆▅▅
+wandb: loss █▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.14
+wandb: loss 3303110.41797
+wandb: 
+wandb: Synced charmed-wood-489: https://wandb.ai/simonalford42/abstraction/runs/2kekgrcw
+wandb: Synced 6 W&B file(s), 14 media file(s), 14 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220916_172119-2kekgrcw/logs

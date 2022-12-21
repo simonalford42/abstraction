@@ -1,0 +1,71 @@
+Starting run:
+a8a4e06de670479b8aa375f2bd359f31
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 1600, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN RTX', 'id': 'a8a4e06de670479b8aa375f2bd359f31'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.03
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-0.pt
+Epoch 20	 test acc 0.205
+Epoch 40	 test acc 0.19
+Epoch 60	 test acc 0.21
+Epoch 80	 test acc 0.15
+Epoch 100	 test acc 0.135
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-100.pt
+Epoch 120	 test acc 0.19
+Epoch 140	 test acc 0.205
+Epoch 160	 test acc 0.115
+Epoch 180	 test acc 0.18
+Epoch 200	 test acc 0.15
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-200.pt
+Epoch 220	 test acc 0.13
+Epoch 240	 test acc 0.17
+Epoch 260	 test acc 0.185
+Epoch 280	 test acc 0.185
+Epoch 300	 test acc 0.125
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-300.pt
+Epoch 320	 test acc 0.165
+Epoch 340	 test acc 0.195
+Epoch 360	 test acc 0.195
+Epoch 380	 test acc 0.175
+Epoch 400	 test acc 0.25
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-400.pt
+Epoch 420	 test acc 0.18
+Epoch 440	 test acc 0.185
+Epoch 460	 test acc 0.17
+Epoch 480	 test acc 0.175
+Epoch 500	 test acc 0.205
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-500.pt
+Epoch 520	 test acc 0.22
+Epoch 540	 test acc 0.17
+Epoch 560	 test acc 0.17
+Epoch 580	 test acc 0.205
+Epoch 600	 test acc 0.175
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-600.pt
+Epoch 620	 test acc 0.19
+Epoch 640	 test acc 0.195
+Epoch 660	 test acc 0.26
+Epoch 680	 test acc 0.19
+Epoch 700	 test acc 0.185
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-700.pt
+Epoch 720	 test acc 0.195
+Epoch 740	 test acc 0.195
+Epoch 760	 test acc 0.135
+Epoch 780	 test acc 0.165
+Epoch 800	 test acc 0.23
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-800.pt
+Epoch 820	 test acc 0.195
+Epoch 840	 test acc 0.195
+Epoch 860	 test acc 0.265
+Epoch 880	 test acc 0.145
+Epoch 900	 test acc 0.165
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-900.pt
+Epoch 920	 test acc 0.155
+Epoch 940	 test acc 0.205
+Epoch 960	 test acc 0.21
+Epoch 980	 test acc 0.15
+Epoch 1000	 test acc 0.205
+Saved model at models/a8a4e06de670479b8aa375f2bd359f31-epoch-1000.pt
+Epoch 1020	 test acc 0.18
+Epoch 1040	 test acc 0.185
+Epoch 1060	 test acc 0.15
+slurmstepd: error: *** JOB 458552 ON rush-compute-01 CANCELLED AT 2022-03-25T12:39:12 DUE TO PREEMPTION ***

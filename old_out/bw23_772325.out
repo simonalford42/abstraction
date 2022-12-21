@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 585, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 478, in boxworld_main
+    net = make_net(params).to(DEVICE)
+  File "/home/sca63/abstraction/main.py", line 370, in make_net
+    control_net = boxworld_controller(typ, params)
+  File "/home/sca63/abstraction/abstract.py", line 1120, in boxworld_controller
+    assert typ in ['hetero', 'homo', 'ccts', 'ccts-reduced']
+AssertionError

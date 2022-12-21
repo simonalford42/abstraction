@@ -1,0 +1,58 @@
+Using torch device NVIDIA GeForce RTX 3090
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+60c4d13d93714b48a09aa490c1b35bb7
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, symbolic_supervised=False, traj_updates=40000000.0, batch_size=16, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='60c4d13d93714b48a09aa490c1b35bb7')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.2 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220831_163618-pohr47c1
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run playful-hill-336
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/pohr47c1
+Net has 196357 parameters
+WARNING: tau norm dim disabled
+Completed training in 299.3 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 650, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 537, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 143, in learn_options
+    loss = net(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 455, in forward
+    return self.cc_loss(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/abstraction/hmm.py", line 464, in cc_loss
+    action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i_batch, batched=True)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/abstract.py", line 646, in forward
+    return self.forward_b(s_i_batch, tau_noise=tau_noise)
+  File "/home/sca63/abstraction/abstract.py", line 699, in forward_b
+    action_logps, stop_logps = self.micro_net(s_i_flattened)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/abstract.py", line 1110, in forward
+    x = self.micro_net(x)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/modules.py", line 90, in forward
+    x = F.relu(self.conv2(x))
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1207, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'MicroNet' object has no attribute 'conv2'
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced playful-hill-336: https://wandb.ai/simonalford42/abstraction/runs/pohr47c1
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220831_163618-pohr47c1/logs

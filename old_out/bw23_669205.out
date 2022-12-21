@@ -1,0 +1,49 @@
+Starting run:
+6ef294194388407dbd140734fd915527
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=30, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=True, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, batch_size=64, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='6ef294194388407dbd140734fd915527')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220726_133012-23unj6zl
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run firm-serenity-103
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/23unj6zl
+Net has 163008 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes
+Solved 49/200 episodes
+Solved 88/200 episodes
+Saved model at models/6ef294194388407dbd140734fd915527-epoch-292.pt
+Solved 105/200 episodes
+Solved 104/200 episodes
+Solved 94/200 episodes
+Saved model at models/6ef294194388407dbd140734fd915527.pt
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 18754.7 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: \ 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: | 0.002 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.002 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:                 loss █▅▄▄▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:             test/acc ▁▄▇██▇
+wandb:     test/cc_loss_avg ▁▇▇██▇
+wandb: test/solved_pred_acc ▁█████
+wandb: 
+wandb: Run summary:
+wandb:                 loss 86507.00264
+wandb:             test/acc 0.47
+wandb:     test/cc_loss_avg 0.14291
+wandb: test/solved_pred_acc 1.0
+wandb: 
+wandb: Synced firm-serenity-103: https://wandb.ai/simonalford42/abstraction/runs/23unj6zl
+wandb: Synced 6 W&B file(s), 2 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220726_133012-23unj6zl/logs

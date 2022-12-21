@@ -1,0 +1,55 @@
+Starting run:
+e89dc2b2f8e04918a340ae67da5110bc
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 800, 'batch_size': 20, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': False, 'sv': False, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce GTX 1080 Ti', 'id': 'e89dc2b2f8e04918a340ae67da5110bc'}
+train
+Net has 205330 parameters
+Epoch 0	 test acc 0.065
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-0.pt
+Epoch 20	 test acc 0.23
+Epoch 40	 test acc 0.195
+Epoch 60	 test acc 0.195
+Epoch 80	 test acc 0.17
+Epoch 100	 test acc 0.115
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-100.pt
+Epoch 120	 test acc 0.185
+Epoch 140	 test acc 0.235
+Epoch 160	 test acc 0.185
+Epoch 180	 test acc 0.15
+Epoch 200	 test acc 0.185
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-200.pt
+Epoch 220	 test acc 0.15
+Epoch 240	 test acc 0.245
+Epoch 260	 test acc 0.23
+Epoch 280	 test acc 0.235
+Epoch 300	 test acc 0.22
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-300.pt
+Epoch 320	 test acc 0.245
+Epoch 340	 test acc 0.215
+Epoch 360	 test acc 0.245
+Epoch 380	 test acc 0.245
+Epoch 400	 test acc 0.29
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-400.pt
+Epoch 420	 test acc 0.235
+Epoch 440	 test acc 0.27
+Epoch 460	 test acc 0.27
+Epoch 480	 test acc 0.295
+Epoch 500	 test acc 0.25
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-500.pt
+Epoch 520	 test acc 0.2
+Epoch 540	 test acc 0.25
+Epoch 560	 test acc 0.235
+Epoch 580	 test acc 0.295
+Epoch 600	 test acc 0.265
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-600.pt
+Epoch 620	 test acc 0.325
+Epoch 640	 test acc 0.315
+Epoch 660	 test acc 0.335
+Epoch 680	 test acc 0.28
+Epoch 700	 test acc 0.275
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc-epoch-700.pt
+Epoch 720	 test acc 0.255
+Epoch 740	 test acc 0.31
+Epoch 760	 test acc 0.3
+Epoch 780	 test acc 0.285
+Saved model at models/e89dc2b2f8e04918a340ae67da5110bc.pt
+Completed training in 47029.3 seconds

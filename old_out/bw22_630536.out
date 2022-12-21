@@ -1,0 +1,60 @@
+Starting run:
+1b5e34d585a847519cab7b42143e48c6
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, traj_updates=10000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce GTX 1080 Ti', id='1b5e34d585a847519cab7b42143e48c6')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.20
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220702_093132-10o61aw6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run splendid-universe-100
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/10o61aw6
+Net has 156468 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes
+Solved 23/200 episodes
+Solved 85/200 episodes
+Saved model at models/1b5e34d585a847519cab7b42143e48c6-epoch-113.pt
+Solved 72/200 episodes
+Solved 81/200 episodes
+Solved 78/200 episodes
+Saved model at models/1b5e34d585a847519cab7b42143e48c6-epoch-227.pt
+Solved 84/200 episodes
+Solved 98/200 episodes
+Solved 81/200 episodes
+Saved model at models/1b5e34d585a847519cab7b42143e48c6-epoch-340.pt
+Solved 100/200 episodes
+Solved 93/200 episodes
+Solved 93/200 episodes
+Saved model at models/1b5e34d585a847519cab7b42143e48c6-epoch-453.pt
+Solved 96/200 episodes
+Solved 104/200 episodes
+Saved model at models/1b5e34d585a847519cab7b42143e48c6.pt
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 48201.6 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: \ 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: | 0.003 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.003 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:                 loss █▅▄▃▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:             test/acc ▁▃▇▆▆▆▇█▆█▇▇▇█
+wandb:     test/cc_loss_avg ▁▆███▇▇▇▇▇▇▇▆▇
+wandb: test/solved_pred_acc ▁█████████████
+wandb: 
+wandb: Run summary:
+wandb:                 loss 81292.082
+wandb:             test/acc 0.52
+wandb:     test/cc_loss_avg 0.14369
+wandb: test/solved_pred_acc 1.0
+wandb: 
+wandb: Synced splendid-universe-100: https://wandb.ai/simonalford42/abstraction/runs/10o61aw6
+wandb: Synced 6 W&B file(s), 5 media file(s), 5 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220702_093132-10o61aw6/logs

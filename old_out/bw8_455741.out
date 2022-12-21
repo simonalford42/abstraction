@@ -1,0 +1,14 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-66
+Completed training in 0.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 256, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 241, in boxworld_main
+    train(run, dataloader, net, params)
+  File "/home/sca63/abstraction/main.py", line 32, in train
+    s_i_batch = s_i_batch.reshape(B, box_world.MAX_LEN, 24, 14, 14)
+RuntimeError: shape '[10, 63, 24, 14, 14]' is invalid for input of size 329280
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 52 operations to synchronize with Neptune. Do not kill this process.
+All 52 operations synced, thanks for waiting!

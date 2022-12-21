@@ -1,0 +1,17 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-22
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-0.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-10.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-20.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-30.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-40.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-50.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-60.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-70.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-80.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee-epoch-90.pt
+Saved model at models/5c52a93f2c06407eafba506736c3b3ee.pt
+Completed training in 69987.5 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 12 operations to synchronize with Neptune. Do not kill this process.
+All 12 operations synced, thanks for waiting!

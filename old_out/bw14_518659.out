@@ -1,0 +1,56 @@
+MODEL:	 cc
+ABSTRACT_PEN:	 2.0
+TAU_NOISE:	 0.0
+Starting run:
+2333610ee0af452a9d9ef3cf3c252efa
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 30, 'cc_pen': 1.0, 'abstract_pen': 2.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'device': 'NVIDIA TITAN Xp', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': '2333610ee0af452a9d9ef3cf3c252efa'}
+train
+Net has 247168 parameters
+Solved 0/200 episodes, CC loss avg = 0.03966808659118294
+Epoch 0	 test acc 0.0
+Solved 31/200 episodes, CC loss avg = 0.016952657249806758
+Epoch 25	 test acc 0.155
+Solved 45/200 episodes, CC loss avg = 0.013033197537142653
+Epoch 50	 test acc 0.225
+Solved 33/200 episodes, CC loss avg = 0.01149357433597389
+Epoch 75	 test acc 0.165
+Solved 30/200 episodes, CC loss avg = 0.012313581034439787
+Epoch 100	 test acc 0.15
+Solved 33/200 episodes, CC loss avg = 0.011056035367464237
+Epoch 125	 test acc 0.165
+Saved model at models/2333610ee0af452a9d9ef3cf3c252efa-epoch-125.pt
+Solved 48/200 episodes, CC loss avg = 0.008818048915496616
+Epoch 150	 test acc 0.24
+Solved 39/200 episodes, CC loss avg = 0.009366221335098226
+Epoch 175	 test acc 0.195
+Solved 46/200 episodes, CC loss avg = 0.011914593620484736
+Epoch 200	 test acc 0.23
+Solved 50/200 episodes, CC loss avg = 0.011223716118091757
+Epoch 225	 test acc 0.25
+Solved 60/200 episodes, CC loss avg = 0.008689884346442822
+Epoch 250	 test acc 0.3
+Saved model at models/2333610ee0af452a9d9ef3cf3c252efa-epoch-250.pt
+Solved 58/200 episodes, CC loss avg = 0.009754081059411676
+Epoch 275	 test acc 0.29
+Solved 61/200 episodes, CC loss avg = 0.009512211195692318
+Epoch 300	 test acc 0.305
+Solved 71/200 episodes, CC loss avg = 0.010513590478651514
+Epoch 325	 test acc 0.355
+Solved 53/200 episodes, CC loss avg = 0.009834596371996646
+Epoch 350	 test acc 0.265
+Solved 62/200 episodes, CC loss avg = 0.010567446718661293
+Epoch 375	 test acc 0.31
+Saved model at models/2333610ee0af452a9d9ef3cf3c252efa-epoch-375.pt
+Solved 74/200 episodes, CC loss avg = 0.006990386186386716
+Epoch 400	 test acc 0.37
+Solved 70/200 episodes, CC loss avg = 0.009223520697148315
+Epoch 425	 test acc 0.35
+Solved 87/200 episodes, CC loss avg = 0.008477780730065887
+Epoch 450	 test acc 0.435
+Solved 60/200 episodes, CC loss avg = 0.006547536986654888
+Epoch 475	 test acc 0.3
+Saved model at models/2333610ee0af452a9d9ef3cf3c252efa.pt
+Completed training in 154501.6 seconds
+MODEL: 	cc
+ABSTRACT_PEN: 	2.0
+TAU_NOISE: 	0.0

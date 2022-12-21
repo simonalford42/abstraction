@@ -30,14 +30,22 @@ import os
 def fine_tune_rnn(control_net, params):
     nll_loss = nn.NLLLoss(reduction='none')
 
-    rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
-    env = box_world.BoxWorldEnv(seed=params.seed)
-    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=False)
-    print(f'{len(dataset)} fine-tuning examples')
-    params.epochs = int(params.traj_updates / len(dataset))
+    if params.load_rnn:
+        rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
+        rnn = utils.load_model(f'models/{rnn_model_id}.pt').to(DEVICE)
+    else:
+        rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
 
+    env = box_world.BoxWorldEnv(seed=params.seed)
+
+    dataset = data.PlanningDataset(env, control_net, n=params.n, tau_precompute=False)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
                             collate_fn=data.latent_traj_collate)
+    eval_dataset = data.PlanningDataset(env, control_net, n=200, tau_precompute=False)
+    eval_dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=True,
+                            collate_fn=data.latent_traj_collate)
+
+    params.epochs = int(params.traj_updates / len(dataset))
 
     optimizer = torch.optim.Adam(chain(rnn.parameters(), control_net.parameters()), lr=params.lr)
 
@@ -55,54 +63,33 @@ def fine_tune_rnn(control_net, params):
         solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
         option_num_total = torch.zeros(dataset.max_T).to(DEVICE)
         solved_num_total = 0
-        b = params.b
-        t = control_net.t
 
         for states, options, solveds, lengths, masks in dataloader:
             states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
-
-            option_one_hots = F.one_hot(options, num_classes=b).float().to(DEVICE)
+            option_logps, solved_logps = abstract.rnn_fine_tune_logps(
+                    states, options, solveds, lengths, masks, control_net, rnn, params)
 
             B, T_plus_one, *s = states.shape
             T = T_plus_one - 1
-            assert_shape(options, (B, T))
-            assert_shape(solveds, (B, T + 1))
-            assert_shape(masks, (B, T + 1))
 
-            states_flattened = states.reshape(B * (T + 1), *s)
-            t_i_flattened = control_net.tau_net(states_flattened)
-            t_i = t_i_flattened.reshape(B, T + 1, t)
-
-            # https://stackoverflow.com/questions/48915810/what-does-contiguous-do-in-pytorch
-            t0 = t_i[None, :, 0].contiguous()
-            # apparently the required shape for the hidden state:
-            # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
-            assert_shape(t0, (1, B, params.abstract_dim))
-
-            t_i_preds, _ = rnn(option_one_hots, t0)
-            assert_shape(t_i_preds, (B, T, t))
-            # concat t0 to front
-            t0 = t_i[:, 0:1]
-            assert_shape(t0, (B, 1, t))
-            t_i_preds = torch.concat([t0, t_i_preds], dim=1)
-            assert_shape(t_i_preds, (B, T + 1, t))
-
-            t_i_preds_flattened = t_i_preds.reshape(B * (T + 1), t)
-            solved_logps = control_net.solved_net(t_i_preds_flattened).reshape(B, T + 1, 2)
-            option_logps = control_net.macro_policy_net(t_i_preds_flattened).reshape(B, T + 1, b)
-
-            # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
-            option_logps, solved_logps = [rearrange(x, 'N d C -> N C d') for x in
-                                                   [option_logps, solved_logps]]
-
-            option_logps = option_logps[:, :, :-1]
-            assert_shape(option_logps, (B, b, T))
-            assert_shape(options, (B, T))
-            assert_shape(solveds, (B, T + 1))
-            # cc_loss = ((t_i_preds - t_i) ** 2).sum(dim=-1)
             solved_loss = nll_loss(solved_logps, solveds)
             option_loss = nll_loss(option_logps, options)
 
+            # ignore loss for padded elements
+            option_loss = option_loss * masks[:, 1:]
+            solved_loss = solved_loss * masks
+            loss = option_loss.sum() + solved_loss.sum()
+
+            train_loss += loss.item()
+            # solved and option loss
+            loss = loss / (2 * sum(lengths))
+
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            updates += B
+
+            # accuracy calculation
             option_preds = torch.argmax(option_logps, dim=1)
             solved_preds = torch.argmax(solved_logps, dim=1)
             assert_shape(option_preds, (B, T))
@@ -117,19 +104,6 @@ def fine_tune_rnn(control_net, params):
             option_num_total[:len(tried)] += tried
             solved_num_total += masks.sum()
 
-            # let's try blocking out the loss for the masked elements..
-            option_loss = option_loss * masks[:, 1:]
-            solved_loss = solved_loss * masks
-            loss = option_loss.sum() + solved_loss.sum()
-
-            train_loss += loss.item()
-            # solved and option loss
-            loss = loss / (2 * sum(lengths))
-
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            updates += B
 
         for i in range(len(option_num_total)):
             if option_num_total[i] == 0:
@@ -143,31 +117,58 @@ def fine_tune_rnn(control_net, params):
                    'solved_acc': solved_num_correct.sum() / solved_num_total,
                    **acc_dict})
 
-        # if (params.test_every
-        #         and (not last_test_time
-        #              or (time.time() - last_test_time > (params.test_every * 60)))):
-        #     last_test_time = time.time()
-        #     utils.warn('fixed test env seed')
-        #     planning.eval_planner(
-        #         control_net, box_world.BoxWorldEnv(seed=env.seed), n=params.num_test,
-        #         # control_net, box_world.BoxWorldEnv(seed=env.seed + 1), n=params.num_test,
-        #     )
+        eval_option_num_correct = torch.zeros(dataset.max_T).to(DEVICE)
+        eval_solved_num_correct = torch.zeros(dataset.max_T + 1).to(DEVICE)
+        eval_option_num_total = torch.zeros(dataset.max_T).to(DEVICE)
+        eval_solved_num_total = 0
+        # evaluation accuracy calculation
+        for states, options, solveds, lengths, masks in eval_dataloader:
+            states, options, solveds, lengths, masks = [x.to(DEVICE) for x in [states, options, solveds, lengths, masks]]
+            option_logps, solved_logps = abstract.rnn_fine_tune_logps(
+                    states, options, solveds, lengths, masks, control_net, rnn, params)
+
+            B, T_plus_one, *s = states.shape
+            T = T_plus_one - 1
+
+            # accuracy calculation
+            option_preds = torch.argmax(option_logps, dim=1)
+            solved_preds = torch.argmax(solved_logps, dim=1)
+            assert_shape(option_preds, (B, T))
+
+            # masks[:, :T+1] = 1, which is one more than the number of options.
+            # to get correct mask, take masks[:, 1:]
+            matched = ((option_preds == options) * masks[:, 1:]).sum(dim=0)
+            solved_matched = ((solved_preds == solveds) * masks).sum(dim=0)
+            eval_option_num_correct[:len(matched)] += matched
+            eval_solved_num_correct[:len(solved_matched)] += solved_matched
+            tried = masks[:, 1:].sum(dim=0)
+            eval_option_num_total[:len(tried)] += tried
+            eval_solved_num_total += masks.sum()
+
+
+        for i in range(len(eval_option_num_total)):
+            if eval_option_num_total[i] == 0:
+                eval_option_num_total[i] = 1
+
+        eval_acc_dict = {f'eval_acc{i}': (0 if (eval_option_num_total[i] == 0)
+                                  else eval_option_num_correct[i] / eval_option_num_total[i])
+                    for i in range(len(option_num_correct))}
+
+        wandb.log({'eval_acc': eval_option_num_correct.sum() / eval_option_num_total.sum(),
+                   'solved_acc': eval_solved_num_correct.sum() / eval_solved_num_total,
+                   **eval_acc_dict})
 
         if (not params.no_log and params.save_every
                 and (time.time() - last_save_time > (params.save_every * 60))):
             last_save_time = time.time()
             path = utils.save_model(control_net, f'models/{params.id}-epoch-{epoch}_control.pt')
             path2 = utils.save_model(rnn, f'models/{params.id}-epoch-{epoch}_rnn.pt')
-            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
-            wandb.log({'models': wandb.Table(columns=['path'], data=[[path2]])})
 
         epoch += 1
 
     if not params.no_log and params.save_every:
         path = utils.save_model(control_net, f'models/{params.id}_control.pt')
         path2 = utils.save_model(rnn, f'models/{params.id}_rnn.pt')
-        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
-        wandb.log({'models': wandb.Table(columns=['path'], data=[[path2]])})
 
 
 def fine_tune(control_net, params):
@@ -241,13 +242,11 @@ def fine_tune(control_net, params):
                 and (time.time() - last_save_time > (params.save_every * 60))):
             last_save_time = time.time()
             path = utils.save_model(control_net, f'models/{params.id}-epoch-{epoch}_control.pt')
-            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
         epoch += 1
 
     if not params.no_log and params.save_every:
         path = utils.save_model(control_net, f'models/{params.id}_control.pt')
-        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
 def learn_options(net, params):
@@ -317,14 +316,12 @@ def learn_options(net, params):
                 and (time.time() - last_save_time > (params.save_every * 60))):
             last_save_time = time.time()
             path = utils.save_model(net, f'models/{params.id}-epoch-{epoch}.pt')
-            wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
         epoch += 1
         updates += params.n
 
     if not params.no_log:
         path = utils.save_model(net, f'models/{params.id}.pt')
-        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
 def sv_train(run, dataloader: DataLoader, net, epochs, lr=1E-4, save_every=None, print_every=1):
@@ -454,7 +451,6 @@ def neurosym_symbolic_supervised_state_abstraction(dataloader: DataLoader, net, 
 
     if not params.no_log and params.save_every:
         path = utils.save_model(net, f'models/{params.id}_neurosym.pt')
-        wandb.log({'models': wandb.Table(columns=['path'], data=[[path]])})
 
 
 def learn_neurosym_world_model(params):
@@ -702,6 +698,7 @@ def boxworld_main():
     parser.add_argument('-S', '--state_loss', action='store_true', help='neurosym state loss weight')
     parser.add_argument('-C', '--cc_loss', action='store_true', help='neurosym cc loss weight')
     parser.add_argument('--rnn_macro', action='store_true', help='use RNN macro transition function in CC options learning')
+    parser.add_argument('--load_rnn', action='store_true', help='load rnn for fine_tuning')
 
     params = parser.parse_args()
 

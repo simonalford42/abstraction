@@ -1,0 +1,3588 @@
+Using torch device NVIDIA GeForce RTX 3090
+net: causal
+cc_weight: 1.0
+abstract_pen: 2.0
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000, 'batch_size': 40}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 72.9 seconds
+epoch: 0	train loss: 201974.140625	(17.8s)
+epoch: 1	train loss: 194326.390625	(16.4s)
+epoch: 2	train loss: 155858.328125	(16.4s)
+epoch: 3	train loss: 141679.109375	(16.4s)
+epoch: 4	train loss: 135583.828125	(16.4s)
+epoch: 5	train loss: 131504.484375	(16.4s)
+epoch: 6	train loss: 127744.515625	(16.4s)
+epoch: 7	train loss: 121893.125	(16.4s)
+epoch: 8	train loss: 117054.5859375	(16.5s)
+epoch: 9	train loss: 113471.8984375	(16.5s)
+epoch: 10	train loss: 110639.6640625	(16.5s)
+epoch: 11	train loss: 108612.265625	(16.5s)
+epoch: 12	train loss: 107075.703125	(16.5s)
+epoch: 13	train loss: 105859.78125	(16.4s)
+epoch: 14	train loss: 104665.2734375	(16.4s)
+epoch: 15	train loss: 103688.265625	(16.4s)
+epoch: 16	train loss: 102878.4140625	(16.6s)
+epoch: 17	train loss: 101892.765625	(16.4s)
+epoch: 18	train loss: 101032.5859375	(16.4s)
+epoch: 19	train loss: 99942.328125	(16.4s)
+epoch: 20	train loss: 99141.0390625	(16.4s)
+epoch: 21	train loss: 98239.6953125	(16.5s)
+epoch: 22	train loss: 97589.7421875	(16.4s)
+epoch: 23	train loss: 96767.28125	(16.4s)
+epoch: 24	train loss: 96270.921875	(16.4s)
+epoch: 25	train loss: 95404.796875	(16.4s)
+epoch: 26	train loss: 94562.84375	(16.4s)
+epoch: 27	train loss: 93987.7734375	(16.4s)
+epoch: 28	train loss: 93236.5	(16.4s)
+epoch: 29	train loss: 92558.3828125	(16.4s)
+epoch: 30	train loss: 91864.1171875	(16.4s)
+epoch: 31	train loss: 91272.1484375	(16.4s)
+epoch: 32	train loss: 90487.9609375	(16.4s)
+epoch: 33	train loss: 89740.7421875	(16.4s)
+epoch: 34	train loss: 89124.359375	(16.4s)
+epoch: 35	train loss: 88431.28125	(16.5s)
+epoch: 36	train loss: 87621.5078125	(16.4s)
+epoch: 37	train loss: 86975.328125	(16.5s)
+epoch: 38	train loss: 86459.3828125	(16.4s)
+epoch: 39	train loss: 85484.359375	(16.5s)
+epoch: 40	train loss: 84905.03125	(16.4s)
+epoch: 41	train loss: 84098.9921875	(16.4s)
+epoch: 42	train loss: 83584.1875	(16.4s)
+epoch: 43	train loss: 82436.75	(16.5s)
+epoch: 44	train loss: 81651.21875	(16.4s)
+epoch: 45	train loss: 80911.890625	(16.4s)
+epoch: 46	train loss: 80370.7890625	(16.4s)
+epoch: 47	train loss: 79802.5234375	(16.4s)
+epoch: 48	train loss: 79252.703125	(16.4s)
+epoch: 49	train loss: 78686.4453125	(16.4s)
+epoch: 50	train loss: 78097.796875	(16.4s)
+epoch: 51	train loss: 77731.9921875	(16.4s)
+epoch: 52	train loss: 77211.5546875	(16.4s)
+epoch: 53	train loss: 76975.5859375	(16.4s)
+epoch: 54	train loss: 76676.6875	(16.4s)
+epoch: 55	train loss: 76464.046875	(16.3s)
+epoch: 56	train loss: 76216.8046875	(16.3s)
+epoch: 57	train loss: 76248.578125	(16.3s)
+epoch: 58	train loss: 75986.7890625	(16.4s)
+epoch: 59	train loss: 75803.640625	(16.4s)
+epoch: 60	train loss: 75522.703125	(16.4s)
+epoch: 61	train loss: 75257.78125	(16.5s)
+epoch: 62	train loss: 74744.8515625	(16.5s)
+epoch: 63	train loss: 74228.15625	(16.5s)
+epoch: 64	train loss: 73602.6328125	(16.4s)
+epoch: 65	train loss: 72714.9609375	(16.4s)
+epoch: 66	train loss: 72066.2578125	(16.4s)
+epoch: 67	train loss: 71490.4921875	(16.4s)
+epoch: 68	train loss: 70856.1796875	(16.4s)
+epoch: 69	train loss: 70076.5390625	(16.4s)
+epoch: 70	train loss: 69720.328125	(16.4s)
+epoch: 71	train loss: 69132.1640625	(16.5s)
+epoch: 72	train loss: 68663.53125	(16.4s)
+epoch: 73	train loss: 68225.7890625	(16.4s)
+epoch: 74	train loss: 67836.15625	(16.4s)
+epoch: 75	train loss: 67334.6796875	(16.5s)
+epoch: 76	train loss: 66900.3359375	(16.5s)
+epoch: 77	train loss: 66418.421875	(16.4s)
+epoch: 78	train loss: 66165.3359375	(16.4s)
+epoch: 79	train loss: 65802.7109375	(16.5s)
+epoch: 80	train loss: 65716.6796875	(16.4s)
+epoch: 81	train loss: 65240.04296875	(16.4s)
+epoch: 82	train loss: 65092.9609375	(16.4s)
+epoch: 83	train loss: 65083.21484375	(16.4s)
+epoch: 84	train loss: 65287.73046875	(16.4s)
+epoch: 85	train loss: 64747.34375	(16.4s)
+epoch: 86	train loss: 64799.8125	(16.4s)
+epoch: 87	train loss: 64833.15625	(16.4s)
+epoch: 88	train loss: 64582.859375	(16.4s)
+epoch: 89	train loss: 64826.80078125	(16.4s)
+epoch: 90	train loss: 65333.5625	(16.4s)
+epoch: 91	train loss: 65964.265625	(16.4s)
+epoch: 92	train loss: 66731.9296875	(16.4s)
+epoch: 93	train loss: 65974.5546875	(16.4s)
+epoch: 94	train loss: 64903.55078125	(16.4s)
+epoch: 95	train loss: 63712.390625	(16.4s)
+epoch: 96	train loss: 62908.23828125	(16.4s)
+epoch: 97	train loss: 62476.12890625	(16.5s)
+epoch: 98	train loss: 62074.9765625	(16.5s)
+epoch: 99	train loss: 61713.40234375	(16.5s)
+Evaluating model on 200 episodes
+cc loss avg = 0.000497052154969424
+cc loss avg = 0.013241488835774362
+cc loss avg = 0.00020899501396343112
+cc loss avg = 0.009691132931038737
+cc loss avg = 0.0064007781620603055
+cc loss avg = 0.008646410831715912
+cc loss avg = 0.0006277558859437704
+cc loss avg = 0.002481851217453368
+cc loss avg = 0.006576895248144865
+cc loss avg = 0.010958526865579188
+cc loss avg = 0.3156821879965719
+cc loss avg = 0.02617852349067107
+cc loss avg = 0.0012617536121979356
+cc loss avg = 0.007583023849292658
+cc loss avg = 0.0036812589503824713
+cc loss avg = 0.00046331810881383717
+cc loss avg = 0.0012272755848243833
+cc loss avg = 0.004947554180398583
+cc loss avg = 0.0005627578357234597
+cc loss avg = 0.01081753894686699
+cc loss avg = 0.002455518813803792
+cc loss avg = 0.0018676593899726868
+cc loss avg = 0.0002701070625334978
+cc loss avg = 0.0035089465091004968
+Solved 24/200 episodes
+0.0021991915573889857
+Evaluated model in 26.8 seconds
+Saved model for run
+X with name round-0 at path models/X-round-0__1.pt
+Round 1
+Generated trajectories in 73.2 seconds
+epoch: 0	train loss: 80656.484375	(16.6s)
+epoch: 1	train loss: 76177.171875	(16.4s)
+epoch: 2	train loss: 73643.3828125	(16.5s)
+epoch: 3	train loss: 71682.4375	(16.5s)
+epoch: 4	train loss: 70188.4296875	(16.5s)
+epoch: 5	train loss: 68884.8671875	(16.5s)
+epoch: 6	train loss: 67768.875	(16.5s)
+epoch: 7	train loss: 66613.2578125	(16.4s)
+epoch: 8	train loss: 65699.5078125	(16.4s)
+epoch: 9	train loss: 64762.11328125	(16.4s)
+epoch: 10	train loss: 63891.84375	(16.5s)
+epoch: 11	train loss: 63022.59375	(16.5s)
+epoch: 12	train loss: 62328.9140625	(16.4s)
+epoch: 13	train loss: 62018.51171875	(16.5s)
+epoch: 14	train loss: 61352.9296875	(16.5s)
+epoch: 15	train loss: 60887.03125	(16.6s)
+epoch: 16	train loss: 60675.4140625	(16.5s)
+epoch: 17	train loss: 60915.58984375	(16.5s)
+epoch: 18	train loss: 60885.5	(16.5s)
+epoch: 19	train loss: 60128.0234375	(16.5s)
+epoch: 20	train loss: 59555.16015625	(16.5s)
+epoch: 21	train loss: 58671.2109375	(16.5s)
+epoch: 22	train loss: 58101.046875	(16.4s)
+epoch: 23	train loss: 57410.8359375	(16.4s)
+epoch: 24	train loss: 56951.0625	(16.5s)
+epoch: 25	train loss: 56484.33203125	(16.5s)
+epoch: 26	train loss: 56295.82421875	(16.5s)
+epoch: 27	train loss: 56290.3125	(16.5s)
+epoch: 28	train loss: 56052.7421875	(16.5s)
+epoch: 29	train loss: 56107.0625	(16.6s)
+epoch: 30	train loss: 56283.359375	(16.6s)
+epoch: 31	train loss: 55734.41796875	(16.5s)
+epoch: 32	train loss: 54878.484375	(16.5s)
+epoch: 33	train loss: 54107.140625	(16.5s)
+epoch: 34	train loss: 53226.65625	(16.6s)
+epoch: 35	train loss: 52748.54296875	(16.5s)
+epoch: 36	train loss: 52519.1015625	(16.5s)
+epoch: 37	train loss: 52592.9453125	(16.5s)
+epoch: 38	train loss: 52721.0625	(16.5s)
+epoch: 39	train loss: 53376.78515625	(16.5s)
+epoch: 40	train loss: 53396.2109375	(16.5s)
+epoch: 41	train loss: 53104.3671875	(16.6s)
+epoch: 42	train loss: 52221.3046875	(16.5s)
+epoch: 43	train loss: 51659.046875	(16.5s)
+epoch: 44	train loss: 51844.99609375	(16.5s)
+epoch: 45	train loss: 51716.2734375	(16.5s)
+epoch: 46	train loss: 51551.81640625	(16.5s)
+epoch: 47	train loss: 51767.50390625	(16.5s)
+epoch: 48	train loss: 51189.3359375	(16.5s)
+epoch: 49	train loss: 50340.62109375	(16.6s)
+epoch: 50	train loss: 49895.421875	(16.5s)
+epoch: 51	train loss: 49345.98828125	(16.5s)
+epoch: 52	train loss: 49704.56640625	(16.5s)
+epoch: 53	train loss: 49103.9609375	(16.5s)
+epoch: 54	train loss: 48917.40625	(16.6s)
+epoch: 55	train loss: 48776.76953125	(16.5s)
+epoch: 56	train loss: 48816.44921875	(16.5s)
+epoch: 57	train loss: 48728.5859375	(16.4s)
+epoch: 58	train loss: 49240.6484375	(16.6s)
+epoch: 59	train loss: 49261.62109375	(16.5s)
+epoch: 60	train loss: 49028.58203125	(16.4s)
+epoch: 61	train loss: 48675.90625	(16.6s)
+epoch: 62	train loss: 47899.04296875	(16.5s)
+epoch: 63	train loss: 47238.16015625	(16.5s)
+epoch: 64	train loss: 47177.64453125	(16.4s)
+epoch: 65	train loss: 46547.1640625	(16.3s)
+epoch: 66	train loss: 46221.36328125	(16.3s)
+epoch: 67	train loss: 46243.640625	(16.4s)
+epoch: 68	train loss: 46533.796875	(16.4s)
+epoch: 69	train loss: 46204.6171875	(16.4s)
+epoch: 70	train loss: 46188.48046875	(16.5s)
+epoch: 71	train loss: 45524.33984375	(16.4s)
+epoch: 72	train loss: 45353.2578125	(16.5s)
+epoch: 73	train loss: 45276.04296875	(16.4s)
+epoch: 74	train loss: 45241.15234375	(16.5s)
+epoch: 75	train loss: 46104.625	(16.6s)
+epoch: 76	train loss: 46797.6875	(16.5s)
+epoch: 77	train loss: 47494.8671875	(16.5s)
+epoch: 78	train loss: 46529.9765625	(16.3s)
+epoch: 79	train loss: 46096.4296875	(16.4s)
+epoch: 80	train loss: 46359.18359375	(16.5s)
+epoch: 81	train loss: 46150.015625	(16.4s)
+epoch: 82	train loss: 46031.4609375	(16.5s)
+epoch: 83	train loss: 45440.171875	(16.4s)
+epoch: 84	train loss: 45096.14453125	(16.4s)
+epoch: 85	train loss: 44882.04296875	(16.5s)
+epoch: 86	train loss: 44515.8203125	(16.4s)
+epoch: 87	train loss: 43976.35546875	(16.4s)
+epoch: 88	train loss: 43886.96875	(16.4s)
+epoch: 89	train loss: 43539.65234375	(16.4s)
+epoch: 90	train loss: 42979.234375	(16.4s)
+epoch: 91	train loss: 42986.01171875	(16.4s)
+epoch: 92	train loss: 42801.42578125	(16.4s)
+epoch: 93	train loss: 42550.47265625	(16.4s)
+epoch: 94	train loss: 42862.73046875	(16.4s)
+epoch: 95	train loss: 43121.13671875	(16.5s)
+epoch: 96	train loss: 42543.9765625	(16.5s)
+epoch: 97	train loss: 42335.08203125	(16.4s)
+epoch: 98	train loss: 42094.10546875	(16.5s)
+epoch: 99	train loss: 41712.03515625	(16.4s)
+Evaluating model on 200 episodes
+cc loss avg = 0.016308283695252612
+cc loss avg = 0.007499991450458765
+cc loss avg = 5.6145727285183966e-05
+cc loss avg = 0.015988724073395133
+cc loss avg = 0.002098577097058296
+cc loss avg = 0.004050979623571038
+cc loss avg = 0.006750427302904427
+cc loss avg = 0.0103849689476192
+cc loss avg = 0.0013708441983908415
+cc loss avg = 0.002619896549731493
+cc loss avg = 0.06631648979964666
+cc loss avg = 0.008424037136137486
+cc loss avg = 0.00955963610613253
+cc loss avg = 0.0028378909919410944
+cc loss avg = 0.0056993612088263035
+cc loss avg = 0.0012979042949154973
+cc loss avg = 0.0023877439089119434
+cc loss avg = 0.005428982723969966
+cc loss avg = 0.01432458869627832
+cc loss avg = 0.010113486685440876
+cc loss avg = 0.009518145583570004
+cc loss avg = 0.005348789527488407
+cc loss avg = 0.007028131978586316
+cc loss avg = 0.02871206635609269
+cc loss avg = 0.0022836257121525705
+cc loss avg = 0.013794950733426958
+cc loss avg = 0.010415265132905915
+cc loss avg = 0.010325761511921883
+cc loss avg = 0.005175011232495308
+cc loss avg = 0.01475436681357678
+cc loss avg = 0.007318964538474877
+cc loss avg = 0.007858228869736195
+Solved 32/200 episodes
+0.0015802613410414775
+Evaluated model in 27.0 seconds
+Saved model for run
+X with name round-1 at path models/X-round-1__1.pt
+Round 2
+Generated trajectories in 72.0 seconds
+epoch: 0	train loss: 83955.0078125	(16.4s)
+epoch: 1	train loss: 74320.859375	(16.5s)
+epoch: 2	train loss: 69878.6484375	(16.5s)
+epoch: 3	train loss: 66941.4375	(16.6s)
+epoch: 4	train loss: 64626.23828125	(16.5s)
+epoch: 5	train loss: 62814.48828125	(16.5s)
+epoch: 6	train loss: 61284.12890625	(16.5s)
+epoch: 7	train loss: 59931.6953125	(16.5s)
+epoch: 8	train loss: 58841.3046875	(16.6s)
+epoch: 9	train loss: 57934.78515625	(16.5s)
+epoch: 10	train loss: 56973.7109375	(16.4s)
+epoch: 11	train loss: 56355.3515625	(16.5s)
+epoch: 12	train loss: 55561.41796875	(16.5s)
+epoch: 13	train loss: 55055.9609375	(16.6s)
+epoch: 14	train loss: 54860.921875	(16.6s)
+epoch: 15	train loss: 55109.6796875	(16.5s)
+epoch: 16	train loss: 54894.01171875	(16.5s)
+epoch: 17	train loss: 53714.3046875	(16.4s)
+epoch: 18	train loss: 52547.55078125	(16.4s)
+epoch: 19	train loss: 51708.12109375	(16.5s)
+epoch: 20	train loss: 50955.58203125	(16.4s)
+epoch: 21	train loss: 50455.4921875	(16.4s)
+epoch: 22	train loss: 50226.5546875	(16.4s)
+epoch: 23	train loss: 49813.41015625	(16.4s)
+epoch: 24	train loss: 49700.08984375	(16.5s)
+epoch: 25	train loss: 49677.04296875	(16.5s)
+epoch: 26	train loss: 49266.796875	(16.4s)
+epoch: 27	train loss: 48637.4609375	(16.5s)
+epoch: 28	train loss: 48156.96484375	(16.4s)
+epoch: 29	train loss: 47982.34375	(16.5s)
+epoch: 30	train loss: 47275.93359375	(16.5s)
+epoch: 31	train loss: 47275.31640625	(16.5s)
+epoch: 32	train loss: 47284.3515625	(16.6s)
+epoch: 33	train loss: 46910.19140625	(16.5s)
+epoch: 34	train loss: 46353.73046875	(16.6s)
+epoch: 35	train loss: 45754.76171875	(16.4s)
+epoch: 36	train loss: 45519.43359375	(16.5s)
+epoch: 37	train loss: 45463.171875	(16.4s)
+epoch: 38	train loss: 45561.5859375	(16.5s)
+epoch: 39	train loss: 45268.19921875	(16.5s)
+epoch: 40	train loss: 44817.9296875	(16.5s)
+epoch: 41	train loss: 44240.08984375	(16.5s)
+epoch: 42	train loss: 44092.64453125	(16.5s)
+epoch: 43	train loss: 43911.234375	(16.5s)
+epoch: 44	train loss: 44138.5078125	(16.6s)
+epoch: 45	train loss: 43968.47265625	(16.5s)
+epoch: 46	train loss: 43597.859375	(16.4s)
+epoch: 47	train loss: 42792.75	(16.5s)
+epoch: 48	train loss: 42510.1015625	(16.5s)
+epoch: 49	train loss: 42284.125	(16.4s)
+epoch: 50	train loss: 42403.94140625	(16.6s)
+epoch: 51	train loss: 42984.4140625	(16.4s)
+epoch: 52	train loss: 42356.421875	(16.5s)
+epoch: 53	train loss: 42130.44921875	(16.5s)
+epoch: 54	train loss: 41199.3671875	(16.5s)
+epoch: 55	train loss: 40801.2734375	(16.6s)
+epoch: 56	train loss: 40644.4296875	(16.5s)
+epoch: 57	train loss: 40494.9765625	(16.5s)
+epoch: 58	train loss: 40092.19921875	(16.5s)
+epoch: 59	train loss: 40092.1796875	(16.5s)
+epoch: 60	train loss: 39738.71875	(16.5s)
+epoch: 61	train loss: 39686.73046875	(16.5s)
+epoch: 62	train loss: 39695.96484375	(16.5s)
+epoch: 63	train loss: 39820.828125	(16.5s)
+epoch: 64	train loss: 39753.69921875	(16.5s)
+epoch: 65	train loss: 39588.4140625	(16.5s)
+epoch: 66	train loss: 39485.2734375	(16.4s)
+epoch: 67	train loss: 39263.4765625	(16.4s)
+epoch: 68	train loss: 39551.70703125	(16.5s)
+epoch: 69	train loss: 39575.4921875	(16.4s)
+epoch: 70	train loss: 39826.56640625	(16.6s)
+epoch: 71	train loss: 39803.40234375	(16.5s)
+epoch: 72	train loss: 39780.0234375	(16.5s)
+epoch: 73	train loss: 39336.859375	(16.4s)
+epoch: 74	train loss: 39375.31640625	(16.5s)
+epoch: 75	train loss: 39260.18359375	(16.5s)
+epoch: 76	train loss: 39110.7890625	(16.5s)
+epoch: 77	train loss: 38579.12890625	(16.4s)
+epoch: 78	train loss: 38468.87109375	(16.4s)
+epoch: 79	train loss: 38183.8359375	(16.4s)
+epoch: 80	train loss: 38148.7578125	(16.4s)
+epoch: 81	train loss: 37911.17578125	(16.5s)
+epoch: 82	train loss: 37474.2578125	(16.5s)
+epoch: 83	train loss: 36906.85546875	(16.5s)
+epoch: 84	train loss: 36715.7109375	(16.5s)
+epoch: 85	train loss: 36608.7265625	(16.5s)
+epoch: 86	train loss: 36056.375	(16.5s)
+epoch: 87	train loss: 35896.76953125	(16.6s)
+epoch: 88	train loss: 35515.984375	(16.5s)
+epoch: 89	train loss: 35306.5703125	(16.5s)
+epoch: 90	train loss: 35406.34375	(16.5s)
+epoch: 91	train loss: 35530.78515625	(16.6s)
+epoch: 92	train loss: 35605.41015625	(16.4s)
+epoch: 93	train loss: 36077.39453125	(16.5s)
+epoch: 94	train loss: 36398.22265625	(16.6s)
+epoch: 95	train loss: 36307.109375	(16.5s)
+epoch: 96	train loss: 35828.45703125	(16.5s)
+epoch: 97	train loss: 35532.62890625	(16.5s)
+epoch: 98	train loss: 35026.32421875	(16.6s)
+epoch: 99	train loss: 35200.01171875	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.0014180722646415234
+cc loss avg = 0.0028335757087916136
+cc loss avg = 0.004545362666249275
+cc loss avg = 0.00909491439233534
+cc loss avg = 0.002070025075227022
+cc loss avg = 0.0006362921558320522
+cc loss avg = 0.00516895524924621
+cc loss avg = 0.006734800059348345
+cc loss avg = 0.001032965024933219
+cc loss avg = 0.007081422256305814
+cc loss avg = 0.00043379145790822804
+cc loss avg = 0.008070907526416704
+cc loss avg = 0.00041523377876728773
+cc loss avg = 0.0015775847132317722
+cc loss avg = 0.0024817617668304592
+cc loss avg = 0.009852200339082628
+cc loss avg = 0.0006875224644318223
+cc loss avg = 0.00104560109321028
+cc loss avg = 0.008402728936440932
+cc loss avg = 0.008074625860899687
+cc loss avg = 0.0021280141081660986
+cc loss avg = 0.001095266081392765
+Solved 22/200 episodes
+0.0004244081148984454
+Evaluated model in 25.1 seconds
+Saved model for run
+X with name round-2 at path models/X-round-2__1.pt
+Round 3
+Generated trajectories in 73.0 seconds
+epoch: 0	train loss: 90730.2578125	(16.6s)
+epoch: 1	train loss: 77435.09375	(16.7s)
+epoch: 2	train loss: 71490.953125	(16.6s)
+epoch: 3	train loss: 67482.2578125	(16.7s)
+epoch: 4	train loss: 64565.6015625	(16.6s)
+epoch: 5	train loss: 62319.48828125	(16.7s)
+epoch: 6	train loss: 60461.14453125	(16.6s)
+epoch: 7	train loss: 58765.796875	(16.7s)
+epoch: 8	train loss: 57336.73046875	(16.6s)
+epoch: 9	train loss: 56099.66015625	(16.7s)
+epoch: 10	train loss: 55178.15625	(16.7s)
+epoch: 11	train loss: 54293.80859375	(16.6s)
+epoch: 12	train loss: 53419.2734375	(16.6s)
+epoch: 13	train loss: 52929.04296875	(16.6s)
+epoch: 14	train loss: 52434.45703125	(16.6s)
+epoch: 15	train loss: 52240.8671875	(16.6s)
+epoch: 16	train loss: 51611.921875	(16.6s)
+epoch: 17	train loss: 51066.2421875	(16.7s)
+epoch: 18	train loss: 50033.98828125	(16.6s)
+epoch: 19	train loss: 49124.32421875	(16.6s)
+epoch: 20	train loss: 48500.1640625	(16.6s)
+epoch: 21	train loss: 48019.71484375	(16.6s)
+epoch: 22	train loss: 47372.37890625	(16.6s)
+epoch: 23	train loss: 46847.67578125	(16.6s)
+epoch: 24	train loss: 46691.4375	(16.5s)
+epoch: 25	train loss: 46827.06640625	(16.6s)
+epoch: 26	train loss: 46509.5234375	(16.5s)
+epoch: 27	train loss: 46204.80859375	(16.6s)
+epoch: 28	train loss: 45852.38671875	(16.5s)
+epoch: 29	train loss: 45318.734375	(16.5s)
+epoch: 30	train loss: 44318.61328125	(16.5s)
+epoch: 31	train loss: 43930.78515625	(16.5s)
+epoch: 32	train loss: 43409.3046875	(16.5s)
+epoch: 33	train loss: 43496.8203125	(16.6s)
+epoch: 34	train loss: 43653.40234375	(16.6s)
+epoch: 35	train loss: 43206.56640625	(16.7s)
+epoch: 36	train loss: 42970.3671875	(16.7s)
+epoch: 37	train loss: 42695.1015625	(16.7s)
+epoch: 38	train loss: 42434.77734375	(16.7s)
+epoch: 39	train loss: 42041.75	(16.6s)
+epoch: 40	train loss: 41541.3671875	(16.7s)
+epoch: 41	train loss: 41012.359375	(16.7s)
+epoch: 42	train loss: 40527.24609375	(16.7s)
+epoch: 43	train loss: 40176.546875	(16.7s)
+epoch: 44	train loss: 40027.953125	(16.7s)
+epoch: 45	train loss: 39724.484375	(16.7s)
+epoch: 46	train loss: 39445.625	(16.7s)
+epoch: 47	train loss: 39064.96484375	(16.7s)
+epoch: 48	train loss: 39146.0078125	(16.7s)
+epoch: 49	train loss: 38859.96875	(16.7s)
+epoch: 50	train loss: 38759.99609375	(16.7s)
+epoch: 51	train loss: 38617.91796875	(16.7s)
+epoch: 52	train loss: 38584.59765625	(16.7s)
+epoch: 53	train loss: 38716.15234375	(16.7s)
+epoch: 54	train loss: 38416.7265625	(16.6s)
+epoch: 55	train loss: 38069.1484375	(16.6s)
+epoch: 56	train loss: 37667.1484375	(16.7s)
+epoch: 57	train loss: 37234.71484375	(16.7s)
+epoch: 58	train loss: 36916.66015625	(16.7s)
+epoch: 59	train loss: 36857.65625	(16.7s)
+epoch: 60	train loss: 36310.26953125	(16.6s)
+epoch: 61	train loss: 36230.9375	(16.7s)
+epoch: 62	train loss: 36345.8203125	(16.7s)
+epoch: 63	train loss: 36505.1171875	(16.7s)
+epoch: 64	train loss: 36263.21484375	(16.7s)
+epoch: 65	train loss: 36171.19921875	(16.7s)
+epoch: 66	train loss: 36401.78515625	(16.7s)
+epoch: 67	train loss: 36466.5234375	(16.7s)
+epoch: 68	train loss: 36183.359375	(16.7s)
+epoch: 69	train loss: 35573.91015625	(16.7s)
+epoch: 70	train loss: 35473.21875	(16.7s)
+epoch: 71	train loss: 35577.46484375	(16.6s)
+epoch: 72	train loss: 35673.8125	(16.7s)
+epoch: 73	train loss: 35669.96484375	(16.6s)
+epoch: 74	train loss: 35624.55859375	(16.7s)
+epoch: 75	train loss: 35336.4140625	(16.7s)
+epoch: 76	train loss: 35241.00390625	(16.7s)
+epoch: 77	train loss: 35385.81640625	(16.7s)
+epoch: 78	train loss: 35926.6796875	(16.7s)
+epoch: 79	train loss: 35394.63671875	(16.7s)
+epoch: 80	train loss: 35113.08203125	(16.7s)
+epoch: 81	train loss: 34712.73828125	(16.6s)
+epoch: 82	train loss: 34775.7421875	(16.6s)
+epoch: 83	train loss: 34640.26953125	(16.6s)
+epoch: 84	train loss: 34783.3984375	(16.6s)
+epoch: 85	train loss: 34459.58203125	(16.6s)
+epoch: 86	train loss: 34137.98046875	(16.6s)
+epoch: 87	train loss: 34085.328125	(16.7s)
+epoch: 88	train loss: 34188.4140625	(16.6s)
+epoch: 89	train loss: 34094.32421875	(16.6s)
+epoch: 90	train loss: 34080.67578125	(16.6s)
+epoch: 91	train loss: 34239.203125	(16.6s)
+epoch: 92	train loss: 33819.19921875	(16.6s)
+epoch: 93	train loss: 33934.65625	(16.7s)
+epoch: 94	train loss: 34434.11328125	(16.7s)
+epoch: 95	train loss: 34008.59375	(16.7s)
+epoch: 96	train loss: 33243.1171875	(16.7s)
+epoch: 97	train loss: 33365.0078125	(16.7s)
+epoch: 98	train loss: 33442.890625	(16.7s)
+epoch: 99	train loss: 33427.1953125	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.005354672088287771
+cc loss avg = 0.0017642101738601923
+cc loss avg = 0.001218933379277587
+cc loss avg = 0.0008497526869177818
+cc loss avg = 0.010502171266125515
+cc loss avg = 0.0026350715197622776
+cc loss avg = 0.008191596483811736
+cc loss avg = 0.00027678461628966033
+cc loss avg = 0.003717659623362124
+cc loss avg = 0.0009363767458125949
+cc loss avg = 0.00030263460939750075
+cc loss avg = 0.009455917461309582
+cc loss avg = 0.0005176358390599489
+cc loss avg = 0.02137758985918481
+cc loss avg = 0.0006153243593871593
+cc loss avg = 0.001954215345904231
+cc loss avg = 0.0018098949221894145
+cc loss avg = 0.0037801661528646946
+cc loss avg = 0.006186532787978649
+cc loss avg = 0.011447569442680106
+cc loss avg = 0.0015768317971378565
+cc loss avg = 0.0008341307402588427
+cc loss avg = 0.0017830862198024988
+cc loss avg = 0.010593679190302888
+Solved 24/200 episodes
+0.0005384121865548271
+Evaluated model in 32.9 seconds
+Saved model for run
+X with name round-3 at path models/X-round-3__1.pt
+Round 4
+Generated trajectories in 72.8 seconds
+epoch: 0	train loss: 92042.0859375	(16.6s)
+epoch: 1	train loss: 78100.09375	(16.5s)
+epoch: 2	train loss: 71038.046875	(16.7s)
+epoch: 3	train loss: 66656.0859375	(16.7s)
+epoch: 4	train loss: 63449.27734375	(16.6s)
+epoch: 5	train loss: 60976.8515625	(16.8s)
+epoch: 6	train loss: 58974.1953125	(16.7s)
+epoch: 7	train loss: 57452.6171875	(16.7s)
+epoch: 8	train loss: 56003.890625	(16.7s)
+epoch: 9	train loss: 54810.5546875	(16.7s)
+epoch: 10	train loss: 53732.85546875	(16.7s)
+epoch: 11	train loss: 52743.54296875	(16.6s)
+epoch: 12	train loss: 51961.50390625	(16.6s)
+epoch: 13	train loss: 51596.1484375	(16.7s)
+epoch: 14	train loss: 50933.69921875	(16.7s)
+epoch: 15	train loss: 50396.453125	(16.7s)
+epoch: 16	train loss: 49663.19921875	(16.7s)
+epoch: 17	train loss: 49166.58984375	(16.7s)
+epoch: 18	train loss: 48614.0234375	(16.7s)
+epoch: 19	train loss: 48183.91015625	(16.7s)
+epoch: 20	train loss: 47437.0703125	(16.7s)
+epoch: 21	train loss: 46717.07421875	(16.7s)
+epoch: 22	train loss: 46112.140625	(16.7s)
+epoch: 23	train loss: 45521.96875	(16.7s)
+epoch: 24	train loss: 45131.2890625	(16.6s)
+epoch: 25	train loss: 44636.80859375	(16.7s)
+epoch: 26	train loss: 44093.15625	(16.6s)
+epoch: 27	train loss: 43532.30078125	(16.7s)
+epoch: 28	train loss: 43290.94921875	(16.7s)
+epoch: 29	train loss: 43200.4140625	(16.7s)
+epoch: 30	train loss: 42868.06640625	(16.7s)
+epoch: 31	train loss: 42701.546875	(16.7s)
+epoch: 32	train loss: 42836.77734375	(16.6s)
+epoch: 33	train loss: 42483.69140625	(16.6s)
+epoch: 34	train loss: 42021.09375	(16.6s)
+epoch: 35	train loss: 41719.9453125	(16.6s)
+epoch: 36	train loss: 41347.78125	(16.6s)
+epoch: 37	train loss: 40923.85546875	(16.6s)
+epoch: 38	train loss: 40555.31640625	(16.6s)
+epoch: 39	train loss: 40252.6171875	(16.6s)
+epoch: 40	train loss: 39899.13671875	(16.6s)
+epoch: 41	train loss: 39338.5625	(16.6s)
+epoch: 42	train loss: 39105.8984375	(16.5s)
+epoch: 43	train loss: 39117.08203125	(16.5s)
+epoch: 44	train loss: 38812.8515625	(16.6s)
+epoch: 45	train loss: 38675.4921875	(16.7s)
+epoch: 46	train loss: 38442.30078125	(16.7s)
+epoch: 47	train loss: 38194.5703125	(16.5s)
+epoch: 48	train loss: 37717.73046875	(16.6s)
+epoch: 49	train loss: 37569.02734375	(16.6s)
+epoch: 50	train loss: 37411.328125	(16.6s)
+epoch: 51	train loss: 37604.88671875	(16.6s)
+epoch: 52	train loss: 37868.828125	(16.6s)
+epoch: 53	train loss: 37782.25	(16.5s)
+epoch: 54	train loss: 37340.859375	(16.6s)
+epoch: 55	train loss: 37365.26953125	(16.6s)
+epoch: 56	train loss: 37410.33984375	(16.7s)
+epoch: 57	train loss: 37275.86328125	(16.5s)
+epoch: 58	train loss: 37257.05078125	(16.7s)
+epoch: 59	train loss: 37102.3359375	(16.6s)
+epoch: 60	train loss: 37211.3203125	(16.6s)
+epoch: 61	train loss: 36262.1640625	(16.6s)
+epoch: 62	train loss: 35837.296875	(16.6s)
+epoch: 63	train loss: 35622.1796875	(16.6s)
+epoch: 64	train loss: 35216.84375	(16.6s)
+epoch: 65	train loss: 35074.9453125	(16.6s)
+epoch: 66	train loss: 34749.13671875	(16.6s)
+epoch: 67	train loss: 34705.046875	(16.6s)
+epoch: 68	train loss: 34684.64453125	(16.5s)
+epoch: 69	train loss: 34707.99609375	(16.6s)
+epoch: 70	train loss: 34755.03125	(16.6s)
+epoch: 71	train loss: 34677.25390625	(16.6s)
+epoch: 72	train loss: 34930.4140625	(16.6s)
+epoch: 73	train loss: 34635.83984375	(16.6s)
+epoch: 74	train loss: 34402.7109375	(16.6s)
+epoch: 75	train loss: 34120.94921875	(16.6s)
+epoch: 76	train loss: 34034.40234375	(16.6s)
+epoch: 77	train loss: 34285.0859375	(16.5s)
+epoch: 78	train loss: 33479.06640625	(16.6s)
+epoch: 79	train loss: 33477.70703125	(16.6s)
+epoch: 80	train loss: 33205.9921875	(16.6s)
+epoch: 81	train loss: 34138.921875	(16.6s)
+epoch: 82	train loss: 33768.62109375	(16.6s)
+epoch: 83	train loss: 33380.28125	(16.6s)
+epoch: 84	train loss: 33212.65234375	(16.6s)
+epoch: 85	train loss: 33243.51171875	(16.6s)
+epoch: 86	train loss: 33169.82421875	(16.6s)
+epoch: 87	train loss: 33046.390625	(16.6s)
+epoch: 88	train loss: 32980.13671875	(16.6s)
+epoch: 89	train loss: 32819.4609375	(16.5s)
+epoch: 90	train loss: 32820.03125	(16.6s)
+epoch: 91	train loss: 32975.359375	(16.6s)
+epoch: 92	train loss: 32703.783203125	(16.6s)
+epoch: 93	train loss: 32441.615234375	(16.5s)
+epoch: 94	train loss: 32471.66015625	(16.5s)
+epoch: 95	train loss: 32093.13671875	(16.6s)
+epoch: 96	train loss: 31913.455078125	(16.7s)
+epoch: 97	train loss: 32513.384765625	(16.7s)
+epoch: 98	train loss: 32143.16015625	(16.6s)
+epoch: 99	train loss: 32443.10546875	(16.5s)
+Evaluating model on 200 episodes
+cc loss avg = 0.0004924576496705413
+cc loss avg = 0.005174944177269936
+cc loss avg = 0.010973756143357605
+cc loss avg = 0.0004161768883932382
+cc loss avg = 0.0003489515511319041
+cc loss avg = 0.012198838987387717
+cc loss avg = 0.00861912002437748
+cc loss avg = 0.0035497299395501614
+cc loss avg = 0.009047457482665777
+cc loss avg = 0.010579501666749517
+cc loss avg = 0.0028063917998224497
+cc loss avg = 0.0073439511470496655
+cc loss avg = 0.0019287250470370054
+cc loss avg = 0.03143157990416512
+cc loss avg = 0.0008078792598098516
+cc loss avg = 0.011434120882768184
+cc loss avg = 0.004762631535413675
+cc loss avg = 0.01139205414801836
+cc loss avg = 0.0003657380002550781
+cc loss avg = 0.003604418132454157
+cc loss avg = 0.0002542503643780947
+cc loss avg = 0.00023859788780100644
+cc loss avg = 0.0019550793804228306
+cc loss avg = 0.0007742568850517273
+cc loss avg = 0.005581344477832317
+cc loss avg = 0.0001637511159060523
+cc loss avg = 0.0030457722023129463
+cc loss avg = 0.0021434249356389046
+Solved 28/200 episodes
+0.0007571745080834565
+Evaluated model in 25.4 seconds
+Saved model for run
+X with name round-4 at path models/X-round-4__1.pt
+Round 5
+Generated trajectories in 72.2 seconds
+epoch: 0	train loss: 90221.359375	(16.4s)
+epoch: 1	train loss: 75991.109375	(16.6s)
+epoch: 2	train loss: 69266.171875	(16.7s)
+epoch: 3	train loss: 64853.33984375	(16.6s)
+epoch: 4	train loss: 61780.6484375	(16.6s)
+epoch: 5	train loss: 59174.609375	(16.7s)
+epoch: 6	train loss: 57201.12109375	(16.7s)
+epoch: 7	train loss: 55245.9765625	(16.7s)
+epoch: 8	train loss: 53946.984375	(16.6s)
+epoch: 9	train loss: 52777.015625	(16.7s)
+epoch: 10	train loss: 51391.0	(16.6s)
+epoch: 11	train loss: 50509.48046875	(16.7s)
+epoch: 12	train loss: 49595.21484375	(16.7s)
+epoch: 13	train loss: 48801.6015625	(16.6s)
+epoch: 14	train loss: 48293.61328125	(16.7s)
+epoch: 15	train loss: 47843.31640625	(16.7s)
+epoch: 16	train loss: 47148.1875	(16.7s)
+epoch: 17	train loss: 47033.62890625	(16.7s)
+epoch: 18	train loss: 45945.0625	(16.7s)
+epoch: 19	train loss: 45160.77734375	(16.6s)
+epoch: 20	train loss: 44841.91015625	(16.6s)
+epoch: 21	train loss: 44570.0546875	(16.7s)
+epoch: 22	train loss: 43787.125	(16.6s)
+epoch: 23	train loss: 43263.89453125	(16.6s)
+epoch: 24	train loss: 42648.63671875	(16.6s)
+epoch: 25	train loss: 41990.96484375	(16.6s)
+epoch: 26	train loss: 41539.12109375	(16.6s)
+epoch: 27	train loss: 40928.76953125	(16.6s)
+epoch: 28	train loss: 40581.34375	(16.7s)
+epoch: 29	train loss: 40210.4375	(16.6s)
+epoch: 30	train loss: 39966.00390625	(16.6s)
+epoch: 31	train loss: 39701.3984375	(16.7s)
+epoch: 32	train loss: 39591.91015625	(16.6s)
+epoch: 33	train loss: 39207.875	(16.6s)
+epoch: 34	train loss: 38945.43359375	(16.6s)
+epoch: 35	train loss: 38893.12890625	(16.6s)
+epoch: 36	train loss: 38821.015625	(16.6s)
+epoch: 37	train loss: 38999.47265625	(16.6s)
+epoch: 38	train loss: 38473.10546875	(16.6s)
+epoch: 39	train loss: 38385.5	(16.6s)
+epoch: 40	train loss: 37961.625	(16.6s)
+epoch: 41	train loss: 37328.0078125	(16.6s)
+epoch: 42	train loss: 37279.08203125	(16.6s)
+epoch: 43	train loss: 37085.0078125	(16.7s)
+epoch: 44	train loss: 36678.9609375	(16.6s)
+epoch: 45	train loss: 36444.84765625	(16.5s)
+epoch: 46	train loss: 36394.375	(16.6s)
+epoch: 47	train loss: 36183.43359375	(16.6s)
+epoch: 48	train loss: 36206.4375	(16.6s)
+epoch: 49	train loss: 35878.2734375	(16.7s)
+epoch: 50	train loss: 35477.41796875	(16.6s)
+epoch: 51	train loss: 35299.234375	(16.6s)
+epoch: 52	train loss: 35086.26171875	(16.6s)
+epoch: 53	train loss: 34832.515625	(16.6s)
+epoch: 54	train loss: 34940.4296875	(16.6s)
+epoch: 55	train loss: 34799.66796875	(16.5s)
+epoch: 56	train loss: 34545.6640625	(16.6s)
+epoch: 57	train loss: 34550.91796875	(16.7s)
+epoch: 58	train loss: 34464.97265625	(16.6s)
+epoch: 59	train loss: 34193.0703125	(16.6s)
+epoch: 60	train loss: 34475.96484375	(16.6s)
+epoch: 61	train loss: 34341.25390625	(16.5s)
+epoch: 62	train loss: 33943.0390625	(16.6s)
+epoch: 63	train loss: 34363.93359375	(16.6s)
+epoch: 64	train loss: 34252.80859375	(16.7s)
+epoch: 65	train loss: 34493.2890625	(16.6s)
+epoch: 66	train loss: 33451.39453125	(16.6s)
+epoch: 67	train loss: 33480.8359375	(16.6s)
+epoch: 68	train loss: 33549.875	(16.6s)
+epoch: 69	train loss: 33341.6171875	(16.7s)
+epoch: 70	train loss: 33339.203125	(16.6s)
+epoch: 71	train loss: 33003.65625	(16.6s)
+epoch: 72	train loss: 32754.7265625	(16.6s)
+epoch: 73	train loss: 32652.318359375	(16.6s)
+epoch: 74	train loss: 32563.818359375	(16.6s)
+epoch: 75	train loss: 32697.416015625	(16.6s)
+epoch: 76	train loss: 32592.3828125	(16.6s)
+epoch: 77	train loss: 32651.1171875	(16.6s)
+epoch: 78	train loss: 32541.826171875	(16.7s)
+epoch: 79	train loss: 32774.69140625	(16.6s)
+epoch: 80	train loss: 32696.0078125	(16.6s)
+epoch: 81	train loss: 32714.431640625	(16.6s)
+epoch: 82	train loss: 32394.841796875	(16.6s)
+epoch: 83	train loss: 33312.98046875	(16.6s)
+epoch: 84	train loss: 32525.130859375	(16.6s)
+epoch: 85	train loss: 32709.49609375	(16.6s)
+epoch: 86	train loss: 32567.404296875	(16.6s)
+epoch: 87	train loss: 32312.701171875	(16.7s)
+epoch: 88	train loss: 32267.537109375	(16.7s)
+epoch: 89	train loss: 31907.501953125	(16.6s)
+epoch: 90	train loss: 32131.68359375	(16.7s)
+epoch: 91	train loss: 31640.78515625	(16.6s)
+epoch: 92	train loss: 31454.56640625	(16.6s)
+epoch: 93	train loss: 31156.9765625	(16.7s)
+epoch: 94	train loss: 31580.08203125	(16.6s)
+epoch: 95	train loss: 31889.384765625	(16.7s)
+epoch: 96	train loss: 31649.87109375	(16.6s)
+epoch: 97	train loss: 30991.537109375	(16.6s)
+epoch: 98	train loss: 31322.134765625	(16.6s)
+epoch: 99	train loss: 31163.271484375	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.004016055744917442
+cc loss avg = 0.0006368124159052968
+cc loss avg = 0.007756032049655914
+cc loss avg = 0.008599214255809784
+cc loss avg = 0.00842131907120347
+cc loss avg = 0.015002546288693944
+cc loss avg = 0.011177572887390852
+cc loss avg = 0.04747761017642915
+cc loss avg = 0.018045969889499247
+cc loss avg = 0.0017236284911632538
+cc loss avg = 0.0016519371420145035
+cc loss avg = 0.013171902552130632
+cc loss avg = 0.0039475527592003345
+cc loss avg = 0.000461063114926219
+cc loss avg = 0.016388775741991896
+cc loss avg = 0.0012444898020476103
+cc loss avg = 0.01612387550994754
+cc loss avg = 0.014338227600092068
+cc loss avg = 0.026761072484077886
+cc loss avg = 0.021700670903859038
+cc loss avg = 0.0030381078831851482
+cc loss avg = 0.029232491506263614
+cc loss avg = 0.0034248805604875088
+cc loss avg = 0.010687863919883966
+cc loss avg = 0.013726369390496984
+cc loss avg = 0.0009433077066205442
+cc loss avg = 0.0034026571083813906
+cc loss avg = 0.0007937052869237959
+cc loss avg = 0.0016823855694383383
+cc loss avg = 0.007116443834092934
+cc loss avg = 0.016404870548285544
+cc loss avg = 0.003741981228813529
+cc loss avg = 0.00488231610506773
+cc loss avg = 0.005274710361845791
+cc loss avg = 0.022246155383375783
+Solved 35/200 episodes
+0.0018262228763705935
+Evaluated model in 26.5 seconds
+Saved model for run
+X with name round-5 at path models/X-round-5__1.pt
+Round 6
+Generated trajectories in 72.8 seconds
+epoch: 0	train loss: 87606.015625	(16.4s)
+epoch: 1	train loss: 74042.6015625	(16.5s)
+epoch: 2	train loss: 66773.3671875	(16.6s)
+epoch: 3	train loss: 62289.92578125	(16.6s)
+epoch: 4	train loss: 59080.3125	(16.6s)
+epoch: 5	train loss: 56677.9296875	(16.6s)
+epoch: 6	train loss: 54747.1328125	(16.6s)
+epoch: 7	train loss: 53012.37109375	(16.5s)
+epoch: 8	train loss: 51429.6953125	(16.5s)
+epoch: 9	train loss: 50218.48828125	(16.6s)
+epoch: 10	train loss: 49393.9140625	(16.6s)
+epoch: 11	train loss: 48579.00390625	(16.6s)
+epoch: 12	train loss: 47714.0703125	(16.5s)
+epoch: 13	train loss: 47083.1796875	(16.6s)
+epoch: 14	train loss: 46301.24609375	(16.6s)
+epoch: 15	train loss: 45701.5234375	(16.6s)
+epoch: 16	train loss: 45011.0625	(16.6s)
+epoch: 17	train loss: 44235.29296875	(16.5s)
+epoch: 18	train loss: 43613.421875	(16.5s)
+epoch: 19	train loss: 42923.34375	(16.6s)
+epoch: 20	train loss: 42349.484375	(16.6s)
+epoch: 21	train loss: 41687.78125	(16.6s)
+epoch: 22	train loss: 41147.22265625	(16.6s)
+epoch: 23	train loss: 40654.37109375	(16.6s)
+epoch: 24	train loss: 40317.15234375	(16.6s)
+epoch: 25	train loss: 39941.4296875	(16.6s)
+epoch: 26	train loss: 39341.28125	(16.7s)
+epoch: 27	train loss: 38792.77734375	(16.6s)
+epoch: 28	train loss: 38655.66015625	(16.6s)
+epoch: 29	train loss: 38378.86328125	(16.5s)
+epoch: 30	train loss: 38048.81640625	(16.6s)
+epoch: 31	train loss: 37725.0625	(16.6s)
+epoch: 32	train loss: 37297.71875	(16.6s)
+epoch: 33	train loss: 37297.3203125	(16.6s)
+epoch: 34	train loss: 37052.78125	(16.6s)
+epoch: 35	train loss: 36912.4140625	(16.8s)
+epoch: 36	train loss: 36531.453125	(16.8s)
+epoch: 37	train loss: 36198.91015625	(16.7s)
+epoch: 38	train loss: 36326.265625	(16.7s)
+epoch: 39	train loss: 36164.9296875	(16.7s)
+epoch: 40	train loss: 36146.0390625	(16.8s)
+epoch: 41	train loss: 35890.0078125	(16.8s)
+epoch: 42	train loss: 35939.73828125	(16.7s)
+epoch: 43	train loss: 35499.3125	(16.7s)
+epoch: 44	train loss: 35271.26953125	(16.7s)
+epoch: 45	train loss: 34757.0234375	(16.7s)
+epoch: 46	train loss: 34914.5078125	(16.7s)
+epoch: 47	train loss: 34469.2265625	(16.7s)
+epoch: 48	train loss: 33911.89453125	(16.6s)
+epoch: 49	train loss: 33769.21484375	(16.6s)
+epoch: 50	train loss: 33738.4453125	(16.7s)
+epoch: 51	train loss: 33311.3203125	(16.6s)
+epoch: 52	train loss: 33159.43359375	(16.7s)
+epoch: 53	train loss: 33058.81640625	(16.6s)
+epoch: 54	train loss: 33076.70703125	(16.6s)
+epoch: 55	train loss: 33010.53125	(16.5s)
+epoch: 56	train loss: 32646.541015625	(16.6s)
+epoch: 57	train loss: 32255.408203125	(16.6s)
+epoch: 58	train loss: 32537.69921875	(16.5s)
+epoch: 59	train loss: 32457.470703125	(16.6s)
+epoch: 60	train loss: 32251.32421875	(16.6s)
+epoch: 61	train loss: 32278.115234375	(16.6s)
+epoch: 62	train loss: 32111.45703125	(16.6s)
+epoch: 63	train loss: 32204.20703125	(16.5s)
+epoch: 64	train loss: 32186.78515625	(16.5s)
+epoch: 65	train loss: 31911.61328125	(16.6s)
+epoch: 66	train loss: 32116.537109375	(16.6s)
+epoch: 67	train loss: 32192.0390625	(16.6s)
+epoch: 68	train loss: 31990.619140625	(16.6s)
+epoch: 69	train loss: 31888.7890625	(16.6s)
+epoch: 70	train loss: 31542.8046875	(16.6s)
+epoch: 71	train loss: 31369.271484375	(16.6s)
+epoch: 72	train loss: 31312.0234375	(16.6s)
+epoch: 73	train loss: 31448.978515625	(16.6s)
+epoch: 74	train loss: 31105.6328125	(16.6s)
+epoch: 75	train loss: 31250.49609375	(16.7s)
+epoch: 76	train loss: 30882.369140625	(16.6s)
+epoch: 77	train loss: 30927.775390625	(16.6s)
+epoch: 78	train loss: 31586.994140625	(16.5s)
+epoch: 79	train loss: 30982.8515625	(16.5s)
+epoch: 80	train loss: 30577.68359375	(16.6s)
+epoch: 81	train loss: 30293.802734375	(16.6s)
+epoch: 82	train loss: 30233.22265625	(16.6s)
+epoch: 83	train loss: 30281.18359375	(16.5s)
+epoch: 84	train loss: 30219.962890625	(16.5s)
+epoch: 85	train loss: 30335.94140625	(16.5s)
+epoch: 86	train loss: 30469.23046875	(16.5s)
+epoch: 87	train loss: 30544.73828125	(16.6s)
+epoch: 88	train loss: 30279.962890625	(16.6s)
+epoch: 89	train loss: 30517.771484375	(16.5s)
+epoch: 90	train loss: 30242.16015625	(16.6s)
+epoch: 91	train loss: 30172.9140625	(16.8s)
+epoch: 92	train loss: 30351.375	(16.6s)
+epoch: 93	train loss: 29752.9296875	(16.7s)
+epoch: 94	train loss: 30170.18359375	(16.7s)
+epoch: 95	train loss: 30000.859375	(16.7s)
+epoch: 96	train loss: 29351.75	(16.7s)
+epoch: 97	train loss: 29263.03515625	(16.7s)
+epoch: 98	train loss: 29280.513671875	(16.7s)
+epoch: 99	train loss: 29300.302734375	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.0028477369341999292
+cc loss avg = 0.016473778802901507
+cc loss avg = 0.00527384459564928
+cc loss avg = 0.005456260580103844
+cc loss avg = 0.00018745865963865072
+cc loss avg = 0.0033158020426829657
+cc loss avg = 0.00290633924305439
+cc loss avg = 0.004074710421264172
+cc loss avg = 0.010549317063123453
+cc loss avg = 0.0030393931083381176
+cc loss avg = 0.0007130707381293178
+cc loss avg = 0.01564232021337375
+cc loss avg = 0.003007583785802126
+cc loss avg = 0.006744885817170143
+cc loss avg = 0.009772650490049273
+cc loss avg = 0.0012741758255288005
+cc loss avg = 0.004848900716751814
+cc loss avg = 0.0016274305526167154
+cc loss avg = 0.0008415089687332511
+cc loss avg = 0.0004846921656280756
+cc loss avg = 0.0010301916627213359
+cc loss avg = 0.0010598942171782255
+cc loss avg = 0.006240767659619451
+cc loss avg = 0.000399355951230973
+cc loss avg = 0.007327551394701004
+cc loss avg = 0.002363936509937048
+cc loss avg = 0.009765018709003925
+cc loss avg = 0.00840153347235173
+cc loss avg = 0.0008906002622097731
+cc loss avg = 0.006196959177032113
+cc loss avg = 0.02103335573337972
+cc loss avg = 0.00022764733876101673
+cc loss avg = 0.008624834474176168
+cc loss avg = 0.0005633192486129701
+cc loss avg = 0.00023486722784582525
+cc loss avg = 0.0016754093812778592
+cc loss avg = 0.006116314209066331
+cc loss avg = 0.008425652515143156
+cc loss avg = 0.0010720740538090467
+cc loss avg = 0.017284018234931864
+cc loss avg = 0.0008931047050282359
+cc loss avg = 0.0011222275206819177
+cc loss avg = 0.007083152420818806
+cc loss avg = 0.003390352241694927
+cc loss avg = 0.0005406244890764356
+cc loss avg = 0.013588065397925675
+Solved 46/200 episodes
+0.0011731634446647756
+Evaluated model in 25.0 seconds
+Saved model for run
+X with name round-6 at path models/X-round-6__1.pt
+Round 7
+Generated trajectories in 73.1 seconds
+epoch: 0	train loss: 83890.75	(16.6s)
+epoch: 1	train loss: 71098.9296875	(16.7s)
+epoch: 2	train loss: 64324.5078125	(16.7s)
+epoch: 3	train loss: 59916.94921875	(16.7s)
+epoch: 4	train loss: 56488.9140625	(16.8s)
+epoch: 5	train loss: 54085.80078125	(16.7s)
+epoch: 6	train loss: 51935.39453125	(16.7s)
+epoch: 7	train loss: 50297.48046875	(16.7s)
+epoch: 8	train loss: 48794.9375	(16.7s)
+epoch: 9	train loss: 47584.640625	(16.7s)
+epoch: 10	train loss: 46474.83984375	(16.7s)
+epoch: 11	train loss: 45618.3125	(16.8s)
+epoch: 12	train loss: 44799.8984375	(16.8s)
+epoch: 13	train loss: 44263.32421875	(16.8s)
+epoch: 14	train loss: 43231.69921875	(16.8s)
+epoch: 15	train loss: 42084.05078125	(16.8s)
+epoch: 16	train loss: 41885.23046875	(16.7s)
+epoch: 17	train loss: 41034.2890625	(16.8s)
+epoch: 18	train loss: 40511.125	(16.7s)
+epoch: 19	train loss: 39934.2265625	(16.7s)
+epoch: 20	train loss: 39500.328125	(16.7s)
+epoch: 21	train loss: 39120.45703125	(16.7s)
+epoch: 22	train loss: 38852.6953125	(16.8s)
+epoch: 23	train loss: 38363.96484375	(16.8s)
+epoch: 24	train loss: 37800.34765625	(16.8s)
+epoch: 25	train loss: 37387.70703125	(16.7s)
+epoch: 26	train loss: 36903.828125	(16.8s)
+epoch: 27	train loss: 36412.80078125	(16.7s)
+epoch: 28	train loss: 35989.109375	(16.7s)
+epoch: 29	train loss: 35514.65625	(16.8s)
+epoch: 30	train loss: 35132.84375	(16.6s)
+epoch: 31	train loss: 34917.2578125	(16.6s)
+epoch: 32	train loss: 34481.37890625	(16.7s)
+epoch: 33	train loss: 34459.15234375	(16.7s)
+epoch: 34	train loss: 34138.10546875	(16.7s)
+epoch: 35	train loss: 33897.59375	(16.7s)
+epoch: 36	train loss: 33670.7421875	(16.7s)
+epoch: 37	train loss: 33622.41796875	(16.7s)
+epoch: 38	train loss: 33398.828125	(16.7s)
+epoch: 39	train loss: 33091.328125	(16.7s)
+epoch: 40	train loss: 32784.91015625	(16.6s)
+epoch: 41	train loss: 32985.52734375	(16.7s)
+epoch: 42	train loss: 33158.75390625	(16.7s)
+epoch: 43	train loss: 33571.30859375	(16.8s)
+epoch: 44	train loss: 33018.6171875	(16.7s)
+epoch: 45	train loss: 32880.23828125	(16.8s)
+epoch: 46	train loss: 32540.255859375	(16.7s)
+epoch: 47	train loss: 32403.583984375	(16.7s)
+epoch: 48	train loss: 32026.9296875	(16.8s)
+epoch: 49	train loss: 32033.576171875	(16.8s)
+epoch: 50	train loss: 31569.42578125	(16.7s)
+epoch: 51	train loss: 31580.392578125	(16.7s)
+epoch: 52	train loss: 31736.2265625	(16.8s)
+epoch: 53	train loss: 31490.822265625	(16.8s)
+epoch: 54	train loss: 31391.9609375	(16.8s)
+epoch: 55	train loss: 31302.6484375	(16.8s)
+epoch: 56	train loss: 31390.96875	(16.8s)
+epoch: 57	train loss: 31386.150390625	(16.7s)
+epoch: 58	train loss: 30992.90234375	(16.7s)
+epoch: 59	train loss: 31135.16015625	(16.7s)
+epoch: 60	train loss: 31194.29296875	(16.8s)
+epoch: 61	train loss: 31255.94140625	(16.8s)
+epoch: 62	train loss: 31068.8203125	(16.8s)
+epoch: 63	train loss: 31085.294921875	(16.7s)
+epoch: 64	train loss: 30636.451171875	(16.7s)
+epoch: 65	train loss: 30367.1328125	(16.8s)
+epoch: 66	train loss: 30292.712890625	(16.7s)
+epoch: 67	train loss: 30719.712890625	(16.7s)
+epoch: 68	train loss: 30482.787109375	(16.7s)
+epoch: 69	train loss: 30313.080078125	(16.8s)
+epoch: 70	train loss: 30720.087890625	(16.8s)
+epoch: 71	train loss: 30016.6015625	(16.7s)
+epoch: 72	train loss: 30233.125	(16.7s)
+epoch: 73	train loss: 29707.095703125	(16.7s)
+epoch: 74	train loss: 29825.392578125	(16.7s)
+epoch: 75	train loss: 30115.982421875	(16.8s)
+epoch: 76	train loss: 29576.83203125	(16.7s)
+epoch: 77	train loss: 29762.85546875	(16.7s)
+epoch: 78	train loss: 29435.140625	(16.7s)
+epoch: 79	train loss: 29026.21875	(16.7s)
+epoch: 80	train loss: 29307.158203125	(16.8s)
+epoch: 81	train loss: 28965.79296875	(16.7s)
+epoch: 82	train loss: 29532.064453125	(16.7s)
+epoch: 83	train loss: 29658.380859375	(16.7s)
+epoch: 84	train loss: 29418.9765625	(16.7s)
+epoch: 85	train loss: 29039.091796875	(16.7s)
+epoch: 86	train loss: 29344.72265625	(16.7s)
+epoch: 87	train loss: 29582.810546875	(16.7s)
+epoch: 88	train loss: 28707.73046875	(16.7s)
+epoch: 89	train loss: 28392.7265625	(16.8s)
+epoch: 90	train loss: 28979.255859375	(16.7s)
+epoch: 91	train loss: 28790.578125	(16.7s)
+epoch: 92	train loss: 28209.201171875	(16.7s)
+epoch: 93	train loss: 28604.2734375	(16.7s)
+epoch: 94	train loss: 28445.7890625	(16.7s)
+epoch: 95	train loss: 28892.595703125	(16.7s)
+epoch: 96	train loss: 28875.345703125	(16.8s)
+epoch: 97	train loss: 28603.5859375	(16.6s)
+epoch: 98	train loss: 29038.060546875	(16.7s)
+epoch: 99	train loss: 29280.451171875	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.005299158045090735
+cc loss avg = 0.0009521376341581345
+cc loss avg = 0.0024661843199282885
+cc loss avg = 0.0004282875743228942
+cc loss avg = 0.004793482832610607
+cc loss avg = 0.002248787321150303
+cc loss avg = 0.0045252651907503605
+cc loss avg = 0.0001646634773351252
+cc loss avg = 0.0015002265572547913
+cc loss avg = 0.0016007833182811737
+cc loss avg = 0.0006606536917388439
+cc loss avg = 0.0036004087305627763
+cc loss avg = 0.0022285657469183207
+cc loss avg = 0.013585430880387625
+cc loss avg = 0.013354753764967123
+cc loss avg = 0.007055869325995445
+cc loss avg = 0.003539514960721135
+cc loss avg = 0.010966808651573956
+cc loss avg = 0.0017430622829124331
+cc loss avg = 0.003381622489541769
+cc loss avg = 0.0006568168755620718
+cc loss avg = 0.0006832801154814661
+cc loss avg = 0.005098052167644103
+cc loss avg = 0.00030376145150512457
+cc loss avg = 0.006472927110735327
+cc loss avg = 0.004352715332061052
+cc loss avg = 0.013417988666333258
+cc loss avg = 0.0076894889352843165
+cc loss avg = 0.00016515617608092725
+cc loss avg = 0.004193515982478857
+cc loss avg = 0.0002560389111749828
+cc loss avg = 0.007202476961538196
+cc loss avg = 0.007384295575320721
+cc loss avg = 0.00112251250538975
+cc loss avg = 0.0004867766983807087
+cc loss avg = 0.01263529434800148
+cc loss avg = 0.012085115153240622
+cc loss avg = 0.0038098080549389124
+cc loss avg = 0.00789644679268046
+cc loss avg = 0.008185960119590163
+cc loss avg = 0.013903516344726086
+cc loss avg = 0.01028301753103733
+cc loss avg = 0.016083829570561647
+cc loss avg = 0.002239740453660488
+cc loss avg = 0.00017998318071477115
+cc loss avg = 0.0018024560995399952
+cc loss avg = 0.0031480323523283005
+cc loss avg = 0.005832692278393854
+cc loss avg = 0.0024224461521953344
+cc loss avg = 0.009070849511772394
+Solved 50/200 episodes
+0.0012658032910227725
+Evaluated model in 22.8 seconds
+Saved model for run
+X with name round-7 at path models/X-round-7__1.pt
+Round 8
+Generated trajectories in 73.4 seconds
+epoch: 0	train loss: 77448.0234375	(16.8s)
+epoch: 1	train loss: 65012.984375	(16.6s)
+epoch: 2	train loss: 58633.3515625	(16.7s)
+epoch: 3	train loss: 54389.48828125	(16.7s)
+epoch: 4	train loss: 51346.00390625	(16.7s)
+epoch: 5	train loss: 49107.2734375	(16.8s)
+epoch: 6	train loss: 47295.0078125	(16.8s)
+epoch: 7	train loss: 45752.83984375	(16.8s)
+epoch: 8	train loss: 44520.60546875	(16.8s)
+epoch: 9	train loss: 43584.6953125	(16.8s)
+epoch: 10	train loss: 42864.7109375	(16.8s)
+epoch: 11	train loss: 42310.1796875	(16.8s)
+epoch: 12	train loss: 41676.17578125	(16.7s)
+epoch: 13	train loss: 40845.44921875	(16.7s)
+epoch: 14	train loss: 40120.3515625	(16.7s)
+epoch: 15	train loss: 39440.61328125	(16.7s)
+epoch: 16	train loss: 38845.859375	(16.7s)
+epoch: 17	train loss: 38489.1640625	(16.7s)
+epoch: 18	train loss: 37900.375	(16.7s)
+epoch: 19	train loss: 37231.65234375	(16.7s)
+epoch: 20	train loss: 36554.8984375	(16.7s)
+epoch: 21	train loss: 36249.83984375	(16.8s)
+epoch: 22	train loss: 35820.30859375	(16.8s)
+epoch: 23	train loss: 35228.96875	(16.7s)
+epoch: 24	train loss: 35086.5	(16.7s)
+epoch: 25	train loss: 34811.01953125	(16.7s)
+epoch: 26	train loss: 34364.37109375	(16.7s)
+epoch: 27	train loss: 34229.4140625	(16.7s)
+epoch: 28	train loss: 34431.25390625	(16.7s)
+epoch: 29	train loss: 34501.2421875	(16.7s)
+epoch: 30	train loss: 33729.2421875	(16.7s)
+epoch: 31	train loss: 33698.16796875	(16.7s)
+epoch: 32	train loss: 33617.1328125	(16.7s)
+epoch: 33	train loss: 33069.2421875	(16.7s)
+epoch: 34	train loss: 33197.07421875	(16.7s)
+epoch: 35	train loss: 32866.62109375	(16.7s)
+epoch: 36	train loss: 33011.328125	(16.7s)
+epoch: 37	train loss: 32821.46484375	(16.7s)
+epoch: 38	train loss: 32708.17578125	(16.7s)
+epoch: 39	train loss: 32257.673828125	(16.7s)
+epoch: 40	train loss: 31934.951171875	(16.7s)
+epoch: 41	train loss: 31846.091796875	(16.7s)
+epoch: 42	train loss: 31478.763671875	(16.7s)
+epoch: 43	train loss: 31159.751953125	(16.7s)
+epoch: 44	train loss: 31088.123046875	(16.7s)
+epoch: 45	train loss: 31221.009765625	(16.7s)
+epoch: 46	train loss: 31261.046875	(16.8s)
+epoch: 47	train loss: 30947.552734375	(16.8s)
+epoch: 48	train loss: 31572.931640625	(16.8s)
+epoch: 49	train loss: 30905.5234375	(16.8s)
+epoch: 50	train loss: 30958.49609375	(16.8s)
+epoch: 51	train loss: 30621.6953125	(16.8s)
+epoch: 52	train loss: 30701.0859375	(16.8s)
+epoch: 53	train loss: 30757.712890625	(16.8s)
+epoch: 54	train loss: 30861.376953125	(16.8s)
+epoch: 55	train loss: 30359.328125	(16.8s)
+epoch: 56	train loss: 30323.634765625	(16.8s)
+epoch: 57	train loss: 30243.8984375	(16.8s)
+epoch: 58	train loss: 30161.384765625	(16.8s)
+epoch: 59	train loss: 30304.134765625	(16.7s)
+epoch: 60	train loss: 30192.9765625	(16.8s)
+epoch: 61	train loss: 30189.05078125	(16.8s)
+epoch: 62	train loss: 30276.263671875	(16.8s)
+epoch: 63	train loss: 30306.52734375	(16.8s)
+epoch: 64	train loss: 30730.1328125	(16.8s)
+epoch: 65	train loss: 29833.27734375	(16.7s)
+epoch: 66	train loss: 29674.583984375	(16.8s)
+epoch: 67	train loss: 29389.234375	(16.7s)
+epoch: 68	train loss: 29386.4921875	(16.8s)
+epoch: 69	train loss: 29204.95703125	(16.8s)
+epoch: 70	train loss: 29310.7421875	(16.7s)
+epoch: 71	train loss: 29857.4609375	(16.8s)
+epoch: 72	train loss: 29657.083984375	(16.7s)
+epoch: 73	train loss: 29230.412109375	(16.7s)
+epoch: 74	train loss: 28861.6328125	(16.6s)
+epoch: 75	train loss: 28816.984375	(16.6s)
+epoch: 76	train loss: 29191.927734375	(16.6s)
+epoch: 77	train loss: 28759.66015625	(16.8s)
+epoch: 78	train loss: 28859.314453125	(16.8s)
+epoch: 79	train loss: 28432.662109375	(16.8s)
+epoch: 80	train loss: 28717.138671875	(16.8s)
+epoch: 81	train loss: 28426.662109375	(16.8s)
+epoch: 82	train loss: 28355.8828125	(16.8s)
+epoch: 83	train loss: 28504.849609375	(16.8s)
+epoch: 84	train loss: 28960.775390625	(16.7s)
+epoch: 85	train loss: 29824.716796875	(16.6s)
+epoch: 86	train loss: 29327.8515625	(16.7s)
+epoch: 87	train loss: 29417.478515625	(16.7s)
+epoch: 88	train loss: 28362.787109375	(16.7s)
+epoch: 89	train loss: 27835.7578125	(16.7s)
+epoch: 90	train loss: 28010.361328125	(16.7s)
+epoch: 91	train loss: 27844.947265625	(16.7s)
+epoch: 92	train loss: 27842.568359375	(16.7s)
+epoch: 93	train loss: 27715.18359375	(16.7s)
+epoch: 94	train loss: 28190.81640625	(16.8s)
+epoch: 95	train loss: 27646.609375	(16.7s)
+epoch: 96	train loss: 27679.7421875	(16.7s)
+epoch: 97	train loss: 27469.1171875	(16.7s)
+epoch: 98	train loss: 27637.005859375	(16.7s)
+epoch: 99	train loss: 27901.255859375	(16.8s)
+Evaluating model on 200 episodes
+cc loss avg = 0.0034235568018630147
+cc loss avg = 0.0020730591495521367
+cc loss avg = 0.008064013032708317
+cc loss avg = 0.002492367406375706
+cc loss avg = 0.0025081761414185166
+cc loss avg = 0.0028362171239374825
+cc loss avg = 0.004164603218669072
+cc loss avg = 0.005816884804517031
+cc loss avg = 0.012746726570185274
+cc loss avg = 0.012408161303028464
+cc loss avg = 0.0007606869330629706
+cc loss avg = 0.0043965145414404105
+cc loss avg = 0.008090936265944038
+cc loss avg = 0.0018970901146531105
+cc loss avg = 0.00046935537829995155
+cc loss avg = 0.0006211992003954947
+cc loss avg = 0.008485874782005945
+cc loss avg = 0.0009546579094603658
+cc loss avg = 0.0016496966127306223
+cc loss avg = 0.0017196028493344784
+cc loss avg = 0.009010177396703511
+cc loss avg = 0.0002899761020671576
+cc loss avg = 0.002515527477953583
+cc loss avg = 0.0008935439400374889
+cc loss avg = 0.0018074441468343139
+cc loss avg = 0.016048471356043592
+cc loss avg = 0.0003048516809940338
+cc loss avg = 0.005259412311716005
+cc loss avg = 0.0008952940115705132
+cc loss avg = 0.001241940539330244
+cc loss avg = 0.0027396883815526962
+cc loss avg = 0.003063223324716091
+cc loss avg = 0.0074639805825427175
+cc loss avg = 0.00022506716777570546
+cc loss avg = 0.007600205251947045
+cc loss avg = 0.013113689531261722
+cc loss avg = 0.0060185625140244765
+cc loss avg = 0.0005072245839983225
+cc loss avg = 0.0018146124202758074
+cc loss avg = 0.000602724845521152
+cc loss avg = 0.0013849056558683515
+cc loss avg = 0.010905236005783081
+cc loss avg = 0.0007406435324810445
+cc loss avg = 0.007922605844214559
+cc loss avg = 0.000255246355663985
+cc loss avg = 0.003958672285079956
+cc loss avg = 0.001856585848145187
+cc loss avg = 0.0010235472582280636
+cc loss avg = 0.010315271909348667
+cc loss avg = 0.003548570501152426
+cc loss avg = 0.011762762364620963
+cc loss avg = 0.0009142321068793535
+cc loss avg = 0.002872727403882891
+cc loss avg = 0.0009486060007475317
+cc loss avg = 0.00042820701492019
+cc loss avg = 0.0005707345553673804
+cc loss avg = 0.0009400091948918998
+cc loss avg = 0.00824035188027968
+cc loss avg = 0.0011323068756610155
+cc loss avg = 0.0004762675380334258
+cc loss avg = 0.00623135066901644
+cc loss avg = 0.017681432228224974
+cc loss avg = 0.004414736184116919
+cc loss avg = 0.007008136599324644
+cc loss avg = 0.001182903302833438
+cc loss avg = 0.003036345122382045
+cc loss avg = 0.013516306760720909
+cc loss avg = 0.0038556681295934445
+cc loss avg = 0.0016415102872997522
+cc loss avg = 0.00028362462762743235
+cc loss avg = 0.000147929327795282
+cc loss avg = 0.0006112101254984736
+cc loss avg = 0.0010948770213872194
+cc loss avg = 0.0019019482424482703
+Solved 74/200 episodes
+0.0014990023323298374
+Evaluated model in 24.2 seconds
+Saved model for run
+X with name round-8 at path models/X-round-8__1.pt
+Round 9
+Generated trajectories in 73.3 seconds
+epoch: 0	train loss: 73595.4375	(16.6s)
+epoch: 1	train loss: 61792.5546875	(16.6s)
+epoch: 2	train loss: 55544.13671875	(16.6s)
+epoch: 3	train loss: 51519.52734375	(16.7s)
+epoch: 4	train loss: 48737.01953125	(16.6s)
+epoch: 5	train loss: 46423.3671875	(16.7s)
+epoch: 6	train loss: 44779.9140625	(16.6s)
+epoch: 7	train loss: 43518.44140625	(16.7s)
+epoch: 8	train loss: 42343.51171875	(16.6s)
+epoch: 9	train loss: 41260.12890625	(16.7s)
+epoch: 10	train loss: 40575.28125	(16.7s)
+epoch: 11	train loss: 39972.5703125	(16.6s)
+epoch: 12	train loss: 39113.15234375	(16.6s)
+epoch: 13	train loss: 38530.5625	(16.7s)
+epoch: 14	train loss: 37979.7890625	(16.7s)
+epoch: 15	train loss: 37435.02734375	(16.7s)
+epoch: 16	train loss: 36922.1796875	(16.7s)
+epoch: 17	train loss: 36675.30078125	(16.6s)
+epoch: 18	train loss: 36594.42578125	(16.7s)
+epoch: 19	train loss: 36051.85546875	(16.7s)
+epoch: 20	train loss: 35781.5625	(16.7s)
+epoch: 21	train loss: 35326.6796875	(16.6s)
+epoch: 22	train loss: 35359.61328125	(16.6s)
+epoch: 23	train loss: 35490.59375	(16.6s)
+epoch: 24	train loss: 35202.71875	(16.6s)
+epoch: 25	train loss: 34867.64453125	(16.6s)
+epoch: 26	train loss: 34098.859375	(16.7s)
+epoch: 27	train loss: 33694.28125	(16.6s)
+epoch: 28	train loss: 33333.28125	(16.6s)
+epoch: 29	train loss: 33051.33203125	(16.7s)
+epoch: 30	train loss: 32998.25	(16.7s)
+epoch: 31	train loss: 32838.078125	(16.7s)
+epoch: 32	train loss: 32312.3125	(16.6s)
+epoch: 33	train loss: 32140.892578125	(16.7s)
+epoch: 34	train loss: 31828.376953125	(16.7s)
+epoch: 35	train loss: 31746.46875	(16.7s)
+epoch: 36	train loss: 31717.2421875	(16.7s)
+epoch: 37	train loss: 31330.63671875	(16.6s)
+epoch: 38	train loss: 31450.4921875	(16.6s)
+epoch: 39	train loss: 31275.48046875	(16.6s)
+epoch: 40	train loss: 31099.615234375	(16.6s)
+epoch: 41	train loss: 31695.388671875	(16.6s)
+epoch: 42	train loss: 31493.478515625	(16.6s)
+epoch: 43	train loss: 31107.40234375	(16.6s)
+epoch: 44	train loss: 30596.064453125	(16.6s)
+epoch: 45	train loss: 30639.08984375	(16.6s)
+epoch: 46	train loss: 30881.609375	(16.6s)
+epoch: 47	train loss: 30172.384765625	(16.6s)
+epoch: 48	train loss: 30154.203125	(16.6s)
+epoch: 49	train loss: 30461.146484375	(16.7s)
+epoch: 50	train loss: 29842.169921875	(16.6s)
+epoch: 51	train loss: 29811.28515625	(16.6s)
+epoch: 52	train loss: 29712.2734375	(16.6s)
+epoch: 53	train loss: 30256.115234375	(16.6s)
+epoch: 54	train loss: 30930.46875	(16.6s)
+epoch: 55	train loss: 29885.54296875	(16.6s)
+epoch: 56	train loss: 29828.447265625	(16.7s)
+epoch: 57	train loss: 29715.0234375	(16.6s)
+epoch: 58	train loss: 29668.80859375	(16.6s)
+epoch: 59	train loss: 29441.1328125	(16.6s)
+epoch: 60	train loss: 29146.279296875	(16.7s)
+epoch: 61	train loss: 29078.849609375	(16.7s)
+epoch: 62	train loss: 29688.369140625	(16.7s)
+epoch: 63	train loss: 29061.14453125	(16.6s)
+epoch: 64	train loss: 29361.328125	(16.7s)
+epoch: 65	train loss: 29780.984375	(16.7s)
+epoch: 66	train loss: 29709.408203125	(16.7s)
+epoch: 67	train loss: 29383.375	(16.7s)
+epoch: 68	train loss: 29397.052734375	(16.6s)
+epoch: 69	train loss: 29258.763671875	(16.6s)
+epoch: 70	train loss: 28897.51171875	(16.7s)
+epoch: 71	train loss: 29030.423828125	(16.7s)
+epoch: 72	train loss: 28660.626953125	(16.7s)
+epoch: 73	train loss: 28664.12109375	(16.6s)
+epoch: 74	train loss: 28802.3671875	(16.6s)
+epoch: 75	train loss: 28724.64453125	(16.7s)
+epoch: 76	train loss: 28561.00390625	(16.7s)
+epoch: 77	train loss: 28256.60546875	(16.7s)
+epoch: 78	train loss: 28417.310546875	(16.7s)
+epoch: 79	train loss: 28398.04296875	(16.6s)
+epoch: 80	train loss: 28508.16796875	(16.7s)
+epoch: 81	train loss: 28478.078125	(16.6s)
+epoch: 82	train loss: 28443.6015625	(16.7s)
+epoch: 83	train loss: 29090.21875	(16.6s)
+epoch: 84	train loss: 28235.869140625	(16.7s)
+epoch: 85	train loss: 28164.296875	(16.7s)
+epoch: 86	train loss: 28227.361328125	(16.7s)
+epoch: 87	train loss: 28070.123046875	(16.7s)
+epoch: 88	train loss: 28095.849609375	(16.6s)
+epoch: 89	train loss: 27933.625	(16.7s)
+epoch: 90	train loss: 27849.513671875	(16.8s)
+epoch: 91	train loss: 27995.6484375	(16.8s)
+epoch: 92	train loss: 27682.033203125	(16.8s)
+epoch: 93	train loss: 27734.490234375	(16.7s)
+epoch: 94	train loss: 27646.0234375	(16.7s)
+epoch: 95	train loss: 28010.205078125	(16.6s)
+epoch: 96	train loss: 28458.3359375	(16.7s)
+epoch: 97	train loss: 28704.1640625	(16.7s)
+epoch: 98	train loss: 28865.095703125	(16.6s)
+epoch: 99	train loss: 27990.798828125	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.00048158824210986495
+cc loss avg = 0.0010187975130975246
+cc loss avg = 0.008147310261847451
+cc loss avg = 0.00096401252085343
+cc loss avg = 0.007102390751242638
+cc loss avg = 0.003815251402556896
+cc loss avg = 0.0023137247189879417
+cc loss avg = 0.009504883782938123
+cc loss avg = 0.000482678588014096
+cc loss avg = 0.0016250081826001406
+cc loss avg = 0.008637775667011738
+cc loss avg = 0.002580016735009849
+cc loss avg = 0.004089571652002633
+cc loss avg = 0.0018821272533386946
+cc loss avg = 0.004675677977502346
+cc loss avg = 0.00028871733229607344
+cc loss avg = 0.008436387375695631
+cc loss avg = 0.006416608967507879
+cc loss avg = 0.0008684099302627146
+cc loss avg = 0.00013866953668184578
+cc loss avg = 0.003763334796531126
+cc loss avg = 0.0013674255460500717
+cc loss avg = 0.009342545876279473
+cc loss avg = 0.006469949148595333
+cc loss avg = 0.005087898491183296
+cc loss avg = 0.010117639089003205
+cc loss avg = 0.008074757798264423
+cc loss avg = 0.00079603266203776
+cc loss avg = 0.0009847567416727543
+cc loss avg = 0.001104091526940465
+cc loss avg = 0.003928209480363876
+cc loss avg = 0.0050814528949558735
+cc loss avg = 0.006219510221853852
+cc loss avg = 0.0047955255140550435
+cc loss avg = 0.00763332952434818
+cc loss avg = 0.004684792831540108
+cc loss avg = 0.0069416657788679
+cc loss avg = 0.0033545402984600514
+cc loss avg = 0.008561393129639328
+cc loss avg = 0.006026490940712392
+cc loss avg = 0.0035854008747264743
+cc loss avg = 0.005331913086896141
+cc loss avg = 0.017774956300854683
+cc loss avg = 0.0051087356405332685
+cc loss avg = 0.00018106788047589362
+cc loss avg = 0.01006106540444307
+cc loss avg = 0.0010213435161858797
+cc loss avg = 0.005015106250842412
+cc loss avg = 0.0038639356498606503
+cc loss avg = 0.011258153463131748
+cc loss avg = 0.00026344857178628445
+cc loss avg = 0.0007124527473933995
+cc loss avg = 0.0047741783782839775
+cc loss avg = 0.001323970966041088
+cc loss avg = 0.01219479602877982
+cc loss avg = 0.003061802126467228
+cc loss avg = 0.007728868979029357
+cc loss avg = 0.012759508681483567
+cc loss avg = 0.011333913076668978
+cc loss avg = 0.0042413554328959435
+cc loss avg = 0.0017074166098609567
+cc loss avg = 0.001128960051573813
+cc loss avg = 0.0054618333815597
+cc loss avg = 0.0004448900872375816
+cc loss avg = 0.0018132250988855958
+cc loss avg = 0.0016160339582711458
+cc loss avg = 0.002133556641638279
+cc loss avg = 0.0016324068419635296
+cc loss avg = 0.0017870701849460602
+cc loss avg = 0.008763124234974384
+cc loss avg = 0.010337965330109
+cc loss avg = 0.0005237868754193187
+cc loss avg = 0.004314255900681019
+Solved 73/200 episodes
+0.0017053272446840614
+Evaluated model in 26.0 seconds
+Saved model for run
+X with name round-9 at path models/X-round-9__1.pt
+Round 10
+Generated trajectories in 73.2 seconds
+epoch: 0	train loss: 70857.59375	(16.6s)
+epoch: 1	train loss: 59239.02734375	(16.5s)
+epoch: 2	train loss: 53411.9453125	(16.7s)
+epoch: 3	train loss: 49644.82421875	(16.8s)
+epoch: 4	train loss: 47107.4765625	(16.7s)
+epoch: 5	train loss: 45302.91796875	(16.7s)
+epoch: 6	train loss: 43533.640625	(16.8s)
+epoch: 7	train loss: 41940.4140625	(16.7s)
+epoch: 8	train loss: 40927.98828125	(16.8s)
+epoch: 9	train loss: 40024.1640625	(16.7s)
+epoch: 10	train loss: 39389.98828125	(16.6s)
+epoch: 11	train loss: 38814.17578125	(16.6s)
+epoch: 12	train loss: 38024.6015625	(16.8s)
+epoch: 13	train loss: 37471.546875	(16.8s)
+epoch: 14	train loss: 37265.25	(16.7s)
+epoch: 15	train loss: 37195.34765625	(16.6s)
+epoch: 16	train loss: 36517.1015625	(16.6s)
+epoch: 17	train loss: 36114.68359375	(16.7s)
+epoch: 18	train loss: 35599.4765625	(16.7s)
+epoch: 19	train loss: 35270.546875	(16.8s)
+epoch: 20	train loss: 34850.31640625	(16.7s)
+epoch: 21	train loss: 35119.6875	(16.7s)
+epoch: 22	train loss: 34307.1328125	(16.7s)
+epoch: 23	train loss: 33870.4375	(16.6s)
+epoch: 24	train loss: 33452.5703125	(16.7s)
+epoch: 25	train loss: 33177.94921875	(16.6s)
+epoch: 26	train loss: 32897.40234375	(16.6s)
+epoch: 27	train loss: 32559.09375	(16.7s)
+epoch: 28	train loss: 32397.6328125	(16.7s)
+epoch: 29	train loss: 32389.205078125	(16.8s)
+epoch: 30	train loss: 31995.984375	(16.7s)
+epoch: 31	train loss: 32002.708984375	(16.8s)
+epoch: 32	train loss: 31836.998046875	(16.8s)
+epoch: 33	train loss: 31263.517578125	(16.7s)
+epoch: 34	train loss: 31296.548828125	(16.7s)
+epoch: 35	train loss: 31107.50390625	(16.7s)
+epoch: 36	train loss: 30995.0625	(16.7s)
+epoch: 37	train loss: 31108.353515625	(16.7s)
+epoch: 38	train loss: 30791.91796875	(16.8s)
+epoch: 39	train loss: 30940.5859375	(16.8s)
+epoch: 40	train loss: 31181.87109375	(16.8s)
+epoch: 41	train loss: 30842.197265625	(16.7s)
+epoch: 42	train loss: 30691.986328125	(16.7s)
+epoch: 43	train loss: 31463.953125	(16.8s)
+epoch: 44	train loss: 31685.51953125	(16.8s)
+epoch: 45	train loss: 30866.009765625	(16.8s)
+epoch: 46	train loss: 30579.50390625	(16.7s)
+epoch: 47	train loss: 30201.150390625	(16.7s)
+epoch: 48	train loss: 29979.220703125	(16.7s)
+epoch: 49	train loss: 29954.783203125	(16.6s)
+epoch: 50	train loss: 29971.029296875	(16.7s)
+epoch: 51	train loss: 29754.01953125	(16.7s)
+epoch: 52	train loss: 29259.3046875	(16.6s)
+epoch: 53	train loss: 29476.9609375	(16.7s)
+epoch: 54	train loss: 29576.94921875	(16.7s)
+epoch: 55	train loss: 29414.708984375	(16.7s)
+epoch: 56	train loss: 29204.474609375	(16.6s)
+epoch: 57	train loss: 29415.439453125	(16.6s)
+epoch: 58	train loss: 29137.58203125	(16.7s)
+epoch: 59	train loss: 29135.494140625	(16.7s)
+epoch: 60	train loss: 29363.353515625	(16.7s)
+epoch: 61	train loss: 29215.4453125	(16.6s)
+epoch: 62	train loss: 28897.130859375	(16.6s)
+epoch: 63	train loss: 28777.642578125	(16.7s)
+epoch: 64	train loss: 28644.125	(16.7s)
+epoch: 65	train loss: 28756.3359375	(16.7s)
+epoch: 66	train loss: 28547.64453125	(16.6s)
+epoch: 67	train loss: 29481.994140625	(16.6s)
+epoch: 68	train loss: 29310.6328125	(16.7s)
+epoch: 69	train loss: 28655.943359375	(16.7s)
+epoch: 70	train loss: 28848.837890625	(16.7s)
+epoch: 71	train loss: 28339.875	(16.6s)
+epoch: 72	train loss: 28860.986328125	(16.6s)
+epoch: 73	train loss: 28286.76171875	(16.7s)
+epoch: 74	train loss: 29520.890625	(16.7s)
+epoch: 75	train loss: 28865.9375	(16.7s)
+epoch: 76	train loss: 28341.41015625	(16.7s)
+epoch: 77	train loss: 27802.361328125	(16.7s)
+epoch: 78	train loss: 28088.677734375	(16.7s)
+epoch: 79	train loss: 27930.30078125	(16.8s)
+epoch: 80	train loss: 27973.201171875	(16.8s)
+epoch: 81	train loss: 28127.970703125	(16.7s)
+epoch: 82	train loss: 27889.9296875	(16.7s)
+epoch: 83	train loss: 27638.04296875	(16.8s)
+epoch: 84	train loss: 27570.169921875	(16.7s)
+epoch: 85	train loss: 27972.759765625	(16.7s)
+epoch: 86	train loss: 27997.185546875	(16.7s)
+epoch: 87	train loss: 28351.603515625	(16.7s)
+epoch: 88	train loss: 28150.166015625	(16.7s)
+epoch: 89	train loss: 28608.150390625	(16.7s)
+epoch: 90	train loss: 27869.779296875	(16.7s)
+epoch: 91	train loss: 27456.826171875	(16.7s)
+epoch: 92	train loss: 27602.5234375	(16.6s)
+epoch: 93	train loss: 28022.96875	(16.6s)
+epoch: 94	train loss: 27722.837890625	(16.6s)
+epoch: 95	train loss: 27359.83984375	(16.6s)
+epoch: 96	train loss: 27264.984375	(16.7s)
+epoch: 97	train loss: 27244.18359375	(16.6s)
+epoch: 98	train loss: 27464.220703125	(16.5s)
+epoch: 99	train loss: 28308.619140625	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.003984105307608843
+cc loss avg = 0.005875559581909329
+cc loss avg = 0.01086565224492612
+cc loss avg = 0.0029345920775085688
+cc loss avg = 0.004663749714381993
+cc loss avg = 0.002476033754646778
+cc loss avg = 0.00035954531631432474
+cc loss avg = 0.007218878832645714
+cc loss avg = 0.012146189314080402
+cc loss avg = 0.0007402289775200188
+cc loss avg = 0.0023813284933567047
+cc loss avg = 0.0082118755672127
+cc loss avg = 0.004605349308500688
+cc loss avg = 0.0072407323168590665
+cc loss avg = 0.005364435928640887
+cc loss avg = 0.004915510187856853
+cc loss avg = 0.004434948728885502
+cc loss avg = 0.006700731627643108
+cc loss avg = 0.005294209695421159
+cc loss avg = 0.0005785616231150925
+cc loss avg = 0.006417442559419821
+cc loss avg = 0.010364073808887042
+cc loss avg = 0.011553353047929704
+cc loss avg = 0.008700606354977936
+cc loss avg = 0.000928606663364917
+cc loss avg = 0.01668284402694553
+cc loss avg = 0.0005068043246865273
+cc loss avg = 0.006506648409413174
+cc loss avg = 0.0005916380905546248
+cc loss avg = 0.0016154263576027006
+cc loss avg = 0.008229648422760269
+cc loss avg = 0.0028829481452703476
+cc loss avg = 0.007395081978756934
+cc loss avg = 0.006206556980032474
+cc loss avg = 0.0004140489036217332
+cc loss avg = 0.0008212279644794762
+cc loss avg = 0.008521490381099284
+cc loss avg = 0.010456172953126952
+cc loss avg = 0.00024240356287918985
+cc loss avg = 0.0006521329050883651
+cc loss avg = 0.0062691345112398265
+cc loss avg = 0.0004466409736778587
+cc loss avg = 0.0005023654084652662
+cc loss avg = 0.009439039073185995
+cc loss avg = 0.006350360927172005
+cc loss avg = 0.006086355269265671
+cc loss avg = 0.005192669108510017
+cc loss avg = 0.012184034683741629
+cc loss avg = 0.0015329978195950389
+cc loss avg = 0.0010518343187868595
+cc loss avg = 0.010468473541550338
+cc loss avg = 0.00022876480943523347
+cc loss avg = 0.008437727151128152
+cc loss avg = 0.0012689345749095082
+cc loss avg = 0.0036775157786905766
+cc loss avg = 0.004658033760885398
+cc loss avg = 0.015930639424671728
+cc loss avg = 0.008944827364757657
+cc loss avg = 0.0007308556232601404
+cc loss avg = 0.0074783719319384545
+cc loss avg = 0.0012515573762357235
+cc loss avg = 0.002423380734398961
+cc loss avg = 0.004898062441498041
+cc loss avg = 0.0083550906740129
+cc loss avg = 0.004825838492251933
+cc loss avg = 0.006808109435951337
+cc loss avg = 0.010703887324780226
+cc loss avg = 0.005138446547789499
+cc loss avg = 0.001575473346747458
+cc loss avg = 0.0020555711816996336
+cc loss avg = 0.014892500658918704
+cc loss avg = 0.013703041360713542
+cc loss avg = 0.0036539007366324463
+cc loss avg = 0.009379852563142776
+cc loss avg = 0.0009068429935723543
+cc loss avg = 0.003326084464788437
+cc loss avg = 0.005465086064456652
+cc loss avg = 0.0006202844670042396
+cc loss avg = 0.013194747647503391
+cc loss avg = 0.00898838322609663
+cc loss avg = 0.004351551295258105
+cc loss avg = 0.005050226580351591
+cc loss avg = 0.0019131076987832785
+cc loss avg = 0.007115834683645517
+cc loss avg = 0.01564224367029965
+cc loss avg = 0.0016859333263710141
+cc loss avg = 0.006993766796464722
+Solved 87/200 episodes
+0.0024323987814208357
+Evaluated model in 26.7 seconds
+Saved model for run
+X with name round-10 at path models/X-round-10__1.pt
+Round 11
+Generated trajectories in 72.3 seconds
+epoch: 0	train loss: 65624.96875	(16.4s)
+epoch: 1	train loss: 55348.85546875	(16.3s)
+epoch: 2	train loss: 50130.7109375	(16.5s)
+epoch: 3	train loss: 46787.375	(16.3s)
+epoch: 4	train loss: 44240.75390625	(16.5s)
+epoch: 5	train loss: 42290.8671875	(16.4s)
+epoch: 6	train loss: 40664.04296875	(16.4s)
+epoch: 7	train loss: 39864.19140625	(16.5s)
+epoch: 8	train loss: 38475.18359375	(16.3s)
+epoch: 9	train loss: 37662.46484375	(16.4s)
+epoch: 10	train loss: 36881.6796875	(16.4s)
+epoch: 11	train loss: 36377.9453125	(16.5s)
+epoch: 12	train loss: 36020.42578125	(16.4s)
+epoch: 13	train loss: 35183.46875	(16.5s)
+epoch: 14	train loss: 34659.33203125	(16.4s)
+epoch: 15	train loss: 34287.8046875	(16.4s)
+epoch: 16	train loss: 34080.30859375	(16.4s)
+epoch: 17	train loss: 33673.46875	(16.5s)
+epoch: 18	train loss: 33260.32421875	(16.4s)
+epoch: 19	train loss: 33112.5546875	(16.4s)
+epoch: 20	train loss: 32759.2265625	(16.5s)
+epoch: 21	train loss: 32247.001953125	(16.4s)
+epoch: 22	train loss: 31897.080078125	(16.5s)
+epoch: 23	train loss: 31754.642578125	(16.3s)
+epoch: 24	train loss: 31543.619140625	(16.4s)
+epoch: 25	train loss: 31421.4453125	(16.4s)
+epoch: 26	train loss: 31120.20703125	(16.4s)
+epoch: 27	train loss: 30937.865234375	(16.5s)
+epoch: 28	train loss: 30716.77734375	(16.3s)
+epoch: 29	train loss: 30535.078125	(16.4s)
+epoch: 30	train loss: 30212.154296875	(16.3s)
+epoch: 31	train loss: 30388.24609375	(16.5s)
+epoch: 32	train loss: 30057.48046875	(16.5s)
+epoch: 33	train loss: 30002.833984375	(16.4s)
+epoch: 34	train loss: 30158.12890625	(16.4s)
+epoch: 35	train loss: 30409.814453125	(16.4s)
+epoch: 36	train loss: 30630.13671875	(16.4s)
+epoch: 37	train loss: 29887.748046875	(16.4s)
+epoch: 38	train loss: 29594.419921875	(16.4s)
+epoch: 39	train loss: 29544.5078125	(16.3s)
+epoch: 40	train loss: 29732.14453125	(16.4s)
+epoch: 41	train loss: 30118.119140625	(16.4s)
+epoch: 42	train loss: 29549.607421875	(16.4s)
+epoch: 43	train loss: 29055.32421875	(16.4s)
+epoch: 44	train loss: 29144.111328125	(16.4s)
+epoch: 45	train loss: 29081.609375	(16.4s)
+epoch: 46	train loss: 28945.693359375	(16.4s)
+epoch: 47	train loss: 28814.05859375	(16.4s)
+epoch: 48	train loss: 28986.90625	(16.4s)
+epoch: 49	train loss: 28479.30078125	(16.4s)
+epoch: 50	train loss: 28831.0078125	(16.4s)
+epoch: 51	train loss: 28292.55859375	(16.4s)
+epoch: 52	train loss: 29015.875	(16.4s)
+epoch: 53	train loss: 28623.8828125	(16.4s)
+epoch: 54	train loss: 28439.92578125	(16.4s)
+epoch: 55	train loss: 28572.1796875	(16.4s)
+epoch: 56	train loss: 28245.078125	(16.4s)
+epoch: 57	train loss: 27932.73046875	(16.4s)
+epoch: 58	train loss: 28787.833984375	(16.4s)
+epoch: 59	train loss: 28019.181640625	(16.4s)
+epoch: 60	train loss: 28160.6640625	(16.4s)
+epoch: 61	train loss: 28210.224609375	(16.4s)
+epoch: 62	train loss: 28413.953125	(16.5s)
+epoch: 63	train loss: 27997.34375	(16.4s)
+epoch: 64	train loss: 27346.51953125	(16.5s)
+epoch: 65	train loss: 27267.27734375	(16.4s)
+epoch: 66	train loss: 27405.330078125	(16.4s)
+epoch: 67	train loss: 27190.365234375	(16.4s)
+epoch: 68	train loss: 27337.787109375	(16.4s)
+epoch: 69	train loss: 27380.251953125	(16.5s)
+epoch: 70	train loss: 27553.177734375	(16.3s)
+epoch: 71	train loss: 28559.388671875	(16.3s)
+epoch: 72	train loss: 29070.564453125	(16.3s)
+epoch: 73	train loss: 28226.3671875	(16.4s)
+epoch: 74	train loss: 27247.794921875	(16.4s)
+epoch: 75	train loss: 27563.251953125	(16.3s)
+epoch: 76	train loss: 27260.64453125	(16.4s)
+epoch: 77	train loss: 26846.93359375	(16.3s)
+epoch: 78	train loss: 26886.783203125	(16.3s)
+epoch: 79	train loss: 27072.86328125	(16.5s)
+epoch: 80	train loss: 26773.03125	(16.3s)
+epoch: 81	train loss: 26366.83203125	(16.3s)
+epoch: 82	train loss: 26241.431640625	(16.4s)
+epoch: 83	train loss: 26332.326171875	(16.4s)
+epoch: 84	train loss: 27267.28515625	(16.4s)
+epoch: 85	train loss: 26946.484375	(16.4s)
+epoch: 86	train loss: 26752.89453125	(16.4s)
+epoch: 87	train loss: 27379.56640625	(16.4s)
+epoch: 88	train loss: 27302.623046875	(16.5s)
+epoch: 89	train loss: 27237.986328125	(16.4s)
+epoch: 90	train loss: 26608.25	(16.4s)
+epoch: 91	train loss: 26644.791015625	(16.4s)
+epoch: 92	train loss: 26322.66015625	(16.4s)
+epoch: 93	train loss: 26777.208984375	(16.4s)
+epoch: 94	train loss: 27153.7890625	(16.4s)
+epoch: 95	train loss: 26440.900390625	(16.5s)
+epoch: 96	train loss: 26337.109375	(16.5s)
+epoch: 97	train loss: 26323.32421875	(16.4s)
+epoch: 98	train loss: 25891.42578125	(16.4s)
+epoch: 99	train loss: 26102.56640625	(16.4s)
+Evaluating model on 200 episodes
+cc loss avg = 0.006238333124201745
+cc loss avg = 0.0020255486015230417
+cc loss avg = 0.0011679138988256454
+cc loss avg = 0.0007804326596669853
+cc loss avg = 0.0021148957312107086
+cc loss avg = 0.0023587625473737717
+cc loss avg = 0.0012097848812118173
+cc loss avg = 0.00042500128620304167
+cc loss avg = 0.0009155698353424668
+cc loss avg = 0.0016739540733397007
+cc loss avg = 0.0016700784035492688
+cc loss avg = 0.004710153443738818
+cc loss avg = 0.005872507754247636
+cc loss avg = 0.011330106994137168
+cc loss avg = 0.0022352710366249084
+cc loss avg = 0.005206073071652402
+cc loss avg = 0.005490692390594631
+cc loss avg = 0.0019001636828761548
+cc loss avg = 0.0047019114523815615
+cc loss avg = 0.0009061064338311553
+cc loss avg = 0.0013280133134685457
+cc loss avg = 0.002862996557572236
+cc loss avg = 0.01784988878838097
+cc loss avg = 0.0017363313818350434
+cc loss avg = 0.0053027054673293605
+cc loss avg = 0.0014703632332384586
+cc loss avg = 0.010862930212169886
+cc loss avg = 0.012659724452532828
+cc loss avg = 0.0015410617925226688
+cc loss avg = 0.010499215248273686
+cc loss avg = 0.00040728255407884717
+cc loss avg = 0.0006753465859219432
+cc loss avg = 0.0012391326017677784
+cc loss avg = 0.013608045235741884
+cc loss avg = 0.0002168735081795603
+cc loss avg = 0.002848147320037242
+cc loss avg = 0.007077146243924896
+cc loss avg = 0.0014263633638620377
+cc loss avg = 0.0020464295521378517
+cc loss avg = 0.0003708236035890877
+cc loss avg = 0.0016768842469900846
+cc loss avg = 0.0003806266176979989
+cc loss avg = 0.006923822773387656
+cc loss avg = 0.0008774325251579285
+cc loss avg = 0.0036023481904218593
+cc loss avg = 0.0002304343943251297
+cc loss avg = 0.0008496445952914655
+cc loss avg = 0.0034972757566720247
+cc loss avg = 0.001182703417725861
+cc loss avg = 0.0002858702791854739
+cc loss avg = 0.0021963723193039186
+cc loss avg = 0.00417712932297339
+cc loss avg = 0.0003754199424292892
+cc loss avg = 0.0013899044133722782
+cc loss avg = 0.0006163677899166942
+cc loss avg = 0.0001519197248853743
+cc loss avg = 0.0014049289748072624
+cc loss avg = 0.008717704942682758
+cc loss avg = 0.011258176004048437
+cc loss avg = 0.007050217769574374
+cc loss avg = 0.0030446185264736414
+cc loss avg = 0.0004728889325633645
+cc loss avg = 0.008740967372432351
+cc loss avg = 0.001139348023571074
+cc loss avg = 0.002294736448675394
+cc loss avg = 0.0010207360610365868
+cc loss avg = 0.008923713263357058
+cc loss avg = 0.0027244745288044214
+cc loss avg = 0.004678669560234994
+cc loss avg = 0.005634959263261408
+cc loss avg = 0.008978580124676228
+cc loss avg = 0.001007357845082879
+cc loss avg = 0.007307074187944333
+cc loss avg = 0.004335350124165416
+cc loss avg = 0.001320619136095047
+cc loss avg = 0.003348830185132101
+cc loss avg = 0.0060814362950623035
+Solved 77/200 episodes
+0.0014343081309925764
+Evaluated model in 22.4 seconds
+Saved model for run
+X with name round-11 at path models/X-round-11__1.pt
+Round 12
+Generated trajectories in 73.3 seconds
+epoch: 0	train loss: 66762.8203125	(16.4s)
+epoch: 1	train loss: 55530.43359375	(16.5s)
+epoch: 2	train loss: 50282.0625	(16.6s)
+epoch: 3	train loss: 46624.8671875	(16.5s)
+epoch: 4	train loss: 44040.63671875	(16.6s)
+epoch: 5	train loss: 42041.38671875	(16.6s)
+epoch: 6	train loss: 40519.49609375	(16.7s)
+epoch: 7	train loss: 39428.5	(16.6s)
+epoch: 8	train loss: 38502.4140625	(16.6s)
+epoch: 9	train loss: 37786.09765625	(16.7s)
+epoch: 10	train loss: 37021.47265625	(16.6s)
+epoch: 11	train loss: 36968.4921875	(16.7s)
+epoch: 12	train loss: 36326.23828125	(16.6s)
+epoch: 13	train loss: 35779.39453125	(16.6s)
+epoch: 14	train loss: 35403.76171875	(16.7s)
+epoch: 15	train loss: 34871.6953125	(16.7s)
+epoch: 16	train loss: 34402.93359375	(16.7s)
+epoch: 17	train loss: 34084.94921875	(16.6s)
+epoch: 18	train loss: 33640.5078125	(16.6s)
+epoch: 19	train loss: 33242.19140625	(16.7s)
+epoch: 20	train loss: 32756.95703125	(16.7s)
+epoch: 21	train loss: 32729.55078125	(16.7s)
+epoch: 22	train loss: 32599.40234375	(16.6s)
+epoch: 23	train loss: 32238.84765625	(16.6s)
+epoch: 24	train loss: 31852.357421875	(16.6s)
+epoch: 25	train loss: 31747.3515625	(16.7s)
+epoch: 26	train loss: 31469.9453125	(16.7s)
+epoch: 27	train loss: 31771.181640625	(16.6s)
+epoch: 28	train loss: 31309.423828125	(16.6s)
+epoch: 29	train loss: 30937.0078125	(16.6s)
+epoch: 30	train loss: 31064.21875	(16.7s)
+epoch: 31	train loss: 30892.798828125	(16.6s)
+epoch: 32	train loss: 30742.12109375	(16.7s)
+epoch: 33	train loss: 30817.71875	(16.7s)
+epoch: 34	train loss: 30288.501953125	(16.6s)
+epoch: 35	train loss: 30319.064453125	(16.6s)
+epoch: 36	train loss: 30252.3984375	(16.7s)
+epoch: 37	train loss: 29834.505859375	(16.7s)
+epoch: 38	train loss: 29817.99609375	(16.6s)
+epoch: 39	train loss: 29730.501953125	(16.6s)
+epoch: 40	train loss: 29767.203125	(16.6s)
+epoch: 41	train loss: 29739.6328125	(16.6s)
+epoch: 42	train loss: 29719.06640625	(16.7s)
+epoch: 43	train loss: 30062.42578125	(16.6s)
+epoch: 44	train loss: 29327.849609375	(16.6s)
+epoch: 45	train loss: 29220.142578125	(16.6s)
+epoch: 46	train loss: 29448.169921875	(16.6s)
+epoch: 47	train loss: 29374.890625	(16.7s)
+epoch: 48	train loss: 28922.181640625	(16.6s)
+epoch: 49	train loss: 29117.78515625	(16.6s)
+epoch: 50	train loss: 29290.40234375	(16.6s)
+epoch: 51	train loss: 29487.796875	(16.6s)
+epoch: 52	train loss: 29888.443359375	(16.7s)
+epoch: 53	train loss: 29303.890625	(16.6s)
+epoch: 54	train loss: 29011.125	(16.6s)
+epoch: 55	train loss: 28733.609375	(16.6s)
+epoch: 56	train loss: 28579.416015625	(16.6s)
+epoch: 57	train loss: 28617.525390625	(16.7s)
+epoch: 58	train loss: 28185.697265625	(16.7s)
+epoch: 59	train loss: 28202.169921875	(16.6s)
+epoch: 60	train loss: 27966.74609375	(16.6s)
+epoch: 61	train loss: 28101.279296875	(16.6s)
+epoch: 62	train loss: 28138.544921875	(16.6s)
+epoch: 63	train loss: 28120.61328125	(16.7s)
+epoch: 64	train loss: 28211.31640625	(16.6s)
+epoch: 65	train loss: 28479.318359375	(16.6s)
+epoch: 66	train loss: 28449.623046875	(16.7s)
+epoch: 67	train loss: 28419.12890625	(16.6s)
+epoch: 68	train loss: 28426.408203125	(16.7s)
+epoch: 69	train loss: 28284.337890625	(16.6s)
+epoch: 70	train loss: 28266.091796875	(16.6s)
+epoch: 71	train loss: 28705.6953125	(16.7s)
+epoch: 72	train loss: 28474.841796875	(16.6s)
+epoch: 73	train loss: 27851.25	(16.7s)
+epoch: 74	train loss: 27782.8203125	(16.6s)
+epoch: 75	train loss: 27593.68359375	(16.6s)
+epoch: 76	train loss: 28472.1875	(16.7s)
+epoch: 77	train loss: 27820.697265625	(16.6s)
+epoch: 78	train loss: 27688.8046875	(16.6s)
+epoch: 79	train loss: 27882.625	(16.6s)
+epoch: 80	train loss: 27815.677734375	(16.6s)
+epoch: 81	train loss: 27677.052734375	(16.6s)
+epoch: 82	train loss: 28691.9765625	(16.7s)
+epoch: 83	train loss: 27529.732421875	(16.6s)
+epoch: 84	train loss: 27421.171875	(16.6s)
+epoch: 85	train loss: 27009.703125	(16.5s)
+epoch: 86	train loss: 28058.681640625	(16.7s)
+epoch: 87	train loss: 27163.927734375	(16.6s)
+epoch: 88	train loss: 27106.904296875	(16.7s)
+epoch: 89	train loss: 26897.421875	(16.5s)
+epoch: 90	train loss: 26806.421875	(16.6s)
+epoch: 91	train loss: 26862.763671875	(16.6s)
+epoch: 92	train loss: 26704.78125	(16.7s)
+epoch: 93	train loss: 26670.15625	(16.7s)
+epoch: 94	train loss: 27052.759765625	(16.6s)
+epoch: 95	train loss: 26642.796875	(16.6s)
+epoch: 96	train loss: 27337.3125	(16.6s)
+epoch: 97	train loss: 27177.20703125	(16.7s)
+epoch: 98	train loss: 27177.982421875	(16.7s)
+epoch: 99	train loss: 27161.759765625	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.004733756980082641
+cc loss avg = 0.002226458629593253
+cc loss avg = 0.0011260377941653132
+cc loss avg = 0.00016175530618056655
+cc loss avg = 0.0002532958169467747
+cc loss avg = 0.0012746980646625161
+cc loss avg = 0.0029861856310162693
+cc loss avg = 0.003613976761698723
+cc loss avg = 0.0004538951034191996
+cc loss avg = 0.0018419770058244467
+cc loss avg = 0.0021930590737611055
+cc loss avg = 0.004504650947637856
+cc loss avg = 0.006784791417885572
+cc loss avg = 0.006006739742588252
+cc loss avg = 0.001209051813930273
+cc loss avg = 0.0017732619307935238
+cc loss avg = 0.00786847605680426
+cc loss avg = 0.001394380466081202
+cc loss avg = 0.0008684768690727651
+cc loss avg = 0.003071951912716031
+cc loss avg = 0.0009795057121664286
+cc loss avg = 0.0025750056374818087
+cc loss avg = 0.0005456857034005225
+cc loss avg = 0.0010178524535149336
+cc loss avg = 0.005139544402481988
+cc loss avg = 0.0013462200295180082
+cc loss avg = 0.008640273939818144
+cc loss avg = 0.00571690546348691
+cc loss avg = 0.00037986430106684566
+cc loss avg = 0.005749023985117674
+cc loss avg = 0.00047974870540201664
+cc loss avg = 0.011272670313095054
+cc loss avg = 0.0006114421412348747
+cc loss avg = 0.001958169275894761
+cc loss avg = 0.011347725987434387
+cc loss avg = 0.0003381343267392367
+cc loss avg = 0.009761623184507092
+cc loss avg = 0.012194973300211132
+cc loss avg = 0.004458061419427395
+cc loss avg = 0.0027772492030635476
+cc loss avg = 0.000949431152548641
+cc loss avg = 0.00024703872622922063
+cc loss avg = 0.006886585014096151
+cc loss avg = 0.0034568701327467957
+cc loss avg = 0.005735772917978466
+cc loss avg = 0.006971970287850127
+cc loss avg = 0.006939902843441814
+cc loss avg = 0.005517979191305737
+cc loss avg = 0.003278360915525506
+cc loss avg = 0.012869456394885978
+cc loss avg = 0.01182500971481204
+cc loss avg = 0.0009740240639075637
+cc loss avg = 0.0005050512263551354
+cc loss avg = 0.0007808376103639603
+cc loss avg = 0.00015663320664316416
+cc loss avg = 0.016562965077658493
+cc loss avg = 0.012720421965544423
+cc loss avg = 0.005221834871917963
+cc loss avg = 0.002440075157210231
+cc loss avg = 0.000515258579980582
+cc loss avg = 0.001940578455105424
+cc loss avg = 0.0008675970020703971
+cc loss avg = 0.007156683714129031
+cc loss avg = 0.006425045159024497
+cc loss avg = 0.0005756703903898597
+cc loss avg = 0.0027458526310510933
+cc loss avg = 0.020712905020142596
+cc loss avg = 0.005957926739938557
+cc loss avg = 0.003505837172269821
+cc loss avg = 0.0024726292467676103
+cc loss avg = 0.004208476185643424
+cc loss avg = 0.0005156112601980567
+cc loss avg = 0.005179009788359205
+cc loss avg = 0.0014064547140151262
+cc loss avg = 0.0007784529589116573
+cc loss avg = 0.0048750468995422125
+cc loss avg = 0.0011022802209481597
+cc loss avg = 0.007156959094572812
+cc loss avg = 0.015028173162136227
+cc loss avg = 0.0007023483631201088
+cc loss avg = 0.009663763805292547
+cc loss avg = 0.00841340709788104
+cc loss avg = 0.012989608105272055
+cc loss avg = 0.013565695689370235
+Solved 84/200 episodes
+0.001920690243685385
+Evaluated model in 23.1 seconds
+Saved model for run
+X with name round-12 at path models/X-round-12__1.pt
+Round 13
+Generated trajectories in 72.5 seconds
+epoch: 0	train loss: 63459.33203125	(16.5s)
+epoch: 1	train loss: 53525.99609375	(16.4s)
+epoch: 2	train loss: 48103.40234375	(16.5s)
+epoch: 3	train loss: 44698.2265625	(16.6s)
+epoch: 4	train loss: 42150.7578125	(16.5s)
+epoch: 5	train loss: 40426.30859375	(16.6s)
+epoch: 6	train loss: 39248.51953125	(16.5s)
+epoch: 7	train loss: 38281.51953125	(16.5s)
+epoch: 8	train loss: 37205.72265625	(16.6s)
+epoch: 9	train loss: 36559.73046875	(16.6s)
+epoch: 10	train loss: 35691.78515625	(16.6s)
+epoch: 11	train loss: 35461.80859375	(16.6s)
+epoch: 12	train loss: 35007.56640625	(16.5s)
+epoch: 13	train loss: 34681.4375	(16.6s)
+epoch: 14	train loss: 34325.34765625	(16.6s)
+epoch: 15	train loss: 33613.4296875	(16.5s)
+epoch: 16	train loss: 33268.71875	(16.6s)
+epoch: 17	train loss: 32864.1015625	(16.6s)
+epoch: 18	train loss: 32927.4140625	(16.5s)
+epoch: 19	train loss: 32679.015625	(16.6s)
+epoch: 20	train loss: 32510.744140625	(16.6s)
+epoch: 21	train loss: 32139.52734375	(16.6s)
+epoch: 22	train loss: 32196.75	(16.4s)
+epoch: 23	train loss: 32308.74609375	(16.5s)
+epoch: 24	train loss: 32249.05859375	(16.6s)
+epoch: 25	train loss: 31473.740234375	(16.5s)
+epoch: 26	train loss: 31369.677734375	(16.6s)
+epoch: 27	train loss: 31691.0703125	(16.5s)
+epoch: 28	train loss: 31290.947265625	(16.5s)
+epoch: 29	train loss: 30732.767578125	(16.6s)
+epoch: 30	train loss: 30501.361328125	(16.6s)
+epoch: 31	train loss: 30832.833984375	(16.6s)
+epoch: 32	train loss: 30508.15234375	(16.5s)
+epoch: 33	train loss: 30481.8984375	(16.4s)
+epoch: 34	train loss: 30220.3125	(16.6s)
+epoch: 35	train loss: 29998.197265625	(16.5s)
+epoch: 36	train loss: 29413.046875	(16.7s)
+epoch: 37	train loss: 29561.8671875	(16.5s)
+epoch: 38	train loss: 29644.06640625	(16.6s)
+epoch: 39	train loss: 29325.384765625	(16.6s)
+epoch: 40	train loss: 29092.873046875	(16.5s)
+epoch: 41	train loss: 29293.888671875	(16.6s)
+epoch: 42	train loss: 29128.111328125	(16.6s)
+epoch: 43	train loss: 29006.51171875	(16.5s)
+epoch: 44	train loss: 29114.220703125	(16.6s)
+epoch: 45	train loss: 29138.98828125	(16.6s)
+epoch: 46	train loss: 28787.423828125	(16.6s)
+epoch: 47	train loss: 28854.58203125	(16.5s)
+epoch: 48	train loss: 29088.328125	(16.5s)
+epoch: 49	train loss: 28598.498046875	(16.6s)
+epoch: 50	train loss: 28652.521484375	(16.6s)
+epoch: 51	train loss: 29056.201171875	(16.6s)
+epoch: 52	train loss: 28666.90234375	(16.6s)
+epoch: 53	train loss: 29384.33984375	(16.6s)
+epoch: 54	train loss: 28454.06640625	(16.6s)
+epoch: 55	train loss: 28273.689453125	(16.7s)
+epoch: 56	train loss: 28157.17578125	(16.7s)
+epoch: 57	train loss: 28018.99609375	(16.7s)
+epoch: 58	train loss: 28356.390625	(16.6s)
+epoch: 59	train loss: 28302.48046875	(16.6s)
+epoch: 60	train loss: 27974.291015625	(16.6s)
+epoch: 61	train loss: 27887.205078125	(16.6s)
+epoch: 62	train loss: 28158.619140625	(16.7s)
+epoch: 63	train loss: 28617.53125	(16.5s)
+epoch: 64	train loss: 27997.013671875	(16.6s)
+epoch: 65	train loss: 27433.31640625	(16.7s)
+epoch: 66	train loss: 27145.203125	(16.7s)
+epoch: 67	train loss: 27186.66015625	(16.6s)
+epoch: 68	train loss: 27032.890625	(16.6s)
+epoch: 69	train loss: 27379.509765625	(16.6s)
+epoch: 70	train loss: 27398.37890625	(16.7s)
+epoch: 71	train loss: 27857.2265625	(16.6s)
+epoch: 72	train loss: 28012.349609375	(16.7s)
+epoch: 73	train loss: 27846.59375	(16.6s)
+epoch: 74	train loss: 27895.34765625	(16.6s)
+epoch: 75	train loss: 27159.734375	(16.6s)
+epoch: 76	train loss: 27151.474609375	(16.7s)
+epoch: 77	train loss: 27161.37890625	(16.7s)
+epoch: 78	train loss: 26901.1953125	(16.6s)
+epoch: 79	train loss: 27156.51953125	(16.6s)
+epoch: 80	train loss: 26941.16796875	(16.6s)
+epoch: 81	train loss: 27157.12109375	(16.7s)
+epoch: 82	train loss: 26846.759765625	(16.7s)
+epoch: 83	train loss: 26691.953125	(16.6s)
+epoch: 84	train loss: 27093.435546875	(16.6s)
+epoch: 85	train loss: 26675.21484375	(16.7s)
+epoch: 86	train loss: 26551.8515625	(16.6s)
+epoch: 87	train loss: 26965.298828125	(16.6s)
+epoch: 88	train loss: 27227.537109375	(16.7s)
+epoch: 89	train loss: 27892.615234375	(16.6s)
+epoch: 90	train loss: 27985.587890625	(16.6s)
+epoch: 91	train loss: 28297.9140625	(16.7s)
+epoch: 92	train loss: 27636.283203125	(16.6s)
+epoch: 93	train loss: 27472.71484375	(16.6s)
+epoch: 94	train loss: 26967.466796875	(16.6s)
+epoch: 95	train loss: 26483.53125	(16.5s)
+epoch: 96	train loss: 26317.26953125	(16.7s)
+epoch: 97	train loss: 26654.328125	(16.6s)
+epoch: 98	train loss: 26457.517578125	(16.7s)
+epoch: 99	train loss: 26547.74609375	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.003648051293566823
+cc loss avg = 0.011192383826710284
+cc loss avg = 0.001791156129911542
+cc loss avg = 0.00398454861715436
+cc loss avg = 0.0038022531274085245
+cc loss avg = 0.003880747623043135
+cc loss avg = 0.0023884603288024664
+cc loss avg = 0.001929941470734775
+cc loss avg = 0.002099964302033186
+cc loss avg = 0.006396915232471656
+cc loss avg = 0.00048014576896093786
+cc loss avg = 0.003175147343426943
+cc loss avg = 0.0024281716905534267
+cc loss avg = 0.0009433610830456018
+cc loss avg = 0.0037632058083545417
+cc loss avg = 0.002474430250003934
+cc loss avg = 0.001095058280043304
+cc loss avg = 0.0026989675825461745
+cc loss avg = 0.004012563033029437
+cc loss avg = 9.295108611695468e-05
+cc loss avg = 0.00353418128361227
+cc loss avg = 0.006461383153994878
+cc loss avg = 0.00026734184939414263
+cc loss avg = 0.009103731291058162
+cc loss avg = 0.00011573413939913735
+cc loss avg = 0.0026042265817523003
+cc loss avg = 0.007285525090992451
+cc loss avg = 0.005218000034801662
+cc loss avg = 0.004244173149345443
+cc loss avg = 0.0012273790780454874
+cc loss avg = 0.0035847749968525022
+cc loss avg = 0.006296734674833715
+cc loss avg = 0.0004426556115504354
+cc loss avg = 0.0158561886055395
+cc loss avg = 0.005776060201848547
+cc loss avg = 0.0015884623862802982
+cc loss avg = 0.013837487126390139
+cc loss avg = 0.0024560971069149673
+cc loss avg = 0.008370771965322396
+cc loss avg = 0.00022196787176653743
+cc loss avg = 0.00355756570934318
+cc loss avg = 0.0013325418112799525
+cc loss avg = 0.0001445626257918775
+cc loss avg = 0.0016957003390416503
+cc loss avg = 0.009300422117424509
+cc loss avg = 9.118390153162181e-05
+cc loss avg = 0.0005773172015324235
+cc loss avg = 0.002933380223112181
+cc loss avg = 0.0030985428602434695
+cc loss avg = 0.0028134954627603292
+cc loss avg = 0.007300624070921913
+cc loss avg = 0.010051282122731209
+cc loss avg = 0.0012851143255829811
+cc loss avg = 0.00015525896742474288
+cc loss avg = 0.00819488667184487
+cc loss avg = 0.0006196561735123396
+cc loss avg = 0.0028100672643631697
+cc loss avg = 0.0015197419561445713
+cc loss avg = 0.0018128136434825137
+cc loss avg = 0.006994759663939476
+cc loss avg = 0.013896593203147253
+cc loss avg = 0.0005759280174970627
+cc loss avg = 0.006918947309410821
+cc loss avg = 0.00426026398781687
+cc loss avg = 0.001823848346248269
+cc loss avg = 0.004610977543052286
+cc loss avg = 0.006646198884118349
+cc loss avg = 0.0001523264218121767
+cc loss avg = 0.00381399312755093
+cc loss avg = 0.0002117713011102751
+cc loss avg = 0.0004975789343006909
+cc loss avg = 0.0003319071256555617
+cc loss avg = 0.0024083475582301617
+cc loss avg = 0.0046952599950600415
+cc loss avg = 0.0029234496178105474
+cc loss avg = 0.004408531725251426
+cc loss avg = 0.006188570987433195
+cc loss avg = 0.0016158963553607464
+cc loss avg = 0.01035417360253632
+cc loss avg = 0.0012008873745799065
+cc loss avg = 0.01199956308118999
+cc loss avg = 0.009433493870892562
+cc loss avg = 0.009768199175596237
+cc loss avg = 0.004952831193804741
+cc loss avg = 0.009147703749476932
+cc loss avg = 0.0007344964833464473
+cc loss avg = 0.0010198068339377642
+cc loss avg = 0.0010114997858181596
+cc loss avg = 0.0036987487255828455
+cc loss avg = 0.008132979623042047
+cc loss avg = 0.007120297173969448
+cc loss avg = 0.0031430176459252834
+Solved 92/200 episodes
+0.0018737915297509361
+Evaluated model in 24.8 seconds
+Saved model for run
+X with name round-13 at path models/X-round-13__1.pt
+Round 14
+Generated trajectories in 73.1 seconds
+epoch: 0	train loss: 62532.41015625	(16.5s)
+epoch: 1	train loss: 52449.87109375	(16.5s)
+epoch: 2	train loss: 47358.3046875	(16.7s)
+epoch: 3	train loss: 44092.59375	(16.7s)
+epoch: 4	train loss: 42064.99609375	(16.8s)
+epoch: 5	train loss: 40626.1484375	(16.7s)
+epoch: 6	train loss: 39067.09375	(16.7s)
+epoch: 7	train loss: 37983.26171875	(16.7s)
+epoch: 8	train loss: 37224.52734375	(16.8s)
+epoch: 9	train loss: 36354.96484375	(16.7s)
+epoch: 10	train loss: 36632.86328125	(16.7s)
+epoch: 11	train loss: 35591.0078125	(16.7s)
+epoch: 12	train loss: 35002.99609375	(16.9s)
+epoch: 13	train loss: 34606.25390625	(16.8s)
+epoch: 14	train loss: 34240.58984375	(16.9s)
+epoch: 15	train loss: 33926.48046875	(16.8s)
+epoch: 16	train loss: 34069.57421875	(16.8s)
+epoch: 17	train loss: 33507.4453125	(16.8s)
+epoch: 18	train loss: 33174.9609375	(16.9s)
+epoch: 19	train loss: 32669.763671875	(16.8s)
+epoch: 20	train loss: 32245.3671875	(16.8s)
+epoch: 21	train loss: 31813.19140625	(16.8s)
+epoch: 22	train loss: 31460.716796875	(16.8s)
+epoch: 23	train loss: 31041.626953125	(16.8s)
+epoch: 24	train loss: 30924.33203125	(16.8s)
+epoch: 25	train loss: 30645.14453125	(16.8s)
+epoch: 26	train loss: 30410.791015625	(16.8s)
+epoch: 27	train loss: 30763.474609375	(16.8s)
+epoch: 28	train loss: 30486.037109375	(16.8s)
+epoch: 29	train loss: 31271.85546875	(16.8s)
+epoch: 30	train loss: 30306.498046875	(16.9s)
+epoch: 31	train loss: 30153.5	(16.8s)
+epoch: 32	train loss: 30386.560546875	(16.7s)
+epoch: 33	train loss: 30148.029296875	(16.8s)
+epoch: 34	train loss: 29806.96875	(16.9s)
+epoch: 35	train loss: 29634.927734375	(16.9s)
+epoch: 36	train loss: 29547.689453125	(16.7s)
+epoch: 37	train loss: 29467.166015625	(16.8s)
+epoch: 38	train loss: 29403.419921875	(16.8s)
+epoch: 39	train loss: 29174.0234375	(16.8s)
+epoch: 40	train loss: 29608.58984375	(16.9s)
+epoch: 41	train loss: 29540.318359375	(16.8s)
+epoch: 42	train loss: 29318.29296875	(16.7s)
+epoch: 43	train loss: 28912.369140625	(16.9s)
+epoch: 44	train loss: 28948.755859375	(16.8s)
+epoch: 45	train loss: 28850.712890625	(16.8s)
+epoch: 46	train loss: 29086.669921875	(16.7s)
+epoch: 47	train loss: 29307.17578125	(16.8s)
+epoch: 48	train loss: 28872.857421875	(16.8s)
+epoch: 49	train loss: 28607.873046875	(16.8s)
+epoch: 50	train loss: 28328.19140625	(16.8s)
+epoch: 51	train loss: 28693.564453125	(16.8s)
+epoch: 52	train loss: 28537.955078125	(16.7s)
+epoch: 53	train loss: 28123.80078125	(16.8s)
+epoch: 54	train loss: 27991.1484375	(16.7s)
+epoch: 55	train loss: 28380.90625	(16.8s)
+epoch: 56	train loss: 28105.697265625	(16.8s)
+epoch: 57	train loss: 27887.326171875	(16.8s)
+epoch: 58	train loss: 27802.193359375	(16.7s)
+epoch: 59	train loss: 28121.091796875	(16.8s)
+epoch: 60	train loss: 28373.259765625	(16.7s)
+epoch: 61	train loss: 28343.15234375	(16.8s)
+epoch: 62	train loss: 28236.552734375	(16.7s)
+epoch: 63	train loss: 28024.53125	(16.8s)
+epoch: 64	train loss: 27507.728515625	(16.8s)
+epoch: 65	train loss: 27753.8125	(16.8s)
+epoch: 66	train loss: 28143.7578125	(16.8s)
+epoch: 67	train loss: 27702.828125	(16.8s)
+epoch: 68	train loss: 27114.99609375	(16.8s)
+epoch: 69	train loss: 27536.470703125	(16.8s)
+epoch: 70	train loss: 27211.365234375	(16.8s)
+epoch: 71	train loss: 27422.306640625	(16.8s)
+epoch: 72	train loss: 27050.185546875	(16.7s)
+epoch: 73	train loss: 26778.376953125	(16.7s)
+epoch: 74	train loss: 26776.224609375	(16.8s)
+epoch: 75	train loss: 27183.6484375	(16.8s)
+epoch: 76	train loss: 27037.33203125	(16.8s)
+epoch: 77	train loss: 26901.111328125	(16.7s)
+epoch: 78	train loss: 27625.75	(16.7s)
+epoch: 79	train loss: 28950.79296875	(16.6s)
+epoch: 80	train loss: 27892.275390625	(16.7s)
+epoch: 81	train loss: 27235.458984375	(16.7s)
+epoch: 82	train loss: 27314.2578125	(16.7s)
+epoch: 83	train loss: 26987.68359375	(16.6s)
+epoch: 84	train loss: 26616.013671875	(16.7s)
+epoch: 85	train loss: 26875.7890625	(16.6s)
+epoch: 86	train loss: 26894.83984375	(16.7s)
+epoch: 87	train loss: 26649.025390625	(16.7s)
+epoch: 88	train loss: 26980.9765625	(16.6s)
+epoch: 89	train loss: 26424.78515625	(16.7s)
+epoch: 90	train loss: 26738.3203125	(16.6s)
+epoch: 91	train loss: 27009.48828125	(16.8s)
+epoch: 92	train loss: 26859.630859375	(16.7s)
+epoch: 93	train loss: 26920.63671875	(16.7s)
+epoch: 94	train loss: 26704.64453125	(16.8s)
+epoch: 95	train loss: 26285.25390625	(16.8s)
+epoch: 96	train loss: 26492.271484375	(16.8s)
+epoch: 97	train loss: 27199.59375	(16.8s)
+epoch: 98	train loss: 27481.19921875	(16.7s)
+epoch: 99	train loss: 27704.75390625	(16.8s)
+Evaluating model on 200 episodes
+cc loss avg = 0.00596403128777941
+cc loss avg = 0.007814869750291109
+cc loss avg = 0.004057755810208619
+cc loss avg = 0.002524316543713212
+cc loss avg = 0.0011717129964381456
+cc loss avg = 0.0016479219775646925
+cc loss avg = 0.0103150904760696
+cc loss avg = 0.0021594559075310826
+cc loss avg = 0.0032412298023700714
+cc loss avg = 0.003593547890583674
+cc loss avg = 0.004770496627315879
+cc loss avg = 0.0013165099080651999
+cc loss avg = 0.004874462785664946
+cc loss avg = 0.0009817132959142327
+cc loss avg = 0.0027893823862541467
+cc loss avg = 0.0010723848827183247
+cc loss avg = 0.008717668242752552
+cc loss avg = 0.0024818102829158306
+cc loss avg = 0.007428592856740579
+cc loss avg = 0.003775861579924822
+cc loss avg = 0.0014831935986876488
+cc loss avg = 0.0077489290075997514
+cc loss avg = 0.005718046857509762
+cc loss avg = 0.001840707496739924
+cc loss avg = 0.005935710854828358
+cc loss avg = 0.0007466115057468414
+cc loss avg = 0.0039779889630153775
+cc loss avg = 0.005136028863489628
+cc loss avg = 0.0055266444105654955
+cc loss avg = 0.002378664445132017
+cc loss avg = 0.008277625602204353
+cc loss avg = 0.0077897601295262575
+cc loss avg = 0.00865188121679239
+cc loss avg = 0.0018086083000525832
+cc loss avg = 0.01144666108302772
+cc loss avg = 0.0014068828895688057
+cc loss avg = 0.00037467386573553085
+cc loss avg = 0.0031444591198426983
+cc loss avg = 0.0015629478730261326
+cc loss avg = 0.006944869800160329
+cc loss avg = 0.0009004235034808517
+cc loss avg = 0.0016573489119764417
+cc loss avg = 0.004020146753949423
+cc loss avg = 0.010705708060413599
+cc loss avg = 0.0011977505637332797
+cc loss avg = 0.008009161218069494
+cc loss avg = 0.006346981118743618
+cc loss avg = 0.004297212813980877
+cc loss avg = 0.0058107858640141785
+cc loss avg = 0.003341438656207174
+cc loss avg = 0.005341441748896614
+cc loss avg = 0.0003036480338778347
+cc loss avg = 0.003573480062186718
+cc loss avg = 0.0036939634883310646
+cc loss avg = 0.005874999507796019
+cc loss avg = 0.0007883365615271032
+cc loss avg = 0.0020531523041427135
+cc loss avg = 0.0011865334818139672
+cc loss avg = 0.0010507272090762854
+cc loss avg = 0.009690363076515496
+cc loss avg = 0.007085529272444546
+cc loss avg = 0.002126233885064721
+cc loss avg = 0.004850101191550493
+cc loss avg = 0.001094771083444357
+cc loss avg = 0.00220040837302804
+cc loss avg = 0.005157069565029815
+cc loss avg = 0.008663582833833061
+cc loss avg = 0.009064849582500756
+cc loss avg = 0.0036566423950716853
+cc loss avg = 0.004081737482920289
+cc loss avg = 0.010489517502719536
+cc loss avg = 0.0013837115839123726
+cc loss avg = 0.00685151491779834
+cc loss avg = 0.007126488257199526
+cc loss avg = 0.008155230898410082
+cc loss avg = 0.004826649077585898
+cc loss avg = 0.019078785204328597
+cc loss avg = 0.004273516087171932
+cc loss avg = 0.010907110486490032
+cc loss avg = 0.0032600588747300208
+cc loss avg = 0.002634260104969144
+cc loss avg = 0.0029438287019729614
+cc loss avg = 0.0008054033387452364
+cc loss avg = 0.006183159857755527
+cc loss avg = 0.01079257414676249
+cc loss avg = 0.0011432780884206295
+cc loss avg = 0.0067951920597503586
+cc loss avg = 0.00667525459236155
+cc loss avg = 0.0016669039614498615
+cc loss avg = 0.004759675512711207
+cc loss avg = 0.011008057743310928
+cc loss avg = 0.006498197656280051
+cc loss avg = 0.00034203712129965425
+cc loss avg = 0.00471327529521659
+cc loss avg = 0.01022629113867879
+cc loss avg = 0.004191007785266265
+cc loss avg = 0.0031174425967037678
+cc loss avg = 0.0008213712717406452
+cc loss avg = 0.0012380611151456833
+cc loss avg = 0.0014250734238885343
+cc loss avg = 0.005911200802074745
+cc loss avg = 0.014692170758886883
+cc loss avg = 0.005907122860662639
+cc loss avg = 0.001905124809127301
+cc loss avg = 0.004243197035975754
+cc loss avg = 0.004612323284770052
+cc loss avg = 0.008258431878251335
+cc loss avg = 0.0005870152381248772
+cc loss avg = 0.0007354479748755693
+cc loss avg = 0.00504789559636265
+cc loss avg = 0.009371783623161415
+cc loss avg = 0.007134305235619347
+cc loss avg = 0.00101087661460042
+Solved 113/200 episodes
+0.0026708703194647876
+Evaluated model in 24.0 seconds
+Saved model for run
+X with name round-14 at path models/X-round-14__1.pt
+Round 15
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 61190.58203125	(16.5s)
+epoch: 1	train loss: 50794.88671875	(16.5s)
+epoch: 2	train loss: 45455.94140625	(16.7s)
+epoch: 3	train loss: 42240.64453125	(16.6s)
+epoch: 4	train loss: 40050.01953125	(16.6s)
+epoch: 5	train loss: 38335.8671875	(16.7s)
+epoch: 6	train loss: 37101.55859375	(16.6s)
+epoch: 7	train loss: 36139.80859375	(16.7s)
+epoch: 8	train loss: 35277.9609375	(16.6s)
+epoch: 9	train loss: 34823.24609375	(16.7s)
+epoch: 10	train loss: 34414.3046875	(16.6s)
+epoch: 11	train loss: 33838.2734375	(16.7s)
+epoch: 12	train loss: 33633.90625	(16.7s)
+epoch: 13	train loss: 33158.96484375	(16.6s)
+epoch: 14	train loss: 33111.99609375	(16.7s)
+epoch: 15	train loss: 32590.556640625	(16.6s)
+epoch: 16	train loss: 32488.20703125	(16.7s)
+epoch: 17	train loss: 32182.427734375	(16.7s)
+epoch: 18	train loss: 31919.24609375	(16.7s)
+epoch: 19	train loss: 31806.666015625	(16.6s)
+epoch: 20	train loss: 31895.23046875	(16.6s)
+epoch: 21	train loss: 31263.337890625	(16.7s)
+epoch: 22	train loss: 30699.619140625	(16.7s)
+epoch: 23	train loss: 30600.17578125	(16.7s)
+epoch: 24	train loss: 30431.962890625	(16.7s)
+epoch: 25	train loss: 30666.8125	(16.6s)
+epoch: 26	train loss: 30296.376953125	(16.7s)
+epoch: 27	train loss: 30126.056640625	(16.7s)
+epoch: 28	train loss: 29939.921875	(16.6s)
+epoch: 29	train loss: 29481.921875	(16.7s)
+epoch: 30	train loss: 29532.638671875	(16.6s)
+epoch: 31	train loss: 29408.298828125	(16.7s)
+epoch: 32	train loss: 29666.015625	(16.7s)
+epoch: 33	train loss: 29658.138671875	(16.7s)
+epoch: 34	train loss: 30056.431640625	(16.6s)
+epoch: 35	train loss: 29844.166015625	(16.6s)
+epoch: 36	train loss: 29785.79296875	(16.7s)
+epoch: 37	train loss: 29249.81640625	(16.6s)
+epoch: 38	train loss: 29086.45703125	(16.8s)
+epoch: 39	train loss: 28932.271484375	(16.6s)
+epoch: 40	train loss: 28618.06640625	(16.6s)
+epoch: 41	train loss: 29011.9921875	(16.7s)
+epoch: 42	train loss: 28581.185546875	(16.7s)
+epoch: 43	train loss: 28337.9765625	(16.7s)
+epoch: 44	train loss: 28796.51171875	(16.7s)
+epoch: 45	train loss: 28637.794921875	(16.6s)
+epoch: 46	train loss: 28614.849609375	(16.7s)
+epoch: 47	train loss: 29875.369140625	(16.6s)
+epoch: 48	train loss: 29067.751953125	(16.8s)
+epoch: 49	train loss: 29100.615234375	(16.6s)
+epoch: 50	train loss: 28323.521484375	(16.6s)
+epoch: 51	train loss: 28090.02734375	(16.7s)
+epoch: 52	train loss: 28064.513671875	(16.7s)
+epoch: 53	train loss: 28092.08984375	(16.7s)
+epoch: 54	train loss: 27867.001953125	(16.6s)
+epoch: 55	train loss: 27508.955078125	(16.6s)
+epoch: 56	train loss: 27474.01171875	(16.6s)
+epoch: 57	train loss: 27723.29296875	(16.7s)
+epoch: 58	train loss: 27770.826171875	(16.7s)
+epoch: 59	train loss: 27694.888671875	(16.6s)
+epoch: 60	train loss: 28263.34765625	(16.6s)
+epoch: 61	train loss: 27517.5625	(16.6s)
+epoch: 62	train loss: 27213.44921875	(16.6s)
+epoch: 63	train loss: 28146.697265625	(16.6s)
+epoch: 64	train loss: 27319.458984375	(16.7s)
+epoch: 65	train loss: 27178.4453125	(16.6s)
+epoch: 66	train loss: 27367.9296875	(16.6s)
+epoch: 67	train loss: 27500.80078125	(16.6s)
+epoch: 68	train loss: 27454.92578125	(16.6s)
+epoch: 69	train loss: 28528.015625	(16.7s)
+epoch: 70	train loss: 28040.375	(16.6s)
+epoch: 71	train loss: 27302.115234375	(16.6s)
+epoch: 72	train loss: 27196.021484375	(16.7s)
+epoch: 73	train loss: 27324.955078125	(16.6s)
+epoch: 74	train loss: 26720.962890625	(16.7s)
+epoch: 75	train loss: 26812.1640625	(16.6s)
+epoch: 76	train loss: 27310.484375	(16.7s)
+epoch: 77	train loss: 27196.728515625	(16.7s)
+epoch: 78	train loss: 26578.4375	(16.6s)
+epoch: 79	train loss: 26674.462890625	(16.7s)
+epoch: 80	train loss: 26595.939453125	(16.7s)
+epoch: 81	train loss: 27129.208984375	(16.6s)
+epoch: 82	train loss: 26647.0859375	(16.7s)
+epoch: 83	train loss: 26657.34765625	(16.7s)
+epoch: 84	train loss: 26314.38671875	(16.7s)
+epoch: 85	train loss: 26320.78515625	(16.7s)
+epoch: 86	train loss: 26975.345703125	(16.7s)
+epoch: 87	train loss: 27139.94140625	(16.6s)
+epoch: 88	train loss: 27108.7734375	(16.7s)
+epoch: 89	train loss: 27079.7265625	(16.7s)
+epoch: 90	train loss: 26688.611328125	(16.7s)
+epoch: 91	train loss: 26435.57421875	(16.7s)
+epoch: 92	train loss: 26451.642578125	(16.6s)
+epoch: 93	train loss: 26392.68359375	(16.7s)
+epoch: 94	train loss: 26575.75390625	(16.7s)
+epoch: 95	train loss: 26939.0	(16.7s)
+epoch: 96	train loss: 26765.515625	(16.7s)
+epoch: 97	train loss: 26356.197265625	(16.6s)
+epoch: 98	train loss: 25972.98828125	(16.7s)
+epoch: 99	train loss: 25942.064453125	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.0029181637801229954
+cc loss avg = 0.0010135512566193938
+cc loss avg = 0.0008362311637029052
+cc loss avg = 0.004096164993825369
+cc loss avg = 0.004066882713232189
+cc loss avg = 0.005324793979525566
+cc loss avg = 0.004559447799692862
+cc loss avg = 0.006163980215205811
+cc loss avg = 0.00016485819651279598
+cc loss avg = 0.0025737490504980087
+cc loss avg = 0.0004195289802737534
+cc loss avg = 0.0003805785090662539
+cc loss avg = 0.006244249583687633
+cc loss avg = 0.0005048614111728966
+cc loss avg = 0.00034698491799645126
+cc loss avg = 0.002247178927063942
+cc loss avg = 0.002107085660099983
+cc loss avg = 0.0008440061355940998
+cc loss avg = 0.00031575869070366025
+cc loss avg = 0.0015563234919682145
+cc loss avg = 0.005177787582700451
+cc loss avg = 0.0069776520831510425
+cc loss avg = 0.012110866577131674
+cc loss avg = 0.004476942704059184
+cc loss avg = 0.0052151549607515335
+cc loss avg = 0.0012690211879089475
+cc loss avg = 0.0004151916946284473
+cc loss avg = 0.004008397809229791
+cc loss avg = 0.001032476662658155
+cc loss avg = 0.005293893627822399
+cc loss avg = 0.0007063632365316153
+cc loss avg = 0.003300902433693409
+cc loss avg = 0.000309569324599579
+cc loss avg = 0.00047703232849016786
+cc loss avg = 0.01005886602215469
+cc loss avg = 0.005181978456676006
+cc loss avg = 0.0008746606763452291
+cc loss avg = 0.007725595969532151
+cc loss avg = 0.0053906606044620275
+cc loss avg = 0.0006215958273969591
+cc loss avg = 0.004280883780059715
+cc loss avg = 0.002593859777941058
+cc loss avg = 0.006126222666352987
+cc loss avg = 0.007861353864427656
+cc loss avg = 0.0014289779355749488
+cc loss avg = 0.0020223245956003666
+cc loss avg = 0.0037893825210630894
+cc loss avg = 0.004872895816030602
+cc loss avg = 0.008365587797015905
+cc loss avg = 0.0010740617290139198
+cc loss avg = 0.003954171785153449
+cc loss avg = 0.00327888221363537
+cc loss avg = 0.00183181744068861
+cc loss avg = 0.0030144983902573586
+cc loss avg = 0.005422205392581721
+cc loss avg = 0.013611744972877204
+cc loss avg = 0.0003526572254486382
+cc loss avg = 0.009874474024400115
+cc loss avg = 0.007931339321658015
+cc loss avg = 0.009320687541427711
+cc loss avg = 0.004896707134321332
+cc loss avg = 0.011266048531979322
+cc loss avg = 0.004745509439089801
+cc loss avg = 0.01519262115471065
+cc loss avg = 0.004171046859119088
+cc loss avg = 0.0018657624023035169
+cc loss avg = 0.004239331232383847
+cc loss avg = 0.011332505848258734
+cc loss avg = 0.005343955912394449
+cc loss avg = 0.005903365992708132
+cc loss avg = 0.0012149024987593293
+cc loss avg = 0.017532989877508953
+cc loss avg = 0.0039882883575046435
+cc loss avg = 0.003918510628864169
+cc loss avg = 0.001964134629815817
+cc loss avg = 0.0016304857563227415
+cc loss avg = 0.001196770928800106
+cc loss avg = 0.0013751548249274492
+cc loss avg = 0.010387139162048697
+cc loss avg = 0.0017492807237431407
+cc loss avg = 0.0002961600839626044
+cc loss avg = 0.003084238793235272
+cc loss avg = 0.012339209613855928
+cc loss avg = 0.00040460145100951195
+cc loss avg = 0.0037833025853615254
+cc loss avg = 0.0036645508007495664
+cc loss avg = 0.003925631332094781
+cc loss avg = 0.0010291281214449555
+cc loss avg = 0.0024453243240714073
+cc loss avg = 0.0062544867396354675
+cc loss avg = 0.005782484484370798
+cc loss avg = 0.005827103314610819
+cc loss avg = 0.003866338209869961
+cc loss avg = 0.00446862232638523
+cc loss avg = 0.004679999663494527
+cc loss avg = 0.00826228503137827
+cc loss avg = 0.003572654677554965
+cc loss avg = 0.010068567004054785
+cc loss avg = 0.0012122904881834984
+cc loss avg = 0.007545245345681906
+cc loss avg = 0.0024026230385061353
+cc loss avg = 0.0050758183060679585
+cc loss avg = 0.000310250383336097
+cc loss avg = 0.009918102684120337
+cc loss avg = 0.0012224859092384577
+cc loss avg = 0.0009589915280230343
+cc loss avg = 0.005983993411064148
+cc loss avg = 0.004588215393596329
+cc loss avg = 0.0003608688130043447
+Solved 109/200 episodes
+0.002327825518856116
+Evaluated model in 24.6 seconds
+Saved model for run
+X with name round-15 at path models/X-round-15__1.pt
+Round 16
+Generated trajectories in 72.2 seconds
+epoch: 0	train loss: 60116.671875	(16.5s)
+epoch: 1	train loss: 49964.17578125	(16.5s)
+epoch: 2	train loss: 45086.8359375	(16.6s)
+epoch: 3	train loss: 42021.3359375	(16.6s)
+epoch: 4	train loss: 39754.13671875	(16.7s)
+epoch: 5	train loss: 38187.5390625	(16.7s)
+epoch: 6	train loss: 37162.08203125	(16.7s)
+epoch: 7	train loss: 36059.203125	(16.7s)
+epoch: 8	train loss: 35286.19921875	(16.7s)
+epoch: 9	train loss: 34742.671875	(16.7s)
+epoch: 10	train loss: 34232.78515625	(16.7s)
+epoch: 11	train loss: 33644.046875	(16.6s)
+epoch: 12	train loss: 33175.21484375	(16.7s)
+epoch: 13	train loss: 32719.666015625	(16.7s)
+epoch: 14	train loss: 32258.021484375	(16.7s)
+epoch: 15	train loss: 32071.255859375	(16.7s)
+epoch: 16	train loss: 31843.0234375	(16.7s)
+epoch: 17	train loss: 32344.939453125	(16.6s)
+epoch: 18	train loss: 31763.02734375	(16.6s)
+epoch: 19	train loss: 30965.455078125	(16.7s)
+epoch: 20	train loss: 30768.064453125	(16.7s)
+epoch: 21	train loss: 30850.541015625	(16.7s)
+epoch: 22	train loss: 30288.830078125	(16.6s)
+epoch: 23	train loss: 30221.859375	(16.7s)
+epoch: 24	train loss: 30060.0390625	(16.6s)
+epoch: 25	train loss: 29953.583984375	(16.7s)
+epoch: 26	train loss: 30015.337890625	(16.6s)
+epoch: 27	train loss: 29889.9453125	(16.7s)
+epoch: 28	train loss: 29794.2109375	(16.7s)
+epoch: 29	train loss: 30433.376953125	(16.6s)
+epoch: 30	train loss: 29881.216796875	(16.7s)
+epoch: 31	train loss: 29709.16015625	(16.7s)
+epoch: 32	train loss: 29891.044921875	(16.7s)
+epoch: 33	train loss: 29305.0390625	(16.6s)
+epoch: 34	train loss: 29222.544921875	(16.4s)
+epoch: 35	train loss: 28878.703125	(16.6s)
+epoch: 36	train loss: 28727.2421875	(16.6s)
+epoch: 37	train loss: 29103.2578125	(16.7s)
+epoch: 38	train loss: 28767.60546875	(16.6s)
+epoch: 39	train loss: 29022.736328125	(16.6s)
+epoch: 40	train loss: 28750.59375	(16.7s)
+epoch: 41	train loss: 28482.703125	(16.6s)
+epoch: 42	train loss: 28122.884765625	(16.7s)
+epoch: 43	train loss: 28040.734375	(16.6s)
+epoch: 44	train loss: 28407.580078125	(16.5s)
+epoch: 45	train loss: 28290.123046875	(16.7s)
+epoch: 46	train loss: 28357.18359375	(16.7s)
+epoch: 47	train loss: 28302.47265625	(16.7s)
+epoch: 48	train loss: 28324.5234375	(16.6s)
+epoch: 49	train loss: 28030.44921875	(16.6s)
+epoch: 50	train loss: 27807.10546875	(16.7s)
+epoch: 51	train loss: 27713.76953125	(16.7s)
+epoch: 52	train loss: 27466.822265625	(16.7s)
+epoch: 53	train loss: 27772.400390625	(16.7s)
+epoch: 54	train loss: 28169.091796875	(16.6s)
+epoch: 55	train loss: 28659.927734375	(16.7s)
+epoch: 56	train loss: 28104.3125	(16.7s)
+epoch: 57	train loss: 28522.009765625	(16.7s)
+epoch: 58	train loss: 28123.51171875	(16.6s)
+epoch: 59	train loss: 27669.390625	(16.6s)
+epoch: 60	train loss: 27424.298828125	(16.5s)
+epoch: 61	train loss: 27258.3359375	(16.7s)
+epoch: 62	train loss: 27288.841796875	(16.7s)
+epoch: 63	train loss: 27113.79296875	(16.7s)
+epoch: 64	train loss: 27134.732421875	(16.7s)
+epoch: 65	train loss: 27171.33984375	(16.7s)
+epoch: 66	train loss: 27128.544921875	(16.6s)
+epoch: 67	train loss: 27011.5859375	(16.7s)
+epoch: 68	train loss: 26846.8671875	(16.7s)
+epoch: 69	train loss: 27158.9140625	(16.7s)
+epoch: 70	train loss: 26992.978515625	(16.7s)
+epoch: 71	train loss: 26939.158203125	(16.7s)
+epoch: 72	train loss: 27549.2578125	(16.7s)
+epoch: 73	train loss: 29225.576171875	(16.7s)
+epoch: 74	train loss: 28061.662109375	(16.6s)
+epoch: 75	train loss: 27645.0078125	(16.6s)
+epoch: 76	train loss: 27148.787109375	(16.7s)
+epoch: 77	train loss: 27198.658203125	(16.7s)
+epoch: 78	train loss: 27510.837890625	(16.8s)
+epoch: 79	train loss: 26884.947265625	(16.6s)
+epoch: 80	train loss: 26547.451171875	(16.6s)
+epoch: 81	train loss: 26965.419921875	(16.7s)
+epoch: 82	train loss: 27586.994140625	(16.7s)
+epoch: 83	train loss: 26845.271484375	(16.7s)
+epoch: 84	train loss: 26699.029296875	(16.7s)
+epoch: 85	train loss: 26598.908203125	(16.6s)
+epoch: 86	train loss: 26977.04296875	(16.7s)
+epoch: 87	train loss: 26432.416015625	(16.7s)
+epoch: 88	train loss: 26271.52734375	(16.7s)
+epoch: 89	train loss: 26404.021484375	(16.7s)
+epoch: 90	train loss: 27266.916015625	(16.7s)
+epoch: 91	train loss: 26331.978515625	(16.7s)
+epoch: 92	train loss: 26271.376953125	(16.7s)
+epoch: 93	train loss: 26394.552734375	(16.7s)
+epoch: 94	train loss: 26928.1328125	(16.7s)
+epoch: 95	train loss: 26474.15625	(16.7s)
+epoch: 96	train loss: 26527.9921875	(16.6s)
+epoch: 97	train loss: 26346.845703125	(16.7s)
+epoch: 98	train loss: 26133.90234375	(16.7s)
+epoch: 99	train loss: 25922.1796875	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.006926319872339566
+cc loss avg = 0.0002896195510402322
+cc loss avg = 0.0028625971754081547
+cc loss avg = 0.00021136997384019196
+cc loss avg = 0.0005493233911693096
+cc loss avg = 0.0031719314138172194
+cc loss avg = 0.011551562798558734
+cc loss avg = 0.00034564058296382427
+cc loss avg = 0.00073557801079005
+cc loss avg = 0.0011336043971823528
+cc loss avg = 0.008715146512258798
+cc loss avg = 0.00015571351104881614
+cc loss avg = 0.0048076660896185786
+cc loss avg = 0.0006716252537444234
+cc loss avg = 0.005599534240900539
+cc loss avg = 0.0004922570660710335
+cc loss avg = 0.0020024057012051344
+cc loss avg = 0.009470995573792607
+cc loss avg = 0.011796853000608584
+cc loss avg = 0.0029648146592080593
+cc loss avg = 0.00308191440126393
+cc loss avg = 0.0014736490556970239
+cc loss avg = 0.008846662647556514
+cc loss avg = 0.0005606984486803412
+cc loss avg = 0.00982278969604522
+cc loss avg = 0.008191677799914032
+cc loss avg = 0.007102286443114281
+cc loss avg = 0.0005749722477048635
+cc loss avg = 0.007285328087164089
+cc loss avg = 0.0007656130474060774
+cc loss avg = 0.0056353864492848516
+cc loss avg = 0.004880902279789249
+cc loss avg = 0.008049071999266744
+cc loss avg = 0.00043094647116959095
+cc loss avg = 0.00022365666518453509
+cc loss avg = 0.0017093720380216837
+cc loss avg = 0.0009164820658043027
+cc loss avg = 0.00317340309266001
+cc loss avg = 0.0015809731557965279
+cc loss avg = 0.0005098252440802753
+cc loss avg = 0.005502638271233688
+cc loss avg = 0.0057497238158248365
+cc loss avg = 0.008885407665123543
+cc loss avg = 0.0004890022682957351
+cc loss avg = 0.0043032970279455185
+cc loss avg = 0.01134541371720843
+cc loss avg = 0.0004081280203536153
+cc loss avg = 0.00017828827549237758
+cc loss avg = 0.006364437732069443
+cc loss avg = 0.0021258878987282515
+cc loss avg = 0.00020654336549341679
+cc loss avg = 0.003210407216101885
+cc loss avg = 0.0002957926772069186
+cc loss avg = 0.001814398798160255
+cc loss avg = 0.007069723913446069
+cc loss avg = 0.0006676724879071116
+cc loss avg = 0.00013769406359642744
+cc loss avg = 0.0004310969961807132
+cc loss avg = 0.005871570048232873
+cc loss avg = 0.005173935554921627
+cc loss avg = 0.010565135627985
+cc loss avg = 0.006917860358953476
+cc loss avg = 0.006770186436673005
+cc loss avg = 0.011085359379649162
+cc loss avg = 0.0014439283404499292
+cc loss avg = 0.005447792122140527
+cc loss avg = 0.0006344965077005327
+cc loss avg = 0.00018230073328595608
+cc loss avg = 0.010578405475826003
+cc loss avg = 0.009732322922597328
+cc loss avg = 0.0006645070388913155
+cc loss avg = 0.007314491551369429
+cc loss avg = 0.00017309663235209882
+cc loss avg = 0.0007036527385935187
+cc loss avg = 0.0036867910530418158
+cc loss avg = 0.004848525432559351
+cc loss avg = 0.0032939943484961987
+cc loss avg = 0.0010994673939421773
+cc loss avg = 0.0007986075506778434
+cc loss avg = 0.009069948398973793
+cc loss avg = 0.0034699895622907206
+cc loss avg = 0.008002504745187858
+cc loss avg = 0.011768752126954496
+cc loss avg = 0.00632804564666003
+cc loss avg = 0.00022065846133045852
+cc loss avg = 0.009405261822394095
+cc loss avg = 0.0006510458188131452
+cc loss avg = 0.0006268165307119489
+cc loss avg = 0.002211441285908222
+cc loss avg = 0.00998143301330856
+cc loss avg = 0.0010801439639180899
+cc loss avg = 0.0005865842686034739
+cc loss avg = 0.00044275278924033046
+cc loss avg = 0.002150864340364933
+cc loss avg = 0.006375169711342703
+cc loss avg = 0.0070750206941738725
+cc loss avg = 0.005763968243263662
+cc loss avg = 0.006858676827202241
+cc loss avg = 0.0025368027854710817
+cc loss avg = 0.006412105401977897
+cc loss avg = 0.00843691107002087
+cc loss avg = 0.005650313978549093
+cc loss avg = 0.007527684501837939
+cc loss avg = 0.0005538332625292242
+cc loss avg = 0.000231272162636742
+cc loss avg = 0.009082753630355
+cc loss avg = 0.0007900136988610029
+cc loss avg = 0.006758944015018642
+cc loss avg = 0.003412621808820404
+Solved 109/200 episodes
+0.0022445224306829915
+Evaluated model in 21.8 seconds
+Saved model for run
+X with name round-16 at path models/X-round-16__1.pt
+Round 17
+Generated trajectories in 73.7 seconds
+epoch: 0	train loss: 60087.9765625	(16.7s)
+epoch: 1	train loss: 49872.1171875	(16.7s)
+epoch: 2	train loss: 44626.4765625	(16.8s)
+epoch: 3	train loss: 41629.14453125	(16.8s)
+epoch: 4	train loss: 39268.85546875	(16.8s)
+epoch: 5	train loss: 37765.9765625	(16.9s)
+epoch: 6	train loss: 36648.59375	(16.8s)
+epoch: 7	train loss: 35802.07421875	(16.8s)
+epoch: 8	train loss: 35868.20703125	(16.8s)
+epoch: 9	train loss: 35004.7109375	(16.8s)
+epoch: 10	train loss: 34341.38671875	(16.9s)
+epoch: 11	train loss: 34183.52734375	(16.8s)
+epoch: 12	train loss: 34292.609375	(16.8s)
+epoch: 13	train loss: 33485.30859375	(16.9s)
+epoch: 14	train loss: 33199.9140625	(16.8s)
+epoch: 15	train loss: 32664.96484375	(16.9s)
+epoch: 16	train loss: 32266.505859375	(16.8s)
+epoch: 17	train loss: 31869.54296875	(16.8s)
+epoch: 18	train loss: 31712.02734375	(16.8s)
+epoch: 19	train loss: 31184.15234375	(16.8s)
+epoch: 20	train loss: 30973.619140625	(16.9s)
+epoch: 21	train loss: 30832.66796875	(16.8s)
+epoch: 22	train loss: 30537.404296875	(16.8s)
+epoch: 23	train loss: 30687.060546875	(16.8s)
+epoch: 24	train loss: 30308.81640625	(16.9s)
+epoch: 25	train loss: 30106.62109375	(16.9s)
+epoch: 26	train loss: 29960.556640625	(16.9s)
+epoch: 27	train loss: 29898.052734375	(16.8s)
+epoch: 28	train loss: 29749.630859375	(16.9s)
+epoch: 29	train loss: 29582.55859375	(16.9s)
+epoch: 30	train loss: 30383.349609375	(16.9s)
+epoch: 31	train loss: 29938.87109375	(17.0s)
+epoch: 32	train loss: 29648.947265625	(16.8s)
+epoch: 33	train loss: 29479.474609375	(16.9s)
+epoch: 34	train loss: 29835.306640625	(16.9s)
+epoch: 35	train loss: 29444.9921875	(16.8s)
+epoch: 36	train loss: 29394.39453125	(16.9s)
+epoch: 37	train loss: 29104.173828125	(16.9s)
+epoch: 38	train loss: 28799.513671875	(16.8s)
+epoch: 39	train loss: 28597.982421875	(16.9s)
+epoch: 40	train loss: 28421.201171875	(16.8s)
+epoch: 41	train loss: 28733.056640625	(16.8s)
+epoch: 42	train loss: 28453.771484375	(16.9s)
+epoch: 43	train loss: 28200.421875	(16.9s)
+epoch: 44	train loss: 28276.5234375	(16.9s)
+epoch: 45	train loss: 28223.720703125	(16.9s)
+epoch: 46	train loss: 28076.322265625	(16.9s)
+epoch: 47	train loss: 29041.701171875	(16.8s)
+epoch: 48	train loss: 28369.748046875	(16.8s)
+epoch: 49	train loss: 28149.9296875	(16.9s)
+epoch: 50	train loss: 28810.888671875	(16.9s)
+epoch: 51	train loss: 28434.75390625	(16.9s)
+epoch: 52	train loss: 28731.96484375	(16.8s)
+epoch: 53	train loss: 28259.166015625	(16.9s)
+epoch: 54	train loss: 27792.173828125	(16.8s)
+epoch: 55	train loss: 27675.318359375	(16.9s)
+epoch: 56	train loss: 28583.9375	(16.9s)
+epoch: 57	train loss: 27617.44921875	(16.9s)
+epoch: 58	train loss: 27533.044921875	(16.8s)
+epoch: 59	train loss: 27675.7421875	(16.9s)
+epoch: 60	train loss: 27857.67578125	(16.8s)
+epoch: 61	train loss: 27576.3984375	(16.9s)
+epoch: 62	train loss: 27298.607421875	(16.8s)
+epoch: 63	train loss: 27014.517578125	(16.8s)
+epoch: 64	train loss: 27132.595703125	(16.8s)
+epoch: 65	train loss: 26665.02734375	(16.8s)
+epoch: 66	train loss: 26888.41796875	(16.9s)
+epoch: 67	train loss: 27997.900390625	(16.8s)
+epoch: 68	train loss: 27728.236328125	(16.8s)
+epoch: 69	train loss: 28633.037109375	(16.8s)
+epoch: 70	train loss: 27464.646484375	(16.9s)
+epoch: 71	train loss: 27496.236328125	(16.9s)
+epoch: 72	train loss: 27459.705078125	(16.8s)
+epoch: 73	train loss: 26699.658203125	(16.8s)
+epoch: 74	train loss: 26878.916015625	(16.9s)
+epoch: 75	train loss: 26674.435546875	(16.8s)
+epoch: 76	train loss: 26798.76171875	(16.9s)
+epoch: 77	train loss: 26744.79296875	(16.8s)
+epoch: 78	train loss: 26879.3125	(16.8s)
+epoch: 79	train loss: 26772.021484375	(16.8s)
+epoch: 80	train loss: 26989.66796875	(16.8s)
+epoch: 81	train loss: 26604.216796875	(16.9s)
+epoch: 82	train loss: 26828.666015625	(16.9s)
+epoch: 83	train loss: 26590.271484375	(16.8s)
+epoch: 84	train loss: 26469.078125	(16.9s)
+epoch: 85	train loss: 26497.2265625	(16.9s)
+epoch: 86	train loss: 26549.515625	(16.9s)
+epoch: 87	train loss: 26463.09765625	(16.8s)
+epoch: 88	train loss: 26862.525390625	(16.8s)
+epoch: 89	train loss: 26455.42578125	(16.8s)
+epoch: 90	train loss: 26572.078125	(16.8s)
+epoch: 91	train loss: 26498.4453125	(16.9s)
+epoch: 92	train loss: 26449.779296875	(16.8s)
+epoch: 93	train loss: 26347.21875	(16.7s)
+epoch: 94	train loss: 26365.576171875	(16.8s)
+epoch: 95	train loss: 26986.89453125	(16.9s)
+epoch: 96	train loss: 26280.572265625	(16.9s)
+epoch: 97	train loss: 26353.966796875	(16.8s)
+epoch: 98	train loss: 26335.5	(16.8s)
+epoch: 99	train loss: 26735.09765625	(16.7s)
+Evaluating model on 200 episodes
+cc loss avg = 0.007709052622279462
+cc loss avg = 0.003290971362730488
+cc loss avg = 0.001583834644407034
+cc loss avg = 0.011128732818178833
+cc loss avg = 0.00025105083477683365
+cc loss avg = 0.007387733552604914
+cc loss avg = 0.0002134734095307067
+cc loss avg = 0.0007439377368427813
+cc loss avg = 0.0042310189455747604
+cc loss avg = 0.005434055550722405
+cc loss avg = 0.00037894994602538645
+cc loss avg = 0.002102481754263863
+cc loss avg = 0.0015321740211220458
+cc loss avg = 0.008566696764319204
+cc loss avg = 0.0019572413875721395
+cc loss avg = 0.0023089822789188474
+cc loss avg = 0.009294927585870028
+cc loss avg = 0.000539472617674619
+cc loss avg = 0.00601492573817571
+cc loss avg = 0.0002736462338361889
+cc loss avg = 0.0015807312447577715
+cc loss avg = 0.0007447646930813789
+cc loss avg = 0.004245674499543384
+cc loss avg = 0.008332070428878069
+cc loss avg = 0.008233194840916743
+cc loss avg = 0.004921327228657901
+cc loss avg = 0.0013225796865299344
+cc loss avg = 0.009114633983699605
+cc loss avg = 0.0020446269772946835
+cc loss avg = 0.006483147677499801
+cc loss avg = 0.01036408186579744
+cc loss avg = 0.009010682813823223
+cc loss avg = 0.00042269774712622166
+cc loss avg = 0.007415459491312504
+cc loss avg = 0.0028320953715592623
+cc loss avg = 0.0005246683722361922
+cc loss avg = 0.006971877388423309
+cc loss avg = 0.00035086259595118463
+cc loss avg = 0.007079606602928834
+cc loss avg = 0.002764485660009086
+cc loss avg = 0.004393746145069599
+cc loss avg = 0.005441666580736637
+cc loss avg = 0.007775781334203202
+cc loss avg = 0.0002737954491749406
+cc loss avg = 0.007231999552459456
+cc loss avg = 0.0034852572134695947
+cc loss avg = 0.00396552897291258
+cc loss avg = 0.004047150141559541
+cc loss avg = 0.0014135133242234588
+cc loss avg = 0.0020345747470855713
+cc loss avg = 0.005146072546873863
+cc loss avg = 0.0013324831379577518
+cc loss avg = 0.007872709061484785
+cc loss avg = 0.0011092116619693115
+cc loss avg = 0.0010925356764346361
+cc loss avg = 0.0057329376771425205
+cc loss avg = 0.00022076591267250478
+cc loss avg = 0.005830034613609314
+cc loss avg = 0.01282052903358514
+cc loss avg = 0.0009119773167185485
+cc loss avg = 0.0005663842894136906
+cc loss avg = 0.005910217179916799
+cc loss avg = 0.00421524653211236
+cc loss avg = 0.0015810034237802029
+cc loss avg = 0.0006643623346462846
+cc loss avg = 0.00012643434456549585
+cc loss avg = 0.0037780868296977133
+cc loss avg = 0.006298539927229285
+cc loss avg = 0.0007454417063854635
+cc loss avg = 0.00023063109256327152
+cc loss avg = 0.0035999547496127584
+cc loss avg = 0.0035191463539376855
+cc loss avg = 0.0013659328687936068
+cc loss avg = 0.0013339549768716097
+cc loss avg = 0.0035851215555643043
+cc loss avg = 0.00035086259595118463
+cc loss avg = 0.0032858436558550843
+cc loss avg = 0.009357542847283185
+cc loss avg = 0.0008921906701289117
+cc loss avg = 0.005823415113263763
+cc loss avg = 0.0002436594368191436
+cc loss avg = 0.013453714433126152
+cc loss avg = 0.0003057184803765267
+cc loss avg = 0.0007263977895490825
+cc loss avg = 0.007728545635472983
+cc loss avg = 0.00645010473090224
+cc loss avg = 0.00026372200227342546
+cc loss avg = 0.002818926703184843
+cc loss avg = 0.007285975075016419
+cc loss avg = 0.0006869328790344298
+cc loss avg = 0.0024016230599954724
+cc loss avg = 0.00021613549324683845
+cc loss avg = 0.0004968346329405904
+cc loss avg = 0.0006140621262602508
+cc loss avg = 0.007529202324803919
+cc loss avg = 0.0018186833476647735
+cc loss avg = 0.003415422237594612
+cc loss avg = 0.0005553903756663203
+cc loss avg = 0.0005435921484604478
+cc loss avg = 0.0025131790316663682
+cc loss avg = 0.0060822065570391715
+cc loss avg = 0.0034811384684871882
+cc loss avg = 0.007073344546370208
+cc loss avg = 0.0005330501589924097
+cc loss avg = 0.005662808625493199
+cc loss avg = 0.004268118063919246
+cc loss avg = 0.007591481786221266
+cc loss avg = 0.004730911168735474
+Solved 108/200 episodes
+0.002042780467208407
+Evaluated model in 25.3 seconds
+Saved model for run
+X with name round-17 at path models/X-round-17__1.pt
+Round 18
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 57417.54296875	(16.6s)
+epoch: 1	train loss: 48007.71875	(16.5s)
+epoch: 2	train loss: 43499.13671875	(16.6s)
+epoch: 3	train loss: 40630.734375	(16.6s)
+epoch: 4	train loss: 38832.01953125	(16.5s)
+epoch: 5	train loss: 37479.421875	(16.6s)
+epoch: 6	train loss: 36413.34765625	(16.5s)
+epoch: 7	train loss: 35163.203125	(16.6s)
+epoch: 8	train loss: 34795.39453125	(16.5s)
+epoch: 9	train loss: 34002.421875	(16.5s)
+epoch: 10	train loss: 34598.0546875	(16.6s)
+epoch: 11	train loss: 34075.53125	(16.6s)
+epoch: 12	train loss: 33073.29296875	(16.7s)
+epoch: 13	train loss: 32551.3828125	(16.6s)
+epoch: 14	train loss: 32004.06640625	(16.6s)
+epoch: 15	train loss: 31900.34375	(16.6s)
+epoch: 16	train loss: 31633.80859375	(16.6s)
+epoch: 17	train loss: 31782.236328125	(16.7s)
+epoch: 18	train loss: 31349.6796875	(16.6s)
+epoch: 19	train loss: 30863.125	(16.4s)
+epoch: 20	train loss: 30548.208984375	(16.6s)
+epoch: 21	train loss: 30391.23828125	(16.6s)
+epoch: 22	train loss: 30253.751953125	(16.7s)
+epoch: 23	train loss: 30134.322265625	(16.6s)
+epoch: 24	train loss: 29859.58984375	(16.6s)
+epoch: 25	train loss: 30111.9140625	(16.6s)
+epoch: 26	train loss: 29558.921875	(16.6s)
+epoch: 27	train loss: 29341.599609375	(16.7s)
+epoch: 28	train loss: 29282.6796875	(16.7s)
+epoch: 29	train loss: 29467.802734375	(16.6s)
+epoch: 30	train loss: 30005.68359375	(16.6s)
+epoch: 31	train loss: 29685.11328125	(16.6s)
+epoch: 32	train loss: 29335.31640625	(16.6s)
+epoch: 33	train loss: 29919.64453125	(16.7s)
+epoch: 34	train loss: 29276.193359375	(16.6s)
+epoch: 35	train loss: 29089.3203125	(16.6s)
+epoch: 36	train loss: 30102.099609375	(16.7s)
+epoch: 37	train loss: 29589.40234375	(16.6s)
+epoch: 38	train loss: 28779.564453125	(16.7s)
+epoch: 39	train loss: 28538.08984375	(16.6s)
+epoch: 40	train loss: 28466.37109375	(16.6s)
+epoch: 41	train loss: 28545.490234375	(16.6s)
+epoch: 42	train loss: 28266.0546875	(16.6s)
+epoch: 43	train loss: 28525.5390625	(16.7s)
+epoch: 44	train loss: 28384.66796875	(16.6s)
+epoch: 45	train loss: 28847.6328125	(16.6s)
+epoch: 46	train loss: 28358.01171875	(16.7s)
+epoch: 47	train loss: 28287.49609375	(16.6s)
+epoch: 48	train loss: 28249.33984375	(16.6s)
+epoch: 49	train loss: 28404.1328125	(16.6s)
+epoch: 50	train loss: 27947.263671875	(16.6s)
+epoch: 51	train loss: 27874.140625	(16.6s)
+epoch: 52	train loss: 27786.396484375	(16.6s)
+epoch: 53	train loss: 28004.919921875	(16.7s)
+epoch: 54	train loss: 28202.67578125	(16.6s)
+epoch: 55	train loss: 28052.7890625	(16.6s)
+epoch: 56	train loss: 28501.44921875	(16.6s)
+epoch: 57	train loss: 27915.916015625	(16.6s)
+epoch: 58	train loss: 27420.4296875	(16.6s)
+epoch: 59	train loss: 27707.6484375	(16.6s)
+epoch: 60	train loss: 27278.669921875	(16.5s)
+epoch: 61	train loss: 28090.603515625	(16.6s)
+epoch: 62	train loss: 29697.3984375	(16.5s)
+epoch: 63	train loss: 28238.478515625	(16.6s)
+epoch: 64	train loss: 27675.60546875	(16.5s)
+epoch: 65	train loss: 27189.201171875	(16.5s)
+epoch: 66	train loss: 27112.65625	(16.6s)
+epoch: 67	train loss: 27419.177734375	(16.6s)
+epoch: 68	train loss: 27894.48828125	(16.6s)
+epoch: 69	train loss: 28281.703125	(16.6s)
+epoch: 70	train loss: 27093.091796875	(16.6s)
+epoch: 71	train loss: 26749.14453125	(16.5s)
+epoch: 72	train loss: 26662.55859375	(16.6s)
+epoch: 73	train loss: 27095.0703125	(16.7s)
+epoch: 74	train loss: 27045.541015625	(16.7s)
+epoch: 75	train loss: 26469.513671875	(16.6s)
+epoch: 76	train loss: 26333.625	(16.6s)
+epoch: 77	train loss: 26498.302734375	(16.6s)
+epoch: 78	train loss: 26665.1640625	(16.6s)
+epoch: 79	train loss: 26996.9296875	(16.6s)
+epoch: 80	train loss: 28332.01953125	(16.6s)
+epoch: 81	train loss: 27826.0234375	(16.6s)
+epoch: 82	train loss: 27166.6796875	(16.6s)
+epoch: 83	train loss: 26891.693359375	(16.6s)
+epoch: 84	train loss: 26465.2421875	(16.7s)
+epoch: 85	train loss: 26375.68359375	(16.6s)
+epoch: 86	train loss: 26871.890625	(16.6s)
+epoch: 87	train loss: 26974.486328125	(16.6s)
+epoch: 88	train loss: 26406.771484375	(16.6s)
+epoch: 89	train loss: 26040.14453125	(16.7s)
+epoch: 90	train loss: 26192.2421875	(16.5s)
+epoch: 91	train loss: 26330.5390625	(16.6s)
+epoch: 92	train loss: 26121.2890625	(16.6s)
+epoch: 93	train loss: 26707.470703125	(16.6s)
+epoch: 94	train loss: 26700.271484375	(16.7s)
+epoch: 95	train loss: 26202.0625	(16.5s)
+epoch: 96	train loss: 26098.845703125	(16.6s)
+epoch: 97	train loss: 26841.26171875	(16.6s)
+epoch: 98	train loss: 26988.900390625	(16.6s)
+epoch: 99	train loss: 30693.685546875	(16.6s)
+Evaluating model on 200 episodes
+cc loss avg = 0.005714025581255555
+cc loss avg = 0.0023772036656737328
+cc loss avg = 0.00172456877771765
+cc loss avg = 0.005591299617663026
+cc loss avg = 0.009413635823875666
+cc loss avg = 0.002011817676248029
+cc loss avg = 0.0005105838645249605
+cc loss avg = 0.008786631631664932
+cc loss avg = 0.0012926134513691068
+cc loss avg = 0.003845554427243769
+cc loss avg = 0.0012893982930108905
+cc loss avg = 0.006162879144540057
+cc loss avg = 0.005458389932755381
+cc loss avg = 0.000826252915430814
+cc loss avg = 0.0021563188638538122
+cc loss avg = 0.004507414952968247
+cc loss avg = 0.0008389508002437651
+cc loss avg = 0.005637508196135362
+cc loss avg = 0.012006819092979034
+cc loss avg = 0.0006524617783725262
+cc loss avg = 0.010385141824372113
+cc loss avg = 0.0037596191628836094
+cc loss avg = 0.0011224148329347372
+cc loss avg = 0.0006858189590275288
+cc loss avg = 0.0038604801520705223
+cc loss avg = 0.006095861550420523
+cc loss avg = 0.001079243142157793
+cc loss avg = 0.002036775927990675
+cc loss avg = 0.008215545327402651
+cc loss avg = 0.0005702238995581865
+cc loss avg = 0.0034700935357250273
+cc loss avg = 0.0068902169005014
+cc loss avg = 0.003015223890542984
+cc loss avg = 0.007268748639035039
+cc loss avg = 0.005594591610133648
+cc loss avg = 0.009071044973097742
+cc loss avg = 0.003168884082697332
+cc loss avg = 0.001004764111712575
+cc loss avg = 0.0015242900408338755
+cc loss avg = 0.0009274762705899775
+cc loss avg = 0.0027887080796062946
+cc loss avg = 0.0010346928611397743
+cc loss avg = 0.001855280075687915
+cc loss avg = 0.007499677575348566
+cc loss avg = 0.0048528035792211694
+cc loss avg = 0.000764357449952513
+cc loss avg = 0.005370583268813789
+cc loss avg = 0.0008303025388158858
+cc loss avg = 0.0035951128229498863
+cc loss avg = 0.0010411535622552037
+cc loss avg = 0.0015667271800339222
+cc loss avg = 0.05359281931305304
+cc loss avg = 0.00807097329137226
+cc loss avg = 0.0038322488544508815
+cc loss avg = 0.001057008863426745
+cc loss avg = 0.005630134081002325
+cc loss avg = 0.004379520047223195
+cc loss avg = 0.0023493588669225574
+cc loss avg = 0.0013688787585124373
+cc loss avg = 0.008878986584022641
+cc loss avg = 0.0015708454884588718
+cc loss avg = 0.0019894273136742413
+cc loss avg = 0.0010709450580179691
+cc loss avg = 0.0061014714689614875
+cc loss avg = 0.0017029106384143233
+cc loss avg = 0.008333772944752127
+cc loss avg = 0.0014410801231861115
+cc loss avg = 0.006157327288140853
+cc loss avg = 0.0016734171658754349
+cc loss avg = 0.0011530817719176412
+cc loss avg = 0.0042908934216635925
+cc loss avg = 0.0008288383251056075
+cc loss avg = 0.006270558146449427
+cc loss avg = 0.0077188390617569285
+cc loss avg = 0.00695812824415043
+cc loss avg = 0.007590729898462693
+cc loss avg = 0.005389487060407798
+cc loss avg = 0.0007564179832115769
+cc loss avg = 0.000586682406719774
+cc loss avg = 0.003129955381155014
+cc loss avg = 0.0016316937981173396
+cc loss avg = 0.003829185967333615
+cc loss avg = 0.002125148574123159
+cc loss avg = 0.0008936435333453119
+cc loss avg = 0.001393915619701147
+cc loss avg = 0.002824259048793465
+cc loss avg = 0.006874514394439757
+cc loss avg = 0.008362091743038036
+cc loss avg = 0.007795293757226318
+cc loss avg = 0.0056343559990637004
+cc loss avg = 0.0012793504865840077
+cc loss avg = 0.0034939058435459933
+cc loss avg = 0.0005921705160290003
+cc loss avg = 0.0052808417967753485
+cc loss avg = 0.00717249665952598
+cc loss avg = 0.0046826265364264446
+cc loss avg = 0.002305326401256025
+cc loss avg = 0.0026778227038448676
+cc loss avg = 0.0006588634569197893
+cc loss avg = 0.006631008887779899
+cc loss avg = 0.004004802360820274
+cc loss avg = 0.006584776099771261
+cc loss avg = 0.003603254401241429
+cc loss avg = 0.0016798083670437336
+cc loss avg = 0.007024132025738557
+cc loss avg = 0.0015604521613568068
+Solved 106/200 episodes
+0.002281103326526742
+Evaluated model in 24.6 seconds
+Saved model for run
+X with name round-18 at path models/X-round-18__1.pt
+Round 19
+Generated trajectories in 73.5 seconds
+epoch: 0	train loss: 56845.453125	(16.8s)
+epoch: 1	train loss: 47622.8046875	(16.7s)
+epoch: 2	train loss: 43087.61328125	(16.9s)
+epoch: 3	train loss: 40586.15625	(16.9s)
+epoch: 4	train loss: 38648.69140625	(16.8s)
+epoch: 5	train loss: 37204.7265625	(16.9s)
+epoch: 6	train loss: 36061.4921875	(16.9s)
+epoch: 7	train loss: 35361.97265625	(16.8s)
+epoch: 8	train loss: 34573.47265625	(16.9s)
+epoch: 9	train loss: 33805.44140625	(16.9s)
+epoch: 10	train loss: 33319.3671875	(16.9s)
+epoch: 11	train loss: 32979.73828125	(16.9s)
+epoch: 12	train loss: 32520.345703125	(16.9s)
+epoch: 13	train loss: 32374.546875	(16.9s)
+epoch: 14	train loss: 31887.884765625	(16.9s)
+epoch: 15	train loss: 31546.71875	(16.9s)
+epoch: 16	train loss: 31593.38671875	(16.9s)
+epoch: 17	train loss: 31204.28515625	(16.8s)
+epoch: 18	train loss: 30834.74609375	(16.9s)
+epoch: 19	train loss: 30423.05078125	(16.9s)
+epoch: 20	train loss: 30316.673828125	(16.9s)
+epoch: 21	train loss: 29996.029296875	(16.9s)
+epoch: 22	train loss: 30265.810546875	(16.8s)
+epoch: 23	train loss: 30012.984375	(16.8s)
+epoch: 24	train loss: 30035.6953125	(16.9s)
+epoch: 25	train loss: 29701.5078125	(16.9s)
+epoch: 26	train loss: 29386.91015625	(16.9s)
+epoch: 27	train loss: 30173.76953125	(16.8s)
+epoch: 28	train loss: 29643.78125	(16.9s)
+epoch: 29	train loss: 29379.35546875	(16.9s)
+epoch: 30	train loss: 28954.92578125	(16.8s)
+epoch: 31	train loss: 29375.662109375	(16.9s)
+epoch: 32	train loss: 29305.990234375	(16.8s)
+epoch: 33	train loss: 28906.853515625	(16.8s)
+epoch: 34	train loss: 28850.755859375	(16.9s)
+epoch: 35	train loss: 28899.67578125	(16.9s)
+epoch: 36	train loss: 29058.99609375	(16.9s)
+epoch: 37	train loss: 29145.40234375	(16.8s)
+epoch: 38	train loss: 28835.5703125	(16.6s)
+epoch: 39	train loss: 28537.171875	(16.0s)
+epoch: 40	train loss: 28286.796875	(16.1s)
+epoch: 41	train loss: 27869.998046875	(16.0s)
+epoch: 42	train loss: 28046.45703125	(15.9s)
+epoch: 43	train loss: 27995.5703125	(15.9s)
+epoch: 44	train loss: 28016.3984375	(16.0s)
+epoch: 45	train loss: 28160.853515625	(15.9s)
+epoch: 46	train loss: 27852.328125	(16.0s)
+epoch: 47	train loss: 27895.216796875	(16.0s)
+epoch: 48	train loss: 27885.15234375	(15.9s)
+epoch: 49	train loss: 27632.2265625	(16.0s)
+epoch: 50	train loss: 27844.7734375	(16.0s)
+epoch: 51	train loss: 28364.37109375	(16.0s)
+epoch: 52	train loss: 28292.43359375	(15.9s)
+epoch: 53	train loss: 28046.8046875	(15.9s)
+epoch: 54	train loss: 27833.087890625	(15.9s)
+epoch: 55	train loss: 28003.84765625	(15.9s)
+epoch: 56	train loss: 27442.55859375	(15.9s)
+epoch: 57	train loss: 27308.751953125	(16.0s)
+epoch: 58	train loss: 27548.3984375	(15.9s)
+epoch: 59	train loss: 27499.470703125	(15.9s)
+epoch: 60	train loss: 27861.455078125	(16.0s)
+epoch: 61	train loss: 27799.1484375	(15.9s)
+epoch: 62	train loss: 27583.80078125	(16.0s)
+epoch: 63	train loss: 26970.16796875	(15.9s)
+epoch: 64	train loss: 27401.572265625	(15.9s)
+epoch: 65	train loss: 27473.458984375	(16.0s)
+epoch: 66	train loss: 27876.228515625	(16.0s)
+epoch: 67	train loss: 27209.9140625	(16.0s)
+epoch: 68	train loss: 27116.826171875	(15.9s)
+epoch: 69	train loss: 26721.390625	(15.9s)
+epoch: 70	train loss: 26690.080078125	(15.9s)
+epoch: 71	train loss: 26535.509765625	(16.0s)
+epoch: 72	train loss: 26777.078125	(16.0s)
+epoch: 73	train loss: 27136.29296875	(16.0s)
+epoch: 74	train loss: 27340.748046875	(15.9s)
+epoch: 75	train loss: 27097.498046875	(15.9s)
+epoch: 76	train loss: 26932.0234375	(16.0s)
+epoch: 77	train loss: 26777.68359375	(15.9s)
+epoch: 78	train loss: 26951.537109375	(16.0s)
+epoch: 79	train loss: 27217.228515625	(15.9s)
+epoch: 80	train loss: 27239.4140625	(15.9s)
+epoch: 81	train loss: 26688.12109375	(16.0s)
+epoch: 82	train loss: 26485.685546875	(16.0s)
+epoch: 83	train loss: 26332.75390625	(16.0s)
+epoch: 84	train loss: 26118.59765625	(15.9s)
+epoch: 85	train loss: 26350.541015625	(15.9s)
+epoch: 86	train loss: 26634.423828125	(16.0s)
+epoch: 87	train loss: 26928.5390625	(15.9s)
+epoch: 88	train loss: 26662.2421875	(16.0s)
+epoch: 89	train loss: 28269.0546875	(15.9s)
+epoch: 90	train loss: 26845.34375	(15.9s)
+epoch: 91	train loss: 26298.318359375	(15.9s)
+epoch: 92	train loss: 26233.5078125	(15.9s)
+epoch: 93	train loss: 26040.599609375	(15.9s)
+epoch: 94	train loss: 26017.25	(15.9s)
+epoch: 95	train loss: 26794.380859375	(15.8s)
+epoch: 96	train loss: 26466.572265625	(15.9s)
+epoch: 97	train loss: 26195.017578125	(15.9s)
+epoch: 98	train loss: 26065.06640625	(15.9s)
+epoch: 99	train loss: 26240.83984375	(15.9s)
+Evaluating model on 200 episodes
+cc loss avg = 0.002636970293679042
+cc loss avg = 0.003029955638339743
+cc loss avg = 0.0026935620553558692
+cc loss avg = 0.004742285857597987
+cc loss avg = 0.0027496004477143288
+cc loss avg = 0.001263087964616716
+cc loss avg = 0.002215156564489007
+cc loss avg = 0.0003379455010872334
+cc loss avg = 0.0029465483385138214
+cc loss avg = 0.0007796914433129132
+cc loss avg = 0.00041869899723678827
+cc loss avg = 0.0004172975313849747
+cc loss avg = 0.0031905375217320397
+cc loss avg = 0.005558440112508833
+cc loss avg = 0.005295014329021797
+cc loss avg = 0.0016295204404741526
+cc loss avg = 0.0003914150584023446
+cc loss avg = 0.0039771949329103036
+cc loss avg = 0.004826298837239544
+cc loss avg = 0.003964999166782945
+cc loss avg = 0.0009528900263831019
+cc loss avg = 0.0031556095054838806
+cc loss avg = 0.004556880798190832
+cc loss avg = 0.012050478835590184
+cc loss avg = 0.004829625356554364
+cc loss avg = 0.0017424016259610653
+cc loss avg = 0.0003285139973741025
+cc loss avg = 0.00041875767055898905
+cc loss avg = 0.0020268024745746516
+cc loss avg = 0.005093017457208286
+cc loss avg = 0.003340432265152534
+cc loss avg = 0.007866851054131985
+cc loss avg = 0.01222065074640947
+cc loss avg = 0.004026522205094807
+cc loss avg = 0.004679343430325389
+cc loss avg = 0.0002993315283674747
+cc loss avg = 0.013335334966541268
+cc loss avg = 0.00022688618628308177
+cc loss avg = 0.005596035751902188
+cc loss avg = 0.0074277815874665976
+cc loss avg = 0.00765412300825119
+cc loss avg = 0.005020670515174667
+cc loss avg = 0.0009841213468462229
+cc loss avg = 0.006397465476766229
+cc loss avg = 0.0037807777989655733
+cc loss avg = 0.0001924046955537051
+cc loss avg = 0.0013099120891032119
+cc loss avg = 0.003137333784252405
+cc loss avg = 0.003889573272317648
+cc loss avg = 0.0010252193314954638
+cc loss avg = 0.0013754522369708866
+cc loss avg = 0.012447551474906504
+cc loss avg = 0.006131355029841264
+cc loss avg = 0.0012712335446849465
+cc loss avg = 0.008955630473792553
+cc loss avg = 0.0002836940111592412
+cc loss avg = 0.0004542961542028934
+cc loss avg = 0.001640110684093088
+cc loss avg = 0.0005230306414887309
+cc loss avg = 0.009955260378774256
+cc loss avg = 0.0012034239480271935
+cc loss avg = 0.0033940611319849268
+cc loss avg = 0.006649235816439614
+cc loss avg = 0.00230633512546774
+cc loss avg = 0.0011730086989700794
+cc loss avg = 0.004349725437350571
+cc loss avg = 0.00992950665143629
+cc loss avg = 0.005879144213395193
+cc loss avg = 0.00090984751295764
+cc loss avg = 0.006980072124861181
+cc loss avg = 0.003874546237057075
+cc loss avg = 0.003554886221536435
+cc loss avg = 0.002157922543119639
+cc loss avg = 0.0020746476657222956
+cc loss avg = 0.005257955558287601
+cc loss avg = 0.0004849403048865497
+cc loss avg = 0.005598456346585105
+cc loss avg = 0.0005704690120182931
+cc loss avg = 0.003634081454947591
+cc loss avg = 0.0001934936153702438
+cc loss avg = 0.003691235513542779
+cc loss avg = 0.004472324508242309
+cc loss avg = 0.0002552906225901097
+cc loss avg = 0.0031610463047400117
+cc loss avg = 0.004882377727578084
+cc loss avg = 0.0017756191082298756
+cc loss avg = 0.0010342332534492016
+cc loss avg = 0.00288599244231591
+cc loss avg = 0.001921207302075345
+cc loss avg = 0.009526560956146568
+cc loss avg = 0.0005012202309444547
+cc loss avg = 0.00018627893587108701
+cc loss avg = 0.0003209549468010664
+cc loss avg = 0.003313621738925576
+cc loss avg = 0.005540880064169566
+cc loss avg = 0.0014388388663064688
+cc loss avg = 0.0027779709198512137
+cc loss avg = 0.0009522662148810923
+cc loss avg = 0.0029395320161711425
+cc loss avg = 0.007115330779924989
+cc loss avg = 0.00017855865007732064
+cc loss avg = 0.007473233932008346
+cc loss avg = 0.0002527073957026005
+cc loss avg = 0.009518671877837429
+cc loss avg = 0.0009288072469644248
+cc loss avg = 0.00016379464068450034
+cc loss avg = 0.006340909603750333
+cc loss avg = 0.007717613060958683
+Solved 108/200 episodes
+0.0019255521146587856
+Evaluated model in 22.1 seconds
+Saved model for run
+X with name round-19 at path models/X-round-19__1.pt
+Completed training in 35606.1 seconds
+Solved 24/200 episodes
+Solved 32/200 episodes
+Solved 22/200 episodes
+Solved 24/200 episodes
+Solved 28/200 episodes
+Solved 35/200 episodes
+Solved 46/200 episodes
+Solved 50/200 episodes
+Solved 74/200 episodes
+Solved 73/200 episodes
+Solved 87/200 episodes
+Solved 77/200 episodes
+Solved 84/200 episodes
+Solved 92/200 episodes
+Solved 113/200 episodes
+Solved 109/200 episodes
+Solved 109/200 episodes
+Solved 108/200 episodes
+Solved 106/200 episodes
+Solved 108/200 episodes

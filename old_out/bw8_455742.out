@@ -1,0 +1,11 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-67
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 256, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 237, in boxworld_main
+    data = BoxWorldDataset(BoxWorldEnv(), n=params['n'], traj=True)
+NameError: name 'BoxWorldDataset' is not defined
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 46 operations to synchronize with Neptune. Do not kill this process.
+All 46 operations synced, thanks for waiting!

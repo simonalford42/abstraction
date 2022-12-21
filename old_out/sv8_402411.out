@@ -1,0 +1,36 @@
+Using torch device NVIDIA GeForce RTX 3090
+traj-level training without hmm
+New box world environment
+Net has 37608 parameters
+Round 0
+Generated trajectories in 80.0 seconds
+net has 37608 parameters
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 61.67293167114258	(40s)
+epoch: 50	train loss: 27.034530639648438	(40s)
+epoch: 100	train loss: 29.465518951416016	(40s)
+epoch: 150	train loss: 25.775836944580078	(40s)
+epoch: 200	train loss: 22.811552047729492	(40s)
+epoch: 250	train loss: 18.901594161987305	(40s)
+epoch: 300	train loss: 23.825002670288086	(40s)
+epoch: 350	train loss: 19.3215274810791	(42s)
+epoch: 400	train loss: 17.156452178955078	(40s)
+epoch: 450	train loss: 13.921110153198242	(40s)
+Saved model at models/model_1-21__6.pt
+Saved model for run
+749f338960f84a36af2e734496cf39d4 with name model
+Round 1
+Generated trajectories in 79.3 seconds
+net has 37608 parameters
+epoch: 0	train loss: 19.581092834472656	(40s)
+epoch: 95	train loss: 7.664281368255615	(42s)
+epoch: 190	train loss: 4.349747180938721	(42s)
+epoch: 285	train loss: 8.60168743133545	(41s)
+epoch: 380	train loss: 3.7212984561920166	(41s)
+Saved model at models/model_1-21__8.pt
+Saved model for run
+749f338960f84a36af2e734496cf39d4 with name model
+Round 2
+/var/spool/slurmd/job402411/slurm_script: line 17: 834291 Killed                  python -u main.py
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=402411.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.

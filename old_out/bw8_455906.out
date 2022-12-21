@@ -1,0 +1,54 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-71
+params: {'epochs': 400, 'lr': 0.0008, 'n': 5000, 'batch_size': 10}
+Net has 37803 parameters
+Round 0
+Non-disk data
+Generated trajectories in 71.2 seconds
+epoch: 0	train loss: 156210.1072769165	(10.5s)
+epoch: 10	train loss: 59655.44066143036	(10.0s)
+epoch: 20	train loss: 54447.86725330353	(10.0s)
+epoch: 30	train loss: 51126.24544382095	(10.0s)
+epoch: 40	train loss: 49712.82983827591	(10.0s)
+epoch: 50	train loss: 48799.13686513901	(10.1s)
+epoch: 60	train loss: 47319.98162984848	(9.9s)
+epoch: 70	train loss: 46495.668493270874	(10.0s)
+epoch: 80	train loss: 45793.43847322464	(10.0s)
+epoch: 90	train loss: 45135.283269405365	(9.9s)
+epoch: 100	train loss: 44145.79280090332	(10.0s)
+epoch: 110	train loss: 43865.21005654335	(9.9s)
+epoch: 120	train loss: 42928.89572381973	(10.0s)
+epoch: 130	train loss: 39505.249158144	(9.9s)
+epoch: 140	train loss: 24386.025208324194	(10.1s)
+epoch: 150	train loss: 19300.465827405453	(10.0s)
+epoch: 160	train loss: 17882.36121726036	(10.0s)
+epoch: 170	train loss: 16668.192618906498	(10.0s)
+epoch: 180	train loss: 15659.478773713112	(10.0s)
+epoch: 190	train loss: 14234.853581160307	(10.0s)
+epoch: 200	train loss: 13247.970255754888	(10.1s)
+epoch: 210	train loss: 13207.064721733332	(10.1s)
+epoch: 220	train loss: 11673.491531141102	(10.2s)
+epoch: 230	train loss: 10765.74947220087	(10.0s)
+epoch: 240	train loss: 11264.49478136003	(10.0s)
+epoch: 250	train loss: 11711.076627617702	(10.0s)
+epoch: 260	train loss: 8979.653617464006	(10.0s)
+epoch: 270	train loss: 6495.081319227815	(10.0s)
+epoch: 280	train loss: 6570.521775840782	(10.0s)
+epoch: 290	train loss: 6390.863087951206	(10.0s)
+epoch: 300	train loss: 5413.694569651969	(10.0s)
+epoch: 310	train loss: 3405.3417848395184	(10.0s)
+epoch: 320	train loss: 3622.7248027082533	(10.0s)
+epoch: 330	train loss: 4759.180097557139	(10.0s)
+epoch: 340	train loss: 3107.3990562678664	(10.0s)
+epoch: 350	train loss: 4455.30950448988	(9.9s)
+epoch: 360	train loss: 2996.3151801321656	(10.0s)
+epoch: 370	train loss: 2698.9352408293635	(10.2s)
+epoch: 380	train loss: 2930.6996631596703	(10.0s)
+epoch: 390	train loss: 2300.2410106910393	(10.0s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluated model in 12.5 seconds
+Completed training in 4084.9 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 8 operations to synchronize with Neptune. Do not kill this process.
+All 8 operations synced, thanks for waiting!

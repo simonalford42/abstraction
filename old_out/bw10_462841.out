@@ -1,0 +1,22 @@
+Starting run:
+f010d587f3934016857a326cfe8ca6c3
+params: {'n': 50000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN Xp', 'epochs': 200, 'test_every': 10, 'save_every': 10, 'id': 'f010d587f3934016857a326cfe8ca6c3'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.175
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-0.pt
+Epoch 10	 test acc 0.16
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-10.pt
+Epoch 20	 test acc 0.235
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-20.pt
+Epoch 30	 test acc 0.22
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-30.pt
+Epoch 40	 test acc 0.15
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-40.pt
+Epoch 50	 test acc 0.11
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-50.pt
+Epoch 60	 test acc 0.16
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-60.pt
+Epoch 70	 test acc 0.205
+Saved model at models/f010d587f3934016857a326cfe8ca6c3-epoch-70.pt
+slurmstepd: error: *** JOB 462841 ON sablab-gpu-01 CANCELLED AT 2022-03-30T21:55:28 ***

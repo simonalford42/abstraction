@@ -1,0 +1,369 @@
+Using torch device NVIDIA GeForce RTX 3090
+homo controller
+net: causal
+cc_weight: 0.5
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 73.9 seconds
+epoch: 0	train loss: 99535.8671875	(264.4s)
+epoch: 20	train loss: 26487.435546875	(274.3s)
+epoch: 40	train loss: 20993.634765625	(272.1s)
+epoch: 60	train loss: 20172.77734375	(272.1s)
+epoch: 80	train loss: 20924.974609375	(274.4s)
+Evaluating model on 200 episodes
+i: 0
+Quitting due to 5 repeated moves
+i: 1
+Quitting due to 5 repeated moves
+i: 2
+Quitting due to 5 repeated moves
+i: 3
+Quitting due to 5 repeated moves
+i: 4
+i: 5
+i: 6
+i: 7
+i: 8
+Quitting due to 5 repeated moves
+i: 9
+Quitting due to 5 repeated moves
+i: 10
+i: 11
+i: 12
+Quitting due to 5 repeated moves
+i: 13
+Quitting due to 5 repeated moves
+i: 14
+Quitting due to 5 repeated moves
+i: 15
+Quitting due to 5 repeated moves
+i: 16
+Quitting due to 5 repeated moves
+i: 17
+Quitting due to 5 repeated moves
+i: 18
+i: 19
+Quitting due to 5 repeated moves
+i: 20
+i: 21
+Quitting due to 5 repeated moves
+i: 22
+i: 23
+Quitting due to 5 repeated moves
+i: 24
+i: 25
+i: 26
+Quitting due to 5 repeated moves
+i: 27
+i: 28
+Quitting due to 5 repeated moves
+i: 29
+Quitting due to 5 repeated moves
+i: 30
+Quitting due to 5 repeated moves
+i: 31
+Quitting due to 5 repeated moves
+i: 32
+Quitting due to 5 repeated moves
+i: 33
+i: 34
+Quitting due to 5 repeated moves
+i: 35
+Quitting due to 5 repeated moves
+i: 36
+Quitting due to 5 repeated moves
+i: 37
+i: 38
+i: 39
+Quitting due to 5 repeated moves
+i: 40
+i: 41
+i: 42
+Quitting due to 5 repeated moves
+i: 43
+Quitting due to 5 repeated moves
+i: 44
+i: 45
+Quitting due to 5 repeated moves
+i: 46
+Quitting due to 5 repeated moves
+i: 47
+Quitting due to 5 repeated moves
+i: 48
+Quitting due to 5 repeated moves
+i: 49
+Quitting due to 5 repeated moves
+i: 50
+Quitting due to 5 repeated moves
+i: 51
+i: 52
+Quitting due to 5 repeated moves
+i: 53
+Quitting due to 5 repeated moves
+i: 54
+Quitting due to 5 repeated moves
+i: 55
+Quitting due to 5 repeated moves
+i: 56
+i: 57
+Quitting due to 5 repeated moves
+i: 58
+i: 59
+i: 60
+i: 61
+Quitting due to 5 repeated moves
+i: 62
+Quitting due to 5 repeated moves
+i: 63
+Quitting due to 5 repeated moves
+i: 64
+Quitting due to 5 repeated moves
+i: 65
+Quitting due to 5 repeated moves
+i: 66
+Quitting due to 5 repeated moves
+i: 67
+Quitting due to 5 repeated moves
+i: 68
+i: 69
+i: 70
+Quitting due to 5 repeated moves
+i: 71
+i: 72
+Quitting due to 5 repeated moves
+i: 73
+Quitting due to 5 repeated moves
+i: 74
+i: 75
+i: 76
+Quitting due to 5 repeated moves
+i: 77
+i: 78
+i: 79
+Quitting due to 5 repeated moves
+i: 80
+Quitting due to 5 repeated moves
+i: 81
+Quitting due to 5 repeated moves
+i: 82
+i: 83
+Quitting due to 5 repeated moves
+i: 84
+Quitting due to 5 repeated moves
+i: 85
+i: 86
+Quitting due to 5 repeated moves
+i: 87
+Quitting due to 5 repeated moves
+i: 88
+Quitting due to 5 repeated moves
+i: 89
+Quitting due to 5 repeated moves
+i: 90
+i: 91
+Quitting due to 5 repeated moves
+i: 92
+Quitting due to 5 repeated moves
+i: 93
+i: 94
+Quitting due to 5 repeated moves
+i: 95
+Quitting due to 5 repeated moves
+i: 96
+i: 97
+Quitting due to 5 repeated moves
+i: 98
+Quitting due to 5 repeated moves
+i: 99
+i: 100
+Quitting due to 5 repeated moves
+i: 101
+Quitting due to 5 repeated moves
+i: 102
+i: 103
+Quitting due to 5 repeated moves
+i: 104
+Quitting due to 5 repeated moves
+i: 105
+Quitting due to 5 repeated moves
+i: 106
+Quitting due to 5 repeated moves
+i: 107
+Quitting due to 5 repeated moves
+i: 108
+Quitting due to 5 repeated moves
+i: 109
+i: 110
+Quitting due to 5 repeated moves
+i: 111
+Quitting due to 5 repeated moves
+i: 112
+Quitting due to 5 repeated moves
+i: 113
+Quitting due to 5 repeated moves
+i: 114
+Quitting due to 5 repeated moves
+i: 115
+Quitting due to 5 repeated moves
+i: 116
+i: 117
+Quitting due to 5 repeated moves
+i: 118
+Quitting due to 5 repeated moves
+i: 119
+i: 120
+i: 121
+Quitting due to 5 repeated moves
+i: 122
+Quitting due to 5 repeated moves
+i: 123
+Quitting due to 5 repeated moves
+i: 124
+Quitting due to 5 repeated moves
+i: 125
+Quitting due to 5 repeated moves
+i: 126
+Quitting due to 5 repeated moves
+i: 127
+i: 128
+i: 129
+Quitting due to 5 repeated moves
+i: 130
+Quitting due to 5 repeated moves
+i: 131
+Quitting due to 5 repeated moves
+i: 132
+i: 133
+Quitting due to 5 repeated moves
+i: 134
+Quitting due to 5 repeated moves
+i: 135
+i: 136
+i: 137
+Quitting due to 5 repeated moves
+i: 138
+i: 139
+Quitting due to 5 repeated moves
+i: 140
+i: 141
+i: 142
+Quitting due to 5 repeated moves
+i: 143
+Quitting due to 5 repeated moves
+i: 144
+Quitting due to 5 repeated moves
+i: 145
+Quitting due to 5 repeated moves
+i: 146
+Quitting due to 5 repeated moves
+i: 147
+i: 148
+i: 149
+Quitting due to 5 repeated moves
+i: 150
+Quitting due to 5 repeated moves
+i: 151
+i: 152
+Quitting due to 5 repeated moves
+i: 153
+Quitting due to 5 repeated moves
+i: 154
+Quitting due to 5 repeated moves
+i: 155
+Quitting due to 5 repeated moves
+i: 156
+i: 157
+Quitting due to 5 repeated moves
+i: 158
+Quitting due to 5 repeated moves
+i: 159
+i: 160
+Quitting due to 5 repeated moves
+i: 161
+Quitting due to 5 repeated moves
+i: 162
+Quitting due to 5 repeated moves
+i: 163
+Quitting due to 5 repeated moves
+i: 164
+i: 165
+Quitting due to 5 repeated moves
+i: 166
+Quitting due to 5 repeated moves
+i: 167
+Quitting due to 5 repeated moves
+i: 168
+i: 169
+i: 170
+i: 171
+Quitting due to 5 repeated moves
+i: 172
+Quitting due to 5 repeated moves
+i: 173
+i: 174
+Quitting due to 5 repeated moves
+i: 175
+i: 176
+i: 177
+i: 178
+i: 179
+Quitting due to 5 repeated moves
+i: 180
+i: 181
+Quitting due to 5 repeated moves
+i: 182
+i: 183
+i: 184
+i: 185
+Quitting due to 5 repeated moves
+i: 186
+Quitting due to 5 repeated moves
+i: 187
+Quitting due to 5 repeated moves
+i: 188
+i: 189
+Quitting due to 5 repeated moves
+i: 190
+i: 191
+Quitting due to 5 repeated moves
+i: 192
+Quitting due to 5 repeated moves
+i: 193
+Quitting due to 5 repeated moves
+i: 194
+Quitting due to 5 repeated moves
+i: 195
+Quitting due to 5 repeated moves
+i: 196
+i: 197
+Quitting due to 5 repeated moves
+i: 198
+Quitting due to 5 repeated moves
+i: 199
+Quitting due to 5 repeated moves
+Solved 31/200 episodes
+Evaluated model in 20.3 seconds
+Saved model for run
+0cabe5f39c074872a7b62ab89090d808 with name round-0
+Round 1
+Generated trajectories in 71.5 seconds
+epoch: 0	train loss: 48231.375	(266.1s)
+epoch: 20	train loss: 29372.275390625	(269.2s)
+epoch: 40	train loss: 25065.8515625	(253.7s)
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 162, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 154, in boxworld_main
+    boxworld_outer_sv(
+  File "/home/sca63/abstraction/main.py", line 71, in boxworld_outer_sv
+    sv_train(dataloader, net, epochs=epochs, lr=lr,
+  File "/home/sca63/abstraction/main.py", line 25, in sv_train
+    loss = net(s_i_batch, actions_batch, lengths)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 285, in forward
+    logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens)
+  File "/home/sca63/abstraction/hmm.py", line 182, in cc_loss
+    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+AssertionError: fw: -2.384185791015625e-06, bw: -2.5033946258190554e-06

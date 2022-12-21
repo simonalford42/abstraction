@@ -1,0 +1,85 @@
+Starting run:
+30c815e66d0c45e996095efeba3c712d
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 2.0, 'model': 'cc', 'seed': 1, 'neptune': False, 'no_log': False, 'device': 'NVIDIA TITAN X (Pascal)', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '30c815e66d0c45e996095efeba3c712d'}
+train
+Net has 206996 parameters
+Correct solved pred %: 0.00
+Epoch 0	 test acc 0.0
+reloading data
+Correct solved pred %: 1.00
+Epoch 100	 test acc 0.16
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 200	 test acc 0.15
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 300	 test acc 0.185
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 400	 test acc 0.27
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 500	 test acc 0.28
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 600	 test acc 0.34
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 700	 test acc 0.44
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 800	 test acc 0.41
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 900	 test acc 0.45
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-900.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1000	 test acc 0.465
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1000.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1100	 test acc 0.455
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1200	 test acc 0.49
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1300	 test acc 0.465
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1400	 test acc 0.515
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1500	 test acc 0.535
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1600	 test acc 0.485
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1700	 test acc 0.5
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1800	 test acc 0.59
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1900	 test acc 0.48
+Saved model at models/30c815e66d0c45e996095efeba3c712d-epoch-1900.pt
+Saved model at models/30c815e66d0c45e996095efeba3c712d.pt
+Completed training in 159844.8 seconds

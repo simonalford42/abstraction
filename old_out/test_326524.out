@@ -1,0 +1,36 @@
+test
+job number = 0
+args.lr: 0.0001
+args.big: True
+args.batch_size: 64
+args.all_conv: True
+Training on NVIDIA GeForce RTX 3090
+generating trajectories
+trajectories generated
+round 0
+net has 36236 parameters
+epoch: 0	train loss: 1.5439306497573853	(0.3s)
+epoch: 1	train loss: 0.9710692763328552	(0.1s)
+epoch: 2	train loss: 1.1062378883361816	(0.1s)
+epoch: 3	train loss: 0.8059396147727966	(0.1s)
+epoch: 4	train loss: 0.8076073527336121	(0.1s)
+epoch: 5	train loss: 0.9084076881408691	(0.1s)
+epoch: 6	train loss: 0.9762319326400757	(0.1s)
+epoch: 7	train loss: 0.9452747106552124	(0.1s)
+epoch: 8	train loss: 0.9043917655944824	(0.1s)
+epoch: 9	train loss: 0.7825123071670532	(0.1s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 1
+net has 36236 parameters
+epoch: 0	train loss: 0.8582139611244202	(0.1s)
+epoch: 1	train loss: 1.1837860345840454	(0.1s)
+epoch: 2	train loss: 0.661620020866394	(0.1s)
+epoch: 3	train loss: 0.8565986752510071	(0.1s)
+epoch: 4	train loss: 0.8864090442657471	(0.1s)
+epoch: 5	train loss: 0.7510418891906738	(0.1s)
+epoch: 6	train loss: 0.6265438795089722	(0.1s)
+epoch: 7	train loss: 0.5211436748504639	(0.1s)
+epoch: 8	train loss: 0.6965430974960327	(0.1s)
+epoch: 9	train loss: 0.48457634449005127	(0.1s)
+Evaluating model on 50 episodes

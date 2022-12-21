@@ -1,0 +1,186 @@
+Using torch device NVIDIA GeForce RTX 3090
+relational net params=41898
+hmm training!
+b: 10
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 41898 parameters
+Round 0
+Generated trajectories in 72.1 seconds
+epoch: 0	train loss: 110123.0625	(31.5s)
+epoch: 20	train loss: 33191.44140625	(30.9s)
+epoch: 40	train loss: 28779.943359375	(31.0s)
+epoch: 60	train loss: 27188.34375	(30.9s)
+epoch: 80	train loss: 25452.482421875	(30.9s)
+Evaluated model in 16.4 seconds
+Saved model at models/hmm-homo_round-0__(2).pt
+Round 1
+Generated trajectories in 72.2 seconds
+epoch: 0	train loss: 27033.34765625	(30.9s)
+epoch: 20	train loss: 23921.5859375	(30.5s)
+epoch: 40	train loss: 22690.169921875	(31.0s)
+epoch: 60	train loss: 21484.703125	(30.8s)
+epoch: 80	train loss: 20751.048828125	(31.0s)
+Evaluated model in 13.6 seconds
+Saved model at models/hmm-homo_round-1__(1).pt
+Round 2
+Generated trajectories in 72.3 seconds
+epoch: 0	train loss: 26521.068359375	(30.6s)
+epoch: 20	train loss: 22181.6015625	(31.0s)
+epoch: 40	train loss: 21013.30859375	(31.3s)
+epoch: 60	train loss: 20348.693359375	(30.6s)
+epoch: 80	train loss: 19255.302734375	(30.6s)
+Evaluated model in 12.4 seconds
+Saved model at models/hmm-homo_round-2__(1).pt
+Round 3
+Generated trajectories in 69.1 seconds
+epoch: 0	train loss: 26548.892578125	(30.7s)
+epoch: 20	train loss: 21351.814453125	(30.9s)
+epoch: 40	train loss: 19869.712890625	(31.0s)
+epoch: 60	train loss: 19431.966796875	(30.9s)
+epoch: 80	train loss: 18012.734375	(31.5s)
+Evaluated model in 12.1 seconds
+Saved model at models/hmm-homo_round-3__(1).pt
+Round 4
+Generated trajectories in 69.1 seconds
+epoch: 0	train loss: 25706.123046875	(30.6s)
+epoch: 20	train loss: 20298.826171875	(30.5s)
+epoch: 40	train loss: 18751.671875	(30.8s)
+epoch: 60	train loss: 17629.615234375	(30.8s)
+epoch: 80	train loss: 17424.271484375	(30.4s)
+Evaluated model in 11.5 seconds
+Saved model at models/hmm-homo_round-4__(1).pt
+Round 5
+Generated trajectories in 70.8 seconds
+epoch: 0	train loss: 23400.6171875	(30.6s)
+epoch: 20	train loss: 18147.642578125	(30.7s)
+epoch: 40	train loss: 17391.72265625	(30.8s)
+epoch: 60	train loss: 17424.900390625	(30.8s)
+epoch: 80	train loss: 16080.26171875	(30.5s)
+Evaluated model in 10.8 seconds
+Saved model at models/hmm-homo_round-5__(1).pt
+Round 6
+Generated trajectories in 70.9 seconds
+epoch: 0	train loss: 22765.0078125	(30.3s)
+epoch: 20	train loss: 17890.779296875	(30.7s)
+epoch: 40	train loss: 17406.69140625	(30.7s)
+epoch: 60	train loss: 17182.16015625	(30.7s)
+epoch: 80	train loss: 15036.888671875	(30.8s)
+Evaluated model in 12.2 seconds
+Saved model at models/hmm-homo_round-6__(1).pt
+Round 7
+Generated trajectories in 71.8 seconds
+epoch: 0	train loss: 22946.654296875	(31.2s)
+epoch: 20	train loss: 17871.955078125	(31.3s)
+epoch: 40	train loss: 18830.587890625	(31.2s)
+epoch: 60	train loss: 17246.849609375	(31.2s)
+epoch: 80	train loss: 16209.5146484375	(31.3s)
+Evaluated model in 11.3 seconds
+Saved model at models/hmm-homo_round-7__(1).pt
+Round 8
+Generated trajectories in 71.4 seconds
+epoch: 0	train loss: 22503.626953125	(31.2s)
+epoch: 20	train loss: 18026.63671875	(31.1s)
+epoch: 40	train loss: 16768.95703125	(31.0s)
+epoch: 60	train loss: 15520.5068359375	(32.9s)
+epoch: 80	train loss: 15576.5458984375	(32.5s)
+Evaluated model in 10.3 seconds
+Saved model at models/hmm-homo_round-8__(1).pt
+Round 9
+Generated trajectories in 69.6 seconds
+epoch: 0	train loss: 22012.01171875	(32.5s)
+epoch: 20	train loss: 18217.51171875	(32.6s)
+epoch: 40	train loss: 16425.58984375	(32.2s)
+epoch: 60	train loss: 15671.3662109375	(32.6s)
+epoch: 80	train loss: 15276.1181640625	(32.4s)
+Evaluated model in 11.1 seconds
+Saved model at models/hmm-homo_round-9__(1).pt
+Round 10
+Generated trajectories in 69.7 seconds
+epoch: 0	train loss: 21888.328125	(32.2s)
+epoch: 20	train loss: 17226.96484375	(32.3s)
+epoch: 40	train loss: 16541.373046875	(32.0s)
+epoch: 60	train loss: 15012.6669921875	(33.2s)
+epoch: 80	train loss: 14902.9453125	(32.1s)
+Evaluated model in 10.8 seconds
+Saved model at models/hmm-homo_round-10__(1).pt
+Round 11
+Generated trajectories in 69.6 seconds
+epoch: 0	train loss: 20969.884765625	(32.0s)
+epoch: 20	train loss: 16484.697265625	(32.3s)
+epoch: 40	train loss: 15200.05078125	(32.1s)
+epoch: 60	train loss: 14479.5146484375	(32.5s)
+epoch: 80	train loss: 13399.0673828125	(32.0s)
+Evaluated model in 11.8 seconds
+Saved model at models/hmm-homo_round-11__(1).pt
+Round 12
+Generated trajectories in 69.9 seconds
+epoch: 0	train loss: 20785.466796875	(32.7s)
+epoch: 20	train loss: 15391.70703125	(32.7s)
+epoch: 40	train loss: 13067.72265625	(32.7s)
+epoch: 60	train loss: 11932.8447265625	(32.4s)
+epoch: 80	train loss: 12005.1708984375	(32.6s)
+Evaluated model in 11.3 seconds
+Saved model at models/hmm-homo_round-12__(1).pt
+Round 13
+Generated trajectories in 69.4 seconds
+epoch: 0	train loss: 16742.7109375	(32.1s)
+epoch: 20	train loss: 8852.84375	(32.3s)
+epoch: 40	train loss: 6917.5380859375	(32.6s)
+epoch: 60	train loss: 5782.982421875	(32.6s)
+epoch: 80	train loss: 4917.34228515625	(32.5s)
+Evaluated model in 12.2 seconds
+Saved model at models/hmm-homo_round-13__(1).pt
+Round 14
+Generated trajectories in 69.8 seconds
+epoch: 0	train loss: 9539.0986328125	(32.9s)
+epoch: 20	train loss: 8366.19140625	(32.7s)
+epoch: 40	train loss: 5293.10986328125	(32.8s)
+epoch: 60	train loss: 4257.837890625	(32.5s)
+epoch: 80	train loss: 3731.864501953125	(32.5s)
+Evaluated model in 14.6 seconds
+Saved model at models/hmm-homo_round-14__(1).pt
+Round 15
+Generated trajectories in 69.1 seconds
+epoch: 0	train loss: 7060.27783203125	(31.8s)
+epoch: 20	train loss: 4380.39794921875	(32.6s)
+epoch: 40	train loss: 3690.62841796875	(32.1s)
+epoch: 60	train loss: 3033.907958984375	(32.2s)
+epoch: 80	train loss: 3290.292724609375	(31.7s)
+Evaluated model in 13.5 seconds
+Saved model at models/hmm-homo_round-15__(1).pt
+Round 16
+Generated trajectories in 69.8 seconds
+epoch: 0	train loss: 5369.1708984375	(32.1s)
+epoch: 20	train loss: 3181.867431640625	(32.4s)
+epoch: 40	train loss: 2597.362060546875	(32.3s)
+epoch: 60	train loss: 2796.844482421875	(32.2s)
+epoch: 80	train loss: 2657.350341796875	(32.5s)
+Evaluated model in 14.5 seconds
+Saved model at models/hmm-homo_round-16__(1).pt
+Round 17
+Generated trajectories in 70.1 seconds
+epoch: 0	train loss: 4768.12744140625	(32.3s)
+epoch: 20	train loss: 2585.58740234375	(32.7s)
+epoch: 40	train loss: 2073.1826171875	(32.6s)
+epoch: 60	train loss: 2159.322509765625	(32.6s)
+epoch: 80	train loss: 1735.0992431640625	(32.6s)
+Evaluated model in 14.1 seconds
+Saved model at models/hmm-homo_round-17__(1).pt
+Round 18
+Generated trajectories in 69.7 seconds
+epoch: 0	train loss: 3444.817626953125	(32.4s)
+epoch: 20	train loss: 3268.252197265625	(32.4s)
+epoch: 40	train loss: 2112.468505859375	(32.4s)
+epoch: 60	train loss: 1143.416748046875	(32.4s)
+epoch: 80	train loss: 2005.4464111328125	(32.2s)
+Evaluated model in 14.8 seconds
+Saved model at models/hmm-homo_round-18__(1).pt
+Round 19
+Generated trajectories in 69.8 seconds
+epoch: 0	train loss: 3127.871826171875	(33.0s)
+epoch: 20	train loss: 5286.58447265625	(32.6s)
+epoch: 40	train loss: 1465.0809326171875	(32.6s)
+epoch: 60	train loss: 1085.3558349609375	(32.8s)
+epoch: 80	train loss: 1515.33984375	(31.2s)
+Evaluated model in 15.5 seconds
+Saved model at models/hmm-homo_round-19__(1).pt

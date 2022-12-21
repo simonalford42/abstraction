@@ -1,0 +1,109 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-88
+outer sv
+params: {'epochs': 10, 'lr': 0.0008, 'n': 5000, 'batch_size': 10}
+Net has 37803 parameters
+Round 0
+epoch: 0	train loss: 161468.74509429932	(23.2s)
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluated model in 49.4 seconds
+Round 1
+epoch: 0	train loss: 59478.788573265076	(22.8s)
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluated model in 46.5 seconds
+Round 2
+epoch: 0	train loss: 53222.005250930786	(22.7s)
+Evaluating model on 200 episodes
+Solved 65/200 episodes
+Evaluated model in 39.6 seconds
+Round 3
+epoch: 0	train loss: 50366.9160118103	(22.1s)
+Evaluating model on 200 episodes
+Solved 58/200 episodes
+Evaluated model in 42.3 seconds
+Round 4
+epoch: 0	train loss: 48749.38005876541	(22.7s)
+Evaluating model on 200 episodes
+Solved 38/200 episodes
+Evaluated model in 47.5 seconds
+Round 5
+epoch: 0	train loss: 47618.09501338005	(22.6s)
+Evaluating model on 200 episodes
+Solved 35/200 episodes
+Evaluated model in 50.5 seconds
+Round 6
+epoch: 0	train loss: 46801.24492120743	(22.4s)
+Evaluating model on 200 episodes
+Solved 40/200 episodes
+Evaluated model in 47.8 seconds
+Round 7
+epoch: 0	train loss: 45512.881316661835	(23.2s)
+Evaluating model on 200 episodes
+Solved 56/200 episodes
+Evaluated model in 38.5 seconds
+Round 8
+epoch: 0	train loss: 41851.70536327362	(21.7s)
+Evaluating model on 200 episodes
+Solved 58/200 episodes
+Evaluated model in 41.5 seconds
+Round 9
+epoch: 0	train loss: 38206.21476781368	(22.8s)
+Evaluating model on 200 episodes
+Solved 59/200 episodes
+Evaluated model in 39.4 seconds
+Round 10
+epoch: 0	train loss: 35455.95320749283	(22.9s)
+Evaluating model on 200 episodes
+Solved 70/200 episodes
+Evaluated model in 35.4 seconds
+Round 11
+epoch: 0	train loss: 33499.77049601078	(22.7s)
+Evaluating model on 200 episodes
+Solved 72/200 episodes
+Evaluated model in 40.6 seconds
+Round 12
+epoch: 0	train loss: 31534.131503582	(22.3s)
+Evaluating model on 200 episodes
+Solved 80/200 episodes
+Evaluated model in 37.4 seconds
+Round 13
+epoch: 0	train loss: 29921.800839662552	(22.6s)
+Evaluating model on 200 episodes
+Solved 83/200 episodes
+Evaluated model in 35.4 seconds
+Round 14
+epoch: 0	train loss: 28423.974639356136	(22.2s)
+Evaluating model on 200 episodes
+Solved 94/200 episodes
+Evaluated model in 32.9 seconds
+Round 15
+epoch: 0	train loss: 26675.039468884468	(22.3s)
+Evaluating model on 200 episodes
+Solved 75/200 episodes
+Evaluated model in 29.5 seconds
+Round 16
+epoch: 0	train loss: 25141.560462534428	(22.4s)
+Evaluating model on 200 episodes
+Solved 96/200 episodes
+Evaluated model in 28.5 seconds
+Round 17
+epoch: 0	train loss: 23566.470853284	(22.5s)
+Evaluating model on 200 episodes
+Solved 110/200 episodes
+Evaluated model in 31.1 seconds
+Round 18
+epoch: 0	train loss: 22123.248471572995	(22.0s)
+Evaluating model on 200 episodes
+Solved 109/200 episodes
+Evaluated model in 27.5 seconds
+Round 19
+epoch: 0	train loss: 20606.453201562166	(22.0s)
+Evaluating model on 200 episodes
+Solved 110/200 episodes
+Evaluated model in 29.1 seconds
+Completed training in 5362.4 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 9 operations to synchronize with Neptune. Do not kill this process.
+All 9 operations synced, thanks for waiting!

@@ -1,0 +1,557 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+special fill in of the new trans model
+MODEL:	 cc
+N:	 10000
+LOSS:	 kl
+ABSTRACT_PEN:	 1.0
+Starting run:
+a65bf422751c4204bedc1efab622d71e
+params: {'n': 10000, 'traj_updates': 100000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 64, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': True, 'abstract_dim': 32, 'ellis': True, 'freeze': False, 'fine_tune': True, 'attentional_trans_net': False, 'loss': 'kl', 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 10000, 'test_every': 500, 'save_every': 2500, 'id': 'a65bf422751c4204bedc1efab622d71e'}
+tau_precompute: False
+WARNING: tau norm dim disabled
+10000 fine-tuning examples
+actual params['epochs']: 10000
+actual params['test_every']: 500
+actual params['save_every']: 2500
+recalculating dataset
+avg cc loss  tensor(-0.2874, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 821902.3104858398
+WARNING: fixed test env seed
+For sampling, solved 16/200 with abstract model, 25/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 6/38=0.16
+	3: 0/23=0.00
+	4: 0/21=0.00
+Epoch 0	 test acc 0.35294117647058826
+For sampling, solved 200/200 with abstract model, 200/200 with simulator
+Solved 109/200.
+	1: 42/42=1.00
+	2: 1/33=0.03
+	3: 0/17=0.00
+Epoch 0	 gen test acc 0.3944954128440367
+train_loss: 245008.78968811035
+train_loss: 97788.89610671997
+train_loss: 287842.7356300354
+train_loss: 77274.74367523193
+train_loss: 284303.3492240906
+train_loss: 395281.46618652344
+train_loss: 258874.129863739
+train_loss: 301377.5289993286
+train_loss: 312912.21586608887
+recalculating dataset
+avg cc loss  tensor(-0.0161, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 469713.3822860718
+For sampling, solved 0/200 with abstract model, 17/200 with simulator
+Solved 105/200.
+	1: 31/31=1.00
+	2: 4/33=0.12
+	3: 0/26=0.00
+	4: 0/14=0.00
+Epoch 500	 test acc 0.3333333333333333
+For sampling, solved 2/200 with abstract model, 129/200 with simulator
+Solved 112/200.
+	1: 33/33=1.00
+	2: 2/28=0.07
+	3: 0/19=0.00
+	4: 0/29=0.00
+Epoch 500	 gen test acc 0.3125
+train_loss: 383686.83016967773
+train_loss: 160911.27624893188
+train_loss: 217297.98210906982
+train_loss: 297830.4796295166
+train_loss: 290703.8730163574
+train_loss: 280702.4768638611
+train_loss: 287262.26037597656
+train_loss: 284160.48107147217
+train_loss: 549124.373916626
+recalculating dataset
+avg cc loss  tensor(0.0747, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 279938.0921096802
+For sampling, solved 29/200 with abstract model, 181/200 with simulator
+Solved 123/200.
+	1: 38/38=1.00
+	2: 5/30=0.17
+	3: 0/31=0.00
+	4: 0/17=0.00
+Epoch 1000	 test acc 0.34959349593495936
+For sampling, solved 0/200 with abstract model, 171/200 with simulator
+Solved 121/200.
+	1: 38/38=1.00
+	2: 6/35=0.17
+	3: 1/22=0.05
+	4: 1/23=0.04
+Epoch 1000	 gen test acc 0.38016528925619836
+train_loss: 253358.2261352539
+train_loss: 170123.44863891602
+train_loss: 312575.37340545654
+train_loss: 272500.81761932373
+train_loss: 275658.2197036743
+train_loss: 294721.2496185303
+train_loss: 271621.56912231445
+train_loss: 278278.3495826721
+train_loss: 280285.9424972534
+recalculating dataset
+avg cc loss  tensor(0.0246, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 522560.6280822754
+For sampling, solved 0/200 with abstract model, 0/200 with simulator
+Solved 107/200.
+	1: 36/36=1.00
+	2: 6/43=0.14
+	3: 0/17=0.00
+	4: 0/9=0.00
+Epoch 1500	 test acc 0.3925233644859813
+For sampling, solved 2/200 with abstract model, 165/200 with simulator
+Solved 122/200.
+	1: 49/49=1.00
+	2: 1/26=0.04
+	3: 0/29=0.00
+	4: 0/15=0.00
+Epoch 1500	 gen test acc 0.4098360655737705
+train_loss: 510995.12644195557
+train_loss: 500184.67781066895
+train_loss: 471947.55799102783
+train_loss: 413696.56467437744
+train_loss: 503664.6099128723
+train_loss: 445345.1311569214
+train_loss: 417139.0329551697
+train_loss: 403106.8259925842
+train_loss: 456524.3943939209
+recalculating dataset
+avg cc loss  tensor(0.3944, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 380737.15675354004
+For sampling, solved 196/200 with abstract model, 200/200 with simulator
+Solved 120/200.
+	1: 45/45=1.00
+	2: 3/28=0.11
+	3: 1/20=0.05
+	4: 0/25=0.00
+Epoch 2000	 test acc 0.4083333333333333
+For sampling, solved 50/200 with abstract model, 19/200 with simulator
+Solved 116/200.
+	1: 38/38=1.00
+	2: 3/31=0.10
+	3: 0/26=0.00
+	4: 0/19=0.00
+Epoch 2000	 gen test acc 0.35344827586206895
+train_loss: 369070.4872055054
+train_loss: 320818.59368896484
+train_loss: 340522.9207458496
+train_loss: 220463.74125671387
+train_loss: 295798.29747390747
+train_loss: 275305.96698760986
+train_loss: 210914.38492393494
+train_loss: 299848.0724105835
+train_loss: 258786.05696105957
+recalculating dataset
+avg cc loss  tensor(0.4418, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 348054.46101379395
+For sampling, solved 74/200 with abstract model, 199/200 with simulator
+Solved 118/200.
+	1: 47/47=1.00
+	2: 6/36=0.17
+	3: 1/20=0.05
+	4: 0/10=0.00
+	5: 0/4=0.00
+Epoch 2500	 test acc 0.4576271186440678
+For sampling, solved 6/200 with abstract model, 171/200 with simulator
+Solved 130/200.
+	1: 43/43=1.00
+	2: 9/48=0.19
+	3: 0/21=0.00
+	4: 0/15=0.00
+	5: 0/1=0.00
+Epoch 2500	 gen test acc 0.4
+Saved model at models/a65bf422751c4204bedc1efab622d71e-epoch-2500_control.pt
+train_loss: 219581.85023498535
+train_loss: 263362.0260734558
+train_loss: 585595.6837997437
+train_loss: 495069.7794761658
+train_loss: 338359.15926742554
+train_loss: 331889.54292297363
+train_loss: 391802.44833374023
+train_loss: 656128.6328125
+train_loss: 563740.959487915
+recalculating dataset
+avg cc loss  tensor(-0.0275, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 234311.98696136475
+For sampling, solved 199/200 with abstract model, 200/200 with simulator
+Solved 116/200.
+	1: 34/34=1.00
+	2: 2/26=0.08
+	3: 0/36=0.00
+	4: 0/17=0.00
+Epoch 3000	 test acc 0.3103448275862069
+For sampling, solved 3/200 with abstract model, 22/200 with simulator
+Solved 128/200.
+	1: 47/47=1.00
+	2: 4/33=0.12
+	3: 1/26=0.04
+	4: 0/21=0.00
+Epoch 3000	 gen test acc 0.40625
+train_loss: 255642.6802368164
+train_loss: 248836.02603149414
+train_loss: 227126.62399291992
+train_loss: 224084.50312805176
+train_loss: 92940.85112762451
+train_loss: 162739.87893676758
+train_loss: 217155.95125961304
+train_loss: 312639.4142036438
+train_loss: 310524.52658081055
+recalculating dataset
+avg cc loss  tensor(0.3352, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 488511.3689880371
+For sampling, solved 127/200 with abstract model, 195/200 with simulator
+Solved 116/200.
+	1: 38/38=1.00
+	2: 6/37=0.16
+	3: 0/25=0.00
+	4: 0/14=0.00
+Epoch 3500	 test acc 0.3793103448275862
+For sampling, solved 0/200 with abstract model, 31/200 with simulator
+Solved 113/200.
+	1: 42/42=1.00
+	2: 1/34=0.03
+	3: 0/20=0.00
+	4: 0/16=0.00
+Epoch 3500	 gen test acc 0.3805309734513274
+train_loss: 479436.6860733032
+train_loss: 488970.8378829956
+train_loss: 459077.45669555664
+train_loss: 456590.99335479736
+train_loss: 651044.6840896606
+train_loss: 626082.059928894
+train_loss: 604609.0730209351
+train_loss: 385570.9775161743
+train_loss: 324970.5271759033
+recalculating dataset
+avg cc loss  tensor(0.5394, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 234030.13523864746
+For sampling, solved 165/200 with abstract model, 156/200 with simulator
+Solved 102/200.
+	1: 35/35=1.00
+	2: 6/31=0.19
+	3: 0/23=0.00
+Epoch 4000	 test acc 0.4019607843137255
+For sampling, solved 12/200 with abstract model, 124/200 with simulator
+Solved 117/200.
+	1: 37/37=1.00
+	2: 2/32=0.06
+	3: 0/25=0.00
+	4: 0/17=0.00
+	5: 0/4=0.00
+Epoch 4000	 gen test acc 0.3333333333333333
+train_loss: 243687.3255958557
+train_loss: 286205.1992492676
+train_loss: 293216.9434814453
+train_loss: 279088.3784713745
+train_loss: 310108.5214614868
+train_loss: 425117.953704834
+train_loss: 277769.2097167969
+train_loss: 199518.50310516357
+train_loss: 197723.5417022705
+recalculating dataset
+avg cc loss  tensor(0.1343, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 309762.1781616211
+For sampling, solved 0/200 with abstract model, 2/200 with simulator
+Solved 109/200.
+	1: 32/32=1.00
+	2: 5/35=0.14
+	3: 0/31=0.00
+	4: 0/10=0.00
+Epoch 4500	 test acc 0.3394495412844037
+For sampling, solved 0/200 with abstract model, 24/200 with simulator
+Solved 120/200.
+	1: 37/37=1.00
+	2: 4/36=0.11
+	3: 0/32=0.00
+	4: 0/12=0.00
+Epoch 4500	 gen test acc 0.3416666666666667
+train_loss: 318415.26390075684
+train_loss: 262367.3935775757
+train_loss: 258768.50470733643
+train_loss: 316761.1021575928
+train_loss: 315557.96825408936
+train_loss: 302448.25539779663
+train_loss: 328163.95121765137
+train_loss: 306710.61933135986
+train_loss: 340409.27613830566
+recalculating dataset
+avg cc loss  tensor(0.3788, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 355655.67417907715
+For sampling, solved 17/200 with abstract model, 17/200 with simulator
+Solved 135/200.
+	1: 47/47=1.00
+	2: 4/44=0.09
+	3: 0/24=0.00
+	4: 0/16=0.00
+Epoch 5000	 test acc 0.37777777777777777
+For sampling, solved 50/200 with abstract model, 200/200 with simulator
+Solved 117/200.
+	1: 36/36=1.00
+	2: 5/36=0.14
+	3: 1/27=0.04
+	4: 0/14=0.00
+	5: 0/3=0.00
+Epoch 5000	 gen test acc 0.358974358974359
+Saved model at models/a65bf422751c4204bedc1efab622d71e-epoch-5000_control.pt
+train_loss: 366216.9044113159
+train_loss: 366456.8807525635
+train_loss: 357145.62700653076
+train_loss: 347030.7088775635
+train_loss: 355084.57431030273
+train_loss: 372327.25312805176
+train_loss: 402468.7886810303
+train_loss: 339903.92541503906
+train_loss: 384803.27755737305
+recalculating dataset
+avg cc loss  tensor(0.3007, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 296965.96908569336
+For sampling, solved 200/200 with abstract model, 198/200 with simulator
+Solved 114/200.
+	1: 36/36=1.00
+	2: 1/32=0.03
+	3: 0/24=0.00
+	4: 0/20=0.00
+Epoch 5500	 test acc 0.32456140350877194
+For sampling, solved 24/200 with abstract model, 126/200 with simulator
+Solved 122/200.
+	1: 49/49=1.00
+	2: 6/33=0.18
+	3: 0/25=0.00
+	4: 0/14=0.00
+Epoch 5500	 gen test acc 0.45081967213114754
+train_loss: 319101.6770172119
+train_loss: 318665.76832580566
+train_loss: 308429.20360565186
+train_loss: 313509.46940612793
+train_loss: 309496.4902038574
+train_loss: 365247.70067596436
+train_loss: 359375.76416015625
+train_loss: 351636.8170700073
+train_loss: 336699.3404388428
+recalculating dataset
+avg cc loss  tensor(0.5471, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 231726.33600616455
+For sampling, solved 198/200 with abstract model, 200/200 with simulator
+Solved 119/200.
+	1: 33/33=1.00
+	2: 4/39=0.10
+	3: 0/27=0.00
+	4: 0/17=0.00
+Epoch 6000	 test acc 0.31092436974789917
+For sampling, solved 0/200 with abstract model, 151/200 with simulator
+Solved 103/200.
+	1: 31/31=1.00
+	2: 3/30=0.10
+	3: 0/23=0.00
+	4: 1/16=0.06
+	5: 0/2=0.00
+Epoch 6000	 gen test acc 0.33980582524271846
+train_loss: 272379.85902404785
+train_loss: 284688.7473220825
+train_loss: 280535.5138015747
+train_loss: 290061.6812438965
+train_loss: 284731.23738098145
+train_loss: 277396.6149749756
+train_loss: 273869.12842559814
+train_loss: 267013.67150878906
+train_loss: 321808.38439559937
+recalculating dataset
+avg cc loss  tensor(0.5647, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 328514.95431900024
+For sampling, solved 173/200 with abstract model, 178/200 with simulator
+Solved 126/200.
+	1: 40/40=1.00
+	2: 5/41=0.12
+	3: 0/25=0.00
+	4: 0/19=0.00
+Epoch 6500	 test acc 0.35714285714285715
+For sampling, solved 0/200 with abstract model, 3/200 with simulator
+Solved 111/200.
+	1: 39/39=1.00
+	2: 7/26=0.27
+	3: 0/26=0.00
+	4: 0/15=0.00
+	5: 0/4=0.00
+Epoch 6500	 gen test acc 0.4144144144144144
+train_loss: 280917.87439727783
+train_loss: 318029.71587371826
+train_loss: 291815.86083984375
+train_loss: 260536.92935943604
+train_loss: 283026.9626159668
+train_loss: 309079.05339050293
+train_loss: 298653.3290634155
+train_loss: 295547.3313369751
+train_loss: 306566.18866729736
+recalculating dataset
+avg cc loss  tensor(0.3754, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 256603.17224884033
+For sampling, solved 200/200 with abstract model, 198/200 with simulator
+Solved 127/200.
+	1: 47/47=1.00
+	2: 0/34=0.00
+	3: 0/25=0.00
+	4: 0/19=0.00
+	5: 0/1=0.00
+Epoch 7000	 test acc 0.3700787401574803
+For sampling, solved 3/200 with abstract model, 4/200 with simulator
+Solved 121/200.
+	1: 41/41=1.00
+	2: 6/33=0.18
+	3: 0/25=0.00
+	4: 0/18=0.00
+Epoch 7000	 gen test acc 0.3884297520661157
+train_loss: 222379.57344055176
+train_loss: 214021.2574005127
+train_loss: 313986.8231391907
+train_loss: 311865.0393257141
+train_loss: 278562.6853790283
+train_loss: 216793.1630859375
+train_loss: 280796.5027961731
+train_loss: 280567.81351852417
+train_loss: 277126.27993011475
+recalculating dataset
+avg cc loss  tensor(0.3637, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 329380.2512512207
+For sampling, solved 200/200 with abstract model, 200/200 with simulator
+Solved 122/200.
+	1: 47/47=1.00
+	2: 6/29=0.21
+	3: 2/22=0.09
+	4: 0/20=0.00
+	5: 0/2=0.00
+Epoch 7500	 test acc 0.45081967213114754
+For sampling, solved 200/200 with abstract model, 200/200 with simulator
+Solved 107/200.
+	1: 41/41=1.00
+	2: 1/29=0.03
+	3: 0/22=0.00
+	4: 0/14=0.00
+Epoch 7500	 gen test acc 0.3925233644859813
+Saved model at models/a65bf422751c4204bedc1efab622d71e-epoch-7500_control.pt
+train_loss: 388805.9302444458
+train_loss: 382734.8966026306
+train_loss: 361413.8155975342
+train_loss: 359029.3952636719
+train_loss: 358795.98279571533
+train_loss: 385767.5499343872
+train_loss: 375849.54819488525
+train_loss: 365248.6097755432
+train_loss: 406710.6014251709
+recalculating dataset
+avg cc loss  tensor(0.3061, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 285091.9956359863
+For sampling, solved 17/200 with abstract model, 50/200 with simulator
+Solved 117/200.
+	1: 31/31=1.00
+	2: 3/35=0.09
+	3: 1/30=0.03
+	4: 0/19=0.00
+Epoch 8000	 test acc 0.29914529914529914
+For sampling, solved 0/200 with abstract model, 0/200 with simulator
+Solved 109/200.
+	1: 38/38=1.00
+	2: 1/25=0.04
+	3: 0/24=0.00
+	4: 0/17=0.00
+Epoch 8000	 gen test acc 0.3577981651376147
+train_loss: 243971.7385520935
+train_loss: 240749.72200012207
+train_loss: 235576.47439575195
+train_loss: 202135.60291290283
+train_loss: 292120.0997161865
+train_loss: 283897.4341773987
+train_loss: 230130.98231124878
+train_loss: 193008.68264770508
+train_loss: 160060.03531646729
+recalculating dataset
+avg cc loss  tensor(0.1543, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 209728.34783172607
+For sampling, solved 0/200 with abstract model, 156/200 with simulator
+Solved 120/200.
+	1: 37/37=1.00
+	2: 4/41=0.10
+	3: 0/23=0.00
+	4: 0/16=0.00
+	5: 0/2=0.00
+Epoch 8500	 test acc 0.3416666666666667
+For sampling, solved 13/200 with abstract model, 36/200 with simulator
+Solved 114/200.
+	1: 47/47=1.00
+	2: 3/25=0.12
+	3: 0/22=0.00
+	4: 0/14=0.00
+Epoch 8500	 gen test acc 0.43859649122807015
+train_loss: 264571.70165252686
+train_loss: 334113.56341552734
+train_loss: 332940.87774658203
+train_loss: 394040.35834503174
+train_loss: 391430.18210601807
+train_loss: 389842.9947242737
+train_loss: 355649.7776412964
+train_loss: 304883.2911529541
+train_loss: 310154.62759399414
+recalculating dataset
+avg cc loss  tensor(0.1768, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 333942.21224212646
+For sampling, solved 0/200 with abstract model, 1/200 with simulator
+Solved 108/200.
+	1: 30/30=1.00
+	2: 4/35=0.11
+	3: 1/22=0.05
+	4: 0/16=0.00
+	5: 0/4=0.00
+Epoch 9000	 test acc 0.32407407407407407
+For sampling, solved 5/200 with abstract model, 155/200 with simulator
+Solved 113/200.
+	1: 29/29=1.00
+	2: 6/37=0.16
+	3: 2/21=0.10
+	4: 0/19=0.00
+	5: 0/6=0.00
+Epoch 9000	 gen test acc 0.3274336283185841
+train_loss: 340676.2382507324
+train_loss: 273484.2415084839
+train_loss: 256944.83715820312
+train_loss: 253030.26946640015
+train_loss: 316546.5599822998
+train_loss: 245201.12313842773
+train_loss: 272323.2787437439
+train_loss: 260034.7758026123
+train_loss: 360157.3126449585
+recalculating dataset
+avg cc loss  tensor(0.1206, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 444378.1135864258
+For sampling, solved 47/200 with abstract model, 41/200 with simulator
+Solved 126/200.
+	1: 47/47=1.00
+	2: 8/38=0.21
+	3: 0/23=0.00
+	4: 0/14=0.00
+Epoch 9500	 test acc 0.4365079365079365
+For sampling, solved 0/200 with abstract model, 58/200 with simulator
+Solved 121/200.
+	1: 40/40=1.00
+	2: 5/37=0.14
+	3: 0/28=0.00
+	4: 0/12=0.00
+Epoch 9500	 gen test acc 0.371900826446281
+train_loss: 494622.46558380127
+train_loss: 523532.2504425049
+train_loss: 527131.7093658447
+train_loss: 525788.8163986206
+train_loss: 519929.73503112793
+train_loss: 491929.1446685791
+train_loss: 491780.77545166016
+train_loss: 492782.36726379395
+train_loss: 473918.6407814026
+Completed fine tuning in 153760.3 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 385, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 359, in boxworld_main
+    fine_tune(run, box_world.BoxWorldEnv(), net.control_net, params)
+  File "/home/sca63/abstraction/main.py", line 124, in fine_tune
+    path = utils.save_model(net, f'models/{model_id}_control.pt')
+NameError: name 'net' is not defined

@@ -1,0 +1,25 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-92
+Starting run:
+597dd18414ba46f9a8b7fc16ddf61adb
+train
+Evaluating model on 200 episodes
+Solved 40/200 episodes
+Evaluating model on 200 episodes
+Solved 38/200 episodes
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Evaluating model on 200 episodes
+Solved 155/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+slurmstepd: error: *** JOB 457426 ON ellis-compute-01 CANCELLED AT 2022-03-23T21:18:20 ***
