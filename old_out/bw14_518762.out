@@ -1,0 +1,88 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+ABSTRACT_PEN:	 1.0
+TAU_NOISE:	 0.03
+Starting run:
+41d7e0050bb64f09affef1cc400ca276
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.03, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': 0.0, 'device': 'NVIDIA RTX A6000', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': '41d7e0050bb64f09affef1cc400ca276'}
+train
+Net has 206996 parameters
+train_loss: 169549.953830719
+fixed test env
+Solved 120/200 episodes, CC loss avg = 0.023502450631587905
+Epoch 0	 test acc 0.6
+fixed test env
+Solved 119/200 episodes, CC loss avg = 0.022469376066606185
+Epoch 25	 test acc 0.595
+fixed test env
+Solved 132/200 episodes, CC loss avg = 0.0227544481294476
+Epoch 50	 test acc 0.66
+fixed test env
+Solved 138/200 episodes, CC loss avg = 0.032589907240348624
+Epoch 75	 test acc 0.69
+train_loss: 166362.23307418823
+fixed test env
+Solved 131/200 episodes, CC loss avg = 0.021853053098396007
+Epoch 100	 test acc 0.655
+fixed test env
+Solved 136/200 episodes, CC loss avg = 0.022007838835889734
+Epoch 125	 test acc 0.68
+Saved model at models/41d7e0050bb64f09affef1cc400ca276-epoch-125.pt
+fixed test env
+Solved 136/200 episodes, CC loss avg = 0.023629069652607932
+Epoch 150	 test acc 0.68
+fixed test env
+Solved 138/200 episodes, CC loss avg = 0.024240623261661945
+Epoch 175	 test acc 0.69
+train_loss: 159432.65114212036
+fixed test env
+Solved 147/200 episodes, CC loss avg = 0.027320559184861253
+Epoch 200	 test acc 0.735
+fixed test env
+Solved 139/200 episodes, CC loss avg = 0.040722901694222914
+Epoch 225	 test acc 0.695
+fixed test env
+Solved 140/200 episodes, CC loss avg = 0.023553430026488346
+Epoch 250	 test acc 0.7
+Saved model at models/41d7e0050bb64f09affef1cc400ca276-epoch-250.pt
+fixed test env
+Solved 134/200 episodes, CC loss avg = 0.0291107284872571
+Epoch 275	 test acc 0.67
+i=tensor([27], device='cuda:0')
+fw: tensor([-353.3190], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-353.3192], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-353.3191], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([-3.0518e-05], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([-3.0518e-05], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-353.3191], device='cuda:0', grad_fn=<IndexBackward0>)
+train_loss: 161798.92683792114
+fixed test env
+Solved 136/200 episodes, CC loss avg = 0.02134255755945332
+Epoch 300	 test acc 0.68
+fixed test env
+Solved 144/200 episodes, CC loss avg = 0.023111726790040813
+Epoch 325	 test acc 0.72
+fixed test env
+Solved 144/200 episodes, CC loss avg = 0.03069183063582473
+Epoch 350	 test acc 0.72
+fixed test env
+Solved 130/200 episodes, CC loss avg = 0.03348933181192013
+Epoch 375	 test acc 0.65
+Saved model at models/41d7e0050bb64f09affef1cc400ca276-epoch-375.pt
+i=tensor([0], device='cuda:0')
+fw: tensor([-357.2505], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-357.2504], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-357.2505], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([6.1035e-05], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([6.1035e-05], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-357.2505], device='cuda:0', grad_fn=<IndexBackward0>)
+train_loss: 169949.4238319397
+fixed test env
+Solved 127/200 episodes, CC loss avg = 0.023240373635789385
+Epoch 400	 test acc 0.635
+fixed test env
+Solved 117/200 episodes, CC loss avg = 0.020117663088881056
+Epoch 425	 test acc 0.585
+fixed test env
+Solved 32/200 episodes, CC loss avg = 0.02549190597509224
+Epoch 450	 test acc 0.16
+fixed test env
+Solved 116/200 episodes, CC loss avg = 0.035771069027950256
+Epoch 475	 test acc 0.58
+Saved model at models/41d7e0050bb64f09affef1cc400ca276.pt
+Completed training in 42363.5 seconds
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+TAU_NOISE: 	0.03

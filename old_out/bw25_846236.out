@@ -1,0 +1,179 @@
+Using torch device NVIDIA TITAN Xp
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+ed4f785558934a97adb443e9d7966516
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=128, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=True, micro_net2=False, traj_updates=500000000.0, batch_size=128, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN Xp', id='ed4f785558934a97adb443e9d7966516')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220912_222703-3blta7md
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run sweet-puddle-398
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/3blta7md
+states: [array([['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'g', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'D', ' ', 'g', 'E', ' ', 'f', 'E', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'H', ' ', 'h', 'D', ' ', ' ', '*', 'H', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'e', ' ', ' ', ' ', ' ', ' ', ' ', '.', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', 'd', 'F', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#']], dtype='<U1'), array([['f', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'g', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'D', ' ', 'g', 'E', ' ', '.', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'H', ' ', 'h', 'D', ' ', ' ', '*', 'H', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', 'd', 'F', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#']], dtype='<U1'), array([['d', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'g', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'D', ' ', 'g', 'E', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'H', ' ', 'h', 'D', ' ', ' ', '*', 'H', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', '.', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#']], dtype='<U1'), array([['h', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'g', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'D', ' ', 'g', 'E', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'H', ' ', '.', ' ', ' ', ' ', '*', 'H', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#']], dtype='<U1'), array([['*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', 'g', 'F', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'D', ' ', 'g', 'E', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', 'a', 'H', ' ', ' ', ' ', ' ', ' ', '.', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        '#'],
+       ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#',
+        '#']], dtype='<U1')]
+moves: ['fE', 'dF', 'hD', '*H']
+abs_states: [{'held_key': [('e',)], 'domino': [('d', 'a'), ('d', 'h'), ('e', 'f'), ('e', 'g'), ('f', 'd'), ('f', 'g'), ('h', '*'), ('h', 'a')]}, {'held_key': [('f',)], 'domino': [('d', 'a'), ('d', 'h'), ('e', 'g'), ('f', 'd'), ('f', 'g'), ('h', '*'), ('h', 'a')]}, {'held_key': [('d',)], 'domino': [('d', 'a'), ('d', 'h'), ('e', 'g'), ('f', 'g'), ('h', '*'), ('h', 'a')]}, {'held_key': [('h',)], 'domino': [('d', 'a'), ('e', 'g'), ('f', 'g'), ('h', '*'), ('h', 'a')]}, {'held_key': [('*',)], 'domino': [('d', 'a'), ('e', 'g'), ('f', 'g'), ('h', 'a')]}]
+precondition_logps: tensor([[2.5206, 2.6501, 2.3720, 2.3720, 2.5206, 2.3720, 2.7337, 2.8395, 2.5206],
+        [2.5206, 2.6501, 2.3720, 2.3720, 2.7337, 2.3720, 2.3720, 2.8395, 2.5206],
+        [2.5206, 2.8395, 2.3720, 2.3720, 2.3720, 2.3720, 2.3720, 2.6501, 2.7337],
+        [2.7337, 2.8395, 2.3720, 2.3720, 2.3720, 2.3720, 2.3720, 2.6501, 2.3720],
+        [2.3720, 2.6501, 2.3720, 2.3720, 2.3720, 2.3720, 2.3720, 2.6501, 2.3720]])
+Completed training in 199.0 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 686, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 559, in boxworld_main
+    neurosym_train(params)
+  File "/home/sca63/abstraction/main.py", line 578, in neurosym_train
+    data = neurosym.supervised_symbolic_state_abstraction_data(env, n=params.n)
+  File "/home/sca63/abstraction/neurosym.py", line 299, in supervised_symbolic_state_abstraction_data
+    assert False
+AssertionError
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced sweet-puddle-398: https://wandb.ai/simonalford42/abstraction/runs/3blta7md
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220912_222703-3blta7md/logs

@@ -1,0 +1,904 @@
+Set load=True for fine tuning
+Loaded model from models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+MODEL:	 cc
+N:	 20000
+ABSTRACT_PEN:	 1.0
+Starting run:
+b3ca65d7214946659866df08b5271e97
+params: {'n': 20000, 'traj_updates': 1000000000.0, 'num_saves': 10, 'num_tests': 100, 'num_test': 200, 'lr': 0.0008, 'batch_size': 64, 'model_load_path': 'models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt', 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': True, 'abstract_dim': 32, 'ellis': True, 'freeze': False, 'fine_tune': True, 'variable_abstract_pen': False, 'tau_precompute': True, 'replace_trans_net': False, 'batch_norm': False, 'no_tau_norm': True, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 50000, 'test_every': 500, 'save_every': 5000, 'id': 'b3ca65d7214946659866df08b5271e97'}
+20000 fine-tuning examples
+actual params['epochs']: 50000
+actual params['test_every']: 500
+actual params['save_every']: 5000
+first batch avg cc loss  tensor(-22.6383, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 23655922562.5
+WARNING: fixed test env seed
+Epoch 0
+For sampling, solved 56/200 with abstract model, 132/200 with simulator
+Solved 180/200.
+	1: 49/49=1.00
+	2: 2/44=0.05
+	3: 0/49=0.00
+	4: 0/36=0.00
+train_loss: 4.257974821639887e+31
+train_loss: 4.270141187729689e+31
+train_loss: 4.270166919561244e+31
+train_loss: 4.27016964190106e+31
+first batch avg cc loss  tensor(-25.3907, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.270169816365207e+31
+Epoch 500
+For sampling, solved 75/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/45=0.09
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.270169540551873e+31
+train_loss: 4.272882981686658e+31
+train_loss: 4.272887066026104e+31
+train_loss: 4.272887157334638e+31
+first batch avg cc loss  tensor(-9.9702, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.272887188061522e+31
+Epoch 1000
+For sampling, solved 67/200 with abstract model, 183/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.272887158841119e+31
+train_loss: 4.272887160983223e+31
+train_loss: 4.272887116401156e+31
+train_loss: 4.27288716142616e+31
+first batch avg cc loss  tensor(-6.2429, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.2728871607381e+31
+Epoch 1500
+For sampling, solved 62/200 with abstract model, 180/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 2/44=0.05
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.272887028703338e+31
+train_loss: 4.272887160873436e+31
+train_loss: 4.272887087076826e+31
+train_loss: 4.116656552281115e+32
+first batch avg cc loss  tensor(-14.9451, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.119015088075026e+32
+Epoch 2000
+For sampling, solved 71/200 with abstract model, 186/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.119015106975831e+32
+train_loss: 4.119014003607468e+32
+train_loss: 4.1190139809246545e+32
+train_loss: 4.1190140282209015e+32
+first batch avg cc loss  tensor(-34.3169, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.119013997619217e+32
+Epoch 2500
+For sampling, solved 65/200 with abstract model, 185/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 2/44=0.05
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.1190139573267674e+32
+train_loss: 4.119013895119515e+32
+train_loss: 4.119013847529636e+32
+train_loss: 4.1190139582229146e+32
+first batch avg cc loss  tensor(-8.0309, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.1190139609303735e+32
+Epoch 3000
+For sampling, solved 70/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 2/44=0.05
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.119014149616807e+32
+train_loss: 4.1190139564157685e+32
+train_loss: 4.1190140051415985e+32
+train_loss: 4.119013902712608e+32
+first batch avg cc loss  tensor(-27.6859, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 2793360778593.625
+Epoch 3500
+For sampling, solved 65/200 with abstract model, 178/200 with simulator
+Solved 181/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/51=0.00
+	4: 0/36=0.00
+train_loss: 7213266511.875
+train_loss: 836512478.125
+train_loss: 784145426.625
+train_loss: 4.5008022803730466e+29
+first batch avg cc loss  tensor(-3.1790, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811061944706e+29
+Epoch 4000
+For sampling, solved 67/200 with abstract model, 181/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 0/44=0.00
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.50081119087882e+29
+train_loss: 4.500811052647451e+29
+train_loss: 4.500811135735622e+29
+train_loss: 4.5008108649725014e+29
+first batch avg cc loss  tensor(6.5699, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811005166361e+29
+Epoch 4500
+For sampling, solved 66/200 with abstract model, 181/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810973343379e+29
+train_loss: 4.500810945459797e+29
+train_loss: 4.500810848014776e+29
+train_loss: 4.50081098973955e+29
+first batch avg cc loss  tensor(16.2930, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811049066685e+29
+Epoch 5000
+For sampling, solved 70/200 with abstract model, 186/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-5000_control.pt
+train_loss: 4.500810898097782e+29
+train_loss: 4.5008108573667766e+29
+train_loss: 4.5008110369856356e+29
+train_loss: 4.500811084246849e+29
+first batch avg cc loss  tensor(7.6092, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810907040166e+29
+Epoch 5500
+For sampling, solved 73/200 with abstract model, 179/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 9/44=0.20
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.50081089532987e+29
+train_loss: 4.500810895690337e+29
+train_loss: 4.500810872050629e+29
+train_loss: 4.5008108659160484e+29
+first batch avg cc loss  tensor(-8.9495, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810801228551e+29
+Epoch 6000
+For sampling, solved 72/200 with abstract model, 178/200 with simulator
+Solved 181/200.
+	1: 49/49=1.00
+	2: 5/42=0.12
+	3: 1/53=0.02
+	4: 0/36=0.00
+train_loss: 4.500810942434368e+29
+train_loss: 4.500810984452458e+29
+train_loss: 4.500810990005262e+29
+train_loss: 4.500811021200345e+29
+first batch avg cc loss  tensor(5.2769, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109425065176e+29
+Epoch 6500
+For sampling, solved 74/200 with abstract model, 182/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810901238864e+29
+train_loss: 4.500810989684064e+29
+train_loss: 4.5008109515538714e+29
+train_loss: 4.5008110014676376e+29
+first batch avg cc loss  tensor(-2.2792, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810954637773e+29
+Epoch 7000
+For sampling, solved 72/200 with abstract model, 180/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108506852186e+29
+train_loss: 4.5008109896809574e+29
+train_loss: 4.5008108007567995e+29
+train_loss: 4.500811037004558e+29
+first batch avg cc loss  tensor(4.5506, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810845265012e+29
+Epoch 7500
+For sampling, solved 66/200 with abstract model, 182/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 1/51=0.02
+	4: 0/36=0.00
+train_loss: 4.500810820393935e+29
+train_loss: 4.500810954256048e+29
+train_loss: 4.500810942441665e+29
+train_loss: 4.500810801295836e+29
+first batch avg cc loss  tensor(3.1010, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.50081084836165e+29
+Epoch 8000
+For sampling, solved 66/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.50081083085913e+29
+train_loss: 4.500810907469998e+29
+train_loss: 4.500810943012587e+29
+train_loss: 4.500810942886748e+29
+first batch avg cc loss  tensor(1.9634, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810942450132e+29
+Epoch 8500
+For sampling, solved 69/200 with abstract model, 183/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 8/44=0.18
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810954372866e+29
+train_loss: 4.500810848087649e+29
+train_loss: 4.5008109427874514e+29
+train_loss: 4.500810942457788e+29
+first batch avg cc loss  tensor(5.2726, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810907030853e+29
+Epoch 9000
+For sampling, solved 72/200 with abstract model, 182/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/35=0.00
+train_loss: 4.500810954714425e+29
+train_loss: 4.500810848621012e+29
+train_loss: 4.500810848099226e+29
+train_loss: 4.500810916017965e+29
+first batch avg cc loss  tensor(-4.2095, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810907024547e+29
+Epoch 9500
+For sampling, solved 69/200 with abstract model, 178/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810765704383e+29
+train_loss: 4.5008109424443665e+29
+train_loss: 4.500810942522946e+29
+train_loss: 4.500810990114833e+29
+first batch avg cc loss  tensor(6.7858, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811045990048e+29
+Epoch 10000
+For sampling, solved 72/200 with abstract model, 184/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 8/44=0.18
+	3: 1/52=0.02
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-10000_control.pt
+train_loss: 4.500810971159454e+29
+train_loss: 4.5008109542441515e+29
+train_loss: 4.500810860244937e+29
+train_loss: 4.500811036899307e+29
+first batch avg cc loss  tensor(25.1480, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810848096207e+29
+Epoch 10500
+For sampling, solved 72/200 with abstract model, 180/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 8/44=0.18
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810868011386e+29
+train_loss: 4.500810942549662e+29
+train_loss: 4.5008108480107756e+29
+train_loss: 4.500810954336842e+29
+first batch avg cc loss  tensor(0.2888, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810942535702e+29
+Epoch 11000
+For sampling, solved 64/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.5008108479820856e+29
+train_loss: 4.500811036902776e+29
+train_loss: 4.5008108602599354e+29
+train_loss: 4.500810829475354e+29
+first batch avg cc loss  tensor(4.7614, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810954356929e+29
+Epoch 11500
+For sampling, solved 71/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.5008108481035034e+29
+train_loss: 4.5008108956079226e+29
+train_loss: 4.5008109543193686e+29
+train_loss: 4.50081084844983e+29
+first batch avg cc loss  tensor(8.4722, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008108479579906e+29
+Epoch 12000
+For sampling, solved 74/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 8/44=0.18
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810942426174e+29
+train_loss: 4.5008109602468256e+29
+train_loss: 4.5008108952165584e+29
+train_loss: 4.500810895238042e+29
+first batch avg cc loss  tensor(11.5525, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109896809574e+29
+Epoch 12500
+For sampling, solved 67/200 with abstract model, 180/200 with simulator
+Solved 181/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 2/52=0.04
+	4: 0/34=0.00
+train_loss: 4.500810836234537e+29
+train_loss: 4.5008108012285424e+29
+train_loss: 4.500810954222671e+29
+train_loss: 4.5008109428387925e+29
+first batch avg cc loss  tensor(-11.9972, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810942754936e+29
+Epoch 13000
+For sampling, solved 70/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.5008110369140354e+29
+train_loss: 4.50081093366769e+29
+train_loss: 4.500810962069434e+29
+train_loss: 4.500810954353281e+29
+first batch avg cc loss  tensor(0.2841, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008108395303174e+29
+Epoch 13500
+For sampling, solved 68/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810859909598e+29
+train_loss: 4.500810954710281e+29
+train_loss: 4.5008108011333905e+29
+train_loss: 4.500810801140506e+29
+first batch avg cc loss  tensor(15.6758, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810895183954e+29
+Epoch 14000
+For sampling, solved 71/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 10/44=0.23
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810954247123e+29
+train_loss: 4.5008108012349924e+29
+train_loss: 4.500811048791514e+29
+train_loss: 4.5008108952938415e+29
+first batch avg cc loss  tensor(0.1092, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810847975511e+29
+Epoch 14500
+For sampling, solved 66/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500811037364393e+29
+train_loss: 4.500811000932075e+29
+train_loss: 4.500811001452872e+29
+train_loss: 4.5008109161168206e+29
+first batch avg cc loss  tensor(0.7289, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811048719861e+29
+Epoch 15000
+For sampling, solved 63/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 8/44=0.18
+	3: 1/52=0.02
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-15000_control.pt
+train_loss: 4.500810942516472e+29
+train_loss: 4.50081083889511e+29
+train_loss: 4.500810801118575e+29
+train_loss: 4.500811001472148e+29
+first batch avg cc loss  tensor(24.8460, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008108598398305e+29
+Epoch 15500
+For sampling, solved 71/200 with abstract model, 184/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 1/51=0.02
+	4: 0/36=0.00
+train_loss: 4.500810989697081e+29
+train_loss: 4.5008108011179875e+29
+train_loss: 4.500810848083237e+29
+train_loss: 4.5008110092678785e+29
+first batch avg cc loss  tensor(12.0062, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810995833397e+29
+Epoch 16000
+For sampling, solved 75/200 with abstract model, 185/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810990023636e+29
+train_loss: 4.500810942557715e+29
+train_loss: 4.500810847997128e+29
+train_loss: 4.500810909453519e+29
+first batch avg cc loss  tensor(-4.5738, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810954605528e+29
+Epoch 16500
+For sampling, solved 59/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.50081099866019e+29
+train_loss: 4.500810964860972e+29
+train_loss: 4.500810895314063e+29
+train_loss: 4.500810860186204e+29
+first batch avg cc loss  tensor(3.3801, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810942445809e+29
+Epoch 17000
+For sampling, solved 65/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810954697266e+29
+train_loss: 4.500810942533584e+29
+train_loss: 4.500810835621708e+29
+train_loss: 4.500810942442835e+29
+first batch avg cc loss  tensor(4.7748, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810870699414e+29
+Epoch 17500
+For sampling, solved 71/200 with abstract model, 178/200 with simulator
+Solved 181/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 2/51=0.04
+	4: 0/36=0.00
+train_loss: 4.500810895319512e+29
+train_loss: 4.500810945506392e+29
+train_loss: 4.500810860175394e+29
+train_loss: 4.5008108480829655e+29
+first batch avg cc loss  tensor(-3.9861, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810859774762e+29
+Epoch 18000
+For sampling, solved 59/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.5008109832352705e+29
+train_loss: 4.500810895680521e+29
+train_loss: 4.5008109911220635e+29
+train_loss: 4.5008107980132974e+29
+first batch avg cc loss  tensor(7.1992, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810794694774e+29
+Epoch 18500
+For sampling, solved 70/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 7/44=0.16
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.50081085981223e+29
+train_loss: 4.50081089531345e+29
+train_loss: 4.500810935865868e+29
+train_loss: 4.500810989674156e+29
+first batch avg cc loss  tensor(-3.2709, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810954231459e+29
+Epoch 19000
+For sampling, solved 72/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008110898134426e+29
+train_loss: 4.5008108479843325e+29
+train_loss: 4.500810860028044e+29
+train_loss: 4.500810954256633e+29
+first batch avg cc loss  tensor(4.0637, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810962427687e+29
+Epoch 19500
+For sampling, solved 60/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 0/44=0.00
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810848355164e+29
+train_loss: 4.5008108952180826e+29
+train_loss: 4.500810948197351e+29
+train_loss: 4.500811037289906e+29
+first batch avg cc loss  tensor(10.9061, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810798206817e+29
+Epoch 20000
+For sampling, solved 62/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-20000_control.pt
+train_loss: 4.5008108659513524e+29
+train_loss: 4.5008108952266415e+29
+train_loss: 4.5008108952247556e+29
+train_loss: 4.500810990021115e+29
+first batch avg cc loss  tensor(4.1273, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810895225249e+29
+Epoch 20500
+For sampling, solved 66/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500811037047882e+29
+train_loss: 4.500810901039443e+29
+train_loss: 4.500810800847038e+29
+train_loss: 4.500811027985558e+29
+first batch avg cc loss  tensor(13.4185, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810895657183e+29
+Epoch 21000
+For sampling, solved 65/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008109151863305e+29
+train_loss: 4.5008109424639135e+29
+train_loss: 4.500811001572488e+29
+train_loss: 4.500810895221507e+29
+first batch avg cc loss  tensor(5.8474, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810895560184e+29
+Epoch 21500
+For sampling, solved 68/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108601793196e+29
+train_loss: 4.5008108953070814e+29
+train_loss: 4.500810955825508e+29
+train_loss: 4.500810848012621e+29
+first batch avg cc loss  tensor(-9.5094, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810907392581e+29
+Epoch 22000
+For sampling, solved 71/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500811048712594e+29
+train_loss: 4.500810954283881e+29
+train_loss: 4.5008108480043995e+29
+train_loss: 4.5008108953383364e+29
+first batch avg cc loss  tensor(2.6959, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109428065474e+29
+Epoch 22500
+For sampling, solved 69/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810848002351e+29
+train_loss: 4.500811001558886e+29
+train_loss: 4.500810990018232e+29
+train_loss: 4.500810848002756e+29
+first batch avg cc loss  tensor(10.0595, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008110250504105e+29
+Epoch 23000
+For sampling, solved 66/200 with abstract model, 179/200 with simulator
+Solved 180/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 1/52=0.02
+	4: 0/34=0.00
+train_loss: 4.500811048703287e+29
+train_loss: 4.500810951779429e+29
+train_loss: 4.500810897148513e+29
+train_loss: 4.5008109809356255e+29
+first batch avg cc loss  tensor(-10.8306, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500811096010393e+29
+Epoch 23500
+For sampling, solved 73/200 with abstract model, 185/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810942446709e+29
+train_loss: 4.500810989779902e+29
+train_loss: 4.500810860176213e+29
+train_loss: 4.500810942456031e+29
+first batch avg cc loss  tensor(-1.8257, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.50081080667926e+29
+Epoch 24000
+For sampling, solved 68/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810848456765e+29
+train_loss: 4.5008107653403485e+29
+train_loss: 4.5008110014794426e+29
+train_loss: 4.5008108480932344e+29
+first batch avg cc loss  tensor(-2.2633, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109600836145e+29
+Epoch 24500
+For sampling, solved 72/200 with abstract model, 184/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810954241269e+29
+train_loss: 4.500810989688028e+29
+train_loss: 4.5008109074704026e+29
+train_loss: 4.500810961454243e+29
+first batch avg cc loss  tensor(4.0228, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810848462169e+29
+Epoch 25000
+For sampling, solved 66/200 with abstract model, 182/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-25000_control.pt
+train_loss: 4.5008108600526326e+29
+train_loss: 4.5008109424211286e+29
+train_loss: 4.500810895216288e+29
+train_loss: 4.500810989640515e+29
+first batch avg cc loss  tensor(-10.6149, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810955708908e+29
+Epoch 25500
+For sampling, solved 66/200 with abstract model, 179/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810954245193e+29
+train_loss: 4.5008110487006305e+29
+train_loss: 4.500810989659296e+29
+train_loss: 4.5008108483766016e+29
+first batch avg cc loss  tensor(6.9852, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008108955896394e+29
+Epoch 26000
+For sampling, solved 63/200 with abstract model, 183/200 with simulator
+Solved 182/200.
+	1: 49/49=1.00
+	2: 0/44=0.00
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.50081090703224e+29
+train_loss: 4.5008109897636435e+29
+train_loss: 4.5008109664845285e+29
+train_loss: 4.500810812949395e+29
+first batch avg cc loss  tensor(3.4211, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109843142436e+29
+Epoch 26500
+For sampling, solved 66/200 with abstract model, 178/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108618872204e+29
+train_loss: 4.5008109222599824e+29
+train_loss: 4.500810989679292e+29
+train_loss: 4.500810848103677e+29
+first batch avg cc loss  tensor(-3.9285, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810847995687e+29
+Epoch 27000
+For sampling, solved 69/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 1/52=0.02
+	4: 0/36=0.00
+train_loss: 4.500810848361829e+29
+train_loss: 4.500810989743872e+29
+train_loss: 4.50081085437413e+29
+train_loss: 4.500810990057144e+29
+first batch avg cc loss  tensor(-7.2983, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810958328788e+29
+Epoch 27500
+For sampling, solved 67/200 with abstract model, 186/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108952262334e+29
+train_loss: 4.500810800844034e+29
+train_loss: 4.5008109426122164e+29
+train_loss: 4.5008109074019936e+29
+first batch avg cc loss  tensor(0.0971, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810954262714e+29
+Epoch 28000
+For sampling, solved 61/200 with abstract model, 179/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008109425394776e+29
+train_loss: 4.500810800790486e+29
+train_loss: 4.5008108621379794e+29
+train_loss: 4.500810848004963e+29
+first batch avg cc loss  tensor(-0.0661, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810942817491e+29
+Epoch 28500
+For sampling, solved 62/200 with abstract model, 184/200 with simulator
+Solved 184/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810879444819e+29
+train_loss: 4.500810907044362e+29
+train_loss: 4.500810942839424e+29
+train_loss: 4.500810895295462e+29
+first batch avg cc loss  tensor(-9.9333, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810860164502e+29
+Epoch 29000
+For sampling, solved 64/200 with abstract model, 183/200 with simulator
+Solved 181/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/51=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108480531074e+29
+train_loss: 4.500810942445989e+29
+train_loss: 4.500810848119581e+29
+train_loss: 4.500810990028411e+29
+first batch avg cc loss  tensor(6.3906, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109428176256e+29
+Epoch 29500
+For sampling, solved 67/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008109896693824e+29
+train_loss: 4.5008109071217346e+29
+train_loss: 4.500810895241418e+29
+train_loss: 4.500810886730066e+29
+first batch avg cc loss  tensor(1.6034, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.50081095426357e+29
+Epoch 30000
+For sampling, solved 67/200 with abstract model, 181/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+Saved model at models/b3ca65d7214946659866df08b5271e97-epoch-30000_control.pt
+train_loss: 4.5008109071302014e+29
+train_loss: 4.500810873457778e+29
+train_loss: 4.500810907231308e+29
+train_loss: 4.5008108481071956e+29
+first batch avg cc loss  tensor(-3.0789, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810951689934e+29
+Epoch 30500
+For sampling, solved 61/200 with abstract model, 179/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 3/44=0.07
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810847982446e+29
+train_loss: 4.500810859815609e+29
+train_loss: 4.500810845060105e+29
+train_loss: 4.500810848015629e+29
+first batch avg cc loss  tensor(-7.5749, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810904586875e+29
+Epoch 31000
+For sampling, solved 70/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108484665836e+29
+train_loss: 4.500810895705021e+29
+train_loss: 4.500810986410309e+29
+train_loss: 4.500810895306354e+29
+first batch avg cc loss  tensor(1.1367, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810959691803e+29
+Epoch 31500
+For sampling, solved 63/200 with abstract model, 184/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008107982129426e+29
+train_loss: 4.500810997494927e+29
+train_loss: 4.500810848391824e+29
+train_loss: 4.500810942812042e+29
+first batch avg cc loss  tensor(-1.2898, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.5008109070250346e+29
+Epoch 32000
+For sampling, solved 65/200 with abstract model, 184/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 5/44=0.11
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008109010748415e+29
+train_loss: 4.500810848168535e+29
+train_loss: 4.5008108149301954e+29
+train_loss: 4.5008109897688226e+29
+first batch avg cc loss  tensor(-7.9751, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810801219049e+29
+Epoch 32500
+For sampling, solved 69/200 with abstract model, 180/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 4/44=0.09
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.500810848003884e+29
+train_loss: 4.500811001559696e+29
+train_loss: 4.500810989684426e+29
+train_loss: 4.500810942545473e+29
+first batch avg cc loss  tensor(-7.2461, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810990045343e+29
+Epoch 33000
+For sampling, solved 62/200 with abstract model, 183/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 1/44=0.02
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008108126841334e+29
+train_loss: 4.5008109546900606e+29
+train_loss: 4.500810800784992e+29
+train_loss: 4.5008110458822314e+29
+first batch avg cc loss  tensor(-19.4275, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 4.500810804722218e+29
+Epoch 33500
+For sampling, solved 62/200 with abstract model, 184/200 with simulator
+Solved 183/200.
+	1: 49/49=1.00
+	2: 6/44=0.14
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: 4.5008107535560495e+29
+train_loss: 4.5008108857843544e+29
+train_loss: 4.500811048678968e+29
+train_loss: 4.500810954612102e+29
+slurmstepd: error: *** JOB 565969 ON ellis-compute-01 CANCELLED AT 2022-05-16T13:10:57 DUE TO TIME LIMIT ***

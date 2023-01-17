@@ -1,0 +1,20 @@
+Using torch device NVIDIA GeForce RTX 3090
+Starting run:
+042b51cbe2e54ca9ba570969d75224f6
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, cc_neurosym=False, sv_options=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, sv_micro=False, sv_micro_data_type='full_traj', relational_macro=False, batch_size=128, traj_updates=100000000.0, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='042b51cbe2e54ca9ba570969d75224f6')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20221021_115711-8k4hdpfq
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run generous-sound-592
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/8k4hdpfq
+Net has 57832 parameters
+slurmstepd: error: *** JOB 945392 ON ellis-compute-01 CANCELLED AT 2022-10-21T14:47:58 ***

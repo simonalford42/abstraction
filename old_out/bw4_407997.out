@@ -1,0 +1,137 @@
+Solved 36/200 episodes
+Solved 61/200 episodes
+Solved 65/200 episodes
+Solved 77/200 episodes
+Solved 138/200 episodes
+Solved 156/200 episodes
+Solved 182/200 episodes
+Solved 190/200 episodes
+Solved 198/200 episodes
+Solved 199/200 episodes
+batch norm
+Using torch device NVIDIA GeForce RTX 3090
+traj-level training without hmm
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 38259 parameters
+Round 0
+Generated trajectories in 71.9 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 115466.8359375	(9.5s)
+epoch: 20	train loss: 46607.15625	(9.1s)
+epoch: 40	train loss: 41182.3984375	(9.1s)
+epoch: 60	train loss: 37454.26953125	(9.1s)
+epoch: 80	train loss: 34773.62109375	(9.1s)
+Evaluating model on 200 episodes
+Solved 36/200 episodes
+Evaluated model in 38.0 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 1
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 50853.46875	(8.9s)
+epoch: 20	train loss: 29728.9921875	(9.1s)
+epoch: 40	train loss: 24234.787109375	(9.1s)
+epoch: 60	train loss: 21565.49609375	(9.1s)
+epoch: 80	train loss: 19278.388671875	(9.1s)
+Evaluating model on 200 episodes
+Solved 61/200 episodes
+Evaluated model in 28.5 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 2
+Generated trajectories in 71.8 seconds
+epoch: 0	train loss: 43071.6875	(8.9s)
+epoch: 20	train loss: 22918.1796875	(9.1s)
+epoch: 40	train loss: 18280.1015625	(9.1s)
+epoch: 60	train loss: 15626.3212890625	(9.1s)
+epoch: 80	train loss: 14089.75390625	(9.0s)
+Evaluating model on 200 episodes
+Solved 65/200 episodes
+Evaluated model in 31.1 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 3
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 40298.51171875	(9.0s)
+epoch: 20	train loss: 19764.28515625	(9.1s)
+epoch: 40	train loss: 15498.3466796875	(9.2s)
+epoch: 60	train loss: 12916.24609375	(9.2s)
+epoch: 80	train loss: 10459.3876953125	(9.2s)
+Evaluating model on 200 episodes
+Solved 77/200 episodes
+Evaluated model in 29.3 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 4
+Generated trajectories in 72.1 seconds
+epoch: 0	train loss: 34143.3046875	(9.0s)
+epoch: 20	train loss: 12287.966796875	(9.1s)
+epoch: 40	train loss: 8357.748046875	(9.1s)
+epoch: 60	train loss: 6064.998046875	(9.1s)
+epoch: 80	train loss: 6595.0068359375	(9.1s)
+Evaluating model on 200 episodes
+Solved 138/200 episodes
+Evaluated model in 19.3 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 5
+Generated trajectories in 71.5 seconds
+epoch: 0	train loss: 18465.8515625	(9.0s)
+epoch: 20	train loss: 6522.529296875	(9.1s)
+epoch: 40	train loss: 3181.78466796875	(9.1s)
+epoch: 60	train loss: 5126.92578125	(9.1s)
+epoch: 80	train loss: 3290.6064453125	(9.0s)
+Evaluating model on 200 episodes
+Solved 156/200 episodes
+Evaluated model in 16.1 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 6
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 11835.7587890625	(9.0s)
+epoch: 20	train loss: 4640.27392578125	(9.1s)
+epoch: 40	train loss: 3350.490234375	(9.1s)
+epoch: 60	train loss: 2116.6787109375	(9.1s)
+epoch: 80	train loss: 2879.34130859375	(9.1s)
+Evaluating model on 200 episodes
+Solved 182/200 episodes
+Evaluated model in 15.2 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 7
+Generated trajectories in 72.7 seconds
+epoch: 0	train loss: 8614.3037109375	(9.1s)
+epoch: 20	train loss: 2605.6435546875	(9.2s)
+epoch: 40	train loss: 1729.3349609375	(9.2s)
+epoch: 60	train loss: 658.3928833007812	(9.2s)
+epoch: 80	train loss: 879.2809448242188	(9.2s)
+Evaluating model on 200 episodes
+Solved 190/200 episodes
+Evaluated model in 15.7 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 8
+Generated trajectories in 72.3 seconds
+epoch: 0	train loss: 5127.90673828125	(9.1s)
+epoch: 20	train loss: 2843.875244140625	(9.2s)
+epoch: 40	train loss: 3631.89404296875	(9.2s)
+epoch: 60	train loss: 159.51138305664062	(9.2s)
+epoch: 80	train loss: 0.1343717724084854	(9.2s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluated model in 15.6 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model
+Round 9
+Generated trajectories in 73.1 seconds
+epoch: 0	train loss: 7719.69921875	(9.2s)
+epoch: 20	train loss: 1430.262451171875	(9.2s)
+epoch: 40	train loss: 966.2761840820312	(9.2s)
+epoch: 60	train loss: 118.17628479003906	(9.2s)
+epoch: 80	train loss: 1601.760986328125	(9.0s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluated model in 14.8 seconds
+Saved model for run
+271cfa30ba8d47929131d5275ce36391 with name model

@@ -1,0 +1,37 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+2c63c6a8858845eaa294abc61403d41a
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=256, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, relational_macro=False, batch_size=16.0, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='2c63c6a8858845eaa294abc61403d41a')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220922_175010-122k8w1a
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run sage-totem-522
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/122k8w1a
+Completed training in 354.9 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 763, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 615, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 112, in learn_options
+    dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/utils/data/dataloader.py", line 359, in __init__
+    batch_sampler = BatchSampler(sampler, batch_size, drop_last)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/utils/data/sampler.py", line 225, in __init__
+    raise ValueError("batch_size should be a positive integer value, "
+ValueError: batch_size should be a positive integer value, but got batch_size=16.0
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: - 0.008 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: \ 0.008 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: | 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: - 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: \ 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: | 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: - 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: Synced sage-totem-522: https://wandb.ai/simonalford42/abstraction/runs/122k8w1a
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220922_175010-122k8w1a/logs

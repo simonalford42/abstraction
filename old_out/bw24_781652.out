@@ -1,0 +1,84 @@
+Starting run:
+e12bc45382f24918b18584f767ab3d70
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=20000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA RTX A6000', id='e12bc45382f24918b18584f767ab3d70')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220812_144529-3piohni4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run serene-brook-224
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/3piohni4
+Net has 436408 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes
+Solved 35/200 episodes
+Solved 70/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-98.pt
+Solved 61/200 episodes
+Solved 79/200 episodes
+Solved 74/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-197.pt
+Solved 78/200 episodes
+Solved 97/200 episodes
+Solved 88/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-296.pt
+Solved 84/200 episodes
+Solved 98/200 episodes
+Solved 91/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-396.pt
+Solved 87/200 episodes
+Solved 100/200 episodes
+Solved 94/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-495.pt
+Solved 102/200 episodes
+Solved 103/200 episodes
+Solved 106/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-594.pt
+Solved 108/200 episodes
+Solved 82/200 episodes
+Solved 95/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-694.pt
+Solved 98/200 episodes
+Solved 102/200 episodes
+Solved 111/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-794.pt
+Solved 102/200 episodes
+Solved 109/200 episodes
+Solved 109/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-894.pt
+Solved 113/200 episodes
+Solved 102/200 episodes
+Solved 106/200 episodes
+Saved model at models/e12bc45382f24918b18584f767ab3d70-epoch-994.pt
+Saved model at models/e12bc45382f24918b18584f767ab3d70.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 109337.3 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.005 MB of 0.005 MB uploaded (0.000 MB deduped)wandb: \ 0.005 MB of 0.005 MB uploaded (0.000 MB deduped)wandb: | 0.005 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.005 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:                  acc ▁▃▅▅▆▆▆▇▆▆▇▇▆▇▇▇▇██▆▇▇▇█▇███▇█
+wandb:                 loss █▄▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     test/cc_loss_avg █▂▂▂▁▁▂▂▁▂▁▁▁▁▁▁▁▂▁▃▂▁▃▁▁▁▁▁▂▁
+wandb: test/solved_pred_acc ▁█████████████████████████████
+wandb: 
+wandb: Run summary:
+wandb:                  acc 0.53
+wandb:                 loss 81591.5216
+wandb:     test/cc_loss_avg 0.00044
+wandb: test/solved_pred_acc 1.0
+wandb: 
+wandb: Synced serene-brook-224: https://wandb.ai/simonalford42/abstraction/runs/3piohni4
+wandb: Synced 6 W&B file(s), 11 media file(s), 11 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220812_144529-3piohni4/logs

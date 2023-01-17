@@ -1,0 +1,27 @@
+Using torch device NVIDIA GeForce RTX 3090
+homo controller
+net: causal
+cc_weight: 1
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 71.3 seconds
+epoch: 0	train loss: 98642.875	(257.8s)
+epoch: 20	train loss: 24143.953125	(267.4s)
+epoch: 40	train loss: 20099.818359375	(267.3s)
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 162, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 154, in boxworld_main
+    boxworld_outer_sv(
+  File "/home/sca63/abstraction/main.py", line 71, in boxworld_outer_sv
+    sv_train(dataloader, net, epochs=epochs, lr=lr,
+  File "/home/sca63/abstraction/main.py", line 25, in sv_train
+    loss = net(s_i_batch, actions_batch, lengths)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 285, in forward
+    logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps, causal_pens)
+  File "/home/sca63/abstraction/hmm.py", line 182, in cc_loss
+    assert torch.allclose(total_logp, total_logp2, rtol=1E-2), f'fw: {total_logp}, bw: {total_logp2}'
+AssertionError: fw: -3.4615397453308105e-05, bw: -3.413856029510498e-05

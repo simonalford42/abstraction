@@ -1,0 +1,106 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-90
+Starting run:
+a27d5eb732ff4ca5899714f7d0fb3411
+train
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Evaluating model on 200 episodes
+Solved 53/200 episodes
+Evaluating model on 200 episodes
+Solved 49/200 episodes
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Evaluating model on 200 episodes
+Solved 25/200 episodes
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Evaluating model on 200 episodes
+Solved 47/200 episodes
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluating model on 200 episodes
+Solved 44/200 episodes
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Evaluating model on 200 episodes
+Solved 49/200 episodes
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Evaluating model on 200 episodes
+Solved 53/200 episodes
+Evaluating model on 200 episodes
+Solved 70/200 episodes
+Evaluating model on 200 episodes
+Solved 122/200 episodes
+Evaluating model on 200 episodes
+Solved 121/200 episodes
+Evaluating model on 200 episodes
+Solved 143/200 episodes
+Evaluating model on 200 episodes
+Solved 167/200 episodes
+Evaluating model on 200 episodes
+Solved 158/200 episodes
+Evaluating model on 200 episodes
+Solved 164/200 episodes
+Evaluating model on 200 episodes
+Solved 169/200 episodes
+Evaluating model on 200 episodes
+Solved 180/200 episodes
+Evaluating model on 200 episodes
+Solved 183/200 episodes
+Evaluating model on 200 episodes
+Solved 192/200 episodes
+Evaluating model on 200 episodes
+Solved 196/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Saved model at models/64d1077c931e427b836a1572ea1ee7af.pt
+Completed training in 12274.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 278, in <module>
+    rounds = params['epochs'] // params['test_every']
+  File "/home/sca63/abstraction/main.py", line 266, in boxworld_main
+    dataloader = DataLoader(data, batch_size=params['batch_size'], shuffle=False, collate_fn=box_world.traj_collate)
+  File "/home/sca63/abstraction/main.py", line 72, in train
+    run['models'].log(path)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/fluent.py", line 526, in log_metrics
+    MlflowClient().log_batch(run_id=run_id, metrics=metrics_arr, params=[], tags=[])
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/client.py", line 918, in log_batch
+    self._tracking_client.log_batch(run_id, metrics, params, tags)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/tracking/_tracking_service/client.py", line 305, in log_batch
+    _validate_metric(metric.key, metric.value, metric.timestamp, metric.step)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/mlflow/utils/validation.py", line 113, in _validate_metric
+    raise MlflowException(
+mlflow.exceptions.MlflowException: Got invalid value models/64d1077c931e427b836a1572ea1ee7af.pt for metric 'final model path' (timestamp=1648083164866). Please specify value as a valid double (64-bit floating point)
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 408 operations to synchronize with Neptune. Do not kill this process.
+All 408 operations synced, thanks for waiting!

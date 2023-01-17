@@ -1,0 +1,66 @@
+Starting run:
+f9a1667b91a54798b5216ee4edbae908
+params: {'n': 10000, 'lr': 0.0003, 'epochs': 4000, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': False, 'sv': False, 'save_every': 400, 'test_every': 40, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': 'f9a1667b91a54798b5216ee4edbae908'}
+train
+Net has 205330 parameters
+Epoch 0	 test acc 0.025
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-0.pt
+Epoch 40	 test acc 0.16
+Epoch 80	 test acc 0.225
+Epoch 120	 test acc 0.235
+Epoch 160	 test acc 0.18
+Epoch 200	 test acc 0.16
+Epoch 240	 test acc 0.21
+Epoch 280	 test acc 0.2
+Epoch 320	 test acc 0.19
+Epoch 360	 test acc 0.215
+Epoch 400	 test acc 0.245
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-400.pt
+Epoch 440	 test acc 0.235
+Epoch 480	 test acc 0.24
+Epoch 520	 test acc 0.255
+Epoch 560	 test acc 0.23
+Epoch 600	 test acc 0.255
+Epoch 640	 test acc 0.27
+Epoch 680	 test acc 0.315
+Epoch 720	 test acc 0.285
+Epoch 760	 test acc 0.22
+Epoch 800	 test acc 0.315
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-800.pt
+Epoch 840	 test acc 0.26
+Epoch 880	 test acc 0.34
+Epoch 920	 test acc 0.31
+Epoch 960	 test acc 0.32
+Epoch 1000	 test acc 0.29
+Epoch 1040	 test acc 0.3
+Epoch 1080	 test acc 0.335
+Epoch 1120	 test acc 0.255
+Epoch 1160	 test acc 0.31
+Epoch 1200	 test acc 0.3
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-1200.pt
+Epoch 1240	 test acc 0.39
+Epoch 1280	 test acc 0.39
+Epoch 1320	 test acc 0.42
+Epoch 1360	 test acc 0.305
+Epoch 1400	 test acc 0.335
+Epoch 1440	 test acc 0.335
+Epoch 1480	 test acc 0.38
+Epoch 1520	 test acc 0.375
+Epoch 1560	 test acc 0.3
+Epoch 1600	 test acc 0.39
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-1600.pt
+Epoch 1640	 test acc 0.335
+Epoch 1680	 test acc 0.395
+Epoch 1720	 test acc 0.39
+Epoch 1760	 test acc 0.385
+Epoch 1800	 test acc 0.365
+Epoch 1840	 test acc 0.345
+Epoch 1880	 test acc 0.435
+Epoch 1920	 test acc 0.375
+Epoch 1960	 test acc 0.35
+Epoch 2000	 test acc 0.2
+Saved model at models/f9a1667b91a54798b5216ee4edbae908-epoch-2000.pt
+Epoch 2040	 test acc 0.145
+Epoch 2080	 test acc 0.19
+Epoch 2120	 test acc 0.125
+slurmstepd: error: *** JOB 458330 ON bala-compute-01 CANCELLED AT 2022-03-26T16:10:36 DUE TO TIME LIMIT ***

@@ -1,0 +1,29 @@
+Starting run:
+b7f41ab701514e3c8db3b4570624c355
+params: {'n': 50000, 'lr': 0.0008, 'epochs': 200, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 10, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': 'b7f41ab701514e3c8db3b4570624c355'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.185
+Saved model at models/b7f41ab701514e3c8db3b4570624c355-epoch-0.pt
+Epoch 10	 test acc 0.21
+Epoch 20	 test acc 0.205
+Epoch 30	 test acc 0.255
+Epoch 40	 test acc 0.145
+Epoch 50	 test acc 0.145
+Epoch 60	 test acc 0.17
+Epoch 70	 test acc 0.22
+Epoch 80	 test acc 0.17
+Epoch 90	 test acc 0.185
+Epoch 100	 test acc 0.145
+Saved model at models/b7f41ab701514e3c8db3b4570624c355-epoch-100.pt
+Epoch 110	 test acc 0.165
+Epoch 120	 test acc 0.225
+Epoch 130	 test acc 0.175
+Epoch 140	 test acc 0.21
+Epoch 150	 test acc 0.185
+Epoch 160	 test acc 0.215
+Epoch 170	 test acc 0.215
+Epoch 180	 test acc 0.18
+Epoch 190	 test acc 0.18
+Saved model at models/b7f41ab701514e3c8db3b4570624c355.pt
+Completed training in 45911.4 seconds

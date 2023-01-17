@@ -1,0 +1,17 @@
+job number = 14
+args.lr: 1e-05
+args.big: False
+args.batch_size: 256
+args.all_conv: True
+Training on NVIDIA GeForce RTX 2080 Ti
+generating trajectories
+trajectories generated
+round 0
+net has 15212 parameters
+epoch: 0	train loss: 1.4803305864334106	(27.9s)
+epoch: 1	train loss: 1.4839973449707031	(27.7s)
+epoch: 2	train loss: 1.4279670715332031	(27.4s)
+epoch: 3	train loss: 1.4092129468917847	(27.6s)
+epoch: 4	train loss: 1.3842283487319946	(27.4s)
+epoch: 5	train loss: 1.3818153142929077	(27.9s)
+epoch: 6	train loss: 1.435593843460083	(30.9s)

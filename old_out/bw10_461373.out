@@ -1,0 +1,26 @@
+Starting run:
+55b0b0dd392842b88068e4c4b1fe7181
+params: {'n': 50000, 'lr': 0.0008, 'epochs': 400, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'id': '55b0b0dd392842b88068e4c4b1fe7181'}
+train
+Net has 37803 parameters
+Solved 42/200 episodes
+Epoch 0	 test acc 0.21
+Saved model at models/55b0b0dd392842b88068e4c4b1fe7181-epoch-0.pt
+Solved 42/200 episodes
+Epoch 20	 test acc 0.21
+Solved 63/200 episodes
+Epoch 40	 test acc 0.315
+Solved 49/200 episodes
+Epoch 60	 test acc 0.245
+Solved 46/200 episodes
+Epoch 80	 test acc 0.23
+Solved 31/200 episodes
+Epoch 100	 test acc 0.155
+Saved model at models/55b0b0dd392842b88068e4c4b1fe7181-epoch-100.pt
+Solved 44/200 episodes
+Epoch 120	 test acc 0.22
+Solved 45/200 episodes
+Epoch 140	 test acc 0.225
+Solved 44/200 episodes
+Epoch 160	 test acc 0.22
+slurmstepd: error: *** JOB 461373 ON kuleshov-compute-01 CANCELLED AT 2022-03-28T20:13:15 DUE TO PREEMPTION ***

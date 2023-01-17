@@ -1,0 +1,151 @@
+Starting run:
+f2aa660fe96b41b78253ecd391398c62
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(4,), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, dim=128, num_attn_blocks=8, num_heads=8, traj_updates=500000000.0, batch_size=128, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce GTX TITAN X', id='f2aa660fe96b41b78253ecd391398c62')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220803_192340-ut0f8gre
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run apricot-dust-151
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/ut0f8gre
+Net has 251670 parameters
+loss=tensor(0.0381, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0359, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0321, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0299, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0288, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0301, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0254, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0264, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0285, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0237, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0249, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0237, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0212, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0213, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0204, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0198, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=1e-05
+loss=tensor(0.0190, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=5e-05
+loss=tensor(0.0195, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=3e-05
+loss=tensor(0.0180, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00034
+loss=tensor(0.0160, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00077
+loss=tensor(0.0208, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00159
+loss=tensor(0.0158, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00257
+loss=tensor(0.0150, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00351
+loss=tensor(0.0133, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00508
+loss=tensor(0.0136, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00662
+loss=tensor(0.0125, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00917
+loss=tensor(0.0127, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0114
+loss=tensor(0.0125, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.01407
+loss=tensor(0.0120, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.01717
+loss=tensor(0.0119, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.01938
+loss=tensor(0.0130, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.02241
+loss=tensor(0.0135, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.02546
+loss=tensor(0.0100, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.02916
+loss=tensor(0.0115, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.03303
+loss=tensor(0.0109, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.03695
+loss=tensor(0.0110, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.04019
+loss=tensor(0.0097, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.04321
+loss=tensor(0.0111, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.04714
+loss=tensor(0.0097, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.04927
+loss=tensor(0.0091, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.05272
+loss=tensor(0.0087, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.05624
+loss=tensor(0.0078, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.05976
+loss=tensor(0.0081, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.06312
+loss=tensor(0.0111, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0645
+loss=tensor(0.0093, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.06876
+loss=tensor(0.0087, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.07226
+loss=tensor(0.0075, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.07343
+loss=tensor(0.0083, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.07782
+loss=tensor(0.0105, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.08094
+loss=tensor(0.0088, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.08016
+loss=tensor(0.0081, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.08345
+loss=tensor(0.0073, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.08588
+loss=tensor(0.0089, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.09028
+loss=tensor(0.0097, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0928
+loss=tensor(0.0076, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.09411
+loss=tensor(0.0096, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0957
+loss=tensor(0.0078, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.09843
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.10493
+loss=tensor(0.0066, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.10389
+loss=tensor(0.0089, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.10755
+loss=tensor(0.0073, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.11035
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.11136
+loss=tensor(0.0084, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.11248
+loss=tensor(0.0086, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.10746
+loss=tensor(0.0083, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.11383
+loss=tensor(0.0069, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.11886
+loss=tensor(0.0085, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.12072
+loss=tensor(0.0068, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.12438
+loss=tensor(0.0079, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1232
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.129
+loss=tensor(0.0071, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1282
+loss=tensor(0.0070, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13194
+loss=tensor(0.0081, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13444
+loss=tensor(0.0073, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13642
+loss=tensor(0.0087, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.14078
+loss=tensor(0.0073, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13691
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13991
+loss=tensor(0.0058, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.141
+loss=tensor(0.0089, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.14397
+loss=tensor(0.0060, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.14206
+loss=tensor(0.0080, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.14719
+loss=tensor(0.0066, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15067
+loss=tensor(0.0068, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1487
+loss=tensor(0.0058, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.14675
+loss=tensor(0.0078, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15237
+loss=tensor(0.0075, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15487
+loss=tensor(0.0063, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15086
+loss=tensor(0.0063, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15691
+loss=tensor(0.0074, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15646
+loss=tensor(0.0061, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15714
+loss=tensor(0.0058, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16067
+loss=tensor(0.0066, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15955
+loss=tensor(0.0062, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16463
+loss=tensor(0.0057, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16342
+loss=tensor(0.0067, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16543
+loss=tensor(0.0055, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16693
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16449
+loss=tensor(0.0066, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1716
+loss=tensor(0.0059, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.16993
+loss=tensor(0.0063, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.17407
+loss=tensor(0.0050, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.17532
+loss=tensor(0.0085, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1776
+loss=tensor(0.0063, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18053
+loss=tensor(0.0059, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.17786
+loss=tensor(0.0055, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18111
+loss=tensor(0.0050, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18143
+loss=tensor(0.0056, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18336
+loss=tensor(0.0060, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18419
+loss=tensor(0.0062, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1813
+loss=tensor(0.0072, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18624
+loss=tensor(0.0067, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18917
+loss=tensor(0.0063, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18548
+loss=tensor(0.0073, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18827
+loss=tensor(0.0065, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18573
+loss=tensor(0.0051, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19219
+loss=tensor(0.0060, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19021
+loss=tensor(0.0048, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1945
+loss=tensor(0.0055, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19869
+loss=tensor(0.0061, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19749
+loss=tensor(0.0056, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19904
+loss=tensor(0.0066, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.198
+loss=tensor(0.0077, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19915
+loss=tensor(0.0055, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19907
+loss=tensor(0.0062, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19379
+loss=tensor(0.0050, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20445
+loss=tensor(0.0054, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.19634
+loss=tensor(0.0053, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20343
+loss=tensor(0.0048, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20556
+loss=tensor(0.0065, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20433
+loss=tensor(0.0047, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20836
+loss=tensor(0.0055, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20526
+loss=tensor(0.0040, device='cuda:0', grad_fn=<BinaryCrossEntropyBackward0>), acc=0.21139
+slurmstepd: error: *** JOB 738192 ON nikola-compute-02 CANCELLED AT 2022-08-06T19:25:10 DUE TO TIME LIMIT ***

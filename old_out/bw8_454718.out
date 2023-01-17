@@ -1,0 +1,73 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-47
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000, 'batch_size': 10}
+Net has 37803 parameters
+Round 0
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 166563.25440979004	(40.2s)
+epoch: 10	train loss: 58144.07048511505	(36.8s)
+epoch: 20	train loss: 53111.46299934387	(36.5s)
+epoch: 30	train loss: 50650.75477170944	(36.5s)
+epoch: 40	train loss: 48769.43745183945	(36.6s)
+epoch: 50	train loss: 47540.52269458771	(36.4s)
+epoch: 60	train loss: 46824.76095223427	(36.5s)
+epoch: 70	train loss: 46608.72620987892	(36.5s)
+epoch: 80	train loss: 45971.398096203804	(36.5s)
+epoch: 90	train loss: 44898.358620643616	(36.6s)
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluated model in 30.8 seconds
+Round 1
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 44034.908152103424	(36.7s)
+epoch: 10	train loss: 43735.3330385685	(36.6s)
+epoch: 20	train loss: 42679.277772426605	(36.6s)
+epoch: 30	train loss: 42783.41061902046	(36.7s)
+epoch: 40	train loss: 41996.614003419876	(36.7s)
+epoch: 50	train loss: 42132.19724488258	(36.3s)
+epoch: 60	train loss: 40869.163798093796	(40.4s)
+epoch: 70	train loss: 40344.201464772224	(36.8s)
+epoch: 80	train loss: 40024.01571404934	(39.1s)
+epoch: 90	train loss: 39290.32919836044	(36.6s)
+Evaluating model on 200 episodes
+Solved 49/200 episodes
+Evaluated model in 30.1 seconds
+Round 2
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 38621.74878168106	(36.9s)
+epoch: 10	train loss: 38583.832463502884	(36.6s)
+epoch: 20	train loss: 38164.826540231705	(40.2s)
+epoch: 30	train loss: 37803.206238269806	(36.5s)
+epoch: 40	train loss: 37555.910726070404	(36.7s)
+epoch: 50	train loss: 37485.58523488045	(36.5s)
+epoch: 60	train loss: 36782.60769557953	(36.4s)
+epoch: 70	train loss: 36629.57403254509	(36.7s)
+epoch: 80	train loss: 35989.53794145584	(36.5s)
+epoch: 90	train loss: 36290.35555386543	(36.5s)
+Evaluating model on 200 episodes
+Solved 65/200 episodes
+Evaluated model in 25.8 seconds
+Round 3
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 35232.66173505783	(41.2s)
+epoch: 10	train loss: 34900.88851737976	(36.6s)
+epoch: 20	train loss: 34449.310977458954	(36.6s)
+epoch: 30	train loss: 33935.42650127411	(36.9s)
+epoch: 40	train loss: 34179.96863031387	(36.6s)
+epoch: 50	train loss: 33826.174815535545	(36.6s)
+epoch: 60	train loss: 32890.56821727753	(36.6s)
+epoch: 70	train loss: 31622.430121541023	(37.5s)
+epoch: 80	train loss: 31198.104707717896	(36.6s)
+epoch: 90	train loss: 30073.51381778717	(36.4s)
+Evaluating model on 200 episodes
+Solved 81/200 episodes
+Evaluated model in 21.3 seconds
+Round 4
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 28431.363488316536	(36.5s)
+epoch: 10	train loss: 26015.049871981144	(36.8s)
+epoch: 20	train loss: 21652.068526625633	(40.3s)
+epoch: 30	train loss: 17000.798777401447	(36.7s)
+epoch: 40	train loss: 14966.975785940886	(36.5s)
+epoch: 50	train loss: 11926.453917071223	(36.4s)
+epoch: 60	train loss: 10571.027176294476	(36.5s)
+slurmstepd: error: *** JOB 454718 ON ellis-compute-01 CANCELLED AT 2022-03-21T16:48:14 ***

@@ -1,0 +1,31 @@
+Using torch device NVIDIA RTX A5000
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+e1d9ca340d7a45878ca6d2dc5417ac5b
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, batch_size=128, traj_updates=100000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA RTX A5000', id='e1d9ca340d7a45878ca6d2dc5417ac5b')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220915_100250-2f0au9h5
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jumping-sky-412
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2f0au9h5
+Net has 57832 parameters
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-33.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-66.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-99.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-132.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-165.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-198.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-231.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-264.pt
+Saved model at models/e1d9ca340d7a45878ca6d2dc5417ac5b_neurosym-epoch-297.pt
+slurmstepd: error: *** JOB 846060 ON yu-compute-01 CANCELLED AT 2022-09-16T15:07:45 ***

@@ -1,0 +1,22 @@
+Starting run:
+224a822f668143ebb0105e137d64ff37
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 800, 'batch_size': 20, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': False, 'sv': False, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': '224a822f668143ebb0105e137d64ff37'}
+train
+Net has 205330 parameters
+Completed training in 37.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 287, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 281, in boxworld_main
+    train(run, dataloader, net, params)
+  File "/home/sca63/abstraction/main.py", line 57, in train
+    test_acc = box_world.eval_options_model(net.control_net, test_env, n=params['num_test'], run=run, epoch=epoch)
+  File "/home/sca63/abstraction/box_world.py", line 502, in eval_options_model
+    current_option = Categorical(logits=start_logps).sample().item()
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/distributions/categorical.py", line 64, in __init__
+    super(Categorical, self).__init__(batch_shape, validate_args=validate_args)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/distributions/distribution.py", line 55, in __init__
+    raise ValueError(
+ValueError: Expected parameter logits (Tensor of shape (10,)) of distribution Categorical(logits: torch.Size([10])) to satisfy the constraint IndependentConstraint(Real(), 1), but found invalid values:
+tensor([nan, nan, nan, nan, nan, nan, nan, nan, nan, nan], device='cuda:0',
+       grad_fn=<SubBackward0>)

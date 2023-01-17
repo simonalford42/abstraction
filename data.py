@@ -796,6 +796,11 @@ class ListDataset(Dataset):
 def sv_micro_data(n, typ='full_traj', control_net=None):
     '''
     typ: 'full_traj', 'from_model', 'ground_truth'
+
+    full_traj: as if the low level model has to solve the whole task on its own.
+    from model: as if the low level model has to solve what it already did in the learned model.
+    ground truth: ground truth options.
+
     '''
 
     env = bw.BoxWorldEnv()

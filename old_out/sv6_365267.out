@@ -1,0 +1,57 @@
+args: Namespace(cnn=False, test=False)
+Training on NVIDIA TITAN Xp
+Net has 37608 parameters
+Round 1
+Generated trajectories in 61.4 seconds
+132870 examples
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 1.4350981712341309	acc: 0.285	(13.8s)
+epoch: 200	train loss: 0.69266676902771	acc: 0.748	(13.4s)
+epoch: 400	train loss: 0.07589095085859299	acc: 0.776	(13.6s)
+epoch: 600	train loss: 0.3888183832168579	acc: 0.790	(13.8s)
+epoch: 800	train loss: 0.3054458796977997	acc: 0.798	(13.3s)
+Evaluating model on 100 episodes
+Solved 57/100 episodes; Counter({1: 70, 2: 20, 3: 8, 0: 1, 4: 1}) is the distribution of the number of found keys each time
+Evaluated model in 19.5 seconds
+Round 2
+Generated trajectories in 60.4 seconds
+131498 examples
+epoch: 0	train loss: 0.5780718922615051	acc: 0.764	(13.6s)
+epoch: 200	train loss: 0.45951640605926514	acc: 0.801	(13.8s)
+epoch: 400	train loss: 0.47484683990478516	acc: 0.812	(13.6s)
+epoch: 600	train loss: 0.40076470375061035	acc: 0.819	(13.6s)
+epoch: 800	train loss: 0.3927505910396576	acc: 0.825	(13.3s)
+Evaluating model on 100 episodes
+Solved 55/100 episodes; Counter({1: 77, 2: 18, 3: 4, 4: 1}) is the distribution of the number of found keys each time
+Evaluated model in 19.4 seconds
+Round 3
+Generated trajectories in 60.5 seconds
+131791 examples
+epoch: 0	train loss: 0.5987093448638916	acc: 0.765	(13.0s)
+epoch: 200	train loss: 0.4037039577960968	acc: 0.813	(13.8s)
+epoch: 400	train loss: 0.39039918780326843	acc: 0.823	(13.7s)
+epoch: 600	train loss: 0.39787769317626953	acc: 0.830	(13.7s)
+epoch: 800	train loss: 0.3037206530570984	acc: 0.835	(13.5s)
+Evaluating model on 100 episodes
+Solved 47/100 episodes; Counter({1: 75, 2: 21, 3: 2, 4: 2}) is the distribution of the number of found keys each time
+Evaluated model in 21.3 seconds
+Round 4
+Generated trajectories in 60.9 seconds
+132572 examples
+epoch: 0	train loss: 0.5168648362159729	acc: 0.765	(13.2s)
+epoch: 200	train loss: 0.47009697556495667	acc: 0.820	(13.6s)
+epoch: 400	train loss: 0.4171839952468872	acc: 0.832	(13.8s)
+epoch: 600	train loss: 0.35666048526763916	acc: 0.839	(13.6s)
+epoch: 800	train loss: 0.3674199879169464	acc: 0.844	(13.7s)
+Evaluating model on 100 episodes
+Solved 48/100 episodes; Counter({1: 81, 2: 16, 0: 2, 3: 1}) is the distribution of the number of found keys each time
+Evaluated model in 21.7 seconds
+Round 5
+Generated trajectories in 60.7 seconds
+132005 examples
+epoch: 0	train loss: 0.6737053394317627	acc: 0.762	(13.6s)
+epoch: 200	train loss: 0.42122238874435425	acc: 0.823	(13.9s)
+epoch: 400	train loss: 0.305042564868927	acc: 0.833	(13.7s)
+epoch: 600	train loss: 0.40983474254608154	acc: 0.840	(13.8s)
+slurmstepd: error: *** JOB 365267 ON joachims-compute-02 CANCELLED AT 2022-01-11T14:13:18 ***

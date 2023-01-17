@@ -1,0 +1,8 @@
+Using torch device NVIDIA GeForce RTX 3090
+homo controller
+net: causal
+cc_weight: 0.5
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 207442 parameters
+Round 0
+slurmstepd: error: *** JOB 432622 ON ellis-compute-01 CANCELLED AT 2022-02-27T16:37:06 ***

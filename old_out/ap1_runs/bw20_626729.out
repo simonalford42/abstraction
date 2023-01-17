@@ -1,0 +1,82 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 hmm
+ABSTRACT_PEN:	 1.0
+TAU_NOISE:	 0.0
+Starting run:
+dd8cfd313d2b4ada9e80204b25db0a1f
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'hmm', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': False, 'device': 'NVIDIA GeForce GTX 1080 Ti', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': 'dd8cfd313d2b4ada9e80204b25db0a1f'}
+Net has 206996 parameters
+WARNING: tau norm dim disabled
+train_loss: 143630.78917312622
+fixed test env
+Solved 137/200 episodes, CC loss avg = 0.03809625811794861
+Epoch 0	 test acc 0.685
+fixed test env
+Solved 147/200 episodes, CC loss avg = 0.021271841973768333
+Epoch 25	 test acc 0.735
+fixed test env
+Solved 158/200 episodes, CC loss avg = 0.019845274069228643
+Epoch 50	 test acc 0.79
+fixed test env
+Solved 177/200 episodes, CC loss avg = 0.018579332270063705
+Epoch 75	 test acc 0.885
+train_loss: 64233.25020599365
+fixed test env
+Solved 173/200 episodes, CC loss avg = 0.019068642836527653
+Epoch 100	 test acc 0.865
+fixed test env
+Solved 171/200 episodes, CC loss avg = 0.01905752472076351
+Epoch 125	 test acc 0.855
+Saved model at models/dd8cfd313d2b4ada9e80204b25db0a1f-epoch-125.pt
+fixed test env
+Solved 167/200 episodes, CC loss avg = 0.018924268155071117
+Epoch 150	 test acc 0.835
+fixed test env
+Solved 162/200 episodes, CC loss avg = 0.018768073575092085
+Epoch 175	 test acc 0.81
+train_loss: 66435.27056503296
+fixed test env
+Solved 170/200 episodes, CC loss avg = 0.024230294291731316
+Epoch 200	 test acc 0.85
+fixed test env
+Solved 166/200 episodes, CC loss avg = 0.018688709257299544
+Epoch 225	 test acc 0.83
+fixed test env
+Solved 151/200 episodes, CC loss avg = 0.023336976769139272
+Epoch 250	 test acc 0.755
+Saved model at models/dd8cfd313d2b4ada9e80204b25db0a1f-epoch-250.pt
+fixed test env
+Solved 148/200 episodes, CC loss avg = 0.0182516913719355
+Epoch 275	 test acc 0.74
+train_loss: 70942.67679595947
+fixed test env
+Solved 147/200 episodes, CC loss avg = 0.017052282894306256
+Epoch 300	 test acc 0.735
+fixed test env
+Solved 160/200 episodes, CC loss avg = 0.018630666515188448
+Epoch 325	 test acc 0.8
+fixed test env
+Solved 156/200 episodes, CC loss avg = 0.017707939780937737
+Epoch 350	 test acc 0.78
+fixed test env
+Solved 140/200 episodes, CC loss avg = 0.018488877750998757
+Epoch 375	 test acc 0.7
+Saved model at models/dd8cfd313d2b4ada9e80204b25db0a1f-epoch-375.pt
+train_loss: 66856.81834030151
+fixed test env
+Solved 150/200 episodes, CC loss avg = 0.027117560270473063
+Epoch 400	 test acc 0.75
+fixed test env
+Solved 171/200 episodes, CC loss avg = 0.016796506127709318
+Epoch 425	 test acc 0.855
+fixed test env
+Solved 161/200 episodes, CC loss avg = 0.017188129858773705
+Epoch 450	 test acc 0.805
+fixed test env
+Solved 160/200 episodes, CC loss avg = 0.016677235187109132
+Epoch 475	 test acc 0.8
+Saved model at models/dd8cfd313d2b4ada9e80204b25db0a1f.pt
+Completed training in 73673.7 seconds
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+TAU_NOISE: 	0.0

@@ -1,0 +1,66 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 hmm
+N:	 20000
+LOSS:	 kl
+ABSTRACT_PEN:	 1.0
+Starting run:
+9c19d571f3c0428b92af59563195b8cd
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'hmm', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': False, 'loss': 'kl', 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': '9c19d571f3c0428b92af59563195b8cd'}
+Net has 206996 parameters
+WARNING: tau norm dim disabled
+train_loss: 144890.39059448242
+fixed test env
+Solved 127/200 episodes, CC loss avg = 0.0427454005197443
+Epoch 0	 test acc 0.635
+fixed test env
+Solved 146/200 episodes, CC loss avg = 0.021731213521434256
+Epoch 25	 test acc 0.73
+fixed test env
+Solved 153/200 episodes, CC loss avg = 0.020136263878849987
+Epoch 50	 test acc 0.765
+fixed test env
+Solved 157/200 episodes, CC loss avg = 0.03711500282647543
+Epoch 75	 test acc 0.785
+train_loss: 74864.5058517456
+fixed test env
+Solved 163/200 episodes, CC loss avg = 0.019912336040836046
+Epoch 100	 test acc 0.815
+fixed test env
+Solved 159/200 episodes, CC loss avg = 0.027224823244997635
+Epoch 125	 test acc 0.795
+Saved model at models/9c19d571f3c0428b92af59563195b8cd-epoch-125.pt
+fixed test env
+Solved 164/200 episodes, CC loss avg = 0.01997051059424848
+Epoch 150	 test acc 0.82
+fixed test env
+Solved 161/200 episodes, CC loss avg = 0.020195335215196036
+Epoch 175	 test acc 0.805
+train_loss: 75715.73537445068
+fixed test env
+Solved 149/200 episodes, CC loss avg = 0.02047624828612633
+Epoch 200	 test acc 0.745
+fixed test env
+Solved 163/200 episodes, CC loss avg = 0.019607910293354392
+Epoch 225	 test acc 0.815
+fixed test env
+Solved 172/200 episodes, CC loss avg = 0.031268634859563174
+Epoch 250	 test acc 0.86
+Saved model at models/9c19d571f3c0428b92af59563195b8cd-epoch-250.pt
+fixed test env
+Solved 151/200 episodes, CC loss avg = 0.020134986502234824
+Epoch 275	 test acc 0.755
+train_loss: 68571.54499435425
+fixed test env
+Solved 169/200 episodes, CC loss avg = 0.019059714796182153
+Epoch 300	 test acc 0.845
+fixed test env
+Solved 154/200 episodes, CC loss avg = 0.019273192988803294
+Epoch 325	 test acc 0.77
+fixed test env
+Solved 118/200 episodes, CC loss avg = 0.020048425420421827
+Epoch 350	 test acc 0.59
+fixed test env
+Solved 160/200 episodes, CC loss avg = 0.019388773096551768
+Epoch 375	 test acc 0.8
+Saved model at models/9c19d571f3c0428b92af59563195b8cd-epoch-375.pt
+slurmstepd: error: *** JOB 551155 ON ellis-compute-01 CANCELLED AT 2022-05-06T23:33:39 ***

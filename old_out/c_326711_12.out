@@ -1,0 +1,54 @@
+job number = 12
+args.lr: 1e-05
+args.big: False
+args.batch_size: 64
+args.all_conv: True
+Training on NVIDIA GeForce RTX 2080 Ti
+generating trajectories
+trajectories generated
+round 0
+net has 15212 parameters
+epoch: 0	train loss: 1.4634912014007568	(28.6s)
+epoch: 1	train loss: 1.4605683088302612	(28.5s)
+epoch: 2	train loss: 1.334761619567871	(28.3s)
+epoch: 3	train loss: 1.3619418144226074	(28.5s)
+epoch: 4	train loss: 1.4058308601379395	(28.3s)
+epoch: 5	train loss: 1.3698216676712036	(28.5s)
+epoch: 6	train loss: 1.4999505281448364	(30.4s)
+epoch: 7	train loss: 1.2578004598617554	(29.4s)
+epoch: 8	train loss: 1.417551875114441	(27.6s)
+epoch: 9	train loss: 1.3707129955291748	(27.6s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 1
+net has 15212 parameters
+epoch: 0	train loss: 1.2943832874298096	(26.9s)
+epoch: 1	train loss: 1.275759220123291	(22.5s)
+epoch: 2	train loss: 1.4214528799057007	(21.9s)
+epoch: 3	train loss: 1.3165502548217773	(21.8s)
+epoch: 4	train loss: 1.3640896081924438	(21.7s)
+epoch: 5	train loss: 1.343520998954773	(22.3s)
+epoch: 6	train loss: 1.3973088264465332	(22.9s)
+epoch: 7	train loss: 1.3538092374801636	(22.2s)
+epoch: 8	train loss: 1.1842091083526611	(21.7s)
+epoch: 9	train loss: 1.3708219528198242	(21.8s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 2
+net has 15212 parameters
+epoch: 0	train loss: 1.366819143295288	(21.9s)
+epoch: 1	train loss: 1.3303312063217163	(21.9s)
+epoch: 2	train loss: 1.3563008308410645	(21.8s)
+epoch: 3	train loss: 1.400217056274414	(21.8s)
+epoch: 4	train loss: 1.3400384187698364	(21.9s)
+epoch: 5	train loss: 1.3112890720367432	(22.0s)
+epoch: 6	train loss: 1.2897270917892456	(22.0s)
+epoch: 7	train loss: 1.368234634399414	(22.0s)
+epoch: 8	train loss: 1.2354086637496948	(22.0s)
+epoch: 9	train loss: 1.3023062944412231	(21.8s)
+Evaluating model on 50 episodes
+Solved 0/50 episodes
+round 3
+net has 15212 parameters
+epoch: 0	train loss: 1.3083608150482178	(22.2s)
+epoch: 1	train loss: 1.2500700950622559	(22.2s)

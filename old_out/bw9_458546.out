@@ -1,0 +1,95 @@
+Starting run:
+9c0eeaed4c5845029d772676c00b4063
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 800, 'batch_size': 20, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': False, 'homo': False, 'sv': True, 'save_every': 100, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'sv', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': '9c0eeaed4c5845029d772676c00b4063'}
+train
+Net has 37803 parameters
+Solved 36/200 episodes
+Epoch 0	 test acc 0.18
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-0.pt
+Solved 43/200 episodes
+Epoch 20	 test acc 0.215
+Solved 59/200 episodes
+Epoch 40	 test acc 0.295
+Solved 51/200 episodes
+Epoch 60	 test acc 0.255
+Solved 35/200 episodes
+Epoch 80	 test acc 0.175
+Solved 33/200 episodes
+Epoch 100	 test acc 0.165
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-100.pt
+Solved 45/200 episodes
+Epoch 120	 test acc 0.225
+Solved 41/200 episodes
+Epoch 140	 test acc 0.205
+Solved 43/200 episodes
+Epoch 160	 test acc 0.215
+Solved 37/200 episodes
+Epoch 180	 test acc 0.185
+Solved 44/200 episodes
+Epoch 200	 test acc 0.22
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-200.pt
+Solved 38/200 episodes
+Epoch 220	 test acc 0.19
+Solved 49/200 episodes
+Epoch 240	 test acc 0.245
+Solved 48/200 episodes
+Epoch 260	 test acc 0.24
+Solved 49/200 episodes
+Epoch 280	 test acc 0.245
+Solved 36/200 episodes
+Epoch 300	 test acc 0.18
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-300.pt
+Solved 45/200 episodes
+Epoch 320	 test acc 0.225
+Solved 145/200 episodes
+Epoch 340	 test acc 0.725
+Solved 170/200 episodes
+Epoch 360	 test acc 0.85
+Solved 161/200 episodes
+Epoch 380	 test acc 0.805
+Solved 175/200 episodes
+Epoch 400	 test acc 0.875
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-400.pt
+Solved 186/200 episodes
+Epoch 420	 test acc 0.93
+Solved 195/200 episodes
+Epoch 440	 test acc 0.975
+Solved 192/200 episodes
+Epoch 460	 test acc 0.96
+Solved 191/200 episodes
+Epoch 480	 test acc 0.955
+Solved 188/200 episodes
+Epoch 500	 test acc 0.94
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-500.pt
+Solved 196/200 episodes
+Epoch 520	 test acc 0.98
+Solved 199/200 episodes
+Epoch 540	 test acc 0.995
+Solved 197/200 episodes
+Epoch 560	 test acc 0.985
+Solved 200/200 episodes
+Epoch 580	 test acc 1.0
+Solved 200/200 episodes
+Epoch 600	 test acc 1.0
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-600.pt
+Solved 200/200 episodes
+Epoch 620	 test acc 1.0
+Solved 199/200 episodes
+Epoch 640	 test acc 0.995
+Solved 199/200 episodes
+Epoch 660	 test acc 0.995
+Solved 198/200 episodes
+Epoch 680	 test acc 0.99
+Solved 200/200 episodes
+Epoch 700	 test acc 1.0
+Saved model at models/9c0eeaed4c5845029d772676c00b4063-epoch-700.pt
+Solved 200/200 episodes
+Epoch 720	 test acc 1.0
+Solved 200/200 episodes
+Epoch 740	 test acc 1.0
+Solved 200/200 episodes
+Epoch 760	 test acc 1.0
+Solved 200/200 episodes
+Epoch 780	 test acc 1.0
+Saved model at models/9c0eeaed4c5845029d772676c00b4063.pt
+Completed training in 21887.1 seconds

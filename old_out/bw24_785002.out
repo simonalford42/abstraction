@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 616, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 451, in boxworld_main
+    utils.gpu_check()
+  File "/home/sca63/abstraction/utils.py", line 17, in gpu_check
+    utils.print_torch_device()
+NameError: name 'utils' is not defined

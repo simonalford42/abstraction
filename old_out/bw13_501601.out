@@ -1,0 +1,69 @@
+Starting run:
+29de44d9042346b1837aa1957e730323
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 30, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 1, 'noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 16, 'device': 'NVIDIA GeForce GTX TITAN X', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '29de44d9042346b1837aa1957e730323'}
+train
+Net has 206996 parameters
+Solved 2/200 episodes
+Epoch 0	 test acc 0.01
+reloading data
+Solved 42/200 episodes
+Epoch 100	 test acc 0.21
+reloading data
+Solved 48/200 episodes
+Epoch 200	 test acc 0.24
+reloading data
+Solved 38/200 episodes
+Epoch 300	 test acc 0.19
+reloading data
+Solved 43/200 episodes
+Epoch 400	 test acc 0.215
+reloading data
+Solved 33/200 episodes
+Epoch 500	 test acc 0.165
+Saved model at models/29de44d9042346b1837aa1957e730323-epoch-500.pt
+reloading data
+Solved 49/200 episodes
+Epoch 600	 test acc 0.245
+reloading data
+Solved 71/200 episodes
+Epoch 700	 test acc 0.355
+reloading data
+Solved 71/200 episodes
+Epoch 800	 test acc 0.355
+reloading data
+Solved 68/200 episodes
+Epoch 900	 test acc 0.34
+reloading data
+Solved 64/200 episodes
+Epoch 1000	 test acc 0.32
+Saved model at models/29de44d9042346b1837aa1957e730323-epoch-1000.pt
+reloading data
+Solved 81/200 episodes
+Epoch 1100	 test acc 0.405
+reloading data
+Solved 81/200 episodes
+Epoch 1200	 test acc 0.405
+reloading data
+Solved 93/200 episodes
+Epoch 1300	 test acc 0.465
+reloading data
+Solved 108/200 episodes
+Epoch 1400	 test acc 0.54
+reloading data
+Solved 124/200 episodes
+Epoch 1500	 test acc 0.62
+Saved model at models/29de44d9042346b1837aa1957e730323-epoch-1500.pt
+reloading data
+Solved 153/200 episodes
+Epoch 1600	 test acc 0.765
+reloading data
+Solved 168/200 episodes
+Epoch 1700	 test acc 0.84
+reloading data
+Solved 168/200 episodes
+Epoch 1800	 test acc 0.84
+reloading data
+Solved 161/200 episodes
+Epoch 1900	 test acc 0.805
+Saved model at models/29de44d9042346b1837aa1957e730323.pt
+Completed training in 113284.6 seconds

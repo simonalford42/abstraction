@@ -1,0 +1,43 @@
+Starting run:
+9fe6cd37631d4686b1b72998a069ee08
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(4,), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, dim=128, traj_updates=500000000.0, batch_size=128, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='9fe6cd37631d4686b1b72998a069ee08')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220729_100042-2fsq09ui
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run bright-rain-122
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2fsq09ui
+Net has 251670 parameters
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+Saved model at models/9fe6cd37631d4686b1b72998a069ee08_neurosym.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 133151.5 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: \ 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: | 0.001 MB of 0.001 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: - 0.001 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: \ 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: | 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: / 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: - 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: \ 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: | 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: / 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:          acc ▂▃▄▅▆▆▇▇▇▇▇▇▇▇██▇█▇██▇▇████▄▃▆▂▃▂▁▁▁▁▁▁▁
+wandb:         loss ▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▅▂▂▂▃▃▃▃▃▃▃▂
+wandb: negative_acc ▂▃▅▆▆▇▇▇▇▇█▇██████████▇████▃▄▇▃▃▃▄▃▃▃▅▁▁
+wandb: positive_acc ▅▆▇▇███████████████████████▄▆█▅▆▅▁▃▃▄▁▃▅
+wandb: 
+wandb: Run summary:
+wandb:          acc 0.05193
+wandb:         loss 7.68918
+wandb: negative_acc 0.9987
+wandb: positive_acc 0.6576
+wandb: 
+wandb: Synced bright-rain-122: https://wandb.ai/simonalford42/abstraction/runs/2fsq09ui
+wandb: Synced 6 W&B file(s), 1 media file(s), 1 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220729_100042-2fsq09ui/logs

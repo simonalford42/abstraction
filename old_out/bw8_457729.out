@@ -1,0 +1,70 @@
+Starting run:
+80fcfcdbf49f40b68c39ecd414ec2fac
+train
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Evaluating model on 200 episodes
+Solved 46/200 episodes
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Evaluating model on 200 episodes
+Solved 113/200 episodes
+Evaluating model on 200 episodes
+Solved 190/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 197/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 191/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 193/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+slurmstepd: error: *** JOB 457729 ON ellis-compute-01 CANCELLED AT 2022-03-23T23:13:32 ***

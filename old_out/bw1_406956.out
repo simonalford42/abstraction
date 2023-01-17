@@ -1,0 +1,1021 @@
+Using torch device NVIDIA GeForce RTX 3090
+traj-level training without hmm
+params: {'epochs': 50, 'lr': 0.001, 'n': 1000, 'repeats': 3}
+Net has 37803 parameters
+Round 0
+Generated trajectories in 14.3 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 36101.26953125	(2.1s)
+epoch: 10	train loss: 15598.51953125	(1.7s)
+epoch: 20	train loss: 11968.818359375	(1.7s)
+epoch: 30	train loss: 11225.041015625	(1.7s)
+epoch: 40	train loss: 10761.6484375	(1.7s)
+Evaluating model on 200 episodes
+Solved 47/200 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 32.3 seconds
+epoch: 0	train loss: 10666.36328125	(1.7s)
+epoch: 10	train loss: 10232.248046875	(1.7s)
+epoch: 20	train loss: 9363.7705078125	(1.7s)
+epoch: 30	train loss: 9952.70703125	(1.7s)
+epoch: 40	train loss: 8776.2763671875	(1.7s)
+Evaluating model on 200 episodes
+Solved 55/200 episodes; avg steps taken in solved episodes: 24.5
+Evaluated model in 35.2 seconds
+epoch: 0	train loss: 9446.755859375	(1.7s)
+epoch: 10	train loss: 8345.109375	(1.7s)
+epoch: 20	train loss: 7787.26416015625	(1.7s)
+epoch: 30	train loss: 8537.654296875	(1.7s)
+epoch: 40	train loss: 7462.72314453125	(1.7s)
+Evaluating model on 200 episodes
+Solved 52/200 episodes; avg steps taken in solved episodes: 25.1
+Evaluated model in 35.3 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 1
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 13203.5615234375	(1.7s)
+epoch: 10	train loss: 9439.8984375	(1.7s)
+epoch: 20	train loss: 8918.7021484375	(1.7s)
+epoch: 30	train loss: 8397.0126953125	(1.7s)
+epoch: 40	train loss: 8022.92138671875	(1.7s)
+Evaluating model on 200 episodes
+Solved 70/200 episodes; avg steps taken in solved episodes: 28.1
+Evaluated model in 31.3 seconds
+epoch: 0	train loss: 7748.1513671875	(1.7s)
+epoch: 10	train loss: 7398.0458984375	(1.7s)
+epoch: 20	train loss: 6850.84912109375	(1.7s)
+epoch: 30	train loss: 7116.275390625	(1.7s)
+epoch: 40	train loss: 5987.701171875	(1.7s)
+Evaluating model on 200 episodes
+Solved 82/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 30.3 seconds
+epoch: 0	train loss: 6582.1259765625	(1.7s)
+epoch: 10	train loss: 5519.03271484375	(1.7s)
+epoch: 20	train loss: 5396.4814453125	(1.7s)
+epoch: 30	train loss: 5055.96435546875	(1.7s)
+epoch: 40	train loss: 5390.4453125	(1.7s)
+Evaluating model on 200 episodes
+Solved 77/200 episodes; avg steps taken in solved episodes: 27.0
+Evaluated model in 32.5 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 2
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 13961.9501953125	(1.8s)
+epoch: 10	train loss: 9796.6796875	(1.7s)
+epoch: 20	train loss: 9119.12109375	(1.7s)
+epoch: 30	train loss: 7963.7001953125	(1.7s)
+epoch: 40	train loss: 7170.01953125	(1.7s)
+Evaluating model on 200 episodes
+Solved 63/200 episodes; avg steps taken in solved episodes: 23.7
+Evaluated model in 30.8 seconds
+epoch: 0	train loss: 7209.4619140625	(1.8s)
+epoch: 10	train loss: 6117.9794921875	(1.8s)
+epoch: 20	train loss: 5972.22607421875	(1.7s)
+epoch: 30	train loss: 5901.271484375	(1.7s)
+epoch: 40	train loss: 5796.373046875	(1.7s)
+Evaluating model on 200 episodes
+Solved 80/200 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 30.4 seconds
+epoch: 0	train loss: 5939.34619140625	(1.8s)
+epoch: 10	train loss: 4687.84033203125	(1.8s)
+epoch: 20	train loss: 4374.3505859375	(1.8s)
+epoch: 30	train loss: 4441.134765625	(1.7s)
+epoch: 40	train loss: 4425.36767578125	(1.7s)
+Evaluating model on 200 episodes
+Solved 71/200 episodes; avg steps taken in solved episodes: 23.9
+Evaluated model in 30.4 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 3
+Generated trajectories in 14.0 seconds
+epoch: 0	train loss: 13439.0673828125	(1.7s)
+epoch: 10	train loss: 8655.029296875	(1.7s)
+epoch: 20	train loss: 7816.40087890625	(1.7s)
+epoch: 30	train loss: 6885.88427734375	(1.7s)
+epoch: 40	train loss: 6389.90087890625	(1.7s)
+Evaluating model on 200 episodes
+Solved 78/200 episodes; avg steps taken in solved episodes: 25.1
+Evaluated model in 28.7 seconds
+epoch: 0	train loss: 6406.087890625	(1.7s)
+epoch: 10	train loss: 4990.22314453125	(1.7s)
+epoch: 20	train loss: 4804.87060546875	(1.7s)
+epoch: 30	train loss: 5316.970703125	(1.7s)
+epoch: 40	train loss: 4339.06884765625	(1.7s)
+Evaluating model on 200 episodes
+Solved 92/200 episodes; avg steps taken in solved episodes: 30.2
+Evaluated model in 28.8 seconds
+epoch: 0	train loss: 4557.95751953125	(1.7s)
+epoch: 10	train loss: 4414.20947265625	(1.7s)
+epoch: 20	train loss: 4011.765625	(1.7s)
+epoch: 30	train loss: 3422.557861328125	(1.7s)
+epoch: 40	train loss: 3335.4248046875	(1.7s)
+Evaluating model on 200 episodes
+Solved 102/200 episodes; avg steps taken in solved episodes: 23.2
+Evaluated model in 29.1 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 4
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 14776.927734375	(1.7s)
+epoch: 10	train loss: 8918.5673828125	(1.7s)
+epoch: 20	train loss: 8250.5673828125	(1.7s)
+epoch: 30	train loss: 6463.53466796875	(1.7s)
+epoch: 40	train loss: 5859.6123046875	(1.7s)
+Evaluating model on 200 episodes
+Solved 70/200 episodes; avg steps taken in solved episodes: 23.2
+Evaluated model in 28.4 seconds
+epoch: 0	train loss: 6045.77587890625	(1.7s)
+epoch: 10	train loss: 5085.21923828125	(1.7s)
+epoch: 20	train loss: 4826.37890625	(1.7s)
+epoch: 30	train loss: 4687.447265625	(1.7s)
+epoch: 40	train loss: 3690.921875	(1.7s)
+Evaluating model on 200 episodes
+Solved 104/200 episodes; avg steps taken in solved episodes: 28.5
+Evaluated model in 25.0 seconds
+epoch: 0	train loss: 3815.87890625	(1.7s)
+epoch: 10	train loss: 3070.769775390625	(1.7s)
+epoch: 20	train loss: 3238.19775390625	(1.7s)
+epoch: 30	train loss: 3443.844482421875	(1.7s)
+epoch: 40	train loss: 2986.123779296875	(1.7s)
+Evaluating model on 200 episodes
+Solved 102/200 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 26.8 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 5
+Generated trajectories in 14.2 seconds
+epoch: 0	train loss: 14186.6552734375	(1.7s)
+epoch: 10	train loss: 7736.1171875	(1.7s)
+epoch: 20	train loss: 6797.7314453125	(1.7s)
+epoch: 30	train loss: 5533.564453125	(1.7s)
+epoch: 40	train loss: 4953.05126953125	(1.7s)
+Evaluating model on 200 episodes
+Solved 89/200 episodes; avg steps taken in solved episodes: 23.7
+Evaluated model in 28.6 seconds
+epoch: 0	train loss: 4693.90380859375	(1.7s)
+epoch: 10	train loss: 3715.689453125	(1.7s)
+epoch: 20	train loss: 3511.46875	(1.7s)
+epoch: 30	train loss: 3244.102294921875	(1.7s)
+epoch: 40	train loss: 3775.058837890625	(1.7s)
+Evaluating model on 200 episodes
+Solved 106/200 episodes; avg steps taken in solved episodes: 25.0
+Evaluated model in 27.7 seconds
+epoch: 0	train loss: 2860.542236328125	(1.7s)
+epoch: 10	train loss: 2878.0419921875	(1.7s)
+epoch: 20	train loss: 2631.279052734375	(1.7s)
+epoch: 30	train loss: 1855.7532958984375	(1.7s)
+epoch: 40	train loss: 2408.2685546875	(1.8s)
+Evaluating model on 200 episodes
+Solved 93/200 episodes; avg steps taken in solved episodes: 23.9
+Evaluated model in 27.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 6
+Generated trajectories in 14.6 seconds
+epoch: 0	train loss: 14371.173828125	(1.8s)
+epoch: 10	train loss: 6384.99951171875	(1.8s)
+epoch: 20	train loss: 4647.18701171875	(1.8s)
+epoch: 30	train loss: 4077.970703125	(1.8s)
+epoch: 40	train loss: 3578.552978515625	(1.8s)
+Evaluating model on 200 episodes
+Solved 86/200 episodes; avg steps taken in solved episodes: 29.8
+Evaluated model in 30.4 seconds
+epoch: 0	train loss: 3554.82568359375	(1.8s)
+epoch: 10	train loss: 2752.484130859375	(1.8s)
+epoch: 20	train loss: 2575.144287109375	(1.8s)
+epoch: 30	train loss: 2020.3280029296875	(1.8s)
+epoch: 40	train loss: 1774.3818359375	(1.8s)
+Evaluating model on 200 episodes
+Solved 138/200 episodes; avg steps taken in solved episodes: 29.6
+Evaluated model in 20.6 seconds
+epoch: 0	train loss: 2268.38330078125	(1.8s)
+epoch: 10	train loss: 1640.5657958984375	(1.8s)
+epoch: 20	train loss: 1530.741455078125	(1.8s)
+epoch: 30	train loss: 1086.8330078125	(1.8s)
+epoch: 40	train loss: 1223.8653564453125	(1.8s)
+Evaluating model on 200 episodes
+Solved 166/200 episodes; avg steps taken in solved episodes: 27.8
+Evaluated model in 18.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 7
+Generated trajectories in 14.6 seconds
+epoch: 0	train loss: 11752.984375	(1.8s)
+epoch: 10	train loss: 4532.681640625	(1.8s)
+epoch: 20	train loss: 3355.28955078125	(1.8s)
+epoch: 30	train loss: 3021.86083984375	(1.8s)
+epoch: 40	train loss: 2125.882080078125	(1.8s)
+Evaluating model on 200 episodes
+Solved 145/200 episodes; avg steps taken in solved episodes: 27.7
+Evaluated model in 18.6 seconds
+epoch: 0	train loss: 2252.765380859375	(1.8s)
+epoch: 10	train loss: 1451.2503662109375	(1.8s)
+epoch: 20	train loss: 1777.19140625	(1.8s)
+epoch: 30	train loss: 1006.0985107421875	(1.8s)
+epoch: 40	train loss: 1127.91845703125	(1.8s)
+Evaluating model on 200 episodes
+Solved 176/200 episodes; avg steps taken in solved episodes: 28.1
+Evaluated model in 15.8 seconds
+epoch: 0	train loss: 1552.21484375	(1.8s)
+epoch: 10	train loss: 1519.6204833984375	(1.8s)
+epoch: 20	train loss: 2222.794189453125	(1.8s)
+epoch: 30	train loss: 1036.8316650390625	(1.8s)
+epoch: 40	train loss: 1727.448974609375	(1.8s)
+Evaluating model on 200 episodes
+Solved 174/200 episodes; avg steps taken in solved episodes: 27.9
+Evaluated model in 15.7 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 8
+Generated trajectories in 14.2 seconds
+epoch: 0	train loss: 8670.009765625	(1.7s)
+epoch: 10	train loss: 2999.08251953125	(1.7s)
+epoch: 20	train loss: 2258.790771484375	(1.7s)
+epoch: 30	train loss: 1643.748291015625	(1.7s)
+epoch: 40	train loss: 1442.905029296875	(1.7s)
+Evaluating model on 200 episodes
+Solved 170/200 episodes; avg steps taken in solved episodes: 27.7
+Evaluated model in 15.4 seconds
+epoch: 0	train loss: 1496.17822265625	(1.7s)
+epoch: 10	train loss: 1115.489501953125	(1.7s)
+epoch: 20	train loss: 1018.8582763671875	(1.7s)
+epoch: 30	train loss: 765.3892822265625	(1.7s)
+epoch: 40	train loss: 799.0134887695312	(1.7s)
+Evaluating model on 200 episodes
+Solved 178/200 episodes; avg steps taken in solved episodes: 27.4
+Evaluated model in 14.8 seconds
+epoch: 0	train loss: 1377.9180908203125	(1.7s)
+epoch: 10	train loss: 584.958251953125	(1.7s)
+epoch: 20	train loss: 740.5167236328125	(1.7s)
+epoch: 30	train loss: 1119.8106689453125	(1.7s)
+epoch: 40	train loss: 496.1571960449219	(1.7s)
+Evaluating model on 200 episodes
+Solved 178/200 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 14.5 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 9
+Generated trajectories in 14.6 seconds
+epoch: 0	train loss: 8329.1640625	(1.8s)
+epoch: 10	train loss: 3234.191162109375	(1.8s)
+epoch: 20	train loss: 1659.0953369140625	(1.8s)
+epoch: 30	train loss: 1367.689208984375	(1.8s)
+epoch: 40	train loss: 1278.1085205078125	(1.8s)
+Evaluating model on 200 episodes
+Solved 163/200 episodes; avg steps taken in solved episodes: 27.3
+Evaluated model in 16.1 seconds
+epoch: 0	train loss: 1433.776123046875	(1.8s)
+epoch: 10	train loss: 1087.4090576171875	(1.8s)
+epoch: 20	train loss: 1395.8076171875	(1.8s)
+epoch: 30	train loss: 817.346923828125	(1.8s)
+epoch: 40	train loss: 1392.062255859375	(1.8s)
+Evaluating model on 200 episodes
+Solved 175/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 15.9 seconds
+epoch: 0	train loss: 1226.0628662109375	(1.8s)
+epoch: 10	train loss: 448.71478271484375	(1.8s)
+epoch: 20	train loss: 653.8163452148438	(1.8s)
+epoch: 30	train loss: 638.9571533203125	(1.8s)
+epoch: 40	train loss: 326.1972351074219	(1.8s)
+Evaluating model on 200 episodes
+Solved 194/200 episodes; avg steps taken in solved episodes: 27.5
+Evaluated model in 14.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 10
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 8125.42822265625	(1.7s)
+epoch: 10	train loss: 2289.935546875	(1.7s)
+epoch: 20	train loss: 1569.5093994140625	(1.7s)
+epoch: 30	train loss: 1307.801513671875	(1.7s)
+epoch: 40	train loss: 924.4860229492188	(1.7s)
+Evaluating model on 200 episodes
+Solved 185/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 14.4 seconds
+epoch: 0	train loss: 1199.4775390625	(1.8s)
+epoch: 10	train loss: 1025.796875	(1.7s)
+epoch: 20	train loss: 751.0230102539062	(1.7s)
+epoch: 30	train loss: 530.984130859375	(1.7s)
+epoch: 40	train loss: 750.06494140625	(1.7s)
+Evaluating model on 200 episodes
+Solved 188/200 episodes; avg steps taken in solved episodes: 25.6
+Evaluated model in 13.4 seconds
+epoch: 0	train loss: 818.9964599609375	(1.8s)
+epoch: 10	train loss: 1312.2481689453125	(1.7s)
+epoch: 20	train loss: 700.66162109375	(1.7s)
+epoch: 30	train loss: 350.7894287109375	(1.7s)
+epoch: 40	train loss: 261.4720458984375	(1.7s)
+Evaluating model on 200 episodes
+Solved 195/200 episodes; avg steps taken in solved episodes: 25.9
+Evaluated model in 13.4 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 11
+Generated trajectories in 14.7 seconds
+epoch: 0	train loss: 6293.41259765625	(1.8s)
+epoch: 10	train loss: 2142.29150390625	(1.8s)
+epoch: 20	train loss: 2058.208984375	(1.8s)
+epoch: 30	train loss: 1832.353271484375	(1.8s)
+epoch: 40	train loss: 1057.20458984375	(1.8s)
+Evaluating model on 200 episodes
+Solved 182/200 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 12.8 seconds
+epoch: 0	train loss: 970.2933959960938	(1.8s)
+epoch: 10	train loss: 433.2275695800781	(1.8s)
+epoch: 20	train loss: 413.9610290527344	(1.8s)
+epoch: 30	train loss: 527.041015625	(1.8s)
+epoch: 40	train loss: 387.8044738769531	(1.8s)
+Evaluating model on 200 episodes
+Solved 193/200 episodes; avg steps taken in solved episodes: 26.0
+Evaluated model in 12.7 seconds
+epoch: 0	train loss: 933.1844482421875	(1.8s)
+epoch: 10	train loss: 182.2409210205078	(1.8s)
+epoch: 20	train loss: 211.21255493164062	(1.8s)
+epoch: 30	train loss: 1090.45361328125	(1.8s)
+epoch: 40	train loss: 684.5597534179688	(1.8s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes; avg steps taken in solved episodes: 25.7
+Evaluated model in 12.5 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 12
+Generated trajectories in 14.5 seconds
+epoch: 0	train loss: 5281.3828125	(1.8s)
+epoch: 10	train loss: 1316.3311767578125	(1.8s)
+epoch: 20	train loss: 1076.6644287109375	(1.8s)
+epoch: 30	train loss: 892.2981567382812	(1.8s)
+epoch: 40	train loss: 463.69854736328125	(1.8s)
+Evaluating model on 200 episodes
+Solved 190/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.5 seconds
+epoch: 0	train loss: 1065.084228515625	(1.7s)
+epoch: 10	train loss: 288.65325927734375	(1.8s)
+epoch: 20	train loss: 1331.3680419921875	(1.8s)
+epoch: 30	train loss: 293.4530944824219	(1.8s)
+epoch: 40	train loss: 515.3677978515625	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 13.3 seconds
+epoch: 0	train loss: 595.7731323242188	(1.8s)
+epoch: 10	train loss: 67.09848022460938	(1.8s)
+epoch: 20	train loss: 385.2294006347656	(1.8s)
+epoch: 30	train loss: 227.18553161621094	(1.8s)
+epoch: 40	train loss: 433.1086120605469	(1.8s)
+Evaluating model on 200 episodes
+Solved 191/200 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 13.6 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 13
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 4716.65673828125	(1.7s)
+epoch: 10	train loss: 1849.008056640625	(1.7s)
+epoch: 20	train loss: 818.7328491210938	(1.7s)
+epoch: 30	train loss: 773.1011962890625	(1.7s)
+epoch: 40	train loss: 381.65899658203125	(1.7s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 633.1402587890625	(1.8s)
+epoch: 10	train loss: 830.316162109375	(1.7s)
+epoch: 20	train loss: 460.03662109375	(1.7s)
+epoch: 30	train loss: 153.27325439453125	(1.7s)
+epoch: 40	train loss: 279.5585632324219	(1.7s)
+Evaluating model on 200 episodes
+Solved 194/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 12.9 seconds
+epoch: 0	train loss: 581.3936157226562	(1.7s)
+epoch: 10	train loss: 397.65716552734375	(1.7s)
+epoch: 20	train loss: 430.6490478515625	(1.7s)
+epoch: 30	train loss: 208.98887634277344	(1.7s)
+epoch: 40	train loss: 1159.9266357421875	(1.7s)
+Evaluating model on 200 episodes
+Solved 196/200 episodes; avg steps taken in solved episodes: 26.0
+Evaluated model in 13.3 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 14
+Generated trajectories in 14.1 seconds
+epoch: 0	train loss: 3929.052001953125	(1.7s)
+epoch: 10	train loss: 1336.60791015625	(1.7s)
+epoch: 20	train loss: 501.3239440917969	(1.7s)
+epoch: 30	train loss: 1995.4208984375	(1.7s)
+epoch: 40	train loss: 209.66458129882812	(1.7s)
+Evaluating model on 200 episodes
+Solved 190/200 episodes; avg steps taken in solved episodes: 24.8
+Evaluated model in 13.2 seconds
+epoch: 0	train loss: 901.2227172851562	(1.7s)
+epoch: 10	train loss: 390.4100341796875	(1.7s)
+epoch: 20	train loss: 748.833984375	(1.7s)
+epoch: 30	train loss: 280.0950012207031	(1.7s)
+epoch: 40	train loss: 579.4244995117188	(1.7s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 12.7 seconds
+epoch: 0	train loss: 1219.4366455078125	(1.7s)
+epoch: 10	train loss: 52.04629135131836	(1.7s)
+epoch: 20	train loss: 206.74835205078125	(1.7s)
+epoch: 30	train loss: 89.7610092163086	(1.7s)
+epoch: 40	train loss: 152.26116943359375	(1.7s)
+Evaluating model on 200 episodes
+Solved 197/200 episodes; avg steps taken in solved episodes: 25.2
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 15
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 2943.325927734375	(1.8s)
+epoch: 10	train loss: 899.935302734375	(1.7s)
+epoch: 20	train loss: 537.369140625	(1.7s)
+epoch: 30	train loss: 1101.6807861328125	(1.7s)
+epoch: 40	train loss: 152.50901794433594	(1.7s)
+Evaluating model on 200 episodes
+Solved 196/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.9 seconds
+epoch: 0	train loss: 657.3825073242188	(1.7s)
+epoch: 10	train loss: 463.2040100097656	(1.7s)
+epoch: 20	train loss: 1744.30126953125	(1.7s)
+epoch: 30	train loss: 401.6291198730469	(1.7s)
+epoch: 40	train loss: 122.43562316894531	(1.7s)
+Evaluating model on 200 episodes
+Solved 190/200 episodes; avg steps taken in solved episodes: 27.4
+Evaluated model in 13.5 seconds
+epoch: 0	train loss: 627.7071533203125	(1.7s)
+epoch: 10	train loss: 48.68475341796875	(1.7s)
+epoch: 20	train loss: 285.34881591796875	(1.7s)
+epoch: 30	train loss: 67.47386169433594	(1.7s)
+epoch: 40	train loss: 171.73867797851562	(1.7s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 16
+Generated trajectories in 14.1 seconds
+epoch: 0	train loss: 3598.02880859375	(1.7s)
+epoch: 10	train loss: 466.8402099609375	(1.7s)
+epoch: 20	train loss: 910.6622924804688	(1.7s)
+epoch: 30	train loss: 1075.9583740234375	(1.7s)
+epoch: 40	train loss: 388.7889099121094	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 12.9 seconds
+epoch: 0	train loss: 705.1911010742188	(1.7s)
+epoch: 10	train loss: 466.7892761230469	(1.7s)
+epoch: 20	train loss: 492.4017333984375	(1.7s)
+epoch: 30	train loss: 377.82098388671875	(1.7s)
+epoch: 40	train loss: 258.649658203125	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 396.7207946777344	(1.7s)
+epoch: 10	train loss: 20.590492248535156	(1.7s)
+epoch: 20	train loss: 4.858088493347168	(1.7s)
+epoch: 30	train loss: 334.09100341796875	(1.7s)
+epoch: 40	train loss: 1322.293701171875	(1.7s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.3 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 17
+Generated trajectories in 14.5 seconds
+epoch: 0	train loss: 3274.04052734375	(1.8s)
+epoch: 10	train loss: 607.28857421875	(1.7s)
+epoch: 20	train loss: 864.372314453125	(1.8s)
+epoch: 30	train loss: 236.1616973876953	(1.8s)
+epoch: 40	train loss: 1101.673095703125	(1.8s)
+Evaluating model on 200 episodes
+Solved 193/200 episodes; avg steps taken in solved episodes: 25.9
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 730.7761840820312	(1.8s)
+epoch: 10	train loss: 179.0089569091797	(1.8s)
+epoch: 20	train loss: 40.219234466552734	(1.7s)
+epoch: 30	train loss: 436.07501220703125	(1.7s)
+epoch: 40	train loss: 95.92936706542969	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 25.6
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 644.4225463867188	(1.8s)
+epoch: 10	train loss: 106.36263275146484	(1.8s)
+epoch: 20	train loss: 353.2164001464844	(1.8s)
+epoch: 30	train loss: 852.419921875	(1.7s)
+epoch: 40	train loss: 4.190074920654297	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.5
+Evaluated model in 12.7 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 18
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 2755.6142578125	(1.8s)
+epoch: 10	train loss: 375.2033996582031	(1.8s)
+epoch: 20	train loss: 134.69944763183594	(1.7s)
+epoch: 30	train loss: 1103.4295654296875	(1.7s)
+epoch: 40	train loss: 177.17176818847656	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 497.9834899902344	(1.7s)
+epoch: 10	train loss: 1608.6484375	(1.8s)
+epoch: 20	train loss: 603.8192749023438	(1.8s)
+epoch: 30	train loss: 2.0714099407196045	(1.7s)
+epoch: 40	train loss: 0.5891029834747314	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 523.1370239257812	(1.8s)
+epoch: 10	train loss: 20.821128845214844	(1.7s)
+epoch: 20	train loss: 0.8858787417411804	(1.8s)
+epoch: 30	train loss: 0.2365185022354126	(1.8s)
+epoch: 40	train loss: 0.07157199084758759	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 19
+Generated trajectories in 14.7 seconds
+epoch: 0	train loss: 3696.561279296875	(1.8s)
+epoch: 10	train loss: 574.8881225585938	(1.8s)
+epoch: 20	train loss: 330.935546875	(1.8s)
+epoch: 30	train loss: 788.56201171875	(1.8s)
+epoch: 40	train loss: 482.0184020996094	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.9
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 479.06890869140625	(1.8s)
+epoch: 10	train loss: 431.38287353515625	(1.8s)
+epoch: 20	train loss: 393.368896484375	(1.8s)
+epoch: 30	train loss: 24.156517028808594	(1.8s)
+epoch: 40	train loss: 1.8935391902923584	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.9
+Evaluated model in 12.7 seconds
+epoch: 0	train loss: 649.4148559570312	(1.8s)
+epoch: 10	train loss: 417.7843933105469	(1.8s)
+epoch: 20	train loss: 782.6948852539062	(1.8s)
+epoch: 30	train loss: 161.54466247558594	(1.8s)
+epoch: 40	train loss: 37.653682708740234	(1.8s)
+Evaluating model on 200 episodes
+Solved 197/200 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 12.8 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 20
+Generated trajectories in 14.5 seconds
+epoch: 0	train loss: 2377.002197265625	(1.8s)
+epoch: 10	train loss: 576.7749633789062	(1.8s)
+epoch: 20	train loss: 206.57472229003906	(1.8s)
+epoch: 30	train loss: 941.44287109375	(1.8s)
+epoch: 40	train loss: 796.8265380859375	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 598.4970703125	(1.8s)
+epoch: 10	train loss: 31.29825782775879	(1.8s)
+epoch: 20	train loss: 0.531262993812561	(1.8s)
+epoch: 30	train loss: 0.08876319974660873	(1.8s)
+epoch: 40	train loss: 0.016830667853355408	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 943.4196166992188	(1.8s)
+epoch: 10	train loss: 2.601186752319336	(1.7s)
+epoch: 20	train loss: 0.25427693128585815	(1.8s)
+epoch: 30	train loss: 0.06797275692224503	(1.8s)
+epoch: 40	train loss: 0.027432676404714584	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 13.1 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 21
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 3110.876220703125	(1.8s)
+epoch: 10	train loss: 341.1839294433594	(1.7s)
+epoch: 20	train loss: 165.32003784179688	(1.7s)
+epoch: 30	train loss: 157.61679077148438	(1.7s)
+epoch: 40	train loss: 245.8531951904297	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 456.2167663574219	(1.8s)
+epoch: 10	train loss: 404.4066162109375	(1.7s)
+epoch: 20	train loss: 186.24075317382812	(1.7s)
+epoch: 30	train loss: 304.8185119628906	(1.7s)
+epoch: 40	train loss: 436.4687805175781	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 384.4196472167969	(1.7s)
+epoch: 10	train loss: 283.17132568359375	(1.7s)
+epoch: 20	train loss: 581.4901733398438	(1.7s)
+epoch: 30	train loss: 74.71192932128906	(1.7s)
+epoch: 40	train loss: 36.581939697265625	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 22
+Generated trajectories in 14.1 seconds
+epoch: 0	train loss: 1411.624755859375	(1.8s)
+epoch: 10	train loss: 256.2804870605469	(1.7s)
+epoch: 20	train loss: 129.11822509765625	(1.7s)
+epoch: 30	train loss: 668.009521484375	(1.7s)
+epoch: 40	train loss: 490.3996887207031	(1.7s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 24.7
+Evaluated model in 12.2 seconds
+epoch: 0	train loss: 354.6705322265625	(1.7s)
+epoch: 10	train loss: 49.09052658081055	(1.7s)
+epoch: 20	train loss: 216.77511596679688	(1.7s)
+epoch: 30	train loss: 13.199355125427246	(1.7s)
+epoch: 40	train loss: 126.10796356201172	(1.7s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 24.7
+Evaluated model in 12.5 seconds
+epoch: 0	train loss: 451.5236511230469	(1.7s)
+epoch: 10	train loss: 5.133465766906738	(1.7s)
+epoch: 20	train loss: 0.4273971915245056	(1.7s)
+epoch: 30	train loss: 0.1460130363702774	(1.7s)
+epoch: 40	train loss: 0.05993357673287392	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 24.7
+Evaluated model in 12.2 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 23
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 2364.083740234375	(1.8s)
+epoch: 10	train loss: 1067.38330078125	(1.7s)
+epoch: 20	train loss: 314.8369140625	(1.8s)
+epoch: 30	train loss: 91.38311767578125	(1.7s)
+epoch: 40	train loss: 87.42625427246094	(1.7s)
+Evaluating model on 200 episodes
+Solved 194/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 14.4 seconds
+epoch: 0	train loss: 790.0783081054688	(1.8s)
+epoch: 10	train loss: 21.093034744262695	(1.7s)
+epoch: 20	train loss: 8.784646987915039	(1.7s)
+epoch: 30	train loss: 0.807486891746521	(1.7s)
+epoch: 40	train loss: 0.2064492106437683	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 450.2203063964844	(1.7s)
+epoch: 10	train loss: 138.11578369140625	(1.8s)
+epoch: 20	train loss: 545.8216552734375	(1.7s)
+epoch: 30	train loss: 1.258410930633545	(1.7s)
+epoch: 40	train loss: 0.4035504162311554	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 24
+Generated trajectories in 14.5 seconds
+epoch: 0	train loss: 1858.7547607421875	(1.8s)
+epoch: 10	train loss: 912.813720703125	(1.8s)
+epoch: 20	train loss: 77.84333801269531	(1.8s)
+epoch: 30	train loss: 1332.7357177734375	(1.8s)
+epoch: 40	train loss: 252.2861785888672	(1.8s)
+Evaluating model on 200 episodes
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 496.7545471191406	(1.8s)
+epoch: 10	train loss: 1798.5775146484375	(1.8s)
+epoch: 20	train loss: 72.7662353515625	(1.8s)
+epoch: 30	train loss: 35.16010665893555	(1.8s)
+epoch: 40	train loss: 10.72406005859375	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.0 seconds
+epoch: 0	train loss: 494.04791259765625	(1.8s)
+epoch: 10	train loss: 190.41549682617188	(1.8s)
+epoch: 20	train loss: 15.786195755004883	(1.8s)
+epoch: 30	train loss: 33.5535774230957	(1.8s)
+epoch: 40	train loss: 365.06878662109375	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.3
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 25
+Generated trajectories in 14.6 seconds
+epoch: 0	train loss: 2053.414794921875	(2.0s)
+epoch: 10	train loss: 644.0587768554688	(1.8s)
+epoch: 20	train loss: 302.52960205078125	(1.8s)
+epoch: 30	train loss: 301.94671630859375	(1.8s)
+epoch: 40	train loss: 60.04418182373047	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 13.2 seconds
+epoch: 0	train loss: 475.53106689453125	(1.8s)
+epoch: 10	train loss: 73.09527587890625	(1.8s)
+epoch: 20	train loss: 19.609792709350586	(1.8s)
+epoch: 30	train loss: 5.541275978088379	(1.8s)
+epoch: 40	train loss: 0.367104709148407	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 553.5653686523438	(1.8s)
+epoch: 10	train loss: 17.343141555786133	(1.8s)
+epoch: 20	train loss: 430.7002868652344	(1.8s)
+epoch: 30	train loss: 25.58184051513672	(1.8s)
+epoch: 40	train loss: 2384.97314453125	(1.8s)
+Evaluating model on 200 episodes
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 13.2 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 26
+Generated trajectories in 14.2 seconds
+epoch: 0	train loss: 1413.9412841796875	(1.8s)
+epoch: 10	train loss: 1057.56103515625	(1.7s)
+epoch: 20	train loss: 279.7549133300781	(1.7s)
+epoch: 30	train loss: 170.63294982910156	(1.7s)
+epoch: 40	train loss: 132.5659637451172	(1.7s)
+Evaluating model on 200 episodes
+Solved 197/200 episodes; avg steps taken in solved episodes: 26.8
+Evaluated model in 13.6 seconds
+epoch: 0	train loss: 515.1913452148438	(1.7s)
+epoch: 10	train loss: 21.045408248901367	(1.7s)
+epoch: 20	train loss: 1.2891740798950195	(1.7s)
+epoch: 30	train loss: 0.4064341187477112	(1.7s)
+epoch: 40	train loss: 0.1954481601715088	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 13.2 seconds
+epoch: 0	train loss: 1097.9029541015625	(1.7s)
+epoch: 10	train loss: 0.6792213916778564	(1.7s)
+epoch: 20	train loss: 0.29932260513305664	(1.7s)
+epoch: 30	train loss: 0.15290367603302002	(1.7s)
+epoch: 40	train loss: 0.08636634051799774	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.7
+Evaluated model in 13.2 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 27
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 2312.729736328125	(1.8s)
+epoch: 10	train loss: 326.96612548828125	(1.7s)
+epoch: 20	train loss: 468.04034423828125	(1.8s)
+epoch: 30	train loss: 323.93487548828125	(1.7s)
+epoch: 40	train loss: 280.7667541503906	(1.7s)
+Evaluating model on 200 episodes
+Solved 197/200 episodes; avg steps taken in solved episodes: 27.7
+Evaluated model in 13.9 seconds
+epoch: 0	train loss: 772.9850463867188	(1.7s)
+epoch: 10	train loss: 183.1938018798828	(1.7s)
+epoch: 20	train loss: 271.340576171875	(1.7s)
+epoch: 30	train loss: 4.755749225616455	(1.8s)
+epoch: 40	train loss: 75.97804260253906	(1.7s)
+Evaluating model on 200 episodes
+Solved 191/200 episodes; avg steps taken in solved episodes: 27.4
+Evaluated model in 14.3 seconds
+epoch: 0	train loss: 534.6372680664062	(1.8s)
+epoch: 10	train loss: 167.3933868408203	(1.8s)
+epoch: 20	train loss: 144.4441680908203	(1.7s)
+epoch: 30	train loss: 83.7330551147461	(1.8s)
+epoch: 40	train loss: 1.0692259073257446	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.6
+Evaluated model in 13.5 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 28
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 1656.1370849609375	(1.8s)
+epoch: 10	train loss: 556.2421264648438	(1.7s)
+epoch: 20	train loss: 233.83592224121094	(1.7s)
+epoch: 30	train loss: 183.1747283935547	(1.7s)
+epoch: 40	train loss: 76.5545654296875	(1.8s)
+Evaluating model on 200 episodes
+Solved 197/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.2 seconds
+epoch: 0	train loss: 762.089111328125	(1.7s)
+epoch: 10	train loss: 555.5674438476562	(1.7s)
+epoch: 20	train loss: 33.29759979248047	(1.7s)
+epoch: 30	train loss: 395.5600891113281	(1.7s)
+epoch: 40	train loss: 2.642909288406372	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 841.4061279296875	(1.7s)
+epoch: 10	train loss: 354.99420166015625	(1.7s)
+epoch: 20	train loss: 4.710819244384766	(1.7s)
+epoch: 30	train loss: 1.1179128885269165	(1.8s)
+epoch: 40	train loss: 0.4606174826622009	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Evaluated model in 13.2 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 29
+Generated trajectories in 14.3 seconds
+epoch: 0	train loss: 1706.5833740234375	(1.7s)
+epoch: 10	train loss: 1202.2784423828125	(1.7s)
+epoch: 20	train loss: 172.89772033691406	(1.7s)
+epoch: 30	train loss: 3043.16015625	(1.7s)
+epoch: 40	train loss: 255.25074768066406	(1.7s)
+Evaluating model on 200 episodes
+Solved 191/200 episodes; avg steps taken in solved episodes: 27.5
+Evaluated model in 13.9 seconds
+epoch: 0	train loss: 936.1533203125	(1.7s)
+epoch: 10	train loss: 363.8811340332031	(1.7s)
+epoch: 20	train loss: 138.57325744628906	(1.7s)
+epoch: 30	train loss: 771.56591796875	(1.7s)
+epoch: 40	train loss: 27.67574691772461	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.3
+Evaluated model in 13.5 seconds
+epoch: 0	train loss: 719.0769653320312	(1.7s)
+epoch: 10	train loss: 553.12109375	(1.7s)
+epoch: 20	train loss: 342.4349670410156	(1.7s)
+epoch: 30	train loss: 326.1181945800781	(1.7s)
+epoch: 40	train loss: 131.6221466064453	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.3
+Evaluated model in 13.5 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 30
+Generated trajectories in 14.6 seconds
+epoch: 0	train loss: 1272.7958984375	(1.8s)
+epoch: 10	train loss: 236.27294921875	(1.8s)
+epoch: 20	train loss: 329.7987365722656	(1.8s)
+epoch: 30	train loss: 1138.214111328125	(1.8s)
+epoch: 40	train loss: 508.69464111328125	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 423.59503173828125	(1.8s)
+epoch: 10	train loss: 445.0402526855469	(1.8s)
+epoch: 20	train loss: 325.5254211425781	(1.8s)
+epoch: 30	train loss: 926.478759765625	(1.8s)
+epoch: 40	train loss: 80.98587036132812	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 1114.1536865234375	(1.8s)
+epoch: 10	train loss: 134.0779571533203	(1.8s)
+epoch: 20	train loss: 58.079715728759766	(1.8s)
+epoch: 30	train loss: 18.936676025390625	(1.8s)
+epoch: 40	train loss: 57.49570083618164	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.1 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 31
+Generated trajectories in 14.4 seconds
+epoch: 0	train loss: 1555.3609619140625	(1.8s)
+epoch: 10	train loss: 261.2109375	(1.8s)
+epoch: 20	train loss: 584.4991455078125	(1.8s)
+epoch: 30	train loss: 541.2385864257812	(1.7s)
+epoch: 40	train loss: 124.3362808227539	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 488.9787292480469	(1.8s)
+epoch: 10	train loss: 30.39515495300293	(1.8s)
+epoch: 20	train loss: 399.9954528808594	(1.8s)
+epoch: 30	train loss: 9.498994827270508	(1.8s)
+epoch: 40	train loss: 0.896831750869751	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.1 seconds
+epoch: 0	train loss: 486.0189208984375	(1.8s)
+epoch: 10	train loss: 0.9181587100028992	(1.7s)
+epoch: 20	train loss: 0.23393915593624115	(1.8s)
+epoch: 30	train loss: 0.09025948494672775	(1.8s)
+epoch: 40	train loss: 0.043302543461322784	(1.8s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 13.0 seconds
+Saved model for run
+27085257ccc841e6bef6e6517bcea89e with name model
+Round 32
+Generated trajectories in 13.9 seconds
+epoch: 0	train loss: 3146.86962890625	(1.7s)
+epoch: 10	train loss: 95.87517547607422	(1.7s)
+epoch: 20	train loss: 37.71706008911133	(1.7s)
+epoch: 30	train loss: 50.28675842285156	(1.7s)
+epoch: 40	train loss: 400.66192626953125	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 12.6 seconds
+epoch: 0	train loss: 469.7253112792969	(1.7s)
+epoch: 10	train loss: 4.4984283447265625	(1.7s)
+epoch: 20	train loss: 0.7211604714393616	(1.7s)
+epoch: 30	train loss: 0.2685931921005249	(1.7s)
+epoch: 40	train loss: 0.1308814138174057	(1.7s)
+Evaluating model on 200 episodes
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 12.8 seconds
+epoch: 0	train loss: 652.9568481445312	(1.7s)
+slurmstepd: error: *** JOB 406956 ON ellis-compute-01 CANCELLED AT 2022-01-29T21:39:55 ***
+params: {'epochs': 50, 'lr': 0.001, 'n': 1000, 'repeats': 3}
+Solved 47/200 episodes; avg steps taken in solved episodes: 25.7
+Solved 55/200 episodes; avg steps taken in solved episodes: 24.5
+Solved 52/200 episodes; avg steps taken in solved episodes: 25.1
+Solved 70/200 episodes; avg steps taken in solved episodes: 28.1
+Solved 82/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 77/200 episodes; avg steps taken in solved episodes: 27.0
+Solved 63/200 episodes; avg steps taken in solved episodes: 23.7
+Solved 80/200 episodes; avg steps taken in solved episodes: 25.2
+Solved 71/200 episodes; avg steps taken in solved episodes: 23.9
+Solved 78/200 episodes; avg steps taken in solved episodes: 25.1
+Solved 92/200 episodes; avg steps taken in solved episodes: 30.2
+Solved 102/200 episodes; avg steps taken in solved episodes: 23.2
+Solved 70/200 episodes; avg steps taken in solved episodes: 23.2
+Solved 104/200 episodes; avg steps taken in solved episodes: 28.5
+Solved 102/200 episodes; avg steps taken in solved episodes: 26.1
+Solved 89/200 episodes; avg steps taken in solved episodes: 23.7
+Solved 106/200 episodes; avg steps taken in solved episodes: 25.0
+Solved 93/200 episodes; avg steps taken in solved episodes: 23.9
+Solved 86/200 episodes; avg steps taken in solved episodes: 29.8
+Solved 138/200 episodes; avg steps taken in solved episodes: 29.6
+Solved 166/200 episodes; avg steps taken in solved episodes: 27.8
+Solved 145/200 episodes; avg steps taken in solved episodes: 27.7
+Solved 176/200 episodes; avg steps taken in solved episodes: 28.1
+Solved 174/200 episodes; avg steps taken in solved episodes: 27.9
+Solved 170/200 episodes; avg steps taken in solved episodes: 27.7
+Solved 178/200 episodes; avg steps taken in solved episodes: 27.4
+Solved 178/200 episodes; avg steps taken in solved episodes: 26.2
+Solved 163/200 episodes; avg steps taken in solved episodes: 27.3
+Solved 175/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 194/200 episodes; avg steps taken in solved episodes: 27.5
+Solved 185/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 188/200 episodes; avg steps taken in solved episodes: 25.6
+Solved 195/200 episodes; avg steps taken in solved episodes: 25.9
+Solved 182/200 episodes; avg steps taken in solved episodes: 26.1
+Solved 193/200 episodes; avg steps taken in solved episodes: 26.0
+Solved 198/200 episodes; avg steps taken in solved episodes: 25.7
+Solved 190/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.7
+Solved 191/200 episodes; avg steps taken in solved episodes: 26.7
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.2
+Solved 194/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 196/200 episodes; avg steps taken in solved episodes: 26.0
+Solved 190/200 episodes; avg steps taken in solved episodes: 24.8
+Solved 199/200 episodes; avg steps taken in solved episodes: 25.2
+Solved 197/200 episodes; avg steps taken in solved episodes: 25.2
+Solved 196/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 190/200 episodes; avg steps taken in solved episodes: 27.4
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 193/200 episodes; avg steps taken in solved episodes: 25.9
+Solved 199/200 episodes; avg steps taken in solved episodes: 25.6
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.5
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.1
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.9
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.9
+Solved 197/200 episodes; avg steps taken in solved episodes: 25.8
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.2
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 199/200 episodes; avg steps taken in solved episodes: 24.7
+Solved 199/200 episodes; avg steps taken in solved episodes: 24.7
+Solved 200/200 episodes; avg steps taken in solved episodes: 24.7
+Solved 194/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 198/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.3
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.7
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 199/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 197/200 episodes; avg steps taken in solved episodes: 26.8
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.7
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.7
+Solved 197/200 episodes; avg steps taken in solved episodes: 27.7
+Solved 191/200 episodes; avg steps taken in solved episodes: 27.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.6
+Solved 197/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.5
+Solved 191/200 episodes; avg steps taken in solved episodes: 27.5
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.3
+Solved 200/200 episodes; avg steps taken in solved episodes: 27.3
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.6
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 26.4
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.8
+Solved 200/200 episodes; avg steps taken in solved episodes: 25.8

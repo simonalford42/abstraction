@@ -1,0 +1,34 @@
+Using torch device NVIDIA GeForce RTX 3090
+homo controller
+net: causal
+cc_weight: 0.0
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 72.1 seconds
+epoch: 0	train loss: 95910.7578125	(261.0s)
+epoch: 20	train loss: 23594.07421875	(268.3s)
+epoch: 40	train loss: 19571.19140625	(270.9s)
+epoch: 60	train loss: 17906.203125	(268.4s)
+epoch: 80	train loss: 16694.765625	(268.3s)
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Evaluated model in 20.8 seconds
+Saved model for run
+b1cea11bdfc249d59f0fe4c83959af84 with name round-0
+Round 1
+Generated trajectories in 71.4 seconds
+epoch: 0	train loss: 44255.6171875	(266.6s)
+epoch: 20	train loss: 20351.138671875	(269.5s)
+epoch: 40	train loss: 18692.0625	(269.4s)
+epoch: 60	train loss: 18061.548828125	(269.5s)
+epoch: 80	train loss: 18513.001953125	(269.2s)
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Evaluated model in 22.1 seconds
+Saved model for run
+b1cea11bdfc249d59f0fe4c83959af84 with name round-1
+Round 2
+Generated trajectories in 71.7 seconds
+epoch: 0	train loss: 56105.2890625	(267.5s)
+epoch: 20	train loss: 29443.51953125	(270.0s)

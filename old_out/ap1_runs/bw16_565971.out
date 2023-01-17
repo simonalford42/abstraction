@@ -1,0 +1,50 @@
+Set load=True for fine tuning
+Loaded model from models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+MODEL:	 cc
+N:	 1000
+ABSTRACT_PEN:	 1.0
+Starting run:
+9652c2882c444643b28f6037d4cd04fd
+params: {'n': 1000, 'traj_updates': 1000000000.0, 'num_saves': 10, 'num_tests': 100, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'model_load_path': 'models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt', 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': True, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': True, 'variable_abstract_pen': False, 'tau_precompute': True, 'replace_trans_net': False, 'batch_norm': False, 'no_tau_norm': True, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 1000000, 'test_every': 10000, 'save_every': 100000, 'id': '9652c2882c444643b28f6037d4cd04fd'}
+1000 fine-tuning examples
+actual params['epochs']: 1000000
+actual params['test_every']: 10000
+actual params['save_every']: 100000
+first batch avg cc loss  tensor(-46.4351, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1.1949480276104563e+19
+WARNING: fixed test env seed
+Epoch 0
+For sampling, solved 57/200 with abstract model, 174/200 with simulator
+Solved 184/200.
+	1: 49/49=1.00
+	2: 0/44=0.00
+	3: 0/52=0.00
+	4: 0/36=0.00
+train_loss: nan
+train_loss: nan
+train_loss: nan
+train_loss: nan
+first batch avg cc loss  tensor(nan, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: nan
+Epoch 10000
+Completed fine tuning in 4522.3 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 397, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 371, in boxworld_main
+    fine_tune(run, box_world.BoxWorldEnv(), net.control_net, params)
+  File "/home/sca63/abstraction/main.py", line 103, in fine_tune
+    planning.eval_planner(
+  File "/home/sca63/abstraction/planning.py", line 287, in eval_planner
+    solved_with_model = eval_sampling(control_net, env.copy(), n, macro=True, argmax=False)
+  File "/home/sca63/abstraction/planning.py", line 273, in eval_sampling
+    solved, options, _ = data.full_sample_solve(env.copy(), control_net, macro=macro, argmax=argmax)
+  File "/home/sca63/abstraction/data.py", line 626, in full_sample_solve
+    current_option = Categorical(logits=start_logps).sample().item()
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/distributions/categorical.py", line 64, in __init__
+    super(Categorical, self).__init__(batch_shape, validate_args=validate_args)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/distributions/distribution.py", line 55, in __init__
+    raise ValueError(
+ValueError: Expected parameter logits (Tensor of shape (10,)) of distribution Categorical(logits: torch.Size([10])) to satisfy the constraint IndependentConstraint(Real(), 1), but found invalid values:
+tensor([nan, nan, nan, nan, nan, nan, nan, nan, nan, nan], device='cuda:0',
+       grad_fn=<SubBackward0>)

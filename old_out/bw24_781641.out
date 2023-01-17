@@ -1,0 +1,113 @@
+Starting run:
+eeb02e3d4d3b451aa48b43ac34f9a01c
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=('(', '2', ',', ' ', ')'), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=40000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN RTX', id='eeb02e3d4d3b451aa48b43ac34f9a01c')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220812_154251-nzodrm6r
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run crimson-cherry-227
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/nzodrm6r
+Net has 162708 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes
+Solved 33/200 episodes
+Solved 91/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-169.pt
+Solved 99/200 episodes
+Solved 96/200 episodes
+Solved 79/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-257.pt
+Solved 95/200 episodes
+Solved 97/200 episodes
+Solved 90/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-427.pt
+Solved 92/200 episodes
+Solved 103/200 episodes
+Solved 90/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-523.pt
+Solved 99/200 episodes
+Solved 95/200 episodes
+Solved 89/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-649.pt
+Solved 89/200 episodes
+Solved 101/200 episodes
+Solved 102/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-678.pt
+Solved 106/200 episodes
+Solved 82/200 episodes
+Solved 86/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-707.pt
+Solved 89/200 episodes
+Solved 100/200 episodes
+Solved 95/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-736.pt
+Solved 94/200 episodes
+Solved 95/200 episodes
+Solved 105/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-766.pt
+Solved 101/200 episodes
+Solved 101/200 episodes
+Solved 103/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-795.pt
+Solved 100/200 episodes
+Solved 102/200 episodes
+Solved 103/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-825.pt
+Solved 112/200 episodes
+Solved 104/200 episodes
+Solved 95/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-854.pt
+Solved 91/200 episodes
+Solved 98/200 episodes
+Solved 104/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-883.pt
+Solved 101/200 episodes
+Solved 88/200 episodes
+Solved 89/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-912.pt
+Solved 88/200 episodes
+Solved 103/200 episodes
+Solved 93/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-941.pt
+Solved 99/200 episodes
+Solved 89/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-970.pt
+Solved 93/200 episodes
+Solved 102/200 episodes
+Solved 102/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-999.pt
+Solved 99/200 episodes
+Solved 94/200 episodes
+Solved 94/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1024.pt
+Solved 85/200 episodes
+Solved 104/200 episodes
+Solved 84/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1040.pt
+Solved 79/200 episodes
+Solved 101/200 episodes
+Solved 97/200 episodes
+wandb: Network error (ReadTimeout), entering retry loop.
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1054.pt
+Solved 109/200 episodes
+Solved 107/200 episodes
+Solved 95/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1068.pt
+Solved 93/200 episodes
+Solved 89/200 episodes
+Solved 99/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1082.pt
+Solved 92/200 episodes
+Solved 104/200 episodes
+Solved 108/200 episodes
+Saved model at models/eeb02e3d4d3b451aa48b43ac34f9a01c-epoch-1096.pt
+Solved 95/200 episodes
+slurmstepd: error: *** JOB 781641 ON sablab-gpu-10 CANCELLED AT 2022-08-15T15:44:56 DUE TO TIME LIMIT ***

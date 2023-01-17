@@ -1,0 +1,88 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+eacc187d6a2045f3819dd67be74c30f6
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=True, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, sv_micro=False, sv_micro_data_type='full_traj', relational_macro=False, batch_size=32, traj_updates=10000000.0, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='eacc187d6a2045f3819dd67be74c30f6')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220927_175127-b20157b8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run trim-star-555
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/b20157b8
+Net has 248421 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes, CC loss avg = 0.004249871747257809
+Solved 0/200 episodes, CC loss avg = 0.004249889571265003
+Solved 0/200 episodes, CC loss avg = 0.004249914956868344
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-8.pt
+Solved 0/200 episodes, CC loss avg = 0.004249915889069451
+Solved 0/200 episodes, CC loss avg = 0.004249905120148847
+Solved 0/200 episodes, CC loss avg = 0.004249944399143088
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-17.pt
+Solved 0/200 episodes, CC loss avg = 0.004249901097670504
+Solved 0/200 episodes, CC loss avg = 0.004249911187839862
+Solved 0/200 episodes, CC loss avg = 0.00424989510285893
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-26.pt
+Solved 0/200 episodes, CC loss avg = 0.004249965242907579
+Solved 0/200 episodes, CC loss avg = 0.004249933687525497
+Solved 0/200 episodes, CC loss avg = 0.004249917774125105
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-35.pt
+Solved 0/200 episodes, CC loss avg = 0.00424992230980166
+Solved 0/200 episodes, CC loss avg = 0.004249912764506555
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-44.pt
+Solved 0/200 episodes, CC loss avg = 0.004249915106055469
+Solved 0/200 episodes, CC loss avg = 0.004249931042314585
+Solved 0/200 episodes, CC loss avg = 0.004249907663534675
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-53.pt
+Solved 0/200 episodes, CC loss avg = 0.004249912182266793
+Solved 0/200 episodes, CC loss avg = 0.004249909278189878
+Solved 0/200 episodes, CC loss avg = 0.004249912892768175
+Saved model at models/eacc187d6a2045f3819dd67be74c30f6-epoch-62.pt
+Solved 0/200 episodes, CC loss avg = 0.004249920570677093
+Completed training in 80232.9 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 820, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 626, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 145, in learn_options
+    loss = net(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 553, in forward
+    return self.logp_loss(s_i_batch, actions_batch, lengths, masks, ccts=self.ccts)
+  File "/home/sca63/abstraction/hmm.py", line 568, in logp_loss
+    action_logps, stop_logps, start_logps, _, solved, _ = self.control_net(s_i_batch, batched=True)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/abstract.py", line 648, in forward
+    return self.forward_b(s_i_batch, tau_noise=tau_noise)
+  File "/home/sca63/abstraction/abstract.py", line 706, in forward_b
+    symbolic_states = [neurosym.tensor_to_symbolic_state(s_i_flattened[i]) for i in range(B * T)]
+  File "/home/sca63/abstraction/abstract.py", line 706, in <listcomp>
+    symbolic_states = [neurosym.tensor_to_symbolic_state(s_i_flattened[i]) for i in range(B * T)]
+  File "/home/sca63/abstraction/neurosym.py", line 571, in tensor_to_symbolic_state
+    if (state == 0).all():
+KeyboardInterrupt
+wandb: Waiting for W&B process to finish... (failed 255). Press Control-C to abort syncing.
+wandb: - 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: \ 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: | 0.003 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.003 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: loss █▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.0
+wandb: loss 191281.4822
+wandb: 
+wandb: Synced trim-star-555: https://wandb.ai/simonalford42/abstraction/runs/b20157b8
+wandb: Synced 6 W&B file(s), 7 media file(s), 7 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220927_175127-b20157b8/logs

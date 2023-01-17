@@ -1,0 +1,68 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-85
+train
+Evaluating model on 200 episodes
+Solved 10/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-0.pt
+Evaluating model on 200 episodes
+Solved 44/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-10.pt
+Evaluating model on 200 episodes
+Solved 57/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-20.pt
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-30.pt
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-40.pt
+Evaluating model on 200 episodes
+Solved 26/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-50.pt
+Evaluating model on 200 episodes
+Solved 40/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-60.pt
+Evaluating model on 200 episodes
+Solved 51/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-70.pt
+Evaluating model on 200 episodes
+Solved 47/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-80.pt
+Evaluating model on 200 episodes
+Solved 36/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-90.pt
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-100.pt
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-110.pt
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-120.pt
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-130.pt
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-140.pt
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-150.pt
+Evaluating model on 200 episodes
+Solved 93/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-160.pt
+Evaluating model on 200 episodes
+Solved 127/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-170.pt
+Evaluating model on 200 episodes
+Solved 133/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-180.pt
+Evaluating model on 200 episodes
+Solved 114/200 episodes
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966-epoch-190.pt
+Saved model at models/3cf26b5acfac4f009e526e399a9a5966.pt
+Completed training in 2588.3 seconds
+Shutting down background jobs, please wait a moment...
+Done!
+Waiting for the remaining 396 operations to synchronize with Neptune. Do not kill this process.
+All 396 operations synced, thanks for waiting!

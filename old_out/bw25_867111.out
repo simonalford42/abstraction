@@ -1,0 +1,51 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 3090
+Starting run:
+1a0d5d2caf3045bd913f5e43597b05ab
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=True, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=60.0, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=True, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, relational_macro=False, batch_size=64, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='1a0d5d2caf3045bd913f5e43597b05ab')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220923_101459-dlt03dfu
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run glad-wildflower-527
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/dlt03dfu
+Net has 248421 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes, CC loss avg = 0.00424988537292579
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-2.pt
+Solved 0/200 episodes, CC loss avg = 0.004249901844804435
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-5.pt
+Solved 0/200 episodes, CC loss avg = 0.004249906050561511
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-8.pt
+Solved 0/200 episodes, CC loss avg = 0.004249902041451525
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-11.pt
+Solved 0/200 episodes, CC loss avg = 0.004249907561627117
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-14.pt
+Solved 0/200 episodes, CC loss avg = 0.0042499015516650465
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-17.pt
+Solved 0/200 episodes, CC loss avg = 0.004249891966593202
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-20.pt
+Solved 0/200 episodes, CC loss avg = 0.004249918066797926
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-23.pt
+Solved 0/200 episodes, CC loss avg = 0.004249896086424727
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-26.pt
+Solved 0/200 episodes, CC loss avg = 0.0042499026493882115
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-29.pt
+Solved 0/200 episodes, CC loss avg = 0.004249903200379941
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-32.pt
+Solved 0/200 episodes, CC loss avg = 0.0042498972400833515
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-35.pt
+Solved 0/200 episodes, CC loss avg = 0.00424990211132264
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-38.pt
+Solved 0/200 episodes, CC loss avg = 0.00424990694584097
+Saved model at models/1a0d5d2caf3045bd913f5e43597b05ab-epoch-41.pt
+Solved 0/200 episodes, CC loss avg = 0.00424990261788769
+/var/spool/slurmd/job867111/slurm_script: line 20: 1972995 Killed                  python -u main.py "$@"

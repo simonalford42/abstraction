@@ -1,0 +1,125 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+DEPTH:	 3
+N:	 100
+WEIGHTING:	 uniform
+OPTIONS_PER_TRAJ:	 0
+Starting run:
+06e6481395d049f7aea9b007cd43a4f4
+params: {'n': 100, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': True, 'depth': 3, 'weighting': 'uniform', 'options_per_traj': 0, 'device': 'NVIDIA TITAN RTX', 'epochs': 100000, 'test_every': 5000, 'save_every': 25000, 'id': '06e6481395d049f7aea9b007cd43a4f4'}
+tau_precompute: False
+i=0
+i=1
+i=2
+i=3
+i=4
+i=5
+i=6
+i=7
+i=8
+i=9
+i=10
+i=11
+i=12
+i=13
+i=14
+i=15
+i=16
+i=17
+i=18
+i=19
+i=20
+i=21
+i=22
+i=23
+i=24
+i=25
+i=26
+i=27
+i=28
+i=29
+i=30
+i=31
+i=32
+i=33
+i=34
+i=35
+i=36
+i=37
+i=38
+i=39
+i=40
+i=41
+i=42
+i=43
+i=44
+i=45
+i=46
+i=47
+i=48
+i=49
+i=50
+i=51
+i=52
+i=53
+i=54
+i=55
+i=56
+i=57
+i=58
+i=59
+i=60
+i=61
+i=62
+i=63
+i=64
+i=65
+i=66
+i=67
+i=68
+i=69
+i=70
+i=71
+i=72
+i=73
+i=74
+i=75
+i=76
+i=77
+i=78
+i=79
+i=80
+i=81
+i=82
+i=83
+i=84
+i=85
+i=86
+i=87
+i=88
+i=89
+i=90
+i=91
+i=92
+i=93
+i=94
+i=95
+i=96
+i=97
+i=98
+i=99
+8145 fine-tuning examples
+actual params['epochs']: 1227
+actual params['test_every']: 61
+actual params['save_every']: 306
+WARNING: tau norm dim disabled
+avg cc loss  tensor(-0.0424, device='cuda:0', grad_fn=<DivBackward0>)
+Completed fine tuning in 2023.5 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 498, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 472, in boxworld_main
+    fine_tune3(run, box_world.BoxWorldEnv(), net.control_net, params)
+  File "/home/sca63/abstraction/main.py", line 103, in fine_tune3
+    loss = abstract.full_fine_tune_loss(t_i, options, control_net, weights=weights, loss='kl')
+TypeError: full_fine_tune_loss() got an unexpected keyword argument 'weight'

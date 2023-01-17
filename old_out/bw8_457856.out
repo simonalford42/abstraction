@@ -1,0 +1,44 @@
+Starting run:
+00660ef894d043cb958352c0ff8d27b3
+params: {'n': 20000, 'lr': 0.0008, 'epochs': 200, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': False, 'homo': False, 'sv': True, 'save_every': False, 'test_every': 10, 'num_test': 200, 'no_log': True, 'disk_data': False, 'no_outer': True, 'model_type': 'sv', 'device': 'NVIDIA TITAN Xp', 'id': '00660ef894d043cb958352c0ff8d27b3'}
+train
+Evaluating model on 200 episodes
+Solved 37/200 episodes
+Epoch 0	 test acc 0.185
+Evaluating model on 200 episodes
+Solved 34/200 episodes
+Epoch 10	 test acc 0.17
+Evaluating model on 200 episodes
+Solved 58/200 episodes
+Epoch 20	 test acc 0.29
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Epoch 30	 test acc 0.21
+Evaluating model on 200 episodes
+Solved 33/200 episodes
+Epoch 40	 test acc 0.165
+Evaluating model on 200 episodes
+Solved 60/200 episodes
+Epoch 50	 test acc 0.3
+Evaluating model on 200 episodes
+Solved 194/200 episodes
+Epoch 60	 test acc 0.97
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Epoch 70	 test acc 1.0
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Epoch 80	 test acc 0.995
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+Epoch 90	 test acc 0.995
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Epoch 100	 test acc 1.0
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Epoch 110	 test acc 1.0
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+Epoch 120	 test acc 1.0
+slurmstepd: error: *** JOB 457856 ON joachims-compute-02 CANCELLED AT 2022-03-24T02:33:14 ***

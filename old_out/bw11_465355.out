@@ -1,0 +1,150 @@
+Starting run:
+58936331a2844ba9858e99d077b12a05
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': False, 'homo': False, 'sv': False, 'no_log': False, 'seed': 1, 'model_type': 'causal', 'device': 'NVIDIA TITAN Xp', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '58936331a2844ba9858e99d077b12a05'}
+train
+Net has 206996 parameters
+Correct solved pred %: 1.00
+Epoch 0	 test acc 0.01
+reloading data
+Correct solved pred %: 1.00
+Epoch 100	 test acc 0.185
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 200	 test acc 0.355
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 300	 test acc 0.455
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 400	 test acc 0.715
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 500	 test acc 0.88
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 600	 test acc 0.96
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 700	 test acc 0.995
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 800	 test acc 0.985
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 900	 test acc 0.98
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-900.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1000	 test acc 0.97
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1000.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1100	 test acc 0.96
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1100.pt
+i=tensor([0], device='cuda:0')
+fw: tensor([-792.6299], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-792.6300], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-792.6299], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-792.6299], device='cuda:0', grad_fn=<IndexBackward0>)
+reloading data
+Correct solved pred %: 1.00
+Epoch 1200	 test acc 0.965
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1300	 test acc 0.99
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1300.pt
+i=tensor([9], device='cuda:0')
+fw: tensor([-767.6445], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-767.6444], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-767.6445], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-767.6445], device='cuda:0', grad_fn=<IndexBackward0>)
+reloading data
+Correct solved pred %: 1.00
+Epoch 1400	 test acc 0.965
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1400.pt
+reloading data
+Correct solved pred %: 0.99
+Epoch 1500	 test acc 0.995
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1600	 test acc 1.0
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1700	 test acc 0.99
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1700.pt
+i=tensor([1], device='cuda:0')
+fw: tensor([-929.6202], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-929.6201], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-929.6202], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-929.6202], device='cuda:0', grad_fn=<IndexBackward0>)
+reloading data
+Correct solved pred %: 1.00
+Epoch 1800	 test acc 0.995
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1900	 test acc 1.0
+Saved model at models/58936331a2844ba9858e99d077b12a05-epoch-1900.pt
+i=tensor([5], device='cuda:0')
+fw: tensor([-4728.8828], device='cuda:0', grad_fn=<IndexBackward0>), bw: tensor([-4728.8823], device='cuda:0', grad_fn=<IndexBackward0>), hmm_fw: tensor([-4728.8828], device='cuda:0', grad_fn=<IndexBackward0>)
+a: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), b: tensor([0.], device='cuda:0', grad_fn=<SubBackward0>), hmm_fw: tensor([-4728.8828], device='cuda:0', grad_fn=<IndexBackward0>)
+Saved model at models/58936331a2844ba9858e99d077b12a05.pt
+Completed training in 164244.3 seconds
+repeating
+Starting run:
+2848e2c9cee747a38577512e32d23bb9
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 2, 'neptune': False, 'no_log': False, 'device': 'NVIDIA TITAN Xp', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '2848e2c9cee747a38577512e32d23bb9'}
+train
+Net has 206996 parameters
+Correct solved pred %: 1.00
+Epoch 0	 test acc 0.03
+reloading data
+Correct solved pred %: 1.00
+Epoch 100	 test acc 0.195
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 200	 test acc 0.39
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 300	 test acc 0.585
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 400	 test acc 0.81
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 500	 test acc 0.885
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 600	 test acc 0.935
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 700	 test acc 0.885
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 800	 test acc 0.82
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 900	 test acc 0.795
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-900.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1000	 test acc 0.9
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-1000.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1100	 test acc 0.835
+Saved model at models/2848e2c9cee747a38577512e32d23bb9-epoch-1100.pt
+slurmstepd: error: *** JOB 465355 ON sablab-gpu-06 CANCELLED AT 2022-04-04T10:49:24 DUE TO TIME LIMIT ***

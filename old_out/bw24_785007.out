@@ -1,0 +1,91 @@
+Starting run:
+f2b4ab509ae4499287e5f811c7543bcd
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.5
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.5, model='hmm-homo', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=20000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN RTX', id='f2b4ab509ae4499287e5f811c7543bcd')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220814_223741-mtz81wb4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run lively-snowflake-240
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/mtz81wb4
+Net has 43818 parameters
+Solved 2/200 episodes
+Solved 19/200 episodes
+Solved 29/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-5.pt
+Solved 21/200 episodes
+Solved 27/200 episodes
+Solved 19/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-11.pt
+Solved 17/200 episodes
+Solved 33/200 episodes
+Solved 30/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-17.pt
+Solved 27/200 episodes
+Solved 25/200 episodes
+Solved 25/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-23.pt
+Solved 36/200 episodes
+Solved 30/200 episodes
+Solved 36/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-29.pt
+Solved 20/200 episodes
+Solved 35/200 episodes
+Solved 37/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-158.pt
+Solved 36/200 episodes
+Solved 35/200 episodes
+Solved 43/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-314.pt
+Solved 31/200 episodes
+Solved 35/200 episodes
+Solved 38/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-472.pt
+Solved 39/200 episodes
+Solved 30/200 episodes
+Solved 44/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-586.pt
+Solved 40/200 episodes
+Solved 33/200 episodes
+Solved 44/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-600.pt
+Solved 38/200 episodes
+Solved 51/200 episodes
+Solved 41/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-661.pt
+Solved 49/200 episodes
+Solved 45/200 episodes
+Solved 39/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-818.pt
+Solved 36/200 episodes
+Solved 44/200 episodes
+Solved 40/200 episodes
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd-epoch-976.pt
+Saved model at models/f2b4ab509ae4499287e5f811c7543bcd.pt
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.5
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 150789.7 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: \ 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: | 0.006 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.006 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▃▅▄▅▃▃▅▅▅▄▄▆▅▆▄▆▆▆▆▇▅▆▆▆▅▇▆▅▇▆█▇█▇▆▆▇▆
+wandb: loss █▄▃▃▂▂▂▂▂▂▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.2
+wandb: loss 119200.68407
+wandb: 
+wandb: Synced lively-snowflake-240: https://wandb.ai/simonalford42/abstraction/runs/mtz81wb4
+wandb: Synced 6 W&B file(s), 14 media file(s), 14 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220814_223741-mtz81wb4/logs

@@ -1,0 +1,85 @@
+Starting run:
+7e4d4125ced244939746d4b407c34730
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'hmm', 'seed': 2, 'neptune': False, 'no_log': False, 'device': 'NVIDIA GeForce RTX 2080 Ti', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': '7e4d4125ced244939746d4b407c34730'}
+train
+Net has 206996 parameters
+Correct solved pred %: 1.00
+Epoch 0	 test acc 0.01
+reloading data
+Correct solved pred %: 1.00
+Epoch 100	 test acc 0.185
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 200	 test acc 0.22
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 300	 test acc 0.175
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 400	 test acc 0.35
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 500	 test acc 0.58
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 600	 test acc 0.65
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 700	 test acc 0.75
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 800	 test acc 0.725
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 900	 test acc 0.74
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-900.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1000	 test acc 0.83
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1000.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1100	 test acc 0.8
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1100.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1200	 test acc 0.865
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1200.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1300	 test acc 0.85
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1300.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1400	 test acc 0.86
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1400.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1500	 test acc 0.91
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1500.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1600	 test acc 0.99
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1600.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1700	 test acc 0.995
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1700.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1800	 test acc 0.955
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1800.pt
+reloading data
+Correct solved pred %: 1.00
+Epoch 1900	 test acc 0.925
+Saved model at models/7e4d4125ced244939746d4b407c34730-epoch-1900.pt
+Saved model at models/7e4d4125ced244939746d4b407c34730.pt
+Completed training in 50766.1 seconds

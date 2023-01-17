@@ -1,0 +1,139 @@
+Using torch device NVIDIA GeForce GTX TITAN X
+traj-level training without hmm
+Net has 37803 parameters
+Round 0
+Generated trajectories in 109.2 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 159167.828125	(32.6s)
+epoch: 40	train loss: 46217.62890625	(34.6s)
+epoch: 80	train loss: 18483.1875	(34.5s)
+epoch: 120	train loss: 11473.3564453125	(34.5s)
+epoch: 160	train loss: 8300.34765625	(34.6s)
+Evaluating model on 100 episodes
+Solved 86/100 episodes; avg steps taken in solved episodes: 27.3
+Evaluated model in 11.3 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 1
+Generated trajectories in 110.1 seconds
+epoch: 0	train loss: 9430.7060546875	(31.0s)
+epoch: 40	train loss: 4118.0693359375	(34.4s)
+epoch: 80	train loss: 2525.519287109375	(34.4s)
+epoch: 120	train loss: 3332.98828125	(34.5s)
+epoch: 160	train loss: 2330.71435546875	(34.4s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 25.8
+Evaluated model in 8.9 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 2
+Generated trajectories in 109.1 seconds
+epoch: 0	train loss: 3203.21240234375	(30.9s)
+epoch: 40	train loss: 1574.6552734375	(34.4s)
+epoch: 80	train loss: 1912.4364013671875	(34.4s)
+epoch: 120	train loss: 1594.90283203125	(34.4s)
+epoch: 160	train loss: 448.25946044921875	(34.4s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.6
+Evaluated model in 9.2 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 3
+Generated trajectories in 108.5 seconds
+epoch: 0	train loss: 3073.96630859375	(30.8s)
+epoch: 40	train loss: 2474.97119140625	(34.2s)
+epoch: 80	train loss: 1331.8031005859375	(34.3s)
+epoch: 120	train loss: 1196.6923828125	(34.3s)
+epoch: 160	train loss: 677.8361206054688	(34.3s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 27.9
+Evaluated model in 9.8 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 4
+Generated trajectories in 108.5 seconds
+epoch: 0	train loss: 3633.903076171875	(30.8s)
+epoch: 40	train loss: 1852.5391845703125	(34.3s)
+epoch: 80	train loss: 598.93017578125	(34.3s)
+epoch: 120	train loss: 2972.621826171875	(34.3s)
+epoch: 160	train loss: 759.7451782226562	(34.3s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 27.1
+Evaluated model in 9.5 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 5
+Generated trajectories in 109.0 seconds
+epoch: 0	train loss: 2561.9453125	(30.9s)
+epoch: 40	train loss: 1839.8916015625	(34.3s)
+epoch: 80	train loss: 1522.5050048828125	(34.3s)
+epoch: 120	train loss: 969.1015014648438	(34.3s)
+epoch: 160	train loss: 1054.647705078125	(34.3s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 9.3 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 6
+Generated trajectories in 108.4 seconds
+epoch: 0	train loss: 2623.4423828125	(30.8s)
+epoch: 40	train loss: 1352.9215087890625	(34.3s)
+epoch: 80	train loss: 1630.08056640625	(34.2s)
+epoch: 120	train loss: 1204.555419921875	(34.3s)
+epoch: 160	train loss: 1451.0169677734375	(34.3s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.8
+Evaluated model in 9.4 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 7
+Generated trajectories in 109.5 seconds
+epoch: 0	train loss: 2355.513427734375	(31.1s)
+epoch: 40	train loss: 929.5693359375	(34.5s)
+epoch: 80	train loss: 831.6735229492188	(34.5s)
+epoch: 120	train loss: 1025.85107421875	(34.6s)
+epoch: 160	train loss: 9233.796875	(34.5s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 29.2
+Evaluated model in 10.3 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 8
+Generated trajectories in 108.2 seconds
+epoch: 0	train loss: 2418.176025390625	(30.7s)
+epoch: 40	train loss: 1121.8917236328125	(34.2s)
+epoch: 80	train loss: 1922.2462158203125	(34.2s)
+epoch: 120	train loss: 2580.916015625	(34.1s)
+epoch: 160	train loss: 1674.1151123046875	(34.1s)
+Evaluating model on 100 episodes
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.4
+Evaluated model in 9.3 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 9
+Generated trajectories in 110.3 seconds
+epoch: 0	train loss: 2235.204833984375	(31.1s)
+epoch: 40	train loss: 760.0556030273438	(34.6s)
+epoch: 80	train loss: 1711.00048828125	(34.5s)
+epoch: 120	train loss: 859.10693359375	(34.5s)
+epoch: 160	train loss: 900.6121215820312	(34.6s)
+Evaluating model on 100 episodes
+Solved 99/100 episodes; avg steps taken in solved episodes: 27.9
+Evaluated model in 10.1 seconds
+Saved model for run
+55a0c9066c404827ac172960368c41fa with name model
+Round 10
+Generated trajectories in 109.8 seconds
+epoch: 0	train loss: 2722.938232421875	(31.8s)
+slurmstepd: error: *** JOB 406546 ON nikola-compute-02 CANCELLED AT 2022-01-29T13:31:30 ***
+Solved 86/100 episodes; avg steps taken in solved episodes: 27.3
+Solved 100/100 episodes; avg steps taken in solved episodes: 25.8
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.6
+Solved 100/100 episodes; avg steps taken in solved episodes: 27.9
+Solved 100/100 episodes; avg steps taken in solved episodes: 27.1
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.4
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.8
+Solved 100/100 episodes; avg steps taken in solved episodes: 29.2
+Solved 100/100 episodes; avg steps taken in solved episodes: 26.4
+Solved 99/100 episodes; avg steps taken in solved episodes: 27.9

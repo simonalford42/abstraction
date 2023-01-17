@@ -1,0 +1,35 @@
+Starting run:
+dbd6b77d8d4542d881d0cd0cbfeeddba
+params: {'n': 5000, 'num_test': 200, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'no_log': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 2000, 'test_every': 100, 'save_every': 100, 'id': 'dbd6b77d8d4542d881d0cd0cbfeeddba'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.0
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-0.pt
+reloading data
+Epoch 100	 test acc 0.155
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-100.pt
+reloading data
+Epoch 200	 test acc 0.24
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-200.pt
+reloading data
+Epoch 300	 test acc 0.465
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-300.pt
+reloading data
+Epoch 400	 test acc 0.625
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-400.pt
+reloading data
+Epoch 500	 test acc 0.64
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-500.pt
+reloading data
+Epoch 600	 test acc 0.72
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-600.pt
+reloading data
+Epoch 700	 test acc 0.85
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-700.pt
+reloading data
+Epoch 800	 test acc 0.91
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-800.pt
+reloading data
+Epoch 900	 test acc 0.925
+Saved model at models/dbd6b77d8d4542d881d0cd0cbfeeddba-epoch-900.pt
+slurmstepd: error: *** JOB 462838 ON ellis-compute-01 CANCELLED AT 2022-03-30T15:54:16 ***

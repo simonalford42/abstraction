@@ -1,0 +1,1395 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+DEPTH:	 4
+N:	 1000
+WEIGHTING:	 uniform
+OPTIONS_PER_TRAJ:	 10
+Starting run:
+cd30f6c277124e6abf4cc7ad4c747ee5
+params: {'n': 1000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': True, 'depth': 4, 'weighting': 'uniform', 'options_per_traj': 10, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 10000, 'test_every': 500, 'save_every': 2500, 'id': 'cd30f6c277124e6abf4cc7ad4c747ee5'}
+tau_precompute: False
+i=0
+i=1
+i=2
+i=3
+i=4
+i=5
+i=6
+i=7
+i=8
+i=9
+i=10
+i=11
+i=12
+i=13
+i=14
+i=15
+i=16
+i=17
+i=18
+i=19
+i=20
+i=21
+i=22
+i=23
+i=24
+i=25
+i=26
+i=27
+i=28
+i=29
+i=30
+i=31
+i=32
+i=33
+i=34
+i=35
+i=36
+i=37
+i=38
+i=39
+i=40
+i=41
+i=42
+i=43
+i=44
+i=45
+i=46
+i=47
+i=48
+i=49
+i=50
+i=51
+i=52
+i=53
+i=54
+i=55
+i=56
+i=57
+i=58
+i=59
+i=60
+i=61
+i=62
+i=63
+i=64
+i=65
+i=66
+i=67
+i=68
+i=69
+i=70
+i=71
+i=72
+i=73
+i=74
+i=75
+i=76
+i=77
+i=78
+i=79
+i=80
+i=81
+i=82
+i=83
+i=84
+i=85
+i=86
+i=87
+i=88
+i=89
+i=90
+i=91
+i=92
+i=93
+i=94
+i=95
+i=96
+i=97
+i=98
+i=99
+i=100
+i=101
+i=102
+i=103
+i=104
+i=105
+i=106
+i=107
+i=108
+i=109
+i=110
+i=111
+i=112
+i=113
+i=114
+i=115
+i=116
+i=117
+i=118
+i=119
+i=120
+i=121
+i=122
+i=123
+i=124
+i=125
+i=126
+i=127
+i=128
+i=129
+i=130
+i=131
+i=132
+i=133
+i=134
+i=135
+i=136
+i=137
+i=138
+i=139
+i=140
+i=141
+i=142
+i=143
+i=144
+i=145
+i=146
+i=147
+i=148
+i=149
+i=150
+i=151
+i=152
+i=153
+i=154
+i=155
+i=156
+i=157
+i=158
+i=159
+i=160
+i=161
+i=162
+i=163
+i=164
+i=165
+i=166
+i=167
+i=168
+i=169
+i=170
+i=171
+i=172
+i=173
+i=174
+i=175
+i=176
+i=177
+i=178
+i=179
+i=180
+i=181
+i=182
+i=183
+i=184
+i=185
+i=186
+i=187
+i=188
+i=189
+i=190
+i=191
+i=192
+i=193
+i=194
+i=195
+i=196
+i=197
+i=198
+i=199
+i=200
+i=201
+i=202
+i=203
+i=204
+i=205
+i=206
+i=207
+i=208
+i=209
+i=210
+i=211
+i=212
+i=213
+i=214
+i=215
+i=216
+i=217
+i=218
+i=219
+i=220
+i=221
+i=222
+i=223
+i=224
+i=225
+i=226
+i=227
+i=228
+i=229
+i=230
+i=231
+i=232
+i=233
+i=234
+i=235
+i=236
+i=237
+i=238
+i=239
+i=240
+i=241
+i=242
+i=243
+i=244
+i=245
+i=246
+i=247
+i=248
+i=249
+i=250
+i=251
+i=252
+i=253
+i=254
+i=255
+i=256
+i=257
+i=258
+i=259
+i=260
+i=261
+i=262
+i=263
+i=264
+i=265
+i=266
+i=267
+i=268
+i=269
+i=270
+i=271
+i=272
+i=273
+i=274
+i=275
+i=276
+i=277
+i=278
+i=279
+i=280
+i=281
+i=282
+i=283
+i=284
+i=285
+i=286
+i=287
+i=288
+i=289
+i=290
+i=291
+i=292
+i=293
+i=294
+i=295
+i=296
+i=297
+i=298
+i=299
+i=300
+i=301
+i=302
+i=303
+i=304
+i=305
+i=306
+i=307
+i=308
+i=309
+i=310
+i=311
+i=312
+i=313
+i=314
+i=315
+i=316
+i=317
+i=318
+i=319
+i=320
+i=321
+i=322
+i=323
+i=324
+i=325
+i=326
+i=327
+i=328
+i=329
+i=330
+i=331
+i=332
+i=333
+i=334
+i=335
+i=336
+i=337
+i=338
+i=339
+i=340
+i=341
+i=342
+i=343
+i=344
+i=345
+i=346
+i=347
+i=348
+i=349
+i=350
+i=351
+i=352
+i=353
+i=354
+i=355
+i=356
+i=357
+i=358
+i=359
+i=360
+i=361
+i=362
+i=363
+i=364
+i=365
+i=366
+i=367
+i=368
+i=369
+i=370
+i=371
+i=372
+i=373
+i=374
+i=375
+i=376
+i=377
+i=378
+i=379
+i=380
+i=381
+i=382
+i=383
+i=384
+i=385
+i=386
+i=387
+i=388
+i=389
+i=390
+i=391
+i=392
+i=393
+i=394
+i=395
+i=396
+i=397
+i=398
+i=399
+i=400
+i=401
+i=402
+i=403
+i=404
+i=405
+i=406
+i=407
+i=408
+i=409
+i=410
+i=411
+i=412
+i=413
+i=414
+i=415
+i=416
+i=417
+i=418
+i=419
+i=420
+i=421
+i=422
+i=423
+i=424
+i=425
+i=426
+i=427
+i=428
+i=429
+i=430
+i=431
+i=432
+i=433
+i=434
+i=435
+i=436
+i=437
+i=438
+i=439
+i=440
+i=441
+i=442
+i=443
+i=444
+i=445
+i=446
+i=447
+i=448
+i=449
+i=450
+i=451
+i=452
+i=453
+i=454
+i=455
+i=456
+i=457
+i=458
+i=459
+i=460
+i=461
+i=462
+i=463
+i=464
+i=465
+i=466
+i=467
+i=468
+i=469
+i=470
+i=471
+i=472
+i=473
+i=474
+i=475
+i=476
+i=477
+i=478
+i=479
+i=480
+i=481
+i=482
+i=483
+i=484
+i=485
+i=486
+i=487
+i=488
+i=489
+i=490
+i=491
+i=492
+i=493
+i=494
+i=495
+i=496
+i=497
+i=498
+i=499
+i=500
+i=501
+i=502
+i=503
+i=504
+i=505
+i=506
+i=507
+i=508
+i=509
+i=510
+i=511
+i=512
+i=513
+i=514
+i=515
+i=516
+i=517
+i=518
+i=519
+i=520
+i=521
+i=522
+i=523
+i=524
+i=525
+i=526
+i=527
+i=528
+i=529
+i=530
+i=531
+i=532
+i=533
+i=534
+i=535
+i=536
+i=537
+i=538
+i=539
+i=540
+i=541
+i=542
+i=543
+i=544
+i=545
+i=546
+i=547
+i=548
+i=549
+i=550
+i=551
+i=552
+i=553
+i=554
+i=555
+i=556
+i=557
+i=558
+i=559
+i=560
+i=561
+i=562
+i=563
+i=564
+i=565
+i=566
+i=567
+i=568
+i=569
+i=570
+i=571
+i=572
+i=573
+i=574
+i=575
+i=576
+i=577
+i=578
+i=579
+i=580
+i=581
+i=582
+i=583
+i=584
+i=585
+i=586
+i=587
+i=588
+i=589
+i=590
+i=591
+i=592
+i=593
+i=594
+i=595
+i=596
+i=597
+i=598
+i=599
+i=600
+i=601
+i=602
+i=603
+i=604
+i=605
+i=606
+i=607
+i=608
+i=609
+i=610
+i=611
+i=612
+i=613
+i=614
+i=615
+i=616
+i=617
+i=618
+i=619
+i=620
+i=621
+i=622
+i=623
+i=624
+i=625
+i=626
+i=627
+i=628
+i=629
+i=630
+i=631
+i=632
+i=633
+i=634
+i=635
+i=636
+i=637
+i=638
+i=639
+i=640
+i=641
+i=642
+i=643
+i=644
+i=645
+i=646
+i=647
+i=648
+i=649
+i=650
+i=651
+i=652
+i=653
+i=654
+i=655
+i=656
+i=657
+i=658
+i=659
+i=660
+i=661
+i=662
+i=663
+i=664
+i=665
+i=666
+i=667
+i=668
+i=669
+i=670
+i=671
+i=672
+i=673
+i=674
+i=675
+i=676
+i=677
+i=678
+i=679
+i=680
+i=681
+i=682
+i=683
+i=684
+i=685
+i=686
+i=687
+i=688
+i=689
+i=690
+i=691
+i=692
+i=693
+i=694
+i=695
+i=696
+i=697
+i=698
+i=699
+i=700
+i=701
+i=702
+i=703
+i=704
+i=705
+i=706
+i=707
+i=708
+i=709
+i=710
+i=711
+i=712
+i=713
+i=714
+i=715
+i=716
+i=717
+i=718
+i=719
+i=720
+i=721
+i=722
+i=723
+i=724
+i=725
+i=726
+i=727
+i=728
+i=729
+i=730
+i=731
+i=732
+i=733
+i=734
+i=735
+i=736
+i=737
+i=738
+i=739
+i=740
+i=741
+i=742
+i=743
+i=744
+i=745
+i=746
+i=747
+i=748
+i=749
+i=750
+i=751
+i=752
+i=753
+i=754
+i=755
+i=756
+i=757
+i=758
+i=759
+i=760
+i=761
+i=762
+i=763
+i=764
+i=765
+i=766
+i=767
+i=768
+i=769
+i=770
+i=771
+i=772
+i=773
+i=774
+i=775
+i=776
+i=777
+i=778
+i=779
+i=780
+i=781
+i=782
+i=783
+i=784
+i=785
+i=786
+i=787
+i=788
+i=789
+i=790
+i=791
+i=792
+i=793
+i=794
+i=795
+i=796
+i=797
+i=798
+i=799
+i=800
+i=801
+i=802
+i=803
+i=804
+i=805
+i=806
+i=807
+i=808
+i=809
+i=810
+i=811
+i=812
+i=813
+i=814
+i=815
+i=816
+i=817
+i=818
+i=819
+i=820
+i=821
+i=822
+i=823
+i=824
+i=825
+i=826
+i=827
+i=828
+i=829
+i=830
+i=831
+i=832
+i=833
+i=834
+i=835
+i=836
+i=837
+i=838
+i=839
+i=840
+i=841
+i=842
+i=843
+i=844
+i=845
+i=846
+i=847
+i=848
+i=849
+i=850
+i=851
+i=852
+i=853
+i=854
+i=855
+i=856
+i=857
+i=858
+i=859
+i=860
+i=861
+i=862
+i=863
+i=864
+i=865
+i=866
+i=867
+i=868
+i=869
+i=870
+i=871
+i=872
+i=873
+i=874
+i=875
+i=876
+i=877
+i=878
+i=879
+i=880
+i=881
+i=882
+i=883
+i=884
+i=885
+i=886
+i=887
+i=888
+i=889
+i=890
+i=891
+i=892
+i=893
+i=894
+i=895
+i=896
+i=897
+i=898
+i=899
+i=900
+i=901
+i=902
+i=903
+i=904
+i=905
+i=906
+i=907
+i=908
+i=909
+i=910
+i=911
+i=912
+i=913
+i=914
+i=915
+i=916
+i=917
+i=918
+i=919
+i=920
+i=921
+i=922
+i=923
+i=924
+i=925
+i=926
+i=927
+i=928
+i=929
+i=930
+i=931
+i=932
+i=933
+i=934
+i=935
+i=936
+i=937
+i=938
+i=939
+i=940
+i=941
+i=942
+i=943
+i=944
+i=945
+i=946
+i=947
+i=948
+i=949
+i=950
+i=951
+i=952
+i=953
+i=954
+i=955
+i=956
+i=957
+i=958
+i=959
+i=960
+i=961
+i=962
+i=963
+i=964
+i=965
+i=966
+i=967
+i=968
+i=969
+i=970
+i=971
+i=972
+i=973
+i=974
+i=975
+i=976
+i=977
+i=978
+i=979
+i=980
+i=981
+i=982
+i=983
+i=984
+i=985
+i=986
+i=987
+i=988
+i=989
+i=990
+i=991
+i=992
+i=993
+i=994
+i=995
+i=996
+i=997
+i=998
+i=999
+9803 fine-tuning examples
+actual params['epochs']: 1020
+actual params['test_every']: 51
+actual params['save_every']: 255
+WARNING: tau norm dim disabled
+avg cc loss  tensor(-0.0691, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 228928.69609069824
+WARNING: fixed test env seed
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 28/177=0.16
+	3: 2/125=0.02
+	4: 0/81=0.00
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 0	 test accs 0.37542662116040953
+avg cc loss  tensor(-0.1764, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 57050.699951171875
+avg cc loss  tensor(-0.3477, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 44056.54025268555
+avg cc loss  tensor(-0.4026, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 40398.86508178711
+avg cc loss  tensor(-0.4090, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 39162.09572601318
+avg cc loss  tensor(-0.3755, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 38387.5934677124
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 44/177=0.25
+	3: 7/125=0.06
+	4: 1/81=0.01
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 51	 test accs 0.4129692832764505
+avg cc loss  tensor(-0.3913, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 37881.82341384888
+avg cc loss  tensor(-0.3473, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 37479.71480560303
+avg cc loss  tensor(-0.3184, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 37187.10417556763
+avg cc loss  tensor(-0.3052, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36941.55616378784
+avg cc loss  tensor(-0.3639, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36720.062911987305
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 52/177=0.29
+	3: 8/125=0.06
+	4: 1/81=0.01
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 102	 test accs 0.4283276450511945
+avg cc loss  tensor(-0.2602, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36521.1263923645
+avg cc loss  tensor(-0.3094, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36350.32174682617
+avg cc loss  tensor(-0.3011, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36214.164390563965
+avg cc loss  tensor(-0.2087, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 36104.17225646973
+avg cc loss  tensor(-0.1920, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35982.9990272522
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 58/177=0.33
+	3: 8/125=0.06
+	4: 0/81=0.00
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 153	 test accs 0.43686006825938567
+avg cc loss  tensor(-0.2157, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35857.92158126831
+avg cc loss  tensor(-0.2165, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35750.990673065186
+avg cc loss  tensor(-0.3109, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35639.60987854004
+avg cc loss  tensor(-0.2679, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35505.45024108887
+avg cc loss  tensor(-0.2288, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35416.874656677246
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 59/177=0.33
+	3: 9/125=0.07
+	4: 0/81=0.00
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 204	 test accs 0.4402730375426621
+avg cc loss  tensor(-0.1947, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35343.73818206787
+avg cc loss  tensor(-0.2499, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35247.266693115234
+avg cc loss  tensor(-0.2209, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35198.28785324097
+avg cc loss  tensor(-0.1988, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35119.33652496338
+avg cc loss  tensor(-0.1859, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35078.80023956299
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 56/177=0.32
+	3: 9/125=0.07
+	4: 1/81=0.01
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 255	 test accs 0.43686006825938567
+Saved model at models/cd30f6c277124e6abf4cc7ad4c747ee5-epoch-255_control.pt
+avg cc loss  tensor(-0.2003, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 35012.181453704834
+avg cc loss  tensor(-0.1596, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34904.13129425049
+avg cc loss  tensor(-0.2732, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34883.536880493164
+avg cc loss  tensor(-0.2079, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34795.87520980835
+avg cc loss  tensor(-0.2261, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34757.039390563965
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 58/177=0.33
+	3: 10/125=0.08
+	4: 0/81=0.00
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 306	 test accs 0.4402730375426621
+avg cc loss  tensor(-0.1314, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34671.442779541016
+avg cc loss  tensor(-0.1711, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34644.059242248535
+avg cc loss  tensor(-0.1536, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34542.74461364746
+avg cc loss  tensor(-0.1427, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34469.06262588501
+avg cc loss  tensor(-0.1585, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34413.341857910156
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 62/177=0.35
+	3: 7/125=0.06
+	4: 1/81=0.01
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 357	 test accs 0.44368600682593856
+avg cc loss  tensor(-0.1052, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34396.54803466797
+avg cc loss  tensor(-0.0966, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34364.88102722168
+avg cc loss  tensor(-0.1522, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34307.758975982666
+avg cc loss  tensor(-0.1714, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34263.37383270264
+avg cc loss  tensor(-0.1364, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34228.8698387146
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 69/177=0.39
+	3: 7/125=0.06
+	4: 2/81=0.02
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 408	 test accs 0.45733788395904434
+avg cc loss  tensor(-0.1547, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34203.66988372803
+avg cc loss  tensor(-0.1170, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34155.97308731079
+avg cc loss  tensor(-0.1013, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34115.271224975586
+avg cc loss  tensor(-0.2026, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34070.854221343994
+avg cc loss  tensor(-0.1064, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 34036.52111816406
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 71/177=0.40
+	3: 9/125=0.07
+	4: 2/81=0.02
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 459	 test accs 0.4641638225255973
+avg cc loss  tensor(-0.0626, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33982.15907287598
+avg cc loss  tensor(-0.0861, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33936.590911865234
+avg cc loss  tensor(-0.1098, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33921.53684234619
+avg cc loss  tensor(-0.1667, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33928.19476509094
+avg cc loss  tensor(-0.0988, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33893.96286392212
+avg cc loss  tensor(-0.1052, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33829.773040771484
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 66/177=0.37
+	3: 9/125=0.07
+	4: 1/81=0.01
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 510	 test accs 0.4539249146757679
+Saved model at models/cd30f6c277124e6abf4cc7ad4c747ee5-epoch-510_control.pt
+avg cc loss  tensor(-0.1060, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33811.11655807495
+avg cc loss  tensor(-0.1081, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33753.68223571777
+avg cc loss  tensor(-0.1040, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33740.56399154663
+avg cc loss  tensor(-0.1347, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33723.23640060425
+avg cc loss  tensor(-0.1049, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33676.251178741455
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 69/177=0.39
+	3: 9/125=0.07
+	4: 2/81=0.02
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 561	 test accs 0.46075085324232085
+avg cc loss  tensor(-0.0626, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33675.54292297363
+avg cc loss  tensor(-0.0721, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33627.25168991089
+avg cc loss  tensor(-0.1823, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33583.69007110596
+avg cc loss  tensor(-0.0843, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33591.13528060913
+avg cc loss  tensor(-0.1039, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33551.35207366943
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 62/177=0.35
+	3: 9/125=0.07
+	4: 2/81=0.02
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 612	 test accs 0.44880546075085326
+avg cc loss  tensor(-0.1297, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33520.08184051514
+avg cc loss  tensor(-0.1107, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33486.71422576904
+avg cc loss  tensor(-0.0713, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33459.93619155884
+avg cc loss  tensor(-0.1029, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33485.205516815186
+avg cc loss  tensor(-0.0672, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33410.084243774414
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 63/177=0.36
+	3: 8/125=0.06
+	4: 2/81=0.02
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 663	 test accs 0.44880546075085326
+avg cc loss  tensor(-0.1045, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33343.36800003052
+avg cc loss  tensor(-0.0906, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33306.96318054199
+avg cc loss  tensor(-0.1319, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33289.33654022217
+avg cc loss  tensor(-0.0989, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33334.01833343506
+avg cc loss  tensor(-0.1376, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33226.56420135498
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 64/177=0.36
+	3: 8/125=0.06
+	4: 4/81=0.05
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 714	 test accs 0.4539249146757679
+avg cc loss  tensor(-0.0773, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33242.4119682312
+avg cc loss  tensor(-0.1717, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33160.959144592285
+avg cc loss  tensor(-0.0901, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33151.937072753906
+avg cc loss  tensor(-0.0788, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33118.34415435791
+avg cc loss  tensor(-0.1337, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33087.23412322998
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 58/177=0.33
+	3: 8/125=0.06
+	4: 3/81=0.04
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 765	 test accs 0.44197952218430037
+Saved model at models/cd30f6c277124e6abf4cc7ad4c747ee5-epoch-765_control.pt
+avg cc loss  tensor(-0.1245, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33081.67758178711
+avg cc loss  tensor(-0.1402, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33033.09370422363
+avg cc loss  tensor(-0.0830, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 33042.92251968384
+avg cc loss  tensor(-0.0647, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32995.41128921509
+avg cc loss  tensor(-0.0674, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32968.067401885986
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 59/177=0.33
+	3: 9/125=0.07
+	4: 4/81=0.05
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 816	 test accs 0.447098976109215
+avg cc loss  tensor(-0.0463, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32964.57228851318
+avg cc loss  tensor(-0.0503, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32922.71759414673
+avg cc loss  tensor(-0.0514, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32923.7078704834
+avg cc loss  tensor(-0.0919, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32871.039474487305
+avg cc loss  tensor(-0.0760, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32836.87313461304
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 56/177=0.32
+	3: 10/125=0.08
+	4: 4/81=0.05
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 867	 test accs 0.44368600682593856
+avg cc loss  tensor(-0.0842, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32851.69449234009
+avg cc loss  tensor(-0.0923, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32868.770374298096
+avg cc loss  tensor(-0.0348, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32805.933753967285
+avg cc loss  tensor(-0.0794, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32761.501808166504
+avg cc loss  tensor(-0.0956, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32825.48656463623
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 63/177=0.36
+	3: 10/125=0.08
+	4: 3/81=0.04
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 918	 test accs 0.4539249146757679
+avg cc loss  tensor(-0.0719, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32742.466457366943
+avg cc loss  tensor(-0.0926, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32710.721645355225
+avg cc loss  tensor(-0.0277, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32722.897945404053
+avg cc loss  tensor(-0.1171, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32718.77286529541
+avg cc loss  tensor(-0.1444, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32630.314054489136
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 62/177=0.35
+	3: 13/125=0.10
+	4: 5/81=0.06
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 969	 test accs 0.46075085324232085
+avg cc loss  tensor(-0.0692, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32678.289741516113
+avg cc loss  tensor(-0.0492, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32627.24328994751
+avg cc loss  tensor(-0.0986, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32582.593086242676
+avg cc loss  tensor(-0.0664, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32607.694007873535
+avg cc loss  tensor(-0.0324, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32586.10513496399
+avg cc loss  tensor(-0.0770, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 32575.288108825684
+Solved 586/1000.
+	1: 190/190=1.00
+	2: 67/177=0.38
+	3: 14/125=0.11
+	4: 3/81=0.04
+	5: 0/10=0.00
+	6: 0/2=0.00
+Epoch 1020	 test accs 0.46757679180887374
+Saved model at models/cd30f6c277124e6abf4cc7ad4c747ee5-epoch-1020_control.pt
+Completed fine tuning in 21324.1 seconds

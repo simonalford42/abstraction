@@ -1,0 +1,89 @@
+Starting run:
+4180991eb0394173b7a5ecfa6e901352
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm-homo', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=20000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce GTX TITAN X', id='4180991eb0394173b7a5ecfa6e901352')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220808_204511-3ddbdfk8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run lemon-cosmos-177
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/3ddbdfk8
+Net has 43818 parameters
+Solved 0/200 episodes
+Solved 40/200 episodes
+Solved 47/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-78.pt
+Solved 31/200 episodes
+Solved 36/200 episodes
+Solved 21/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-156.pt
+Solved 31/200 episodes
+Solved 46/200 episodes
+Solved 34/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-235.pt
+Solved 37/200 episodes
+Solved 36/200 episodes
+Solved 31/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-314.pt
+Solved 35/200 episodes
+Solved 30/200 episodes
+Solved 38/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-393.pt
+Solved 29/200 episodes
+Solved 40/200 episodes
+Solved 34/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-472.pt
+Solved 36/200 episodes
+Solved 36/200 episodes
+Solved 35/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-550.pt
+Solved 27/200 episodes
+Solved 42/200 episodes
+Solved 35/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-628.pt
+Solved 39/200 episodes
+Solved 39/200 episodes
+Solved 47/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-707.pt
+Solved 41/200 episodes
+Solved 32/200 episodes
+Solved 41/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-786.pt
+Solved 36/200 episodes
+Solved 44/200 episodes
+Solved 39/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-865.pt
+Solved 39/200 episodes
+Solved 39/200 episodes
+Solved 39/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352-epoch-944.pt
+Solved 27/200 episodes
+Solved 44/200 episodes
+Saved model at models/4180991eb0394173b7a5ecfa6e901352.pt
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 138944.9 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.006 MB of 0.006 MB uploaded (0.000 MB deduped)wandb: \ 0.006 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.006 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.014 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▇█▆▆▄▆█▆▇▆▆▆▅▇▅▇▆▆▆▆▅▇▆▇▇█▇▆▇▆█▇▇▇▇▅█
+wandb: loss █▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.22
+wandb: loss 99873.70729
+wandb: 
+wandb: Synced lemon-cosmos-177: https://wandb.ai/simonalford42/abstraction/runs/3ddbdfk8
+wandb: Synced 6 W&B file(s), 13 media file(s), 13 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220808_204511-3ddbdfk8/logs

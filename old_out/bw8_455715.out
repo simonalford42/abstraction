@@ -1,0 +1,135 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-64
+params: {'epochs': 5, 'lr': 0.0008, 'n': 5000, 'batch_size': 10}
+Net has 37803 parameters
+Round 0
+Non-disk data
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 161401.61348724365	(10.5s)
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Evaluated model in 32.5 seconds
+Round 1
+Non-disk data
+Generated trajectories in 71.8 seconds
+epoch: 0	train loss: 63125.356620788574	(9.9s)
+Evaluating model on 200 episodes
+Solved 40/200 episodes
+Evaluated model in 32.2 seconds
+Round 2
+Non-disk data
+Generated trajectories in 72.6 seconds
+epoch: 0	train loss: 54959.24668884277	(10.0s)
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Evaluated model in 31.6 seconds
+Round 3
+Non-disk data
+Generated trajectories in 72.7 seconds
+epoch: 0	train loss: 53832.99531888962	(10.1s)
+Evaluating model on 200 episodes
+Solved 41/200 episodes
+Evaluated model in 30.9 seconds
+Round 4
+Non-disk data
+Generated trajectories in 72.3 seconds
+epoch: 0	train loss: 51341.46955728531	(10.1s)
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+Evaluated model in 34.6 seconds
+Round 5
+Non-disk data
+Generated trajectories in 72.0 seconds
+epoch: 0	train loss: 49297.124769210815	(10.0s)
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluated model in 35.9 seconds
+Round 6
+Non-disk data
+Generated trajectories in 72.2 seconds
+epoch: 0	train loss: 49177.19572639465	(10.1s)
+Evaluating model on 200 episodes
+Solved 51/200 episodes
+Evaluated model in 32.9 seconds
+Round 7
+Non-disk data
+Generated trajectories in 72.6 seconds
+epoch: 0	train loss: 49671.89696311951	(10.2s)
+Evaluating model on 200 episodes
+Solved 40/200 episodes
+Evaluated model in 34.7 seconds
+Round 8
+Non-disk data
+Generated trajectories in 72.5 seconds
+epoch: 0	train loss: 49327.26753568649	(10.1s)
+Evaluating model on 200 episodes
+Solved 48/200 episodes
+Evaluated model in 33.6 seconds
+Round 9
+Non-disk data
+Generated trajectories in 72.6 seconds
+epoch: 0	train loss: 48010.826872348785	(10.1s)
+Evaluating model on 200 episodes
+Solved 42/200 episodes
+Evaluated model in 34.5 seconds
+Round 10
+Non-disk data
+Generated trajectories in 72.7 seconds
+epoch: 0	train loss: 47351.45962166786	(10.1s)
+Evaluating model on 200 episodes
+Solved 50/200 episodes
+Evaluated model in 31.0 seconds
+Round 11
+Non-disk data
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 47259.246727228165	(10.3s)
+Evaluating model on 200 episodes
+Solved 39/200 episodes
+Evaluated model in 32.9 seconds
+Round 12
+Non-disk data
+Generated trajectories in 73.6 seconds
+epoch: 0	train loss: 47416.592497348785	(10.2s)
+Evaluating model on 200 episodes
+Solved 32/200 episodes
+Evaluated model in 33.5 seconds
+Round 13
+Non-disk data
+Generated trajectories in 71.4 seconds
+epoch: 0	train loss: 47267.0602414608	(10.3s)
+Evaluating model on 200 episodes
+Solved 44/200 episodes
+Evaluated model in 33.4 seconds
+Round 14
+Non-disk data
+Generated trajectories in 71.9 seconds
+epoch: 0	train loss: 46670.75936412811	(10.1s)
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+Evaluated model in 33.3 seconds
+Round 15
+Non-disk data
+Generated trajectories in 71.2 seconds
+epoch: 0	train loss: 45742.96110868454	(10.1s)
+Evaluating model on 200 episodes
+Solved 55/200 episodes
+Evaluated model in 29.0 seconds
+Round 16
+Non-disk data
+Generated trajectories in 70.8 seconds
+epoch: 0	train loss: 45245.610625982285	(10.1s)
+Evaluating model on 200 episodes
+Solved 38/200 episodes
+Evaluated model in 33.9 seconds
+Round 17
+Non-disk data
+Generated trajectories in 71.6 seconds
+epoch: 0	train loss: 46678.314464092255	(10.1s)
+Evaluating model on 200 episodes
+Solved 53/200 episodes
+Evaluated model in 31.6 seconds
+Round 18
+Non-disk data
+Generated trajectories in 71.2 seconds
+epoch: 0	train loss: 45369.212988615036	(10.1s)
+Evaluating model on 200 episodes
+slurmstepd: error: *** JOB 455715 ON ellis-compute-01 CANCELLED AT 2022-03-22T19:07:20 ***

@@ -1,0 +1,14 @@
+job number = 6
+args.lr: 0.0001
+args.big: False
+args.batch_size: 256
+args.all_conv: True
+Training on NVIDIA GeForce GTX 1080 Ti
+generating trajectories
+trajectories generated
+round 0
+net has 15212 parameters
+epoch: 0	train loss: 1.3799093961715698	(49.1s)
+epoch: 1	train loss: 1.3695367574691772	(48.0s)
+epoch: 2	train loss: 1.3364152908325195	(50.9s)
+epoch: 3	train loss: 1.3502737283706665	(62.7s)

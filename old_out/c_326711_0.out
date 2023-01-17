@@ -1,0 +1,10 @@
+job number = 0
+args.lr: 0.0001
+args.big: True
+args.batch_size: 64
+args.all_conv: True
+Training on NVIDIA TITAN Xp
+generating trajectories
+trajectories generated
+round 0
+net has 36236 parameters

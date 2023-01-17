@@ -1,0 +1,840 @@
+fine tune loss v3 only multi-step policy, no cc or single, or solved
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+N:	 500
+ABSTRACT_PEN:	 1.0
+Starting muzero run:
+812a2bd38f8e4942b6c66db6e725513a
+params: {'n': 500, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 100, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'b': 10, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'abstract_dim': 32, 'tau_noise_std': 0.0, 'freeze': False, 'eval': False, 'load': True, 'ellis': False, 'neptune': False, 'no_log': False, 'fine_tune': False, 'variable_abstract_pen': False, 'tau_precompute': False, 'replace_trans_net': False, 'batch_norm': False, 'no_tau_norm': False, 'relational_micro': False, 'toy_test': False, 'separate_option_nets': False, 'gumbel': False, 'g_start_temp': 1, 'g_stop_temp': 1, 'num_categories': 8, 'shrink_micro_net': False, 'shrink_loss_scale': 1, 'length': (4,), 'muzero': True, 'device': 'NVIDIA GeForce RTX 2080 Ti', 'epochs': 20000, 'test_every': 200, 'save_every': 1000, 'id': '812a2bd38f8e4942b6c66db6e725513a'}
+WARNING: tau norm dim disabled
+train_loss: 8676.359558105469
+WARNING: fixed test env seed
+Epoch 0
+For sampling, solved 1/200 with abstract model, 34/200 with simulator
+Solved 50/200.
+	4: 0/42=0.00
+	5: 0/7=0.00
+train_loss: 3656.932571411133
+train_loss: 4035.2772064208984
+train_loss: 3990.260543823242
+train_loss: 4090.386199951172
+train_loss: 4019.7212829589844
+Epoch 200
+For sampling, solved 0/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 4007.5917053222656
+train_loss: 3953.779083251953
+train_loss: 3910.910903930664
+train_loss: 3882.047897338867
+train_loss: 3818.7107849121094
+Epoch 400
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 3779.579544067383
+train_loss: 3727.379837036133
+train_loss: 3679.3194274902344
+train_loss: 3601.274368286133
+train_loss: 3610.8946075439453
+Epoch 600
+For sampling, solved 0/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 3573.4652709960938
+train_loss: 3517.089645385742
+train_loss: 3411.4925842285156
+train_loss: 3613.0140228271484
+train_loss: 3372.006149291992
+Epoch 800
+For sampling, solved 1/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 3294.6695251464844
+train_loss: 3315.834747314453
+train_loss: 3141.273895263672
+train_loss: 3170.4922485351562
+train_loss: 3122.2415161132812
+Epoch 1000
+For sampling, solved 0/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control.pt
+train_loss: 2982.696731567383
+train_loss: 3114.9806060791016
+train_loss: 3052.150833129883
+train_loss: 2841.496368408203
+train_loss: 2953.0831756591797
+Epoch 1200
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2841.062515258789
+train_loss: 3695.0191650390625
+train_loss: 3242.043182373047
+train_loss: 3116.042999267578
+train_loss: 3088.6942443847656
+Epoch 1400
+For sampling, solved 2/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 3065.9070434570312
+train_loss: 3118.081329345703
+train_loss: 3056.2260665893555
+train_loss: 2910.3765258789062
+train_loss: 2873.809913635254
+Epoch 1600
+For sampling, solved 1/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2845.3888092041016
+train_loss: 2836.5197219848633
+train_loss: 2927.286834716797
+train_loss: 2796.9224700927734
+train_loss: 2855.553565979004
+Epoch 1800
+For sampling, solved 0/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 2647.767951965332
+train_loss: 2842.9938049316406
+train_loss: 2570.270004272461
+train_loss: 2439.66463470459
+train_loss: 2604.4281158447266
+Epoch 2000
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(0).pt
+train_loss: 2595.773368835449
+train_loss: 2588.9567642211914
+train_loss: 2491.4511642456055
+train_loss: 2355.269302368164
+train_loss: 2495.7914428710938
+Epoch 2200
+For sampling, solved 1/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2439.0579376220703
+train_loss: 2328.167251586914
+train_loss: 2394.182273864746
+train_loss: 2391.4911193847656
+train_loss: 2309.9957275390625
+Epoch 2400
+For sampling, solved 3/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 2286.529037475586
+train_loss: 2299.093994140625
+train_loss: 2365.3735733032227
+train_loss: 2302.880302429199
+train_loss: 2445.4576263427734
+Epoch 2600
+For sampling, solved 1/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2419.295555114746
+train_loss: 2240.219512939453
+train_loss: 2373.818672180176
+train_loss: 2259.1279373168945
+train_loss: 2066.9779357910156
+Epoch 2800
+For sampling, solved 6/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2059.467384338379
+train_loss: 2093.665870666504
+train_loss: 1928.6074829101562
+train_loss: 2030.9360809326172
+train_loss: 1971.9037399291992
+Epoch 3000
+For sampling, solved 3/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(1).pt
+train_loss: 1993.7801818847656
+train_loss: 2489.512420654297
+train_loss: 1785.806526184082
+train_loss: 1658.932518005371
+train_loss: 1915.8465423583984
+Epoch 3200
+For sampling, solved 4/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1730.8692817687988
+train_loss: 2016.2133178710938
+train_loss: 1621.4744873046875
+train_loss: 1907.6922607421875
+train_loss: 1852.6506958007812
+Epoch 3400
+For sampling, solved 10/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 1716.4261169433594
+train_loss: 1617.280502319336
+train_loss: 1667.7956352233887
+train_loss: 1914.9955139160156
+train_loss: 1595.5536575317383
+Epoch 3600
+For sampling, solved 3/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1460.914924621582
+train_loss: 1486.7635879516602
+train_loss: 2252.92293548584
+train_loss: 1645.7651901245117
+train_loss: 1643.5871887207031
+Epoch 3800
+For sampling, solved 7/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 2032.0088119506836
+train_loss: 1868.3952331542969
+train_loss: 2269.788848876953
+train_loss: 1777.0504531860352
+train_loss: 1794.038673400879
+Epoch 4000
+For sampling, solved 4/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(2).pt
+train_loss: 1578.3916091918945
+train_loss: 1588.8543853759766
+train_loss: 1650.4393920898438
+train_loss: 1559.3540115356445
+train_loss: 1442.9098052978516
+Epoch 4200
+For sampling, solved 5/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 1618.5063552856445
+train_loss: 1364.437786102295
+train_loss: 1571.41943359375
+train_loss: 1087.0629119873047
+train_loss: 1505.0773849487305
+Epoch 4400
+For sampling, solved 7/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 1166.0208206176758
+train_loss: 1422.5380325317383
+train_loss: 1440.1052780151367
+train_loss: 3781.235397338867
+train_loss: 1788.7152404785156
+Epoch 4600
+For sampling, solved 10/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 1692.539348602295
+train_loss: 1451.9355926513672
+train_loss: 1744.7091255187988
+train_loss: 1549.8066596984863
+train_loss: 1428.0643463134766
+Epoch 4800
+For sampling, solved 6/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 1227.6394882202148
+train_loss: 1103.82905960083
+train_loss: 1289.1281433105469
+train_loss: 1468.875286102295
+train_loss: 1063.6656646728516
+Epoch 5000
+For sampling, solved 12/200 with abstract model, 2/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(3).pt
+train_loss: 1109.9838180541992
+train_loss: 1199.225528717041
+train_loss: 1270.6451568603516
+train_loss: 1049.6447868347168
+train_loss: 903.4494171142578
+Epoch 5200
+For sampling, solved 13/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 963.3993911743164
+train_loss: 912.484245300293
+train_loss: 838.7450866699219
+train_loss: 802.5933151245117
+train_loss: 761.4402828216553
+Epoch 5400
+For sampling, solved 14/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 852.3465957641602
+train_loss: 996.3846282958984
+train_loss: 874.3486328125
+train_loss: 804.7649116516113
+train_loss: 1069.9484901428223
+Epoch 5600
+For sampling, solved 10/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 756.6116790771484
+train_loss: 1327.6266708374023
+train_loss: 972.9302444458008
+train_loss: 1057.723560333252
+train_loss: 685.2593593597412
+Epoch 5800
+For sampling, solved 16/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1075.1597537994385
+train_loss: 659.1864814758301
+train_loss: 2077.496795654297
+train_loss: 878.3132991790771
+train_loss: 828.2008457183838
+Epoch 6000
+For sampling, solved 18/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(4).pt
+train_loss: 753.0862045288086
+train_loss: 701.1506309509277
+train_loss: 671.980806350708
+train_loss: 658.2734813690186
+train_loss: 702.842170715332
+Epoch 6200
+For sampling, solved 26/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 490.20781898498535
+train_loss: 671.7592124938965
+train_loss: 668.4638500213623
+train_loss: 622.1847877502441
+train_loss: 395.4634094238281
+Epoch 6400
+For sampling, solved 29/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 604.2404232025146
+train_loss: 632.4425773620605
+train_loss: 652.8388175964355
+train_loss: 1106.0859031677246
+train_loss: 472.5226936340332
+Epoch 6600
+For sampling, solved 27/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 618.1144523620605
+train_loss: 749.9849662780762
+train_loss: 808.1074600219727
+train_loss: 570.4065608978271
+train_loss: 507.66443061828613
+Epoch 6800
+For sampling, solved 21/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 444.84351921081543
+train_loss: 694.0888748168945
+train_loss: 492.46917724609375
+train_loss: 796.5971336364746
+train_loss: 336.9805507659912
+Epoch 7000
+For sampling, solved 26/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(5).pt
+train_loss: 409.54216957092285
+train_loss: 1269.2727661132812
+train_loss: 638.0283088684082
+train_loss: 505.7251834869385
+train_loss: 524.143741607666
+Epoch 7200
+For sampling, solved 26/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 323.63227939605713
+train_loss: 293.64384365081787
+train_loss: 266.5218286514282
+train_loss: 1183.0742721557617
+train_loss: 446.08045196533203
+Epoch 7400
+For sampling, solved 25/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 473.19518280029297
+train_loss: 313.8427333831787
+train_loss: 383.31214904785156
+train_loss: 315.9694414138794
+train_loss: 260.005784034729
+Epoch 7600
+For sampling, solved 32/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 328.32715225219727
+train_loss: 205.65113830566406
+train_loss: 310.6959915161133
+train_loss: 573.6524085998535
+train_loss: 552.9910373687744
+Epoch 7800
+For sampling, solved 24/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 1752.8925170898438
+train_loss: 227.24431610107422
+train_loss: 324.5279064178467
+train_loss: 681.7150726318359
+train_loss: 540.006950378418
+Epoch 8000
+For sampling, solved 22/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(6).pt
+train_loss: 195.04546356201172
+train_loss: 576.5760631561279
+train_loss: 319.739914894104
+train_loss: 320.3652105331421
+train_loss: 200.9532232284546
+Epoch 8200
+For sampling, solved 32/200 with abstract model, 1/200 with simulator
+Solved 2/200.
+train_loss: 314.4963092803955
+train_loss: 165.24386310577393
+train_loss: 268.42811584472656
+train_loss: 268.57212352752686
+train_loss: 157.37864303588867
+Epoch 8400
+For sampling, solved 36/200 with abstract model, 2/200 with simulator
+Solved 1/200.
+train_loss: 352.7840633392334
+train_loss: 157.16971492767334
+train_loss: 450.0983638763428
+train_loss: 415.38807106018066
+train_loss: 367.5945768356323
+Epoch 8600
+For sampling, solved 28/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 600.7164268493652
+train_loss: 375.4524278640747
+train_loss: 321.74883365631104
+train_loss: 195.68112754821777
+train_loss: 386.7847328186035
+Epoch 8800
+For sampling, solved 32/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 125.75764894485474
+train_loss: 354.97243213653564
+train_loss: 450.28481674194336
+train_loss: 259.83844089508057
+train_loss: 322.79386043548584
+Epoch 9000
+For sampling, solved 24/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(7).pt
+train_loss: 552.3785705566406
+train_loss: 293.6846523284912
+train_loss: 587.4391288757324
+train_loss: 361.235369682312
+train_loss: 745.3866539001465
+Epoch 9200
+For sampling, solved 22/200 with abstract model, 2/200 with simulator
+Solved 2/200.
+	4: 0/1=0.00
+train_loss: 466.8416633605957
+train_loss: 328.36384296417236
+train_loss: 723.5627689361572
+train_loss: 482.0211353302002
+train_loss: 284.2329797744751
+Epoch 9400
+For sampling, solved 32/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 454.0556173324585
+train_loss: 768.0259437561035
+train_loss: 216.24638748168945
+train_loss: 165.57741165161133
+train_loss: 484.21702003479004
+Epoch 9600
+For sampling, solved 26/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 803.6558532714844
+train_loss: 258.785596370697
+train_loss: 186.80682182312012
+train_loss: 331.2456912994385
+train_loss: 675.3733234405518
+Epoch 9800
+For sampling, solved 24/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 646.2684516906738
+train_loss: 281.3138313293457
+train_loss: 141.3032512664795
+train_loss: 888.5872497558594
+train_loss: 265.1996660232544
+Epoch 10000
+For sampling, solved 32/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(8).pt
+train_loss: 124.79068946838379
+train_loss: 193.2828073501587
+train_loss: 125.33785629272461
+train_loss: 179.20903778076172
+train_loss: 776.1894664764404
+Epoch 10200
+For sampling, solved 14/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 501.5977420806885
+train_loss: 504.44715118408203
+train_loss: 142.83739233016968
+train_loss: 103.00217199325562
+train_loss: 152.84233903884888
+Epoch 10400
+For sampling, solved 36/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 91.27268671989441
+train_loss: 93.14027166366577
+train_loss: 76.1939126253128
+train_loss: 2000.8672828674316
+train_loss: 99.05474090576172
+Epoch 10600
+For sampling, solved 42/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 70.0765050649643
+train_loss: 55.64431929588318
+train_loss: 100.56900596618652
+train_loss: 145.1228723526001
+train_loss: 82.46730780601501
+Epoch 10800
+For sampling, solved 37/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 64.85201048851013
+train_loss: 106.42266464233398
+train_loss: 59.73858046531677
+train_loss: 207.04617500305176
+train_loss: 76.85080218315125
+Epoch 11000
+For sampling, solved 38/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(9).pt
+train_loss: 703.1703405380249
+train_loss: 95.76166129112244
+train_loss: 58.56879460811615
+train_loss: 123.16147232055664
+train_loss: 464.2304639816284
+Epoch 11200
+For sampling, solved 27/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 59.07373058795929
+train_loss: 44.994632959365845
+train_loss: 225.17685508728027
+train_loss: 172.8134994506836
+train_loss: 65.51751637458801
+Epoch 11400
+For sampling, solved 37/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 51.45124304294586
+train_loss: 42.78186047077179
+train_loss: 116.15443325042725
+train_loss: 58.68148946762085
+train_loss: 45.32919096946716
+Epoch 11600
+For sampling, solved 41/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 90.46188163757324
+train_loss: 97.03352630138397
+train_loss: 52.542086124420166
+train_loss: 76.0725769996643
+train_loss: 82.82389485836029
+Epoch 11800
+For sampling, solved 39/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 698.1087560653687
+train_loss: 376.8261766433716
+train_loss: 68.97311842441559
+train_loss: 365.8327360153198
+train_loss: 53.59065651893616
+Epoch 12000
+For sampling, solved 39/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(10).pt
+train_loss: 40.24431598186493
+train_loss: 118.67612290382385
+train_loss: 40.20045006275177
+train_loss: 55.43904364109039
+train_loss: 98.97468996047974
+Epoch 12200
+For sampling, solved 39/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 44.29739862680435
+train_loss: 779.5040130615234
+train_loss: 715.1523590087891
+train_loss: 63.26266360282898
+train_loss: 449.6927890777588
+Epoch 12400
+For sampling, solved 30/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 69.23946738243103
+train_loss: 182.97165727615356
+train_loss: 204.19293975830078
+train_loss: 143.20459175109863
+train_loss: 339.0724859237671
+Epoch 12600
+For sampling, solved 36/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 134.18868923187256
+train_loss: 91.16281962394714
+train_loss: 48.899006962776184
+train_loss: 469.8552474975586
+train_loss: 55.36651337146759
+Epoch 12800
+For sampling, solved 43/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 41.34370529651642
+train_loss: 33.63162958621979
+train_loss: 180.99379777908325
+train_loss: 206.77418851852417
+train_loss: 44.1990225315094
+Epoch 13000
+For sampling, solved 42/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(11).pt
+train_loss: 3553.199905395508
+train_loss: 286.3056163787842
+train_loss: 211.83710956573486
+train_loss: 81.7011034488678
+train_loss: 202.5153408050537
+Epoch 13200
+For sampling, solved 35/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 67.26739430427551
+train_loss: 51.688756227493286
+train_loss: 1108.4052066802979
+train_loss: 272.59419679641724
+train_loss: 341.0595688819885
+Epoch 13400
+For sampling, solved 28/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 442.0648002624512
+train_loss: 89.09829139709473
+train_loss: 231.76359176635742
+train_loss: 60.01109480857849
+train_loss: 520.7636699676514
+Epoch 13600
+For sampling, solved 19/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 79.92452764511108
+train_loss: 95.86608982086182
+train_loss: 108.42515420913696
+train_loss: 56.45775747299194
+train_loss: 873.9927024841309
+Epoch 13800
+For sampling, solved 20/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 103.1305365562439
+train_loss: 59.5862877368927
+train_loss: 45.73162138462067
+train_loss: 1558.3954467773438
+train_loss: 170.2989103794098
+Epoch 14000
+For sampling, solved 37/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(12).pt
+train_loss: 117.67716789245605
+train_loss: 164.2587752342224
+train_loss: 49.48940849304199
+train_loss: 266.08216762542725
+train_loss: 45.8154217004776
+Epoch 14200
+For sampling, solved 40/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 186.22335290908813
+train_loss: 53.79252600669861
+train_loss: 661.3044700622559
+train_loss: 153.34340906143188
+train_loss: 222.0955104827881
+Epoch 14400
+For sampling, solved 35/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 57.19129204750061
+train_loss: 159.97827434539795
+train_loss: 58.15766406059265
+train_loss: 162.40920782089233
+train_loss: 7151.374603271484
+Epoch 14600
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 4589.681213378906
+train_loss: 3922.826217651367
+train_loss: 3619.1814193725586
+train_loss: 3415.548080444336
+train_loss: 3217.240463256836
+Epoch 14800
+For sampling, solved 0/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 3008.5728149414062
+train_loss: 2862.2151412963867
+train_loss: 2743.4420623779297
+train_loss: 2761.1918182373047
+train_loss: 2538.104522705078
+Epoch 15000
+For sampling, solved 1/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(13).pt
+train_loss: 2425.2627563476562
+train_loss: 2461.473289489746
+train_loss: 2303.3759765625
+train_loss: 2289.9381103515625
+train_loss: 2200.9671020507812
+Epoch 15200
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 2980.2611236572266
+train_loss: 2585.7931365966797
+train_loss: 2398.886833190918
+train_loss: 2308.1656646728516
+train_loss: 2166.3948516845703
+Epoch 15400
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2158.4048614501953
+train_loss: 2197.5270385742188
+train_loss: 2077.7178802490234
+train_loss: 2076.783821105957
+train_loss: 2133.347610473633
+Epoch 15600
+For sampling, solved 5/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2086.5529708862305
+train_loss: 2094.9050216674805
+train_loss: 2408.757354736328
+train_loss: 1884.4976959228516
+train_loss: 1862.071434020996
+Epoch 15800
+For sampling, solved 3/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2236.6511840820312
+train_loss: 1876.4360046386719
+train_loss: 1918.3263473510742
+train_loss: 2054.006278991699
+train_loss: 2254.8679962158203
+Epoch 16000
+For sampling, solved 1/200 with abstract model, 0/200 with simulator
+Solved 2/200.
+	4: 0/1=0.00
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(14).pt
+train_loss: 1794.8290252685547
+train_loss: 1460.5357666015625
+train_loss: 1440.5299377441406
+train_loss: 1565.2317352294922
+train_loss: 1592.303611755371
+Epoch 16200
+For sampling, solved 6/200 with abstract model, 1/200 with simulator
+Solved 2/200.
+	4: 0/1=0.00
+train_loss: 1387.9947929382324
+train_loss: 1309.8032684326172
+train_loss: 1954.158058166504
+train_loss: 1436.5447235107422
+train_loss: 1552.714485168457
+Epoch 16400
+For sampling, solved 9/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 1368.0083389282227
+train_loss: 1484.3403015136719
+train_loss: 1355.9968719482422
+train_loss: 1448.1273651123047
+train_loss: 2479.498306274414
+Epoch 16600
+For sampling, solved 2/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 2203.239906311035
+train_loss: 1899.1403732299805
+train_loss: 1887.3536376953125
+train_loss: 2100.3386764526367
+train_loss: 1690.1199493408203
+Epoch 16800
+For sampling, solved 5/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 2093.7244033813477
+train_loss: 1978.4815292358398
+train_loss: 1584.7006492614746
+train_loss: 1793.2915802001953
+train_loss: 1640.591480255127
+Epoch 17000
+For sampling, solved 5/200 with abstract model, 1/200 with simulator
+Solved 2/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(15).pt
+train_loss: 1550.1991958618164
+train_loss: 1411.607192993164
+train_loss: 2389.9148025512695
+train_loss: 1248.7171936035156
+train_loss: 1361.827995300293
+Epoch 17200
+For sampling, solved 8/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 1404.814208984375
+train_loss: 1610.2826957702637
+train_loss: 1332.061107635498
+train_loss: 1313.0426025390625
+train_loss: 1077.9823532104492
+Epoch 17400
+For sampling, solved 12/200 with abstract model, 0/200 with simulator
+Solved 1/200.
+train_loss: 1161.1310806274414
+train_loss: 1048.1190757751465
+train_loss: 1105.1445693969727
+train_loss: 1568.4437408447266
+train_loss: 1182.0380821228027
+Epoch 17600
+For sampling, solved 11/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1144.3835563659668
+train_loss: 997.5145416259766
+train_loss: 893.6944770812988
+train_loss: 1303.6186981201172
+train_loss: 1203.86967086792
+Epoch 17800
+For sampling, solved 7/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1238.9178352355957
+train_loss: 1284.2068214416504
+train_loss: 1217.621925354004
+train_loss: 1004.894115447998
+train_loss: 1147.832202911377
+Epoch 18000
+For sampling, solved 12/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(16).pt
+train_loss: 1109.1373176574707
+train_loss: 1090.467472076416
+train_loss: 753.8952903747559
+train_loss: 1232.7509994506836
+train_loss: 828.5443382263184
+Epoch 18200
+For sampling, solved 12/200 with abstract model, 2/200 with simulator
+Solved 1/200.
+train_loss: 733.9924087524414
+train_loss: 772.9148197174072
+train_loss: 1088.3523406982422
+train_loss: 1567.575050354004
+train_loss: 1054.5863914489746
+Epoch 18400
+For sampling, solved 12/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 1348.1955261230469
+train_loss: 1100.880256652832
+train_loss: 1199.389991760254
+train_loss: 718.2889671325684
+train_loss: 1181.8044204711914
+Epoch 18600
+For sampling, solved 5/200 with abstract model, 0/200 with simulator
+Solved 0/200.
+train_loss: 706.9055614471436
+train_loss: 637.1741695404053
+train_loss: 825.2714309692383
+train_loss: 917.9249267578125
+train_loss: 708.3067474365234
+Epoch 18800
+For sampling, solved 15/200 with abstract model, 2/200 with simulator
+Solved 1/200.
+train_loss: 1596.7099075317383
+train_loss: 782.6677551269531
+train_loss: 630.876070022583
+train_loss: 978.6073837280273
+train_loss: 700.2697906494141
+Epoch 19000
+For sampling, solved 13/200 with abstract model, 1/200 with simulator
+Solved 2/200.
+	4: 0/1=0.00
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(17).pt
+train_loss: 1142.6417388916016
+train_loss: 628.8551616668701
+train_loss: 1409.5536270141602
+train_loss: 523.0060214996338
+train_loss: 669.8318023681641
+Epoch 19200
+For sampling, solved 9/200 with abstract model, 2/200 with simulator
+Solved 0/200.
+train_loss: 912.0360145568848
+train_loss: 473.7412624359131
+train_loss: 820.6378326416016
+train_loss: 577.679235458374
+train_loss: 395.8392734527588
+Epoch 19400
+For sampling, solved 27/200 with abstract model, 1/200 with simulator
+Solved 1/200.
+train_loss: 442.04552268981934
+train_loss: 892.6122627258301
+train_loss: 809.7732467651367
+train_loss: 336.3914556503296
+train_loss: 455.2562656402588
+Epoch 19600
+For sampling, solved 19/200 with abstract model, 2/200 with simulator
+Solved 2/200.
+train_loss: 511.4984073638916
+train_loss: 459.0549259185791
+train_loss: 363.0262031555176
+train_loss: 510.127010345459
+train_loss: 538.6309986114502
+Epoch 19800
+For sampling, solved 23/200 with abstract model, 1/200 with simulator
+Solved 0/200.
+train_loss: 380.3117198944092
+train_loss: 356.84431743621826
+train_loss: 288.857985496521
+train_loss: 702.4106559753418
+Saved model at models/812a2bd38f8e4942b6c66db6e725513a_control__(18).pt
+Completed training in 13112.6 seconds
+MODEL: 	cc
+N: 	500
+ABSTRACT_PEN: 	1.0

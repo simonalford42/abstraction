@@ -1,0 +1,29 @@
+args: Namespace(cnn=True, test=False)
+Training on NVIDIA TITAN Xp
+Net has 30260 parameters
+Round 1
+Generated trajectories in 61.7 seconds
+132870 examples
+epoch: 0	train loss: 1.3486634492874146	acc: 0.324	(8.4s)
+epoch: 200	train loss: 0.5092424750328064	acc: 0.845	(7.2s)
+epoch: 400	train loss: 0.15610814094543457	acc: 0.870	(7.0s)
+epoch: 600	train loss: 0.7490476965904236	acc: 0.879	(7.2s)
+epoch: 800	train loss: 0.07095757871866226	acc: 0.889	(7.3s)
+Evaluating model on 100 episodes
+Solved 25/100 episodes; Counter({1: 60, 0: 26, 2: 12, 3: 2}) is the distribution of the number of found keys each time
+Evaluated model in 24.2 seconds
+Round 2
+Generated trajectories in 68.7 seconds
+131498 examples
+epoch: 0	train loss: 0.7811766862869263	acc: 0.681	(8.1s)
+epoch: 200	train loss: 0.4110161364078522	acc: 0.859	(7.2s)
+epoch: 400	train loss: 0.3925988972187042	acc: 0.875	(7.6s)
+epoch: 600	train loss: 0.24141572415828705	acc: 0.882	(7.8s)
+epoch: 800	train loss: 0.28802981972694397	acc: 0.888	(6.8s)
+Evaluating model on 100 episodes
+Solved 29/100 episodes; Counter({1: 69, 0: 20, 2: 9, 3: 2}) is the distribution of the number of found keys each time
+Evaluated model in 23.7 seconds
+Round 3
+Generated trajectories in 60.4 seconds
+/var/spool/slurmd/job365268/slurm_script: line 19: 501963 Killed                  python -u abstract.py --cnn
+slurmstepd: error: Detected 1 oom-kill event(s) in StepId=365268.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.

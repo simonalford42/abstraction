@@ -162,22 +162,22 @@ def multiple_plan(env, control_net, n, depth, timeout):
         print(f'Planning for new task {i}')
 
         # 1. greedy solve.
-        out_dict = data.greedy_solve(env.copy(), control_net, render=False)
-        options = out_dict['options']
-        if out_dict['solved']:
-            print(f'greedy solved with options: {options}; skipping planning')
-            continue
-        else:
-            print(f'greedy FAILED with options: {options}')
+        # out_dict = data.greedy_solve(env.copy(), control_net, render=False)
+        # options = out_dict['options']
+        # if out_dict['solved']:
+            # print(f'greedy solved with options: {options}; skipping planning')
+            # continue
+        # else:
+            # print(f'greedy FAILED with options: {options}')
 
-        if depth >= 4:
-            print('Skipping checking all plans for depth >= 4')
-        else:
-            rankings = check_all_plans(env.copy(), control_net, depth=depth)
-            print(f"{rankings=}")
-            if rankings is not None and len(rankings) == 0:
-                print('No solving plans found; skipping planning')
-                continue
+        # if depth >= 4:
+            # print('Skipping checking all plans for depth >= 4')
+        # else:
+            # rankings = check_all_plans(env.copy(), control_net, depth=depth)
+            # print(f"{rankings=}")
+            # if rankings is not None and len(rankings) == 0:
+                # print('No solving plans found; skipping planning')
+                # continue
 
         solved, time = plan(env.copy(), control_net, depth=depth, timeout=timeout)
         num_tried += 1
@@ -320,8 +320,8 @@ def eval_planner(control_net, env, n):
 
 def plan(env, control_net, depth, timeout):
     s = bw.obs_to_tensor(env.obs).to(DEVICE)
-    # hl_plan_gen = hlc_bfs(s, control_net, timeout=timeout, depth=depth)
-    hl_plan_gen = fake_hl_planner(s, control_net)
+    hl_plan_gen = hlc_bfs(s, control_net, timeout=timeout, depth=depth)
+    # hl_plan_gen = fake_hl_planner(s, control_net)
     tried = 0
 
     while True:
@@ -461,7 +461,7 @@ if __name__ == '__main__':
     rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
 
     # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
-    model_id = '59534f21b71d4420a9c692d22f856588'; control_net = False
+    # model_id = '50f64b536b4a45f2ab2c76fa85bd2f01'; control_net = False
 #
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
@@ -489,14 +489,14 @@ if __name__ == '__main__':
     env = box_world.BoxWorldEnv(seed=3, solution_length=(2, ))
 
     with torch.no_grad():
-        data.eval_options_model(control_net, env, n=args.n, render=True)
+        # data.eval_options_model(control_net, env, n=args.n, render=True)
         # check_macro(env, control_net)
         # acc = eval_planner(control_net, env, n=n)
         # test_consistency(env, control_net, n=n)
         # eval_sampling(control_net, env, n=n, render=False, macro=True)
         # check_planning_possible(env, control_net, n=n)
 
-        # if args.random_shooting:
-            # solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
-        # else:
-            # solve_times = multiple_plan(env, control_net, n=args.n, depth=args.search_depth, timeout=30)
+        if args.random_shooting:
+            solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
+        else:
+            solve_times = multiple_plan(env, control_net, n=args.n, depth=args.search_depth, timeout=30)

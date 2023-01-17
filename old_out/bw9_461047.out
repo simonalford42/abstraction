@@ -1,0 +1,21 @@
+Starting run:
+f12e4c84cc3f4041a9b43d7020e9e7e9
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 1600, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 50, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'id': 'f12e4c84cc3f4041a9b43d7020e9e7e9'}
+train
+Net has 37803 parameters
+Solved 22/200 episodes
+Epoch 0	 test acc 0.11
+Saved model at models/f12e4c84cc3f4041a9b43d7020e9e7e9-epoch-0.pt
+Solved 45/200 episodes
+Epoch 50	 test acc 0.225
+Solved 44/200 episodes
+Epoch 100	 test acc 0.22
+Saved model at models/f12e4c84cc3f4041a9b43d7020e9e7e9-epoch-100.pt
+Solved 47/200 episodes
+Epoch 150	 test acc 0.235
+Solved 174/200 episodes
+Epoch 200	 test acc 0.87
+Saved model at models/f12e4c84cc3f4041a9b43d7020e9e7e9-epoch-200.pt
+Solved 200/200 episodes
+Epoch 250	 test acc 1.0
+slurmstepd: error: *** JOB 461047 ON sun-compute-01 CANCELLED AT 2022-03-28T04:01:13 DUE TO TIME LIMIT ***

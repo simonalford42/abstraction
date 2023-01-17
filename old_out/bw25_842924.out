@@ -1,0 +1,105 @@
+Using torch device NVIDIA GeForce RTX 2080 Ti
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+42072da11450423e9c378019dd137492
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, symbolic_supervised=False, fake_cc_neurosym=False, batch_size=16, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='42072da11450423e9c378019dd137492')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220909_164243-10mm89bz
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run dauntless-cosmos-384
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/10mm89bz
+Net has 197665 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes, CC loss avg = 158.94206088926734
+Solved 40/200 episodes, CC loss avg = 157.60285758972168
+Solved 44/200 episodes, CC loss avg = 157.59298810091886
+Saved model at models/42072da11450423e9c378019dd137492-epoch-30.pt
+Solved 39/200 episodes, CC loss avg = 157.5855712890625
+Solved 40/200 episodes, CC loss avg = 157.58535919189453
+Solved 33/200 episodes, CC loss avg = 157.58511028867778
+Saved model at models/42072da11450423e9c378019dd137492-epoch-61.pt
+Solved 41/200 episodes, CC loss avg = 157.58506774902344
+Solved 31/200 episodes, CC loss avg = 157.5854231311429
+Solved 40/200 episodes, CC loss avg = 157.584867477417
+Saved model at models/42072da11450423e9c378019dd137492-epoch-92.pt
+Solved 33/200 episodes, CC loss avg = 157.5850372314453
+Solved 32/200 episodes, CC loss avg = 157.58489990234375
+Solved 21/200 episodes, CC loss avg = 157.58477783203125
+Saved model at models/42072da11450423e9c378019dd137492-epoch-123.pt
+Solved 35/200 episodes, CC loss avg = 157.58486938476562
+Solved 35/200 episodes, CC loss avg = 157.5847930908203
+Solved 31/200 episodes, CC loss avg = 157.58474731445312
+Saved model at models/42072da11450423e9c378019dd137492-epoch-154.pt
+Solved 37/200 episodes, CC loss avg = 157.58483391839104
+Solved 43/200 episodes, CC loss avg = 157.58473205566406
+Saved model at models/42072da11450423e9c378019dd137492-epoch-185.pt
+Solved 33/200 episodes, CC loss avg = 157.584716796875
+Solved 33/200 episodes, CC loss avg = 157.584716796875
+Solved 26/200 episodes, CC loss avg = 157.58473205566406
+Saved model at models/42072da11450423e9c378019dd137492-epoch-216.pt
+Solved 31/200 episodes, CC loss avg = 157.58480834960938
+Solved 40/200 episodes, CC loss avg = 157.5848846435547
+Solved 36/200 episodes, CC loss avg = 157.5847396850586
+Saved model at models/42072da11450423e9c378019dd137492-epoch-247.pt
+Solved 47/200 episodes, CC loss avg = 157.58470121343086
+Solved 31/200 episodes, CC loss avg = 157.58468627929688
+Solved 54/200 episodes, CC loss avg = 157.5848142835829
+Saved model at models/42072da11450423e9c378019dd137492-epoch-278.pt
+Solved 42/200 episodes, CC loss avg = 157.58470626104446
+Solved 39/200 episodes, CC loss avg = 157.584716796875
+Solved 44/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/42072da11450423e9c378019dd137492-epoch-309.pt
+Solved 23/200 episodes, CC loss avg = 157.58474731445312
+Solved 40/200 episodes, CC loss avg = 157.5847930908203
+Saved model at models/42072da11450423e9c378019dd137492-epoch-340.pt
+Solved 43/200 episodes, CC loss avg = 157.5848388671875
+Solved 46/200 episodes, CC loss avg = 157.58486938476562
+Solved 38/200 episodes, CC loss avg = 157.584716796875
+Saved model at models/42072da11450423e9c378019dd137492-epoch-371.pt
+Solved 43/200 episodes, CC loss avg = 157.58468627929688
+Solved 35/200 episodes, CC loss avg = 157.58474731445312
+Solved 44/200 episodes, CC loss avg = 157.58473205566406
+Saved model at models/42072da11450423e9c378019dd137492-epoch-402.pt
+Solved 40/200 episodes, CC loss avg = 157.58468627929688
+Solved 34/200 episodes, CC loss avg = 157.58465576171875
+Solved 24/200 episodes, CC loss avg = 157.58470090230307
+Saved model at models/42072da11450423e9c378019dd137492-epoch-433.pt
+Solved 28/200 episodes, CC loss avg = 157.58468627929688
+Solved 31/200 episodes, CC loss avg = 157.584716796875
+Solved 31/200 episodes, CC loss avg = 157.5846710205078
+Saved model at models/42072da11450423e9c378019dd137492-epoch-464.pt
+Solved 32/200 episodes, CC loss avg = 157.58465576171875
+Solved 30/200 episodes, CC loss avg = 157.58474731445312
+Solved 30/200 episodes, CC loss avg = 157.58468627929688
+Saved model at models/42072da11450423e9c378019dd137492-epoch-495.pt
+Saved model at models/42072da11450423e9c378019dd137492.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 176778.2 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.007 MB of 0.007 MB uploaded (0.000 MB deduped)wandb: \ 0.007 MB of 0.007 MB uploaded (0.000 MB deduped)wandb: | 0.007 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.007 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.018 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▆▇▆▆▅▆▆▅▅▄▆▆▅▇▅▅▄▅▆▇▅█▆▆▇▄▇▇▆▇▆▇▅▄▅▅▅▅▅
+wandb: loss █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.15
+wandb: loss 3339595.32886
+wandb: 
+wandb: Synced dauntless-cosmos-384: https://wandb.ai/simonalford42/abstraction/runs/10mm89bz
+wandb: Synced 6 W&B file(s), 17 media file(s), 17 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220909_164243-10mm89bz/logs

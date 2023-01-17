@@ -1,0 +1,52 @@
+Starting run:
+7b829a66cc2b4a6ab120ec7fbca564b3
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm-homo', seed=3, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, dim=128, batch_size=32, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN Xp', id='7b829a66cc2b4a6ab120ec7fbca564b3')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220729_142456-e9vv1fod
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run jumping-spaceship-124
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/e9vv1fod
+Net has 41898 parameters
+Solved 3/200 episodes
+Solved 34/200 episodes
+Solved 45/200 episodes
+Saved model at models/7b829a66cc2b4a6ab120ec7fbca564b3-epoch-129.pt
+Solved 37/200 episodes
+Solved 32/200 episodes
+Solved 34/200 episodes
+Saved model at models/7b829a66cc2b4a6ab120ec7fbca564b3-epoch-258.pt
+Solved 38/200 episodes
+Solved 40/200 episodes
+Solved 33/200 episodes
+Saved model at models/7b829a66cc2b4a6ab120ec7fbca564b3-epoch-387.pt
+Solved 29/200 episodes
+Solved 41/200 episodes
+Solved 40/200 episodes
+Saved model at models/7b829a66cc2b4a6ab120ec7fbca564b3.pt
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 42210.2 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: \ 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: | 0.002 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.002 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: / 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: - 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: \ 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb: | 0.016 MB of 0.016 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:     loss █▅▃▃▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁
+wandb: test/acc ▁▆█▇▆▆▇▇▆▅▇▇
+wandb: 
+wandb: Run summary:
+wandb:     loss 100204.71922
+wandb: test/acc 0.2
+wandb: 
+wandb: Synced jumping-spaceship-124: https://wandb.ai/simonalford42/abstraction/runs/e9vv1fod
+wandb: Synced 6 W&B file(s), 4 media file(s), 4 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220729_142456-e9vv1fod/logs

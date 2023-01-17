@@ -1,0 +1,55 @@
+Starting run:
+52ac682abd9c40a9a477408d898ed4c9
+params: {'n': 10000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'hmm-homo', 'seed': 1, 'neptune': False, 'no_log': False, 'device': 'NVIDIA TITAN Xp', 'epochs': 1000, 'test_every': 50, 'save_every': 50, 'id': '52ac682abd9c40a9a477408d898ed4c9'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.06
+Epoch 50	 test acc 0.17
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-50.pt
+reloading data
+Epoch 100	 test acc 0.245
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-100.pt
+Epoch 150	 test acc 0.345
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-150.pt
+reloading data
+Epoch 200	 test acc 0.93
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-200.pt
+Epoch 250	 test acc 0.945
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-250.pt
+reloading data
+Epoch 300	 test acc 0.965
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-300.pt
+Epoch 350	 test acc 0.955
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-350.pt
+reloading data
+Epoch 400	 test acc 0.99
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-400.pt
+Epoch 450	 test acc 1.0
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-450.pt
+reloading data
+Epoch 500	 test acc 0.975
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-500.pt
+Epoch 550	 test acc 0.99
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-550.pt
+reloading data
+Epoch 600	 test acc 0.985
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-600.pt
+Epoch 650	 test acc 0.95
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-650.pt
+reloading data
+Epoch 700	 test acc 0.99
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-700.pt
+Epoch 750	 test acc 0.925
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-750.pt
+reloading data
+Epoch 800	 test acc 0.995
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-800.pt
+Epoch 850	 test acc 0.98
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-850.pt
+reloading data
+Epoch 900	 test acc 0.93
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-900.pt
+Epoch 950	 test acc 0.845
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9-epoch-950.pt
+Saved model at models/52ac682abd9c40a9a477408d898ed4c9.pt
+Completed training in 69221.7 seconds

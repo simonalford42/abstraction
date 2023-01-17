@@ -1,0 +1,28 @@
+Starting run:
+a1ec2fb2bfe6457abecb2aeec90ad35f
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	0.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=0.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=40000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA RTX A6000', id='a1ec2fb2bfe6457abecb2aeec90ad35f')
+wandb: W&B API key is configured. Use `wandb login --relogin` to force relogin
+Problem at: /home/sca63/abstraction/main.py 506 boxworld_main
+wandb: ERROR Error communicating with wandb process
+wandb: ERROR try: wandb.init(settings=wandb.Settings(start_method='fork'))
+wandb: ERROR or:  wandb.init(settings=wandb.Settings(start_method='thread'))
+wandb: ERROR For more info see: https://docs.wandb.ai/library/init#init-start-error
+Completed training in 45.8 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 609, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 506, in boxworld_main
+    wandb.init(project="abstraction",
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1043, in init
+    run = wi.init()
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 691, in init
+    raise UsageError(error_message)
+wandb.errors.UsageError: Error communicating with wandb process
+try: wandb.init(settings=wandb.Settings(start_method='fork'))
+or:  wandb.init(settings=wandb.Settings(start_method='thread'))
+For more info see: https://docs.wandb.ai/library/init#init-start-error

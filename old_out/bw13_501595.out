@@ -1,0 +1,69 @@
+Starting run:
+2b273f86139548ecbfa7dffe7f07921a
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 80, 'b': 10, 'abstract_dim': 16, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 1, 'noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '2b273f86139548ecbfa7dffe7f07921a'}
+train
+Net has 206996 parameters
+Solved 3/200 episodes
+Epoch 0	 test acc 0.015
+reloading data
+Solved 42/200 episodes
+Epoch 100	 test acc 0.21
+reloading data
+Solved 39/200 episodes
+Epoch 200	 test acc 0.195
+reloading data
+Solved 35/200 episodes
+Epoch 300	 test acc 0.175
+reloading data
+Solved 36/200 episodes
+Epoch 400	 test acc 0.18
+reloading data
+Solved 32/200 episodes
+Epoch 500	 test acc 0.16
+Saved model at models/2b273f86139548ecbfa7dffe7f07921a-epoch-500.pt
+reloading data
+Solved 39/200 episodes
+Epoch 600	 test acc 0.195
+reloading data
+Solved 57/200 episodes
+Epoch 700	 test acc 0.285
+reloading data
+Solved 52/200 episodes
+Epoch 800	 test acc 0.26
+reloading data
+Solved 58/200 episodes
+Epoch 900	 test acc 0.29
+reloading data
+Solved 59/200 episodes
+Epoch 1000	 test acc 0.295
+Saved model at models/2b273f86139548ecbfa7dffe7f07921a-epoch-1000.pt
+reloading data
+Solved 64/200 episodes
+Epoch 1100	 test acc 0.32
+reloading data
+Solved 63/200 episodes
+Epoch 1200	 test acc 0.315
+reloading data
+Solved 61/200 episodes
+Epoch 1300	 test acc 0.305
+reloading data
+Solved 77/200 episodes
+Epoch 1400	 test acc 0.385
+reloading data
+Solved 72/200 episodes
+Epoch 1500	 test acc 0.36
+Saved model at models/2b273f86139548ecbfa7dffe7f07921a-epoch-1500.pt
+reloading data
+Solved 75/200 episodes
+Epoch 1600	 test acc 0.375
+reloading data
+Solved 93/200 episodes
+Epoch 1700	 test acc 0.465
+reloading data
+Solved 97/200 episodes
+Epoch 1800	 test acc 0.485
+reloading data
+Solved 83/200 episodes
+Epoch 1900	 test acc 0.415
+Saved model at models/2b273f86139548ecbfa7dffe7f07921a.pt
+Completed training in 28111.5 seconds

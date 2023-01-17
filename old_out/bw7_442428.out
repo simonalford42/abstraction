@@ -1,0 +1,202 @@
+Using torch device NVIDIA GeForce RTX 3090
+hmm?: True
+cc_weight: 1.0
+abstract_pen: 1.0
+params: {'epochs': 5, 'lr': 0.0008, 'n': 5000, 'batch_size': 40}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 1971509.125	(705.1s)
+epoch: 1	train loss: 1487693.5	(686.0s)
+epoch: 2	train loss: 1271251.0	(685.3s)
+epoch: 3	train loss: 1142155.0	(685.2s)
+epoch: 4	train loss: 1038179.8125	(685.7s)
+Evaluating model on 200 episodes
+cc loss avg = 238.68120193481445
+cc loss avg = 50.697275161743164
+cc loss avg = 147.35028624534607
+cc loss avg = 70.94983037312825
+cc loss avg = 130.10119342803955
+cc loss avg = 119.2464828491211
+cc loss avg = 71.92263539632161
+cc loss avg = 109.11799621582031
+cc loss avg = 159.29120635986328
+cc loss avg = 107.8614501953125
+cc loss avg = 228.57839965820312
+cc loss avg = 158.54727935791016
+cc loss avg = 48.697319984436035
+cc loss avg = 152.9180679321289
+cc loss avg = 104.14657338460286
+cc loss avg = 25.874018669128418
+cc loss avg = 308.719482421875
+cc loss avg = 48.899719874064125
+cc loss avg = 143.604079246521
+cc loss avg = 125.1715669631958
+cc loss avg = 29.81723117828369
+cc loss avg = 123.84478485584259
+cc loss avg = 50.92920684814453
+cc loss avg = 17.496315002441406
+cc loss avg = 173.6370620727539
+cc loss avg = 41.727362632751465
+cc loss avg = 119.16899514198303
+cc loss avg = 317.9263916015625
+cc loss avg = 371.95873870849607
+cc loss avg = 177.1444091796875
+cc loss avg = 68.42654418945312
+cc loss avg = 221.3322296142578
+cc loss avg = 93.84273465474446
+Solved 33/200 episodes
+21.788140356659888
+Evaluated model in 19.9 seconds
+Saved model for run
+X with name round-0 at path models/X-round-0__2.pt
+Round 1
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 960333.375	(664.6s)
+epoch: 1	train loss: 912359.625	(687.7s)
+epoch: 2	train loss: 864761.3125	(685.3s)
+epoch: 3	train loss: 819796.75	(685.3s)
+epoch: 4	train loss: 798104.4375	(685.7s)
+Evaluating model on 200 episodes
+cc loss avg = 70.68021074930827
+cc loss avg = 1454.3801101843517
+cc loss avg = 745.2939605712891
+cc loss avg = 799.813117980957
+cc loss avg = 2894.3858642578125
+cc loss avg = 1811.6018676757812
+cc loss avg = 111.53768014907837
+cc loss avg = 48.50752925872803
+cc loss avg = 49.749542236328125
+cc loss avg = 2272.8502197265625
+cc loss avg = 1049.772804260254
+cc loss avg = 778.6126441955566
+cc loss avg = 12.087186813354492
+cc loss avg = 51.42956757545471
+cc loss avg = 801.8353881835938
+cc loss avg = 1563.0285898844402
+cc loss avg = 1311.0658801396687
+cc loss avg = 54.02725521723429
+cc loss avg = 474.55538177490234
+cc loss avg = 64.88054084777832
+cc loss avg = 2853.55908203125
+cc loss avg = 20.477588653564453
+cc loss avg = 111.35667610168457
+cc loss avg = 1839.1011212666829
+cc loss avg = 1232.7497181892395
+cc loss avg = 1.8382041454315186
+cc loss avg = 627.0220947265625
+cc loss avg = 48.50052070617676
+cc loss avg = 2849.8388671875
+Solved 29/200 episodes
+130.02269607345264
+Evaluated model in 17.0 seconds
+Saved model for run
+X with name round-1 at path models/X-round-1__2.pt
+Round 2
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 772815.0	(683.0s)
+epoch: 1	train loss: 761044.8125	(667.6s)
+epoch: 2	train loss: 746762.125	(685.1s)
+epoch: 3	train loss: 738122.625	(685.4s)
+epoch: 4	train loss: 728880.4375	(685.6s)
+Evaluating model on 200 episodes
+cc loss avg = 75.34477609395981
+cc loss avg = 15.565128326416016
+cc loss avg = 538.501708984375
+cc loss avg = 1469.860595703125
+cc loss avg = 810.4387969970703
+cc loss avg = 2.4661917686462402
+cc loss avg = 2302.8717651367188
+cc loss avg = 741.9907836914062
+cc loss avg = 198.69305801391602
+cc loss avg = 752.720458984375
+cc loss avg = 1174.079723040263
+cc loss avg = 785.1422729492188
+cc loss avg = 1.18302321434021
+cc loss avg = 588.946533203125
+cc loss avg = 10.483550548553467
+cc loss avg = 325.41212463378906
+cc loss avg = 1716.6363830566406
+cc loss avg = 418.035888671875
+cc loss avg = 880.57666015625
+cc loss avg = 985.6053466796875
+cc loss avg = 103.99181111653645
+cc loss avg = 377.9926109313965
+cc loss avg = 10.8131343126297
+cc loss avg = 1550.1934814453125
+cc loss avg = 482.1430358886719
+cc loss avg = 13.887622714042664
+cc loss avg = 502.88011169433594
+cc loss avg = 59.103148460388184
+cc loss avg = 629.147216796875
+cc loss avg = 81.30343246459961
+cc loss avg = 27.169513702392578
+cc loss avg = 2954.124481201172
+cc loss avg = 119.10000610351562
+cc loss avg = 75.02705383300781
+cc loss avg = 369.59918212890625
+cc loss avg = 41.865450859069824
+Solved 36/200 episodes
+105.96448031753302
+Evaluated model in 16.0 seconds
+Saved model for run
+X with name round-2 at path models/X-round-2__2.pt
+Round 3
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 718438.625	(685.0s)
+epoch: 1	train loss: 715420.9375	(664.8s)
+epoch: 2	train loss: 707709.875	(691.1s)
+epoch: 3	train loss: 701966.0	(684.4s)
+epoch: 4	train loss: 697166.5625	(686.3s)
+Evaluating model on 200 episodes
+cc loss avg = 1405.3865966796875
+cc loss avg = 2271.8138224283853
+cc loss avg = 2819.20849609375
+cc loss avg = 19.14693260192871
+cc loss avg = 2265.7314453125
+cc loss avg = 4.515992283821106
+cc loss avg = 3149.25048828125
+cc loss avg = 1995.1936645507812
+cc loss avg = 2572.75830078125
+cc loss avg = 997.6551564534506
+cc loss avg = 2597.272216796875
+cc loss avg = 41.21651268005371
+cc loss avg = 86.40948549906413
+cc loss avg = 2572.7452697753906
+cc loss avg = 105.16452217102051
+cc loss avg = 1551.576400756836
+cc loss avg = 2766.18408203125
+cc loss avg = 2529.583251953125
+cc loss avg = 1920.969482421875
+cc loss avg = 34.936290979385376
+cc loss avg = 1742.17919921875
+cc loss avg = 1873.4481811523438
+cc loss avg = 25.795241355895996
+cc loss avg = 1792.150146484375
+cc loss avg = 95.35354614257812
+cc loss avg = 18.727935791015625
+cc loss avg = 43.79064083099365
+cc loss avg = 70.44246673583984
+cc loss avg = 1508.350814819336
+cc loss avg = 2727.3251953125
+cc loss avg = 3151.7913818359375
+cc loss avg = 162.5084660847982
+cc loss avg = 2645.489807764689
+cc loss avg = 36.54878354072571
+cc loss avg = 2595.26953125
+cc loss avg = 2200.249669392904
+cc loss avg = 2785.755615234375
+cc loss avg = 206.8904571533203
+cc loss avg = 3142.2081298828125
+cc loss avg = 2285.8623046875
+cc loss avg = 1369.1435241699219
+cc loss avg = 3146.247314453125
+Solved 42/200 episodes
+326.66123381912706
+Evaluated model in 15.8 seconds
+Saved model for run
+X with name round-3 at path models/X-round-3__2.pt
+Round 4
+Generated trajectories in 0.0 seconds
+epoch: 0	train loss: 687529.6875	(690.8s)
+epoch: 1	train loss: 684386.3125	(1884.5s)

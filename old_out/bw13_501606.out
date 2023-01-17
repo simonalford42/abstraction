@@ -1,0 +1,27 @@
+Starting run:
+2c1285d2e5d84fc7b9d583fe3d4bfda6
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 20, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 1, 'noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 64, 'device': 'NVIDIA GeForce GTX 1080 Ti', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '2c1285d2e5d84fc7b9d583fe3d4bfda6'}
+train
+Net has 216308 parameters
+Solved 0/200 episodes
+Epoch 0	 test acc 0.0
+reloading data
+Solved 68/200 episodes
+Epoch 100	 test acc 0.34
+reloading data
+Solved 83/200 episodes
+Epoch 200	 test acc 0.415
+reloading data
+Solved 86/200 episodes
+Epoch 300	 test acc 0.43
+reloading data
+Solved 97/200 episodes
+Epoch 400	 test acc 0.485
+reloading data
+Solved 100/200 episodes
+Epoch 500	 test acc 0.5
+Saved model at models/2c1285d2e5d84fc7b9d583fe3d4bfda6-epoch-500.pt
+reloading data
+Solved 123/200 episodes
+Epoch 600	 test acc 0.615
+slurmstepd: error: *** JOB 501606 ON tripods-compute-02 CANCELLED AT 2022-04-13T19:02:25 DUE TO PREEMPTION ***

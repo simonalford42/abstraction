@@ -1,0 +1,64 @@
+MODEL:	 cc
+N:	 20000
+ABSTRACT_PEN:	 0.0
+Starting run:
+e8bc93842d4843da8e404ccbc70f35e9
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': False, 'variable_abstract_pen': False, 'attentional_trans_net': False, 'loss': 'kl', 'device': 'NVIDIA GeForce GTX 1080 Ti', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': 'e8bc93842d4843da8e404ccbc70f35e9'}
+Net has 236788 parameters
+WARNING: tau norm dim disabled
+train_loss: 560145.8913574219
+Solved 0/200 episodes, CC loss avg = 0.03162031568166229
+Epoch 0	 test acc 0.0
+train_loss: 227848.83783721924
+train_loss: 158627.6318511963
+train_loss: 131337.24925804138
+train_loss: 117975.78248977661
+train_loss: 112990.77302742004
+Solved 30/200 episodes, CC loss avg = 0.029797327843894054
+Epoch 25	 test acc 0.15
+train_loss: 106526.87920379639
+train_loss: 103263.86307525635
+train_loss: 97528.9549999237
+train_loss: 96466.61764717102
+train_loss: 93528.48329734802
+Solved 50/200 episodes, CC loss avg = 0.01652984092513392
+Epoch 50	 test acc 0.25
+train_loss: 88051.46616077423
+train_loss: 84230.29294586182
+train_loss: 80051.84788990021
+train_loss: 78146.72743415833
+train_loss: 74854.81412410736
+Solved 46/200 episodes, CC loss avg = 0.012889354617624782
+Epoch 75	 test acc 0.23
+train_loss: 69808.16266775131
+train_loss: 64279.221159935
+train_loss: 62022.83450317383
+train_loss: 58772.799983501434
+train_loss: 54967.46317219734
+Solved 63/200 episodes, CC loss avg = 0.012353649015688322
+Epoch 100	 test acc 0.315
+train_loss: 53072.43132829666
+train_loss: 50267.52835929394
+train_loss: 51899.279247164726
+train_loss: 47130.53511953354
+train_loss: 45411.067318320274
+Solved 63/200 episodes, CC loss avg = 0.011627869000609132
+Epoch 125	 test acc 0.315
+Saved model at models/e8bc93842d4843da8e404ccbc70f35e9-epoch-125.pt
+train_loss: 45079.03451234102
+train_loss: 42637.14237892628
+train_loss: 40525.72526216507
+train_loss: 39155.02554678917
+train_loss: 37925.48899757862
+Solved 78/200 episodes, CC loss avg = 0.01145141457922052
+Epoch 150	 test acc 0.39
+train_loss: 35219.906193614006
+train_loss: 33983.412307024
+train_loss: 33359.06728899479
+train_loss: 30584.34830749035
+train_loss: 30383.84282696247
+Solved 92/200 episodes, CC loss avg = 0.009610097792992088
+Epoch 175	 test acc 0.46
+train_loss: 30032.52339231968
+train_loss: 29732.257338523865
+slurmstepd: error: *** JOB 556509 ON coecis-compute-02 CANCELLED AT 2022-05-09T19:27:14 ***

@@ -1,0 +1,120 @@
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/cuda/__init__.py:81: UserWarning: CUDA initialization: CUDA driver initialization failed, you might not have a CUDA gpu. (Triggered internally at  ../c10/cuda/CUDAFunctions.cpp:112.)
+  return torch._C._cuda_getDeviceCount() > 0
+Starting run:
+d9315d174e4f4fd8bf5c395f3391359f
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(4,), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=True, dim=128, num_attn_blocks=2, num_heads=8, traj_updates=500000000.0, batch_size=128, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='cpu', id='d9315d174e4f4fd8bf5c395f3391359f')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220801_143438-1wzm79j5
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run misunderstood-totem-137
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/1wzm79j5
+Net has 251670 parameters
+loss=tensor(0.0381, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0217, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.0
+loss=tensor(0.0169, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.00174
+loss=tensor(0.0121, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.01278
+loss=tensor(0.0118, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.02978
+loss=tensor(0.0092, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.04557
+loss=tensor(0.0071, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.06257
+loss=tensor(0.0067, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.07921
+loss=tensor(0.0094, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.09903
+loss=tensor(0.0047, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1234
+loss=tensor(0.0067, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.13987
+loss=tensor(0.0076, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.15717
+loss=tensor(0.0060, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.1759
+loss=tensor(0.0049, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.18484
+loss=tensor(0.0043, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.20334
+loss=tensor(0.0052, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.21532
+loss=tensor(0.0045, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.22997
+loss=tensor(0.0046, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.2395
+loss=tensor(0.0060, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.25625
+loss=tensor(0.0046, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.26538
+loss=tensor(0.0043, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.26576
+wandb: Network error (ConnectTimeout), entering retry loop.
+loss=tensor(0.0048, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.27287
+wandb: Network error (ConnectTimeout), entering retry loop.
+loss=tensor(0.0048, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.28656
+loss=tensor(0.0035, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.29108
+loss=tensor(0.0038, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.30338
+loss=tensor(0.0040, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.31097
+loss=tensor(0.0043, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.31437
+loss=tensor(0.0045, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.32689
+loss=tensor(0.0059, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.32961
+loss=tensor(0.0035, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.34148
+loss=tensor(0.0048, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.34295
+loss=tensor(0.0051, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.35454
+loss=tensor(0.0039, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.35701
+loss=tensor(0.0043, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.3649
+loss=tensor(0.0042, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.37295
+loss=tensor(0.0035, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.38089
+loss=tensor(0.0034, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.38045
+loss=tensor(0.0050, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.38372
+loss=tensor(0.0039, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.39062
+loss=tensor(0.0046, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.39766
+loss=tensor(0.0034, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.40138
+loss=tensor(0.0034, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.4064
+loss=tensor(0.0027, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.4118
+loss=tensor(0.0038, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.41218
+loss=tensor(0.0023, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.41943
+loss=tensor(0.0024, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.42319
+loss=tensor(0.0030, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.43319
+loss=tensor(0.0019, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.43412
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: ERROR Error while calling W&B API: internal database error (<Response [500]>)
+loss=tensor(0.0027, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.4442
+loss=tensor(0.0030, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.45158
+loss=tensor(0.0023, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.443
+loss=tensor(0.0028, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.44957
+loss=tensor(0.0034, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.45858
+loss=tensor(0.0030, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.46068
+loss=tensor(0.0029, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.46156
+loss=tensor(0.0037, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.4641
+loss=tensor(0.0025, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.47165
+loss=tensor(0.0034, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.47098
+loss=tensor(0.0023, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.46522
+loss=tensor(0.0035, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.47838
+loss=tensor(0.0013, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.48254
+loss=tensor(0.0028, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.48657
+loss=tensor(0.0049, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.49013
+loss=tensor(0.0026, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.50095
+loss=tensor(0.0033, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.49633
+loss=tensor(0.0029, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.50358
+loss=tensor(0.0035, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.51025
+loss=tensor(0.0022, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.50558
+loss=tensor(0.0028, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.51309
+loss=tensor(0.0033, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.52743
+loss=tensor(0.0023, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.52368
+loss=tensor(0.0017, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.51942
+loss=tensor(0.0022, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.52582
+loss=tensor(0.0021, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.53547
+loss=tensor(0.0031, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.53773
+loss=tensor(0.0017, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.54153
+loss=tensor(0.0026, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.53812
+loss=tensor(0.0017, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.54723
+loss=tensor(0.0027, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.55928
+loss=tensor(0.0019, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.5531
+loss=tensor(0.0025, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.55092
+loss=tensor(0.0019, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.55668
+loss=tensor(0.0025, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.55985
+loss=tensor(0.0020, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.562
+loss=tensor(0.0023, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.56274
+loss=tensor(0.0024, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.5649
+loss=tensor(0.0030, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.56815
+loss=tensor(0.0033, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.57093
+loss=tensor(0.0025, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.56905
+loss=tensor(0.0012, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.56811
+loss=tensor(0.0012, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.5728
+loss=tensor(0.0020, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.58464
+loss=tensor(0.0015, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.57753
+loss=tensor(0.0010, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.58358
+loss=tensor(0.0020, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.59122
+loss=tensor(0.0014, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.58001
+loss=tensor(0.0022, grad_fn=<BinaryCrossEntropyBackward0>), acc=0.59303
+slurmstepd: error: *** JOB 737104 ON sablab-gpu-08 CANCELLED AT 2022-08-04T14:36:44 DUE TO TIME LIMIT ***

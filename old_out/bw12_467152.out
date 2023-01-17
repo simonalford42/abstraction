@@ -1,0 +1,32 @@
+Starting run:
+f24f12af1788478fb9141ebdbae8ed51
+params: {'n': 10000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'hmm-homo', 'seed': 2, 'neptune': False, 'no_log': False, 'device': 'NVIDIA TITAN Xp', 'epochs': 1000, 'test_every': 50, 'save_every': 50, 'id': 'f24f12af1788478fb9141ebdbae8ed51'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.06
+Epoch 50	 test acc 0.185
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-50.pt
+reloading data
+Epoch 100	 test acc 0.215
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-100.pt
+Epoch 150	 test acc 0.23
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-150.pt
+reloading data
+Epoch 200	 test acc 0.205
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-200.pt
+Epoch 250	 test acc 0.155
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-250.pt
+reloading data
+Epoch 300	 test acc 0.485
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-300.pt
+Epoch 350	 test acc 0.765
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-350.pt
+reloading data
+Epoch 400	 test acc 0.815
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-400.pt
+Epoch 450	 test acc 0.935
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-450.pt
+reloading data
+Epoch 500	 test acc 0.96
+Saved model at models/f24f12af1788478fb9141ebdbae8ed51-epoch-500.pt
+slurmstepd: error: *** JOB 467152 ON sablab-gpu-07 CANCELLED AT 2022-04-02T09:40:29 DUE TO PREEMPTION ***

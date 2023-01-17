@@ -1,0 +1,22 @@
+Using torch device NVIDIA GeForce RTX 3090
+traj-level training without hmm
+params: {'epochs': 200, 'lr': 0.001}
+Net has 37803 parameters
+Round 0
+Generated trajectories in 71.7 seconds
+/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/conv.py:443: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at  ../aten/src/ATen/native/Convolution.cpp:680.)
+  return F.conv2d(input, weight, bias, self.stride,
+epoch: 0	train loss: 155107.78125	(9.2s)
+epoch: 40	train loss: 45188.2265625	(8.8s)
+epoch: 80	train loss: 36492.20703125	(8.8s)
+epoch: 120	train loss: 8495.8232421875	(8.8s)
+epoch: 160	train loss: 4193.7724609375	(8.8s)
+Evaluating model on 100 episodes
+Solved 97/100 episodes; avg steps taken in solved episodes: 26.2
+Evaluated model in 7.1 seconds
+Saved model for run
+6565eafb43d1420da59ff55e0c2c1146 with name model
+Round 1
+Generated trajectories in 72.4 seconds
+epoch: 0	train loss: 5070.86669921875	(8.7s)
+slurmstepd: error: *** JOB 406880 ON ellis-compute-01 CANCELLED AT 2022-01-29T14:34:59 ***

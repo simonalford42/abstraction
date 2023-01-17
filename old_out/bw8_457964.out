@@ -1,0 +1,37 @@
+Starting run:
+6fede0b62bef4bf0a834ba09b32f1f97
+params: {'n': 10000, 'lr': 0.0008, 'epochs': 600, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 2.0, 'hmm': False, 'homo': False, 'sv': False, 'save_every': False, 'test_every': 20, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'causal', 'device': 'NVIDIA GeForce GTX TITAN X', 'id': '6fede0b62bef4bf0a834ba09b32f1f97'}
+train
+Net has 205330 parameters
+Epoch 0	 test acc 0.01
+Epoch 20	 test acc 0.165
+Epoch 40	 test acc 0.22
+Epoch 60	 test acc 0.205
+Epoch 80	 test acc 0.19
+Epoch 100	 test acc 0.13
+Epoch 120	 test acc 0.23
+Epoch 140	 test acc 0.35
+Epoch 160	 test acc 0.3
+Epoch 180	 test acc 0.35
+Epoch 200	 test acc 0.365
+Epoch 220	 test acc 0.385
+Epoch 240	 test acc 0.465
+Epoch 260	 test acc 0.485
+Epoch 280	 test acc 0.425
+Epoch 300	 test acc 0.4
+Epoch 320	 test acc 0.48
+Epoch 340	 test acc 0.48
+Epoch 360	 test acc 0.485
+Epoch 380	 test acc 0.45
+Epoch 400	 test acc 0.545
+Epoch 420	 test acc 0.495
+Epoch 440	 test acc 0.5
+Epoch 460	 test acc 0.535
+Epoch 480	 test acc 0.605
+Epoch 500	 test acc 0.54
+Epoch 520	 test acc 0.55
+Epoch 540	 test acc 0.515
+Epoch 560	 test acc 0.51
+Epoch 580	 test acc 0.54
+Saved model at models/6fede0b62bef4bf0a834ba09b32f1f97.pt
+Completed training in 116676.5 seconds

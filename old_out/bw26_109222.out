@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "main.py", line 6, in <module>
+    import planning
+  File "/home/sca63/abstraction/planning.py", line 59, in <module>
+    def hlc_bfs_fake(s0, control_net, env: BoxWorldEnv, solved_threshold=0.001, timeout=float('inf'),) -> Generator[Optional[tuple[list[int], float, float]], None, None]:
+TypeError: 'type' object is not subscriptable

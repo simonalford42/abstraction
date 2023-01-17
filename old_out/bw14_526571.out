@@ -1,0 +1,43 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+ABSTRACT_PEN:	 1.0
+TAU_NOISE:	 0.0
+Starting run:
+49dcfcca959146bd912cc0e0d039ea1b
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': True, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 500, 'test_every': 25, 'save_every': 125, 'id': '49dcfcca959146bd912cc0e0d039ea1b'}
+WARNING: tau norm dim disabled
+train_loss: 2672.7549225091934
+WARNING: fixed test env seed
+Epoch 0	 test accs 0.17857142857142858
+Epoch 50	 test accs 0.10714285714285714
+train_loss: 2298.745362341404
+Epoch 100	 test accs 0.2073170731707317
+Epoch 150	 test accs 0.20987654320987653
+train_loss: 2263.36569416523
+Epoch 200	 test accs 0.21428571428571427
+Epoch 250	 test accs 0.1951219512195122
+Saved model at models/49dcfcca959146bd912cc0e0d039ea1b-epoch-250_control.pt
+train_loss: 2253.5501898527145
+Epoch 300	 test accs 0.19767441860465115
+Epoch 350	 test accs 0.17647058823529413
+train_loss: 2272.1854900717735
+Epoch 400	 test accs 0.1927710843373494
+Epoch 450	 test accs 0.16279069767441862
+train_loss: 2259.924548149109
+Epoch 500	 test accs 0.20481927710843373
+Saved model at models/49dcfcca959146bd912cc0e0d039ea1b-epoch-500_control.pt
+Epoch 550	 test accs 0.20481927710843373
+train_loss: 2243.432626247406
+Epoch 600	 test accs 0.20481927710843373
+Epoch 650	 test accs 0.20481927710843373
+train_loss: 2239.5732821822166
+Epoch 700	 test accs 0.17857142857142858
+Epoch 750	 test accs 0.21686746987951808
+Saved model at models/49dcfcca959146bd912cc0e0d039ea1b-epoch-750_control.pt
+train_loss: 2233.219812989235
+Epoch 800	 test accs 0.1927710843373494
+Epoch 850	 test accs 0.18823529411764706
+train_loss: 2235.123512864113
+Epoch 900	 test accs 0.1686746987951807
+Epoch 950	 test accs 0.2
+Completed fine tuning in 2429.9 seconds

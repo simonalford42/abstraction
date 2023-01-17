@@ -1,0 +1,50 @@
+Starting run:
+55ef2cdcd167419aa8c6a7751419dee5
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 10, 'b': 10, 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'hmm-homo', 'seed': 2, 'neptune': False, 'no_log': False, 'device': 'NVIDIA TITAN Xp', 'epochs': 500, 'test_every': 25, 'save_every': 25, 'id': '55ef2cdcd167419aa8c6a7751419dee5'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.19
+Epoch 25	 test acc 0.18
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-25.pt
+Epoch 50	 test acc 0.205
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-50.pt
+Epoch 75	 test acc 0.195
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-75.pt
+reloading data
+Epoch 100	 test acc 0.2
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-100.pt
+Epoch 125	 test acc 0.635
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-125.pt
+Epoch 150	 test acc 0.675
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-150.pt
+Epoch 175	 test acc 0.81
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-175.pt
+reloading data
+Epoch 200	 test acc 0.805
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-200.pt
+Epoch 225	 test acc 0.92
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-225.pt
+Epoch 250	 test acc 0.895
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-250.pt
+Epoch 275	 test acc 0.96
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-275.pt
+reloading data
+Epoch 300	 test acc 0.97
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-300.pt
+Epoch 325	 test acc 1.0
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-325.pt
+Epoch 350	 test acc 0.985
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-350.pt
+Epoch 375	 test acc 0.98
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-375.pt
+reloading data
+Epoch 400	 test acc 0.995
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-400.pt
+Epoch 425	 test acc 0.995
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-425.pt
+Epoch 450	 test acc 0.975
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-450.pt
+Epoch 475	 test acc 0.98
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5-epoch-475.pt
+Saved model at models/55ef2cdcd167419aa8c6a7751419dee5.pt
+Completed training in 63911.2 seconds

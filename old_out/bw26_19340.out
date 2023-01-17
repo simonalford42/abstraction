@@ -1,0 +1,50 @@
+slurmstepd: error: Unable to create TMPDIR [/tmp]: File exists
+slurmstepd: error: Setting TMPDIR to /tmp
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+742e5ba6a52b4906aa9d520b93118afc
+params=Namespace(note='', n=10000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=True, ellis=False, no_log=False, fine_tune=True, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, dim=64, num_attn_blocks=2, num_heads=4, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, sv_micro=False, sv_micro_data_type='full_traj', relational_macro=False, move_loss=False, state_loss=False, cc_loss=False, batch_size=32, traj_updates=100000000.0, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='742e5ba6a52b4906aa9d520b93118afc')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20221122_131858-c1xgakys
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run stellar-yogurt-693
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/c1xgakys
+Loaded model from models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt
+WARNING: tau norm dim disabled
+10000 fine-tuning examples
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-1623_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-3267_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-4876_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-6488_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-8091_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc-epoch-9702_control.pt
+Saved model at models/742e5ba6a52b4906aa9d520b93118afc_control.pt
+Completed training in 67717.0 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.004 MB of 0.004 MB uploaded (0.000 MB deduped)wandb: \ 0.004 MB of 0.004 MB uploaded (0.000 MB deduped)wandb: | 0.004 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: / 0.004 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: - 0.017 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: \ 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: | 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: / 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: - 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: \ 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb: | 0.019 MB of 0.019 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▁▃▃▃▅▆▃▇▇▇▇█▇▇█▇▇▆▅██▇▇▇█▇▇██▇▇█▇█▇▇█▆█
+wandb: acc0 ▇▆▇▅▃▆▇▁▇▇▇▇█▇▇██▇▆▅██▇▇▆█▇▇██▇▇█▇█▇▆█▅█
+wandb: acc1 ▁▁▃▃▄▅▆▄▇▇▇▇█▇▇███▇▆██▇▇▇█▇▇██▇██▇█▇▇█▆█
+wandb: acc2 ▁▁▃▃▃▅▆▄▇▇▇▇█▇▇███▆▆██▇▇▇█▇▇██▇▇█▇██▇█▆█
+wandb: acc3 ▁▂▅▅▄▆▇▄▇▇▇▇██▇███▇▆██▇▇▇█████▇█████▇█▆█
+wandb: acc4 ▁▄▇█▇▇█▅██████████▇▇██████████████████▇█
+wandb: loss ▇▇▅▆▆▄▃█▂▂▂▂▂▂▂▁▂▂▃▅▁▁▂▂▂▁▂▂▁▁▂▂▁▂▁▂▂▁▄▂
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.98517
+wandb: acc0 0.9921
+wandb: acc1 0.97762
+wandb: acc2 0.98002
+wandb: acc3 0.9867
+wandb: acc4 1.0
+wandb: loss 1768.45224
+wandb: 
+wandb: Synced stellar-yogurt-693: https://wandb.ai/simonalford42/abstraction/runs/c1xgakys
+wandb: Synced 6 W&B file(s), 7 media file(s), 7 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20221122_131858-c1xgakys/logs

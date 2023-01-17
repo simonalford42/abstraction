@@ -1,0 +1,85 @@
+Loaded model from models/724f7c53fb6549f094e118422788442c.pt
+MODEL:	 cc
+ABSTRACT_PEN:	 1.0
+TAU_NOISE:	 0.03
+Starting run:
+5d3044eda154464293523349bb52a57b
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 80, 'b': 10, 'model_load_path': 'models/724f7c53fb6549f094e118422788442c.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.03, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': True, 'freeze': 0.0, 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '5d3044eda154464293523349bb52a57b'}
+train
+Net has 206996 parameters
+Solved 118/200 episodes, CC loss avg = 0.023386118488121874
+Epoch 0	 test acc 0.59
+reloading data
+Solved 113/200 episodes, CC loss avg = 0.021514530332957502
+Epoch 100	 test acc 0.565
+reloading data
+Solved 137/200 episodes, CC loss avg = 0.020266015625983368
+Epoch 200	 test acc 0.685
+reloading data
+Solved 114/200 episodes, CC loss avg = 0.02124177331819257
+Epoch 300	 test acc 0.57
+reloading data
+Solved 121/200 episodes, CC loss avg = 0.02281187760291447
+Epoch 400	 test acc 0.605
+reloading data
+Solved 110/200 episodes, CC loss avg = 0.02357536682393402
+Epoch 500	 test acc 0.55
+Saved model at models/5d3044eda154464293523349bb52a57b-epoch-500.pt
+i=tensor([15], device='cuda:0')
+fw: tensor([-413.4143], device='cuda:0'), bw: tensor([-413.4142], device='cuda:0'), hmm_fw: tensor([-413.4143], device='cuda:0')
+a: tensor([0.], device='cuda:0'), b: tensor([0.], device='cuda:0'), hmm_fw: tensor([-413.4143], device='cuda:0')
+reloading data
+Solved 123/200 episodes, CC loss avg = 0.02477968760961229
+Epoch 600	 test acc 0.615
+reloading data
+Solved 139/200 episodes, CC loss avg = 0.021264386996513278
+Epoch 700	 test acc 0.695
+reloading data
+Solved 127/200 episodes, CC loss avg = 0.022542103799059986
+Epoch 800	 test acc 0.635
+reloading data
+Solved 118/200 episodes, CC loss avg = 0.021617774077752616
+Epoch 900	 test acc 0.59
+reloading data
+Solved 131/200 episodes, CC loss avg = 0.021185943647934538
+Epoch 1000	 test acc 0.655
+Saved model at models/5d3044eda154464293523349bb52a57b-epoch-1000.pt
+reloading data
+Solved 125/200 episodes, CC loss avg = 0.021451886118348796
+Epoch 1100	 test acc 0.625
+reloading data
+Solved 123/200 episodes, CC loss avg = 0.023081663964438517
+Epoch 1200	 test acc 0.615
+i=tensor([77], device='cuda:0')
+fw: tensor([-313.3703], device='cuda:0'), bw: tensor([-313.3704], device='cuda:0'), hmm_fw: tensor([-313.3703], device='cuda:0')
+a: tensor([0.], device='cuda:0'), b: tensor([0.], device='cuda:0'), hmm_fw: tensor([-313.3703], device='cuda:0')
+i=tensor([31], device='cuda:0')
+fw: tensor([-313.2951], device='cuda:0'), bw: tensor([-313.2953], device='cuda:0'), hmm_fw: tensor([-313.2952], device='cuda:0')
+a: tensor([-3.0518e-05], device='cuda:0'), b: tensor([-3.0518e-05], device='cuda:0'), hmm_fw: tensor([-313.2952], device='cuda:0')
+reloading data
+Solved 127/200 episodes, CC loss avg = 0.027811692399630685
+Epoch 1300	 test acc 0.635
+reloading data
+Solved 119/200 episodes, CC loss avg = 0.02292910730838129
+Epoch 1400	 test acc 0.595
+reloading data
+Solved 126/200 episodes, CC loss avg = 0.02151423516762355
+Epoch 1500	 test acc 0.63
+Saved model at models/5d3044eda154464293523349bb52a57b-epoch-1500.pt
+reloading data
+Solved 125/200 episodes, CC loss avg = 0.02142915381923041
+Epoch 1600	 test acc 0.625
+reloading data
+Solved 119/200 episodes, CC loss avg = 0.021361298284720505
+Epoch 1700	 test acc 0.595
+reloading data
+Solved 136/200 episodes, CC loss avg = 0.02064261434963311
+Epoch 1800	 test acc 0.68
+reloading data
+Solved 114/200 episodes, CC loss avg = 0.024389338365290315
+Epoch 1900	 test acc 0.57
+Saved model at models/5d3044eda154464293523349bb52a57b.pt
+Completed training in 13741.0 seconds
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+TAU_NOISE: 	0.03

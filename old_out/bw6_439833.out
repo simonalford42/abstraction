@@ -1,0 +1,24 @@
+Using torch device NVIDIA GeForce RTX 3090
+net: causal
+cc_weight: 0.0
+params: {'epochs': 100, 'lr': 0.0008, 'n': 5000}
+Net has 207442 parameters
+Round 0
+Generated trajectories in 71.8 seconds
+Completed training in 72.2 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 172, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 157, in boxworld_main
+    boxworld_outer_sv(
+  File "/home/sca63/abstraction/main.py", line 74, in boxworld_outer_sv
+    sv_train(dataloader, net, epochs=epochs, lr=lr, print_every=print_every)
+  File "/home/sca63/abstraction/main.py", line 27, in sv_train
+    loss = net(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/sca63/abstraction/hmm.py", line 362, in forward
+    return self.cc_loss(s_i_batch, actions_batch, lengths, masks)
+  File "/home/sca63/abstraction/hmm.py", line 371, in cc_loss
+    action_logps, stop_logps, start_logps, causal_pens = self.control_net(s_i_batch, batched=True)
+ValueError: too many values to unpack (expected 4)

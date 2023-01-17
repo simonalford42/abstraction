@@ -1,0 +1,13 @@
+WARNING: low batch size
+MODEL:	 hmm-homo
+N:	 5000
+ABSTRACT_PEN:	 0.0
+Starting run:
+0db7909d079d4b5c851b968ddf2ca723
+params: {'n': 5000, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 3, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 0.0, 'model': 'hmm-homo', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'b': 10, 'eval': False, 'load': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': False, 'variable_abstract_pen': False, 'replace_trans_net': False, 'batch_norm': False, 'loss': 'kl', 'device': 'NVIDIA GeForce RTX 2080 Ti', 'epochs': 2000, 'test_every': 100, 'save_every': 500, 'id': '0db7909d079d4b5c851b968ddf2ca723'}
+Net has 41898 parameters
+train_loss: 99530.6894569397
+Solved 6/200 episodes
+Epoch 0	 test acc 0.03
+train_loss: 31581.059817314148
+slurmstepd: error: *** JOB 558370 ON gadikota-compute-01 CANCELLED AT 2022-05-09T19:27:20 ***

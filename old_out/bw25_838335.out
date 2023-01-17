@@ -1,0 +1,105 @@
+Using torch device NVIDIA TITAN RTX
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+c5155be8abea48e2ad7096b66726f689
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=0.0, symbolic_supervised=False, batch_size=16, traj_updates=10000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN RTX', id='c5155be8abea48e2ad7096b66726f689')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.2 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220906_064249-1gd2t50k
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run pious-fire-363
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/1gd2t50k
+Net has 197665 parameters
+WARNING: tau norm dim disabled
+Solved 16/200 episodes, CC loss avg = 160.37185308808964
+Solved 45/200 episodes, CC loss avg = 160.51393718104208
+Solved 58/200 episodes, CC loss avg = 160.5212909631562
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-33.pt
+Solved 101/200 episodes, CC loss avg = 160.5362717742292
+Solved 102/200 episodes, CC loss avg = 160.51933323895489
+Solved 100/200 episodes, CC loss avg = 160.51932101779514
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-66.pt
+Solved 127/200 episodes, CC loss avg = 160.50216414400202
+Solved 135/200 episodes, CC loss avg = 160.49624505486932
+Solved 123/200 episodes, CC loss avg = 160.51565451849075
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-98.pt
+Solved 126/200 episodes, CC loss avg = 160.5196398566751
+Solved 135/200 episodes, CC loss avg = 160.52112647899682
+Solved 140/200 episodes, CC loss avg = 160.51319493584455
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-130.pt
+Solved 138/200 episodes, CC loss avg = 160.50536249414344
+Solved 144/200 episodes, CC loss avg = 160.50165025169588
+Solved 147/200 episodes, CC loss avg = 160.49951970027044
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-162.pt
+Solved 134/200 episodes, CC loss avg = 160.49357391635698
+Solved 140/200 episodes, CC loss avg = 160.5020205668914
+Solved 154/200 episodes, CC loss avg = 160.51183759395164
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-195.pt
+Solved 138/200 episodes, CC loss avg = 160.5018383623606
+Solved 140/200 episodes, CC loss avg = 160.49871145201124
+Solved 134/200 episodes, CC loss avg = 160.49589198986925
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-228.pt
+Solved 150/200 episodes, CC loss avg = 160.4884312397725
+wandb: Network error (ConnectTimeout), entering retry loop.
+Solved 142/200 episodes, CC loss avg = 160.5005901094117
+Solved 156/200 episodes, CC loss avg = 160.49187471572668
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-260.pt
+Solved 144/200 episodes, CC loss avg = 160.5009237578421
+Solved 145/200 episodes, CC loss avg = 160.48869085987297
+Solved 140/200 episodes, CC loss avg = 160.50325344711987
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-293.pt
+Solved 140/200 episodes, CC loss avg = 160.49319471551115
+Solved 152/200 episodes, CC loss avg = 160.4956302450161
+Solved 145/200 episodes, CC loss avg = 160.49582403946962
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-326.pt
+Solved 155/200 episodes, CC loss avg = 160.4860758742241
+Solved 137/200 episodes, CC loss avg = 160.496976592324
+wandb: Network error (ReadTimeout), entering retry loop.
+Solved 145/200 episodes, CC loss avg = 160.4881329626895
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-360.pt
+Solved 148/200 episodes, CC loss avg = 160.485075277279
+Solved 140/200 episodes, CC loss avg = 160.48096466064453
+Solved 146/200 episodes, CC loss avg = 160.4809073434749
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-393.pt
+Solved 150/200 episodes, CC loss avg = 160.48860445127383
+Solved 148/200 episodes, CC loss avg = 160.49150188271247
+Solved 136/200 episodes, CC loss avg = 160.4977645659111
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-426.pt
+Solved 132/200 episodes, CC loss avg = 160.48497167931419
+Solved 156/200 episodes, CC loss avg = 160.48814197887074
+Solved 134/200 episodes, CC loss avg = 160.48848007664537
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-459.pt
+Solved 146/200 episodes, CC loss avg = 160.49103911811784
+Solved 162/200 episodes, CC loss avg = 160.4845322010129
+Solved 141/200 episodes, CC loss avg = 160.48613044846226
+Saved model at models/c5155be8abea48e2ad7096b66726f689-epoch-493.pt
+Saved model at models/c5155be8abea48e2ad7096b66726f689.pt
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 166333.0 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.007 MB of 0.007 MB uploaded (0.000 MB deduped)wandb: \ 0.007 MB of 0.007 MB uploaded (0.000 MB deduped)wandb: | 0.007 MB of 0.007 MB uploaded (0.000 MB deduped)wandb: / 0.007 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.007 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: - 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: \ 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: | 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb: / 0.025 MB of 0.025 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▁▂▃▅▅▅▇▇▇▇▇▇▇█▇▇▇▇▇█▇█▇▇▇█▇█▇▇█▇██▇▇█▇█▇
+wandb: loss █▆▅▄▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.705
+wandb: loss 61044.53498
+wandb: 
+wandb: Synced pious-fire-363: https://wandb.ai/simonalford42/abstraction/runs/1gd2t50k
+wandb: Synced 6 W&B file(s), 16 media file(s), 16 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220906_064249-1gd2t50k/logs

@@ -1,0 +1,14 @@
+Starting run:
+b2d543274efc4cbd9bedc420503bd3eb
+params: {'n': 50000, 'lr': 0.0008, 'epochs': 200, 'batch_size': 10, 'b': 10, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 10, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN X (Pascal)', 'id': 'b2d543274efc4cbd9bedc420503bd3eb'}
+train
+Net has 41898 parameters
+Epoch 0	 test acc 0.165
+Saved model at models/b2d543274efc4cbd9bedc420503bd3eb-epoch-0.pt
+Epoch 10	 test acc 0.18
+Epoch 20	 test acc 0.24
+Epoch 30	 test acc 0.19
+Epoch 40	 test acc 0.18
+Epoch 50	 test acc 0.145
+Epoch 60	 test acc 0.15
+slurmstepd: error: *** JOB 462098 ON nikola-compute-04 CANCELLED AT 2022-03-29T21:16:50 DUE TO PREEMPTION ***

@@ -1,0 +1,106 @@
+separate option nets hmm homo AP=0 100%
+models/e36c3e2385d8418a8b1109d78587da68-epoch-1000.pt
+
+CC relational micro AP=1 175/200
+models/244907b5cde841358a4b9d8fee1d32f8-epoch-1750.pt
+HMM relational micro AP=1 165/200
+models/56bea97cf2a84db9af304b16ab0362bf.pt
+HMM relatinal micrl AP=1 175/200
+models/6619520fdfc346a689be99d83fffbdca.pt
+HMM relational micro AP=0 141/200
+3c1cb1ffdb1842009873f9bca0b8c2ca.pt
+
+hmm-homo AP=0 199/200
+models/deff712a84ae4b6da2903417c5eebd1a-epoch-2375.pt
+AP=0.25 cc 110/200
+models/fa6a31cb43d14bd5ad705639f905cc58-epoch-1250.pt
+AP=0.25 cc 80/200
+models/d84c60aeecf44fab96c1a05a15537f49-epoch-1250.pt
+
+no tau norm hmm acc = 60%
+models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+
+hmm-homo AP = 1 acc = 100%
+ models/523a651eee5d4423921820ffe7948b89-epoch-1250.pt
+
+hmm AP=1 acc = 60%
+models/4f33c4fd2210434ab368a39eb335d2d8-epoch-625.pt
+
+fill in new macro trans net
+Saved model at models/3cbaef33ab42402bb0089d4e2818e025-epoch-250000_control.pt
+
+full fine tune (with tau I think?)
+n=100, seed 1
+
+Solved 62/100.
+	1: 16/16=1.00
+	2: 22/22=1.00
+	3: 10/13=0.77
+	4: 7/10=0.70
+
+models/b363dbf36c974020a70e6d2876207dad-epoch-25000_control.pt
+
+full fine tune (with tau I think?)
+N:	 20000
+
+Solved 109/200.
+	1: 42/42=1.00
+	2: 4/33=0.12
+	3: 0/17=0.00
+
+models/fcfc0586dcf04d838d20efa7fb5cfcf9-epoch-2500_control.pt
+
+fine tune depth=3 logp weighting  n=100 , seed 1
+
+Solved 62/100.
+	1: 16/16=1.00
+	2: 6/22=0.27
+	3: 6/13=0.46
+	4: 4/10=0.40
+
+Saved model at models/353d4695ec784f8e87d635eaaeae0270-epoch-1224_control.pt
+
+ccts AP = 5 20% 
+april 19 bw13 tau noise model (60% acc, AP=1, cc loss ~0.02) models/e14b78d01cc548239ffd57286e59e819.pt
+
+ccts AP=0 80% acc models/3246c443e3cd43a6a3896cd8d6fa8807.pt
+ccts AP=0 80% acc models/c214d74d14b6458081d334ed52fa4733.pt
+ccts AP=1 80% acc models/72ba65df94854ff484f946b64b527623.pt
+ccts AP=1 65% acc models/a888a77cd1b040a39caeb7e3e31638d6.pt
+
+
+april 13 bw13 tau noise model:
+- 
+CC, AP 1.0, noise 0.01, 50%, 724f7c53fb6549f094e118422788442c.pt
+
+april 4 2022:
+
+CC, AP 0.0, acc 0.875 Saved model at models/15ef0c93b66c43439dea56738985832b.pt
+CC, AP 2.0, acc 0.5 Saved model at models/30c815e66d0c45e996095efeba3c712d.pt
+HMM, AP 0.0, acc 0.925 Saved model at models/7e4d4125ced244939746d4b407c34730.pt
+
+earlier:
+
+causal weight 1.0, 200/00
+5ba29de160934f16910023ff39507702 with name round-19
+
+causal weight 0.1, 199/200
+0df0a52aea7b493baf72a2804aa9d622 with name round-19
+
+causal weight 0.0, 190/200
+401585e1c032428894848bdaac632e49 with name round-19
+
+hmm 198/200
+1c9328d7fa6e4d09a8dcc319f124967e with name round-19
+
+causal 1.0, abstract pen 0.0 200/200
+62a05ac8c1af4a4592bf481e0f7d4d63 with name round-16
+
+causal 1.0, abstract 0.01 156/200
+17b03a7bc7b3478ebcb1ad3e7c49ea34 with name round-15
+
+causal 1.0, abstract 0.1 169/200
+6ea62525595f4785a999608e14072f9a with name round-19
+
+causal 1.0, abstract 1.0 119/200
+e58cb3f68e74461db96fef71db8b8796 with name round-19

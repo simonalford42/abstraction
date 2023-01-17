@@ -21,6 +21,52 @@ T as that used in hmm.py, where the number of states is T+1 or max_T +1.
 nll_loss = nn.NLLLoss(reduction='none')
 
 
+def rnn_fine_tune_logps(states, options, solveds, lengths, masks, control_net, rnn, params):
+    b = params.b
+    t = control_net.t
+
+    option_one_hots = F.one_hot(options, num_classes=b).float().to(DEVICE)
+
+    B, T_plus_one, *s = states.shape
+    T = T_plus_one - 1
+    assert_shape(options, (B, T))
+    assert_shape(solveds, (B, T + 1))
+    assert_shape(masks, (B, T + 1))
+
+    states_flattened = states.reshape(B * (T + 1), *s)
+    t_i_flattened = control_net.tau_net(states_flattened)
+    t_i = t_i_flattened.reshape(B, T + 1, t)
+
+    # https://stackoverflow.com/questions/48915810/what-does-contiguous-do-in-pytorch
+    t0 = t_i[None, :, 0].contiguous()
+    # apparently the required shape for the hidden state:
+    # https://pytorch.org/docs/stable/generated/torch.nn.GRU.html
+    assert_shape(t0, (1, B, params.abstract_dim))
+
+    t_i_preds, _ = rnn(option_one_hots, t0)
+    assert_shape(t_i_preds, (B, T, t))
+    # concat t0 to front
+    t0 = t_i[:, 0:1]
+    assert_shape(t0, (B, 1, t))
+    t_i_preds = torch.concat([t0, t_i_preds], dim=1)
+    assert_shape(t_i_preds, (B, T + 1, t))
+
+    t_i_preds_flattened = t_i_preds.reshape(B * (T + 1), t)
+    solved_logps = control_net.solved_net(t_i_preds_flattened).reshape(B, T + 1, 2)
+    option_logps = control_net.macro_policy_net(t_i_preds_flattened).reshape(B, T + 1, b)
+
+    # NLL loss expects (N, C, d_i) for multi-dim loss, so rearrange
+    option_logps, solved_logps = [rearrange(x, 'N d C -> N C d') for x in
+                                           [option_logps, solved_logps]]
+
+    option_logps = option_logps[:, :, :-1]
+    assert_shape(option_logps, (B, b, T))
+    assert_shape(options, (B, T))
+    assert_shape(solveds, (B, T + 1))
+
+    return option_logps, solved_logps
+
+
 def fine_tune_loss_v3(t_i_batch, b_i_batch, solved_batch, control_net, masks=None, weights=None):
     '''
     Get causal consistency to be low, but instead of matching distributions, directly try to

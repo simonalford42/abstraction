@@ -1,0 +1,24 @@
+Starting run:
+26d78d52d8c94b8992dd392faeb40022
+params: {'n': 5000, 'lr': 0.0008, 'epochs': 2500, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 100, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA TITAN Xp', 'id': '26d78d52d8c94b8992dd392faeb40022'}
+train
+Net has 37803 parameters
+Solved 9/200 episodes
+Epoch 0	 test acc 0.045
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-0.pt
+Solved 47/200 episodes
+Epoch 100	 test acc 0.235
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-100.pt
+Solved 49/200 episodes
+Epoch 200	 test acc 0.245
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-200.pt
+Solved 51/200 episodes
+Epoch 300	 test acc 0.255
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-300.pt
+Solved 50/200 episodes
+Epoch 400	 test acc 0.25
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-400.pt
+Solved 55/200 episodes
+Epoch 500	 test acc 0.275
+Saved model at models/26d78d52d8c94b8992dd392faeb40022-epoch-500.pt
+slurmstepd: error: *** JOB 461371 ON sablab-gpu-06 CANCELLED AT 2022-03-28T14:28:38 DUE TO PREEMPTION ***

@@ -1,0 +1,133 @@
+Using torch device NVIDIA TITAN Xp
+tensor([0, 1, 2], device='cuda:0')
+passed gpu check
+Starting run:
+ecc0cc643faa4a55a7fddff97411603d
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	0.7
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(n=20000, b=10, abstract_pen=0.7, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, traj_updates=40000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN Xp', id='ecc0cc643faa4a55a7fddff97411603d')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220816_113926-2b2zoc9t
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run vague-violet-302
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2b2zoc9t
+Net has 162836 parameters
+WARNING: tau norm dim disabled
+Solved 2/200 episodes
+Solved 80/200 episodes
+Solved 91/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-113.pt
+Solved 100/200 episodes
+Solved 117/200 episodes
+Solved 95/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-227.pt
+Solved 113/200 episodes
+Solved 120/200 episodes
+Solved 125/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-341.pt
+Solved 112/200 episodes
+Solved 117/200 episodes
+Solved 123/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-455.pt
+Solved 126/200 episodes
+Solved 132/200 episodes
+Solved 127/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-569.pt
+Solved 119/200 episodes
+wandb: Network error (ReadTimeout), entering retry loop.
+Solved 131/200 episodes
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+Solved 118/200 episodes
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-683.pt
+Solved 128/200 episodes
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+wandb: Network error (ReadTimeout), entering retry loop.
+Solved 128/200 episodes
+Solved 126/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-797.pt
+Solved 112/200 episodes
+Solved 118/200 episodes
+Solved 118/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-911.pt
+Solved 122/200 episodes
+Solved 123/200 episodes
+Solved 122/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1025.pt
+Solved 125/200 episodes
+Solved 137/200 episodes
+Solved 128/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1139.pt
+Solved 130/200 episodes
+Solved 125/200 episodes
+Solved 114/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1253.pt
+Solved 131/200 episodes
+Solved 123/200 episodes
+Solved 125/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1367.pt
+Solved 118/200 episodes
+Solved 120/200 episodes
+Solved 133/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1481.pt
+Solved 126/200 episodes
+Solved 123/200 episodes
+Solved 125/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1595.pt
+Solved 131/200 episodes
+Solved 128/200 episodes
+Solved 120/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1709.pt
+Solved 123/200 episodes
+Solved 103/200 episodes
+Solved 127/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1823.pt
+Solved 129/200 episodes
+Solved 138/200 episodes
+Solved 127/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d-epoch-1937.pt
+Solved 116/200 episodes
+Solved 126/200 episodes
+Saved model at models/ecc0cc643faa4a55a7fddff97411603d.pt
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	0.7
+FINE_TUNE: 	False
+MUZERO: 	False
+Completed training in 190519.4 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.008 MB of 0.008 MB uploaded (0.000 MB deduped)wandb: \ 0.008 MB of 0.008 MB uploaded (0.000 MB deduped)wandb: | 0.008 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.008 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.020 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:                  acc ▁▅▆▇▆▇▇▇▇▇█▇█▇▇▇▇▇▇▇▇█▇█▇█▇▇▇█▇▇█▇▇▆██▇▇
+wandb:                 loss █▄▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     test/cc_loss_avg ▁▆▆█▇▇▇▆▆▇▆▆▅▅▅▅▅▅▅▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃
+wandb: test/solved_pred_acc ▁███████████████████████████████████████
+wandb: 
+wandb: Run summary:
+wandb:                  acc 0.63
+wandb:                 loss 41077.3538
+wandb:     test/cc_loss_avg 0.0926
+wandb: test/solved_pred_acc 1.0
+wandb: 
+wandb: Synced vague-violet-302: https://wandb.ai/simonalford42/abstraction/runs/2b2zoc9t
+wandb: Synced 6 W&B file(s), 18 media file(s), 18 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220816_113926-2b2zoc9t/logs

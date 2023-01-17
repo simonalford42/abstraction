@@ -1,0 +1,82 @@
+neurosym.CHECK_IXS=[-1]
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+47cb3a5028ae48e79f9dc9d3e226a817
+N: 	20000
+MODEL: 	cc
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=True, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=True, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=False, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, sv_micro=False, sv_micro_data_type='full_traj', relational_macro=False, batch_size=8, traj_updates=10000000.0, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='47cb3a5028ae48e79f9dc9d3e226a817')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.3 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220927_175127-2acsl1hj
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run desert-firebrand-558
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2acsl1hj
+Net has 157069 parameters
+WARNING: tau norm dim disabled
+Solved 36/200 episodes, CC loss avg = 161.81229470493176
+Solved 46/200 episodes, CC loss avg = 161.87270983219148
+Solved 47/200 episodes, CC loss avg = 161.88262242691815
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-19.pt
+Solved 45/200 episodes, CC loss avg = 161.88582997642442
+Solved 38/200 episodes, CC loss avg = 161.88650507568659
+Solved 37/200 episodes, CC loss avg = 161.8869947528285
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-39.pt
+Solved 40/200 episodes, CC loss avg = 161.88738734970335
+Solved 38/200 episodes, CC loss avg = 161.88789538131854
+Solved 44/200 episodes, CC loss avg = 161.88764665757242
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-59.pt
+Solved 38/200 episodes, CC loss avg = 161.88809659726587
+Solved 37/200 episodes, CC loss avg = 161.88835276967234
+Solved 24/200 episodes, CC loss avg = 161.88898537334254
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-79.pt
+Solved 26/200 episodes, CC loss avg = 161.88876906812212
+Solved 38/200 episodes, CC loss avg = 161.88865427208165
+Solved 32/200 episodes, CC loss avg = 161.88866488075573
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-99.pt
+Solved 48/200 episodes, CC loss avg = 161.8882271643474
+Solved 47/200 episodes, CC loss avg = 161.88810299505815
+Solved 38/200 episodes, CC loss avg = 161.88861046133115
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-119.pt
+Solved 37/200 episodes, CC loss avg = 161.88897800421034
+Solved 34/200 episodes, CC loss avg = 161.88887932049678
+Saved model at models/47cb3a5028ae48e79f9dc9d3e226a817-epoch-139.pt
+Solved 43/200 episodes, CC loss avg = 161.88868561382114
+Completed training in 80103.9 seconds
+Traceback (most recent call last):
+  File "/home/sca63/abstraction/main.py", line 820, in <module>
+    boxworld_main()
+  File "/home/sca63/abstraction/main.py", line 626, in boxworld_main
+    learn_options(net, params)
+  File "/home/sca63/abstraction/main.py", line 151, in learn_options
+    optimizer.step()
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/optim/optimizer.py", line 113, in wrapper
+    return func(*args, **kwargs)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/optim/adam.py", line 157, in step
+    adam(params_with_grad,
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/optim/adam.py", line 213, in adam
+    func(params,
+  File "/home/sca63/.conda/envs/gcsl/lib/python3.9/site-packages/torch/optim/adam.py", line 307, in _single_tensor_adam
+    param.addcdiv_(exp_avg, denom, value=-step_size)
+KeyboardInterrupt
+wandb: Waiting for W&B process to finish... (failed 255). Press Control-C to abort syncing.
+wandb: - 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: \ 0.003 MB of 0.003 MB uploaded (0.000 MB deduped)wandb: | 0.003 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.003 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: / 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: - 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: \ 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb: | 0.021 MB of 0.021 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:  acc ▅▇█▇▅▅▆▅▇▅▅▁▂▅▃██▅▅▄▇
+wandb: loss █▅▄▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:  acc 0.215
+wandb: loss -59552444.73608
+wandb: 
+wandb: Synced desert-firebrand-558: https://wandb.ai/simonalford42/abstraction/runs/2acsl1hj
+wandb: Synced 6 W&B file(s), 7 media file(s), 7 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220927_175127-2acsl1hj/logs

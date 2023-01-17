@@ -1,0 +1,103 @@
+Using torch device NVIDIA GeForce RTX 2080 Ti
+Starting run:
+9128babca5684c9caa0c40dc2a09bd97
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+MUZERO: 	False
+params=Namespace(note='', n=20000, b=9, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=True, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, solution_length=(1, 2, 3, 4), muzero=False, muzero_scratch=False, num_test=200, test_every=60, save_every=180, neurosym=False, cc_neurosym=False, sv_options=False, sv_options_net_fc=False, dim=64, num_attn_blocks=2, num_heads=4, state_loss_weight=1.0, cc_weight=1.0, fake_cc_neurosym=True, symbolic_sv=False, micro_net2=False, num_out=None, check_ix=-1, num_check=0, test=False, sv_micro=False, sv_micro_data_type='full_traj', relational_macro=False, batch_size=16, traj_updates=10000000.0, model_load_path='models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 2080 Ti', id='9128babca5684c9caa0c40dc2a09bd97')
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.12.21
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20221006_150821-2lb46m4s
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run rosy-snowball-582
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2lb46m4s
+Net has 207825 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes, CC loss avg = 0.004398995801845255
+Solved 0/200 episodes, CC loss avg = 0.004399030735450131
+Solved 0/200 episodes, CC loss avg = 0.004399145315603718
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-7.pt
+Solved 0/200 episodes, CC loss avg = 0.004398988650702849
+Solved 0/200 episodes, CC loss avg = 0.004399535711854696
+Solved 0/200 episodes, CC loss avg = 0.004399013975489652
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-15.pt
+Solved 0/200 episodes, CC loss avg = 0.004399008578117782
+Solved 0/200 episodes, CC loss avg = 0.004399004575681986
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-23.pt
+Solved 0/200 episodes, CC loss avg = 0.004399013803984091
+Solved 0/200 episodes, CC loss avg = 0.004399006754872115
+Solved 0/200 episodes, CC loss avg = 0.004398996422131513
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-31.pt
+Solved 0/200 episodes, CC loss avg = 0.004399004064862143
+Solved 0/200 episodes, CC loss avg = 0.004399002679636631
+Solved 0/200 episodes, CC loss avg = 0.004399006527832203
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-39.pt
+Solved 0/200 episodes, CC loss avg = 0.004399008405251034
+Solved 0/200 episodes, CC loss avg = 0.004399017401568973
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-47.pt
+Solved 0/200 episodes, CC loss avg = 0.004399008423268228
+Solved 0/200 episodes, CC loss avg = 0.004399010928053197
+Solved 0/200 episodes, CC loss avg = 0.004399016080308287
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-55.pt
+Solved 0/200 episodes, CC loss avg = 0.004399013948449355
+Solved 0/200 episodes, CC loss avg = 0.0043990136279696114
+Solved 0/200 episodes, CC loss avg = 0.00439902203128278
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-63.pt
+Solved 0/200 episodes, CC loss avg = 0.004399015262857391
+Solved 0/200 episodes, CC loss avg = 0.004399015853989769
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-71.pt
+Solved 0/200 episodes, CC loss avg = 0.0043990115478775745
+Solved 0/200 episodes, CC loss avg = 0.004399015335771194
+Solved 0/200 episodes, CC loss avg = 0.004399012700831923
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-79.pt
+Solved 0/200 episodes, CC loss avg = 0.004399020333297044
+Solved 0/200 episodes, CC loss avg = 0.004399012512482828
+Solved 0/200 episodes, CC loss avg = 0.004399016864633912
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-87.pt
+Solved 0/200 episodes, CC loss avg = 0.004399019423754344
+Solved 0/200 episodes, CC loss avg = 0.004399022030890093
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-95.pt
+Solved 0/200 episodes, CC loss avg = 0.0043990150880615555
+Solved 0/200 episodes, CC loss avg = 0.00439901756371061
+Solved 0/200 episodes, CC loss avg = 0.00439902303768126
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-103.pt
+Solved 0/200 episodes, CC loss avg = 0.004399020814632522
+Solved 0/200 episodes, CC loss avg = 0.004399014890094165
+Solved 0/200 episodes, CC loss avg = 0.004399021815878837
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-111.pt
+Solved 0/200 episodes, CC loss avg = 0.004399015388684924
+Solved 0/200 episodes, CC loss avg = 0.004399011721839458
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-119.pt
+Solved 0/200 episodes, CC loss avg = 0.004399017052736423
+Solved 0/200 episodes, CC loss avg = 0.004399014480578091
+Solved 0/200 episodes, CC loss avg = 0.004399020066715418
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-127.pt
+Solved 0/200 episodes, CC loss avg = 0.004399015798770148
+Solved 0/200 episodes, CC loss avg = 0.004399017561861748
+Solved 0/200 episodes, CC loss avg = 0.0043990189353901
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-135.pt
+Solved 0/200 episodes, CC loss avg = 0.00439901774317795
+Solved 0/200 episodes, CC loss avg = 0.004399012758805604
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-143.pt
+Solved 0/200 episodes, CC loss avg = 0.004399016652467295
+Solved 0/200 episodes, CC loss avg = 0.004399014875495787
+Solved 0/200 episodes, CC loss avg = 0.004399010425453103
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-151.pt
+Solved 0/200 episodes, CC loss avg = 0.004399015884540351
+Solved 0/200 episodes, CC loss avg = 0.004399011496590215
+Solved 0/200 episodes, CC loss avg = 0.004399006289581766
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-159.pt
+Solved 0/200 episodes, CC loss avg = 0.004399011787448864
+Solved 0/200 episodes, CC loss avg = 0.004399011191441268
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-167.pt
+Solved 0/200 episodes, CC loss avg = 0.004399009894422766
+Solved 0/200 episodes, CC loss avg = 0.004399011757959401
+Solved 0/200 episodes, CC loss avg = 0.00439900953114119
+Saved model at models/9128babca5684c9caa0c40dc2a09bd97-epoch-175.pt
+Solved 0/200 episodes, CC loss avg = 0.004399010590126243
+slurmstepd: error: *** JOB 893492 ON lil-compute-01 CANCELLED AT 2022-10-09T15:09:57 DUE TO TIME LIMIT ***

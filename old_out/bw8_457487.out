@@ -1,0 +1,162 @@
+https://app.neptune.ai/simonalford42/abstraction/e/AB-93
+Starting run:
+1404b96608ec4254a1154888ed55af85
+train
+shuffling
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 45/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 56/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 38/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 36/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 43/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 139/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 195/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 196/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 200/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 199/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+Evaluating model on 200 episodes
+Solved 198/200 episodes
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+shuffling
+slurmstepd: error: *** JOB 457487 ON sablab-gpu-08 CANCELLED AT 2022-03-24T00:53:05 ***

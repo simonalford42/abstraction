@@ -1,0 +1,731 @@
+MODEL:	 sv
+N:	 20000
+ABSTRACT_PEN:	 1.0
+Starting run:
+860295da25d94db38c22e1b1dce4db1b
+params: {'n': 20000, 'traj_updates': 10000000.0, 'num_saves': 20, 'num_tests': 100, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'model_load_path': 'models/56bea97cf2a84db9af304b16ab0362bf.pt', 'b': 10, 'abstract_pen': 1.0, 'model': 'sv', 'seed': 1, 'abstract_dim': 32, 'tau_noise_std': 0.0, 'freeze': False, 'eval': False, 'load': False, 'ellis': False, 'neptune': False, 'no_log': False, 'fine_tune': False, 'variable_abstract_pen': False, 'tau_precompute': False, 'replace_trans_net': False, 'batch_norm': False, 'no_tau_norm': False, 'relational_micro': False, 'toy_test': False, 'separate_option_nets': False, 'gumbel': False, 'g_start_temp': 1, 'g_stop_temp': 1, 'num_categories': 8, 'shrink_micro_net': False, 'shrink_loss_scale': 1, 'device': 'NVIDIA GeForce GTX 1080 Ti', 'epochs': 500, 'test_every': 5, 'save_every': 25, 'id': '860295da25d94db38c22e1b1dce4db1b'}
+Net has 37803 parameters
+train_loss: 501976.29055023193
+Solved 13/200 episodes
+Epoch 0	 test acc 0.065
+train_loss: 310906.42048835754
+train_loss: 272392.77757263184
+train_loss: 257331.21455955505
+train_loss: 249582.73468589783
+train_loss: 241814.27093315125
+Solved 33/200 episodes
+Epoch 5	 test acc 0.165
+train_loss: 238118.58591461182
+train_loss: 232314.24752807617
+train_loss: 228765.27135658264
+train_loss: 224115.78037071228
+train_loss: 220808.12600898743
+Solved 37/200 episodes
+Epoch 10	 test acc 0.185
+train_loss: 216507.7048587799
+train_loss: 213273.7167186737
+train_loss: 210527.21855545044
+train_loss: 207064.14666366577
+train_loss: 204053.3535785675
+Solved 31/200 episodes
+Epoch 15	 test acc 0.155
+train_loss: 203085.04460906982
+train_loss: 201039.67645072937
+train_loss: 198799.05227088928
+train_loss: 197438.9823961258
+train_loss: 196171.17518997192
+Solved 34/200 episodes
+Epoch 20	 test acc 0.17
+train_loss: 194419.40676403046
+train_loss: 192377.03753948212
+train_loss: 191512.5689907074
+train_loss: 190808.41865348816
+train_loss: 189248.62445259094
+Solved 25/200 episodes
+Epoch 25	 test acc 0.125
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-25.pt
+train_loss: 189847.90517616272
+train_loss: 189539.3851299286
+train_loss: 186957.81320762634
+train_loss: 186534.47820186615
+train_loss: 185699.39346122742
+Solved 32/200 episodes
+Epoch 30	 test acc 0.16
+train_loss: 184712.37915992737
+train_loss: 183436.38127708435
+train_loss: 182659.32542991638
+train_loss: 182700.1029176712
+train_loss: 181572.1381969452
+Solved 42/200 episodes
+Epoch 35	 test acc 0.21
+train_loss: 180741.53306770325
+train_loss: 180656.63720321655
+train_loss: 180483.0830974579
+train_loss: 180625.28855895996
+train_loss: 178837.86181259155
+Solved 31/200 episodes
+Epoch 40	 test acc 0.155
+train_loss: 178926.0083503723
+train_loss: 178188.53207969666
+train_loss: 177745.68892860413
+train_loss: 177894.7346019745
+train_loss: 178139.00146102905
+Solved 33/200 episodes
+Epoch 45	 test acc 0.165
+train_loss: 176272.38788604736
+train_loss: 175829.05068588257
+train_loss: 176292.11833763123
+train_loss: 175627.534907341
+train_loss: 175388.76316833496
+Solved 32/200 episodes
+Epoch 50	 test acc 0.16
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-50.pt
+train_loss: 175773.0141992569
+train_loss: 176149.82101917267
+train_loss: 174051.9457731247
+train_loss: 173993.28419971466
+train_loss: 172693.14686012268
+Solved 27/200 episodes
+Epoch 55	 test acc 0.135
+train_loss: 173618.7437133789
+train_loss: 173158.08655548096
+train_loss: 173572.34297180176
+train_loss: 172058.12956428528
+train_loss: 171480.23809432983
+Solved 41/200 episodes
+Epoch 60	 test acc 0.205
+train_loss: 174088.68432998657
+train_loss: 170647.8839416504
+train_loss: 170631.26000595093
+train_loss: 169365.18341255188
+train_loss: 169358.46720314026
+Solved 40/200 episodes
+Epoch 65	 test acc 0.2
+train_loss: 168593.2157945633
+train_loss: 169699.3344669342
+train_loss: 168003.586933136
+train_loss: 167980.06411075592
+train_loss: 166758.19395637512
+Solved 41/200 episodes
+Epoch 70	 test acc 0.205
+train_loss: 166347.05447101593
+train_loss: 166294.74127578735
+train_loss: 160643.14066028595
+train_loss: 154720.5157880783
+train_loss: 148939.89533281326
+Solved 54/200 episodes
+Epoch 75	 test acc 0.27
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-75.pt
+train_loss: 144223.04789161682
+train_loss: 140412.3952717781
+train_loss: 136881.90456676483
+train_loss: 134389.22522497177
+train_loss: 129028.80770778656
+Solved 59/200 episodes
+Epoch 80	 test acc 0.295
+train_loss: 125751.73736667633
+train_loss: 123189.47396230698
+train_loss: 121047.76672935486
+train_loss: 116692.05211353302
+train_loss: 114830.53225469589
+Solved 83/200 episodes
+Epoch 85	 test acc 0.415
+train_loss: 113117.86153578758
+train_loss: 111988.74031734467
+train_loss: 109558.45009446144
+train_loss: 107919.001237154
+train_loss: 106326.17695093155
+Solved 86/200 episodes
+Epoch 90	 test acc 0.43
+train_loss: 107466.75852584839
+train_loss: 102611.7093257904
+train_loss: 102864.96765351295
+train_loss: 98933.89989089966
+train_loss: 96857.73536372185
+Solved 85/200 episodes
+Epoch 95	 test acc 0.425
+train_loss: 96022.73470950127
+train_loss: 98686.67404913902
+train_loss: 92208.52713429928
+train_loss: 90381.05786585808
+train_loss: 87269.91438126564
+Solved 101/200 episodes
+Epoch 100	 test acc 0.505
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-100.pt
+train_loss: 86487.56699967384
+train_loss: 85220.58391976357
+train_loss: 82653.4640443325
+train_loss: 81185.9856441021
+train_loss: 79957.481397748
+Solved 102/200 episodes
+Epoch 105	 test acc 0.51
+train_loss: 78447.93654978275
+train_loss: 77132.34014308453
+train_loss: 75117.82636904716
+train_loss: 73995.26345932484
+train_loss: 73011.28843986988
+Solved 116/200 episodes
+Epoch 110	 test acc 0.58
+train_loss: 72481.77711999416
+train_loss: 69906.98330312967
+train_loss: 70997.23587226868
+train_loss: 67793.58388984203
+train_loss: 66500.81434607506
+Solved 120/200 episodes
+Epoch 115	 test acc 0.6
+train_loss: 65177.50661969185
+train_loss: 63011.242424309254
+train_loss: 62953.28536760807
+train_loss: 61087.88496273756
+train_loss: 59365.90478742123
+Solved 121/200 episodes
+Epoch 120	 test acc 0.605
+train_loss: 57726.699217259884
+train_loss: 54776.863805770874
+train_loss: 54033.96506136656
+train_loss: 53153.698059260845
+train_loss: 49560.58161816001
+Solved 135/200 episodes
+Epoch 125	 test acc 0.675
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-125.pt
+train_loss: 47745.73684088886
+train_loss: 47137.87701961398
+train_loss: 45708.57137346268
+train_loss: 43797.66808888316
+train_loss: 43816.07443958521
+Solved 140/200 episodes
+Epoch 130	 test acc 0.7
+train_loss: 41697.27535105497
+train_loss: 42773.411336272955
+train_loss: 39168.569362044334
+train_loss: 47240.1798607856
+train_loss: 38303.49480894953
+Solved 145/200 episodes
+Epoch 135	 test acc 0.725
+train_loss: 44710.64596621692
+train_loss: 37479.59384331107
+train_loss: 39028.85570606589
+train_loss: 37335.95743107796
+train_loss: 42169.866349458694
+Solved 146/200 episodes
+Epoch 140	 test acc 0.73
+train_loss: 35689.92489090562
+train_loss: 34907.625791713595
+train_loss: 35464.54570323229
+train_loss: 35086.38330578804
+train_loss: 38220.93334836513
+Solved 153/200 episodes
+Epoch 145	 test acc 0.765
+train_loss: 33925.071873389184
+train_loss: 34300.306606814265
+train_loss: 32774.183852382004
+train_loss: 33346.90908911079
+train_loss: 35646.64942666516
+Solved 158/200 episodes
+Epoch 150	 test acc 0.79
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-150.pt
+train_loss: 33898.186392344534
+train_loss: 32491.494049191475
+train_loss: 30097.324976094067
+train_loss: 32919.18471973762
+train_loss: 29617.564642056823
+Solved 155/200 episodes
+Epoch 155	 test acc 0.775
+train_loss: 33178.79489982128
+train_loss: 29724.730223383754
+train_loss: 30109.675555165857
+train_loss: 31459.101422343403
+train_loss: 32426.515359777957
+Solved 154/200 episodes
+Epoch 160	 test acc 0.77
+train_loss: 31042.495194539428
+train_loss: 30562.605834931135
+train_loss: 27558.98176569119
+train_loss: 31767.462350230664
+train_loss: 29071.805828243494
+Solved 163/200 episodes
+Epoch 165	 test acc 0.815
+train_loss: 28657.452696170658
+train_loss: 28198.878651503474
+train_loss: 28268.762445777655
+train_loss: 28973.408344026655
+train_loss: 27820.864498261362
+Solved 167/200 episodes
+Epoch 170	 test acc 0.835
+train_loss: 30358.94365942478
+train_loss: 25448.60615101084
+train_loss: 25760.85418225825
+train_loss: 26629.80288926512
+train_loss: 25632.686084479094
+Solved 159/200 episodes
+Epoch 175	 test acc 0.795
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-175.pt
+train_loss: 26491.90350755863
+train_loss: 25105.353724598885
+train_loss: 24206.68219022453
+train_loss: 29159.657643605024
+train_loss: 22435.40386118181
+Solved 168/200 episodes
+Epoch 180	 test acc 0.84
+train_loss: 22887.28310555406
+train_loss: 24532.800508415326
+train_loss: 23836.5877518598
+train_loss: 23087.920693251304
+train_loss: 23090.77883407101
+Solved 178/200 episodes
+Epoch 185	 test acc 0.89
+train_loss: 22996.194823173806
+train_loss: 26228.704546894878
+train_loss: 20407.47202154901
+train_loss: 23352.331125706434
+train_loss: 22984.73157212138
+Solved 163/200 episodes
+Epoch 190	 test acc 0.815
+train_loss: 20937.222081759013
+train_loss: 20479.25481972471
+train_loss: 23097.864377658814
+train_loss: 21365.01231700927
+train_loss: 22965.015169894323
+Solved 172/200 episodes
+Epoch 195	 test acc 0.86
+train_loss: 22077.764467537403
+train_loss: 20334.79783927463
+train_loss: 20083.8108473802
+train_loss: 20799.137973275036
+train_loss: 18962.42316131154
+Solved 172/200 episodes
+Epoch 200	 test acc 0.86
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-200.pt
+train_loss: 20655.585849817842
+train_loss: 20047.13632491231
+train_loss: 18801.798438649625
+train_loss: 18318.249992660712
+train_loss: 20454.04217640031
+Solved 167/200 episodes
+Epoch 205	 test acc 0.835
+train_loss: 21270.70342168957
+train_loss: 18548.326495537534
+train_loss: 17655.463241892867
+train_loss: 19875.04059880227
+train_loss: 17220.973313500173
+Solved 177/200 episodes
+Epoch 210	 test acc 0.885
+train_loss: 17473.497314538807
+train_loss: 16759.24825173989
+train_loss: 18806.829728240613
+train_loss: 15439.711916082306
+train_loss: 15275.55268025864
+Solved 179/200 episodes
+Epoch 215	 test acc 0.895
+train_loss: 17655.875809881836
+train_loss: 16263.90805375157
+train_loss: 20367.584897868335
+train_loss: 15143.515970797744
+train_loss: 15630.937144391704
+Solved 176/200 episodes
+Epoch 220	 test acc 0.88
+train_loss: 16329.490732673556
+train_loss: 16738.85162422154
+train_loss: 15885.131405218039
+train_loss: 15457.156369632576
+train_loss: 15686.738877081778
+Solved 165/200 episodes
+Epoch 225	 test acc 0.825
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-225.pt
+train_loss: 16648.388792393962
+train_loss: 15689.535304627381
+train_loss: 15588.960072779562
+train_loss: 14336.523977615405
+train_loss: 14442.552640010137
+Solved 180/200 episodes
+Epoch 230	 test acc 0.9
+train_loss: 19028.433302879333
+train_loss: 15500.020751264878
+train_loss: 13981.638131126761
+train_loss: 14828.596602733247
+train_loss: 14393.420643985271
+Solved 174/200 episodes
+Epoch 235	 test acc 0.87
+train_loss: 14152.629160898738
+train_loss: 16844.339747493854
+train_loss: 13517.763208205812
+train_loss: 12546.128581306897
+train_loss: 14048.444271454588
+Solved 180/200 episodes
+Epoch 240	 test acc 0.9
+train_loss: 13714.602053755429
+train_loss: 15510.74157508323
+train_loss: 11685.300283514895
+train_loss: 12173.687929537147
+train_loss: 13911.226209227229
+Solved 175/200 episodes
+Epoch 245	 test acc 0.875
+train_loss: 12118.71813934762
+train_loss: 13142.706340638455
+train_loss: 12782.042254217435
+train_loss: 12175.00609254511
+train_loss: 12819.043108465848
+Solved 176/200 episodes
+Epoch 250	 test acc 0.88
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-250.pt
+train_loss: 11388.276306976564
+train_loss: 11691.837547908537
+train_loss: 14669.221387596801
+train_loss: 11154.37028548494
+train_loss: 10498.847781786695
+Solved 177/200 episodes
+Epoch 255	 test acc 0.885
+train_loss: 13082.647777503822
+train_loss: 10875.810387486126
+train_loss: 11427.349637871608
+train_loss: 10228.714467498474
+train_loss: 12595.499858500902
+Solved 180/200 episodes
+Epoch 260	 test acc 0.9
+train_loss: 11382.544851510786
+train_loss: 11303.27926428616
+train_loss: 9721.815954670776
+train_loss: 9752.686032118276
+train_loss: 10616.123954061419
+Solved 177/200 episodes
+Epoch 265	 test acc 0.885
+train_loss: 12731.873438840732
+train_loss: 8904.594230714254
+train_loss: 10922.105680058245
+train_loss: 9949.918835198507
+train_loss: 9955.237427575747
+Solved 186/200 episodes
+Epoch 270	 test acc 0.93
+train_loss: 8382.630133085651
+train_loss: 10023.270935862674
+train_loss: 8115.36184890708
+train_loss: 8440.6847274818
+train_loss: 11250.839768771548
+Solved 191/200 episodes
+Epoch 275	 test acc 0.955
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-275.pt
+train_loss: 8225.15234220121
+train_loss: 7758.495631090831
+train_loss: 10390.347316939384
+train_loss: 7194.009138951777
+train_loss: 7536.800414328463
+Solved 185/200 episodes
+Epoch 280	 test acc 0.925
+train_loss: 7712.700881024357
+train_loss: 8678.98170925118
+train_loss: 7846.26247364888
+train_loss: 6518.2556821292965
+train_loss: 7496.077988486737
+Solved 189/200 episodes
+Epoch 285	 test acc 0.945
+train_loss: 7187.788953067735
+train_loss: 6890.103685349692
+train_loss: 7027.332313879393
+train_loss: 7913.5890634267125
+train_loss: 6889.530097286915
+Solved 195/200 episodes
+Epoch 290	 test acc 0.975
+train_loss: 6621.849892389029
+train_loss: 4021.6202242900617
+train_loss: 8906.945506990654
+train_loss: 6063.217011003289
+train_loss: 5929.4131938708015
+Solved 185/200 episodes
+Epoch 295	 test acc 0.925
+train_loss: 5618.391088814009
+train_loss: 4733.625561929075
+train_loss: 7250.195706815459
+train_loss: 4096.984036040027
+train_loss: 6546.615833697841
+Solved 198/200 episodes
+Epoch 300	 test acc 0.99
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-300.pt
+train_loss: 5303.354882850312
+train_loss: 6472.017687580083
+train_loss: 5615.723129625432
+train_loss: 4865.967660209746
+train_loss: 5082.159838390071
+Solved 197/200 episodes
+Epoch 305	 test acc 0.985
+train_loss: 7158.6728043444455
+train_loss: 6103.036122521386
+train_loss: 4682.945781607064
+train_loss: 4797.648582886439
+train_loss: 6370.861327028368
+Solved 195/200 episodes
+Epoch 310	 test acc 0.975
+train_loss: 4134.324562658498
+train_loss: 5481.656673160382
+train_loss: 4764.724595168373
+train_loss: 3602.2609674852574
+train_loss: 3893.0053854156286
+Solved 200/200 episodes
+Epoch 315	 test acc 1.0
+train_loss: 6230.75556943682
+train_loss: 4264.781916403037
+train_loss: 5920.253487795126
+train_loss: 5668.8018769472255
+train_loss: 4019.661631238763
+Solved 196/200 episodes
+Epoch 320	 test acc 0.98
+train_loss: 6112.900220335228
+train_loss: 2072.129602736677
+train_loss: 5444.115291657392
+train_loss: 3115.3346326889005
+train_loss: 5959.914773202036
+Solved 197/200 episodes
+Epoch 325	 test acc 0.985
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-325.pt
+train_loss: 5376.028245178284
+train_loss: 4216.637099790387
+train_loss: 6606.387892822968
+train_loss: 2303.912200387218
+train_loss: 5382.163961940096
+Solved 200/200 episodes
+Epoch 330	 test acc 1.0
+train_loss: 3676.2234483223874
+train_loss: 3599.4571309483144
+train_loss: 3625.706587741268
+train_loss: 4731.449484180688
+train_loss: 4825.893602135591
+Solved 199/200 episodes
+Epoch 335	 test acc 0.995
+train_loss: 2125.044057444844
+train_loss: 6859.396934025048
+train_loss: 4469.993509229971
+train_loss: 4715.252941489976
+train_loss: 4196.892134628724
+Solved 197/200 episodes
+Epoch 340	 test acc 0.985
+train_loss: 3069.4757768277777
+train_loss: 4256.155645383289
+train_loss: 4125.893255150411
+train_loss: 2603.9230177708087
+train_loss: 3878.0550105543516
+Solved 192/200 episodes
+Epoch 345	 test acc 0.96
+train_loss: 5394.862657313701
+train_loss: 3625.888953383779
+train_loss: 2708.3424947366584
+train_loss: 6170.276581084821
+train_loss: 3835.191133323475
+Solved 197/200 episodes
+Epoch 350	 test acc 0.985
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-350.pt
+train_loss: 4072.4149599531665
+train_loss: 4743.778353398433
+train_loss: 3671.344000038458
+train_loss: 4248.0401575569995
+train_loss: 3299.3927369823214
+Solved 197/200 episodes
+Epoch 355	 test acc 0.985
+train_loss: 2764.858993996342
+train_loss: 4145.074254520761
+train_loss: 4007.0906582192983
+train_loss: 4982.153559391794
+train_loss: 2251.2992822654196
+Solved 198/200 episodes
+Epoch 360	 test acc 0.99
+train_loss: 3114.821364621632
+train_loss: 3325.5128748754505
+train_loss: 4108.874447390321
+train_loss: 3765.8849586884025
+train_loss: 2718.8296111540985
+Solved 197/200 episodes
+Epoch 365	 test acc 0.985
+train_loss: 5870.595953966025
+train_loss: 4679.945347883739
+train_loss: 3146.533164715511
+train_loss: 3953.0881995711534
+train_loss: 3941.9309974085772
+Solved 199/200 episodes
+Epoch 370	 test acc 0.995
+train_loss: 3661.063621823094
+train_loss: 3311.657945147832
+train_loss: 4184.293350329273
+train_loss: 3276.9252338530496
+train_loss: 3811.5283928103745
+Solved 198/200 episodes
+Epoch 375	 test acc 0.99
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-375.pt
+train_loss: 2381.8839244308183
+train_loss: 2979.6129552035127
+train_loss: 3343.1138860406354
+train_loss: 3860.120669690601
+train_loss: 3013.1516232901486
+Solved 200/200 episodes
+Epoch 380	 test acc 1.0
+train_loss: 4277.322570955032
+train_loss: 5077.416470876546
+train_loss: 2157.21643362107
+train_loss: 3216.8473383053206
+train_loss: 4200.906600605231
+Solved 195/200 episodes
+Epoch 385	 test acc 0.975
+train_loss: 2639.8726487556705
+train_loss: 3311.784238573513
+train_loss: 4243.293882581405
+train_loss: 2815.4024608841864
+train_loss: 3131.423227276129
+Solved 199/200 episodes
+Epoch 390	 test acc 0.995
+train_loss: 3291.000701281242
+train_loss: 4129.331493630656
+train_loss: 4248.075150430668
+train_loss: 1847.4973883474595
+train_loss: 3243.9983060962986
+Solved 196/200 episodes
+Epoch 395	 test acc 0.98
+train_loss: 1947.8183040001895
+train_loss: 3358.2118980824016
+train_loss: 2181.780649944092
+train_loss: 3392.3525657372666
+train_loss: 6749.735017748317
+Solved 196/200 episodes
+Epoch 400	 test acc 0.98
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-400.pt
+train_loss: 2524.0107402885915
+train_loss: 2956.9231767642777
+train_loss: 3563.086887254147
+train_loss: 3743.4313715733006
+train_loss: 2115.8030053431867
+Solved 200/200 episodes
+Epoch 405	 test acc 1.0
+train_loss: 3026.5423718417005
+train_loss: 2543.1591784284683
+train_loss: 2822.1664424207993
+train_loss: 3273.91801973735
+train_loss: 3223.2834763241117
+Solved 197/200 episodes
+Epoch 410	 test acc 0.985
+train_loss: 3339.75070302689
+train_loss: 1611.907824225491
+train_loss: 2338.9286779523536
+train_loss: 4950.924052062735
+train_loss: 1905.2073327183607
+Solved 197/200 episodes
+Epoch 415	 test acc 0.985
+train_loss: 2798.3468453155365
+train_loss: 4046.0471629067324
+train_loss: 1569.9749359900889
+train_loss: 1946.3303655874333
+train_loss: 3238.8205553556327
+Solved 198/200 episodes
+Epoch 420	 test acc 0.99
+train_loss: 4011.5747238458716
+train_loss: 2533.645222714171
+train_loss: 3098.2947952027316
+train_loss: 2487.0491766346095
+train_loss: 2335.148543976742
+Solved 194/200 episodes
+Epoch 425	 test acc 0.97
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-425.pt
+train_loss: 3133.411404256476
+train_loss: 1801.5390749228536
+train_loss: 3365.290202120552
+train_loss: 2583.7313270657905
+train_loss: 5110.849675593781
+Solved 199/200 episodes
+Epoch 430	 test acc 0.995
+train_loss: 1959.4555965245236
+train_loss: 816.9309247700148
+train_loss: 3340.295719209942
+train_loss: 1398.534183023905
+train_loss: 2897.1386513191683
+Solved 199/200 episodes
+Epoch 435	 test acc 0.995
+train_loss: 3248.4791895966046
+train_loss: 2974.0343985127984
+train_loss: 3209.101268622675
+train_loss: 1565.2877029977972
+train_loss: 3725.212548706215
+Solved 199/200 episodes
+Epoch 440	 test acc 0.995
+train_loss: 1944.2445401709992
+train_loss: 2248.5336546702893
+train_loss: 1400.8337110144785
+train_loss: 2028.0326736519928
+train_loss: 1843.0480154731194
+Solved 197/200 episodes
+Epoch 445	 test acc 0.985
+train_loss: 3339.664687281009
+train_loss: 3386.562403447402
+train_loss: 1380.5528201201814
+train_loss: 1154.7276020088175
+train_loss: 3592.1629948701884
+Solved 197/200 episodes
+Epoch 450	 test acc 0.985
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-450.pt
+train_loss: 1947.8527065865346
+train_loss: 3605.3512789617525
+train_loss: 2564.4343107497552
+train_loss: 1813.2116463035927
+train_loss: 1729.4760672289412
+Solved 199/200 episodes
+Epoch 455	 test acc 0.995
+train_loss: 1617.368062677473
+train_loss: 2935.2982148022857
+train_loss: 2117.8544703075313
+train_loss: 2659.3946983854403
+train_loss: 738.4564346006373
+Solved 200/200 episodes
+Epoch 460	 test acc 1.0
+train_loss: 3635.8088246236002
+train_loss: 2884.4957607999677
+train_loss: 1634.2524282489321
+train_loss: 2370.2490004485007
+train_loss: 2423.6771845332114
+Solved 195/200 episodes
+Epoch 465	 test acc 0.975
+train_loss: 3239.173010194616
+train_loss: 974.6277059499989
+train_loss: 2292.295737164619
+train_loss: 3413.742184028728
+train_loss: 1708.8821452403208
+Solved 198/200 episodes
+Epoch 470	 test acc 0.99
+train_loss: 1928.766209443551
+train_loss: 3131.588961220812
+train_loss: 2937.74596334144
+train_loss: 1550.1397651538718
+train_loss: 2591.4011615615455
+Solved 200/200 episodes
+Epoch 475	 test acc 1.0
+Saved model at models/860295da25d94db38c22e1b1dce4db1b-epoch-475.pt
+train_loss: 1598.8812108844868
+train_loss: 1476.444605470897
+train_loss: 2792.109550112451
+train_loss: 1787.7382157402462
+train_loss: 2642.0486901749973
+Solved 199/200 episodes
+Epoch 480	 test acc 0.995
+train_loss: 2245.9537521140883
+train_loss: 1863.0641050591366
+train_loss: 3237.9076524224365
+train_loss: 1833.6224363509682
+train_loss: 1685.0243284945027
+Solved 199/200 episodes
+Epoch 485	 test acc 0.995
+train_loss: 2356.3192055834224
+train_loss: 2863.670905929175
+train_loss: 1833.64683262771
+train_loss: 2157.7164859613986
+train_loss: 984.9551011147269
+Solved 200/200 episodes
+Epoch 490	 test acc 1.0
+train_loss: 1740.9277664652036
+train_loss: 2922.3083237497776
+train_loss: 1869.017553969752
+train_loss: 2323.835443013406
+train_loss: 2438.8295360510238
+Solved 199/200 episodes
+Epoch 495	 test acc 0.995
+train_loss: 1797.3562183646427
+train_loss: 1420.2264261280943
+train_loss: 2236.3260069749085
+train_loss: 1370.9018774211872
+Saved model at models/860295da25d94db38c22e1b1dce4db1b.pt
+Completed training in 44682.3 seconds
+MODEL: 	sv
+N: 	20000
+ABSTRACT_PEN: 	1.0

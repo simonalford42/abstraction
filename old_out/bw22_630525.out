@@ -1,0 +1,51 @@
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.20
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220701_004656-1at65m5t
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run icy-shape-59
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/1at65m5t
+Starting run:
+128157f5f19e4e6cad704e82122f0440
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, num_test=200, test_every=90, save_every=180, traj_updates=10000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA TITAN RTX', id='128157f5f19e4e6cad704e82122f0440')
+Net has 156468 parameters
+WARNING: tau norm dim disabled
+Solved 0/200 episodes
+Solved 32/200 episodes
+Saved model at models/128157f5f19e4e6cad704e82122f0440-epoch-95.pt
+Solved 85/200 episodes
+Solved 105/200 episodes
+Saved model at models/128157f5f19e4e6cad704e82122f0440-epoch-194.pt
+Solved 109/200 episodes
+Solved 91/200 episodes
+Saved model at models/128157f5f19e4e6cad704e82122f0440-epoch-339.pt
+Solved 107/200 episodes
+Solved 119/200 episodes
+Saved model at models/128157f5f19e4e6cad704e82122f0440.pt
+N: 	20000
+MODEL: 	hmm
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+Completed training in 43297.1 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: \ 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: | 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: / 0.002 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: - 0.002 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: \ 0.007 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: | 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: - 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: \ 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: | 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb: / 0.015 MB of 0.015 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:                 loss █▅▄▃▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:             test/acc ▁▃▆▇▇▆▇█
+wandb:     test/cc_loss_avg ▁▂▇▇███▇
+wandb: test/solved_pred_acc ▁███████
+wandb: 
+wandb: Run summary:
+wandb:                 loss 72528.65619
+wandb:             test/acc 0.595
+wandb:     test/cc_loss_avg 0.13854
+wandb: test/solved_pred_acc 1.0
+wandb: 
+wandb: Synced icy-shape-59: https://wandb.ai/simonalford42/abstraction/runs/1at65m5t
+wandb: Synced 6 W&B file(s), 4 media file(s), 4 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220701_004656-1at65m5t/logs

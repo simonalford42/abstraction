@@ -1,0 +1,351 @@
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+MODEL:	 cc
+DEPTH:	 3
+N:	 100
+WEIGHTING:	 uniform
+Starting run:
+1827dc32d58748d5b5bfb4af75a6b332
+params: {'n': 100, 'traj_updates': 10000000.0, 'num_saves': 4, 'num_tests': 20, 'num_test': 200, 'lr': 0.0008, 'batch_size': 32, 'b': 10, 'model_load_path': 'models/e14b78d01cc548239ffd57286e59e819.pt', 'cc_pen': 1.0, 'abstract_pen': 1.0, 'model': 'cc', 'seed': 1, 'tau_noise': 0.0, 'neptune': False, 'no_log': False, 'eval': False, 'abstract_dim': 32, 'ellis': False, 'freeze': False, 'fine_tune': True, 'depth': 3, 'weighting': 'uniform', 'device': 'NVIDIA GeForce RTX 3090', 'epochs': 100000, 'test_every': 5000, 'save_every': 25000, 'id': '1827dc32d58748d5b5bfb4af75a6b332'}
+WARNING: tau norm dim disabled
+8145 fine-tuning examples
+actual params['epochs']: 1227
+actual params['test_every']: 61
+actual params['save_every']: 306
+avg cc loss  tensor(-0.0402, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1419.6504452228546
+WARNING: fixed test env seed
+Solved 62/100.
+	1: 16/16=1.00
+	2: 6/22=0.27
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 0	 test accs 0.3548387096774194
+avg cc loss  tensor(0.0164, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1154.2538557052612
+avg cc loss  tensor(-0.0425, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1113.477585554123
+avg cc loss  tensor(-0.0754, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1092.6637897491455
+avg cc loss  tensor(-0.0159, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1074.0133528709412
+avg cc loss  tensor(0.0007, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1058.4188151359558
+Solved 62/100.
+	1: 16/16=1.00
+	2: 4/22=0.18
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 61	 test accs 0.3225806451612903
+avg cc loss  tensor(-0.1220, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1056.9170358181
+avg cc loss  tensor(-0.0211, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1047.4427502155304
+avg cc loss  tensor(-0.0645, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1030.451754808426
+avg cc loss  tensor(-0.0447, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1026.3266017436981
+avg cc loss  tensor(-0.0684, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1021.3315088748932
+Solved 62/100.
+	1: 16/16=1.00
+	2: 4/22=0.18
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 122	 test accs 0.3225806451612903
+avg cc loss  tensor(-0.0912, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1009.5297541618347
+avg cc loss  tensor(-0.0158, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1009.4724357128143
+avg cc loss  tensor(-0.0217, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 1002.1456296443939
+avg cc loss  tensor(-0.0558, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 998.2018891572952
+avg cc loss  tensor(0.0224, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 996.2639956474304
+Solved 62/100.
+	1: 16/16=1.00
+	2: 4/22=0.18
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 183	 test accs 0.3225806451612903
+avg cc loss  tensor(0.0072, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 996.9666974544525
+avg cc loss  tensor(-0.0648, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 984.4972259998322
+avg cc loss  tensor(-0.0389, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 987.703727722168
+avg cc loss  tensor(-0.1423, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 987.4613795280457
+avg cc loss  tensor(-0.0290, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 982.3942496776581
+Solved 62/100.
+	1: 16/16=1.00
+	2: 4/22=0.18
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 244	 test accs 0.3225806451612903
+avg cc loss  tensor(-0.1171, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 977.1916072368622
+avg cc loss  tensor(-0.0222, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 972.0993287563324
+avg cc loss  tensor(-0.0687, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 967.518168926239
+avg cc loss  tensor(-0.0491, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 971.0213615894318
+avg cc loss  tensor(-0.1207, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 981.9652668237686
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 305	 test accs 0.3387096774193548
+Saved model at models/1827dc32d58748d5b5bfb4af75a6b332-epoch-306_control.pt
+avg cc loss  tensor(-0.0589, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 968.9942142963409
+avg cc loss  tensor(-0.1524, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 962.5250555276871
+avg cc loss  tensor(-0.0468, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 970.9785537719727
+avg cc loss  tensor(-0.1157, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 962.0730693340302
+avg cc loss  tensor(-0.0767, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 959.2674024105072
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 366	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0191, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 948.8149561882019
+avg cc loss  tensor(0.1011, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 951.6146988868713
+avg cc loss  tensor(-0.1961, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 955.0383222103119
+avg cc loss  tensor(-0.0374, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 951.3579547405243
+avg cc loss  tensor(-0.0552, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 944.2895770072937
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 427	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.0600, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 944.4237768650055
+avg cc loss  tensor(0.0459, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 948.8468520641327
+avg cc loss  tensor(-0.0355, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 944.2651128768921
+avg cc loss  tensor(-0.1187, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 944.9666892290115
+avg cc loss  tensor(-0.1306, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 939.1089717149734
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 488	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.0960, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 939.7479560375214
+avg cc loss  tensor(-0.1094, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 934.4379824399948
+avg cc loss  tensor(0.0651, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 936.2688213586807
+avg cc loss  tensor(-0.0224, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 943.1579370498657
+avg cc loss  tensor(-0.0820, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 947.3464367389679
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 549	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0349, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 934.2276767492294
+avg cc loss  tensor(-0.1161, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 930.6770553588867
+avg cc loss  tensor(0.0288, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 935.44877409935
+avg cc loss  tensor(-0.0582, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 942.7659605741501
+avg cc loss  tensor(-0.0932, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 929.8011072874069
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 610	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0379, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 927.6145658493042
+Saved model at models/1827dc32d58748d5b5bfb4af75a6b332-epoch-612_control.pt
+avg cc loss  tensor(-0.0960, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 926.5018579959869
+avg cc loss  tensor(-0.0425, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 928.6038188934326
+avg cc loss  tensor(-0.1140, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 928.5032653808594
+avg cc loss  tensor(0.0030, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 930.7284126281738
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 671	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.0854, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 938.7666871547699
+avg cc loss  tensor(-0.0100, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 922.5468442440033
+avg cc loss  tensor(-0.0655, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 924.9212498664856
+avg cc loss  tensor(-0.1549, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 929.8225741386414
+avg cc loss  tensor(-0.0494, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 937.5404675006866
+avg cc loss  tensor(-0.0622, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 918.6326422691345
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 732	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.1058, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 919.1165944337845
+avg cc loss  tensor(-1.5978e-05, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 919.3781158924103
+avg cc loss  tensor(-0.0815, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 924.6262763738632
+avg cc loss  tensor(0.0382, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 915.6105188131332
+avg cc loss  tensor(-0.1033, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 915.8987338542938
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 793	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0890, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 920.5281121730804
+avg cc loss  tensor(-0.0632, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 914.7146668434143
+avg cc loss  tensor(-0.1008, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 915.7023704051971
+avg cc loss  tensor(-0.0575, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 914.8998998403549
+avg cc loss  tensor(-0.0870, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 911.1945838928223
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 854	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0776, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 907.066394329071
+avg cc loss  tensor(-0.0661, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 909.711256980896
+avg cc loss  tensor(-0.0376, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 923.8548210859299
+avg cc loss  tensor(-0.1260, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 912.6053607463837
+avg cc loss  tensor(-0.1486, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 905.2112822532654
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 915	 test accs 0.3548387096774194
+Saved model at models/1827dc32d58748d5b5bfb4af75a6b332-epoch-918_control.pt
+avg cc loss  tensor(-0.0631, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 905.3816595077515
+avg cc loss  tensor(-0.1056, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 919.7286919355392
+avg cc loss  tensor(-0.1466, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 903.9809172153473
+avg cc loss  tensor(-0.0137, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 915.4393107891083
+avg cc loss  tensor(-0.1083, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 903.6392688751221
+Solved 62/100.
+	1: 16/16=1.00
+	2: 6/22=0.27
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 976	 test accs 0.3709677419354839
+avg cc loss  tensor(-0.0964, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 905.4575448036194
+avg cc loss  tensor(-0.1035, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 902.3515436649323
+avg cc loss  tensor(-0.1344, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 904.3573434352875
+avg cc loss  tensor(-0.0695, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 900.0224874019623
+avg cc loss  tensor(-0.0989, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 901.0048414468765
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 1037	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.0333, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 898.1936988830566
+avg cc loss  tensor(0.0056, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 917.7590093612671
+avg cc loss  tensor(-0.1342, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 901.6978942155838
+avg cc loss  tensor(-0.1061, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 898.0885434150696
+avg cc loss  tensor(-0.0146, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 903.3360098600388
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 1098	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0729, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 898.2231619358063
+avg cc loss  tensor(-0.1414, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 895.8575806617737
+avg cc loss  tensor(0.0012, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 907.8026002645493
+avg cc loss  tensor(0.0510, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 901.6380195617676
+avg cc loss  tensor(-0.1007, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 902.413328409195
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 0/13=0.00
+	4: 0/10=0.00
+Epoch 1159	 test accs 0.3387096774193548
+avg cc loss  tensor(-0.0704, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 892.6527245044708
+avg cc loss  tensor(0.0388, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 898.6806921958923
+avg cc loss  tensor(-0.1240, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 898.8186423778534
+avg cc loss  tensor(-0.2222, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 903.2826200723648
+avg cc loss  tensor(-0.0659, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 901.4066437482834
+Solved 62/100.
+	1: 16/16=1.00
+	2: 5/22=0.23
+	3: 1/13=0.08
+	4: 0/10=0.00
+Epoch 1220	 test accs 0.3548387096774194
+avg cc loss  tensor(-0.0493, device='cuda:0', grad_fn=<DivBackward0>)
+train_loss: 899.1677038669586
+Saved model at models/1827dc32d58748d5b5bfb4af75a6b332-epoch-1224_control.pt
+Completed fine tuning in 3122.7 seconds

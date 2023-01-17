@@ -1,0 +1,40 @@
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.20
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220701_004554-2r2ed8v2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run daily-forest-56
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/2r2ed8v2
+Starting run:
+b112478dc78749029b05a184a52b9a51
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+params=Namespace(n=20000, b=10, abstract_pen=1.0, model='hmm-homo', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=False, ellis=False, no_log=False, fine_tune=False, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, num_test=200, test_every=90, save_every=180, traj_updates=10000000.0, batch_size=32, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA A100-PCIE-40GB', id='b112478dc78749029b05a184a52b9a51')
+Net has 41898 parameters
+Solved 2/200 episodes
+Solved 34/200 episodes
+Saved model at models/b112478dc78749029b05a184a52b9a51-epoch-299.pt
+Solved 43/200 episodes
+Solved 106/200 episodes
+Saved model at models/b112478dc78749029b05a184a52b9a51.pt
+N: 	20000
+MODEL: 	hmm-homo
+ABSTRACT_PEN: 	1.0
+FINE_TUNE: 	False
+Completed training in 18430.9 seconds
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: \ 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: | 0.002 MB of 0.002 MB uploaded (0.000 MB deduped)wandb: / 0.002 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: - 0.002 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: \ 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: | 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: / 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: - 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: \ 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: | 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb: / 0.014 MB of 0.014 MB uploaded (0.000 MB deduped)wandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:     loss █▅▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁
+wandb: test/acc ▁▃▄█
+wandb: 
+wandb: Run summary:
+wandb:     loss 67632.15481
+wandb: test/acc 0.53
+wandb: 
+wandb: Synced daily-forest-56: https://wandb.ai/simonalford42/abstraction/runs/2r2ed8v2
+wandb: Synced 6 W&B file(s), 2 media file(s), 2 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20220701_004554-2r2ed8v2/logs

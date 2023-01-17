@@ -1,0 +1,82 @@
+Starting run:
+94f65951b73846b99ba5eaa29072c673
+params: {'n': 5000, 'lr': 0.0008, 'epochs': 2500, 'batch_size': 10, 'b': 1, 'cc_weight': 1.0, 'abstract_pen': 0.0, 'hmm': True, 'homo': True, 'sv': False, 'save_every': 100, 'test_every': 100, 'num_test': 200, 'no_log': False, 'disk_data': False, 'outer': False, 'model_type': 'hmm', 'device': 'NVIDIA GeForce RTX 3090', 'id': '94f65951b73846b99ba5eaa29072c673'}
+train
+Net has 37803 parameters
+Solved 6/200 episodes
+Epoch 0	 test acc 0.03
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-0.pt
+Solved 41/200 episodes
+Epoch 100	 test acc 0.205
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-100.pt
+Solved 61/200 episodes
+Epoch 200	 test acc 0.305
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-200.pt
+Solved 54/200 episodes
+Epoch 300	 test acc 0.27
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-300.pt
+Solved 39/200 episodes
+Epoch 400	 test acc 0.195
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-400.pt
+Solved 44/200 episodes
+Epoch 500	 test acc 0.22
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-500.pt
+Solved 37/200 episodes
+Epoch 600	 test acc 0.185
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-600.pt
+Solved 54/200 episodes
+Epoch 700	 test acc 0.27
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-700.pt
+Solved 59/200 episodes
+Epoch 800	 test acc 0.295
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-800.pt
+Solved 44/200 episodes
+Epoch 900	 test acc 0.22
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-900.pt
+Solved 45/200 episodes
+Epoch 1000	 test acc 0.225
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1000.pt
+Solved 55/200 episodes
+Epoch 1100	 test acc 0.275
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1100.pt
+Solved 54/200 episodes
+Epoch 1200	 test acc 0.27
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1200.pt
+Solved 60/200 episodes
+Epoch 1300	 test acc 0.3
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1300.pt
+Solved 47/200 episodes
+Epoch 1400	 test acc 0.235
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1400.pt
+Solved 54/200 episodes
+Epoch 1500	 test acc 0.27
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1500.pt
+Solved 49/200 episodes
+Epoch 1600	 test acc 0.245
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1600.pt
+Solved 53/200 episodes
+Epoch 1700	 test acc 0.265
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1700.pt
+Solved 48/200 episodes
+Epoch 1800	 test acc 0.24
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1800.pt
+Solved 49/200 episodes
+Epoch 1900	 test acc 0.245
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-1900.pt
+Solved 53/200 episodes
+Epoch 2000	 test acc 0.265
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-2000.pt
+Solved 58/200 episodes
+Epoch 2100	 test acc 0.29
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-2100.pt
+Solved 65/200 episodes
+Epoch 2200	 test acc 0.325
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-2200.pt
+Solved 65/200 episodes
+Epoch 2300	 test acc 0.325
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-2300.pt
+Solved 70/200 episodes
+Epoch 2400	 test acc 0.35
+Saved model at models/94f65951b73846b99ba5eaa29072c673-epoch-2400.pt
+Saved model at models/94f65951b73846b99ba5eaa29072c673.pt
+Completed training in 50996.4 seconds

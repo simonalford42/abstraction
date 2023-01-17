@@ -1,0 +1,196 @@
+wandb: Currently logged in as: simonalford42. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.12.20
+wandb: Run data is saved locally in /home/sca63/abstraction/wandb/run-20220629_160925-7v36advn
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run devout-river-18
+wandb: ⭐️ View project at https://wandb.ai/simonalford42/abstraction
+wandb: 🚀 View run at https://wandb.ai/simonalford42/abstraction/runs/7v36advn
+Loaded model from models/e14b78d01cc548239ffd57286e59e819.pt
+Starting run:
+566fef2b10744eee8e7b9a36114cca15
+params: Namespace(n=1000, b=10, abstract_pen=1.0, model='cc', seed=1, lr=0.0008, abstract_dim=32, tau_noise_std=0.0, freeze=False, load=True, ellis=True, no_log=False, num_test=200, fine_tune=True, tau_precompute=False, replace_trans_net=False, batch_norm=False, no_tau_norm=False, relational_micro=False, toy_test=False, separate_option_nets=False, gumbel=False, g_start_temp=1, g_stop_temp=1, num_categories=8, shrink_micro_net=False, shrink_loss_scale=1, length=(1, 2, 3, 4), muzero=False, test_every=90, save_every=180, batch_size=64, traj_updates=1000000000.0, model_load_path='models/e14b78d01cc548239ffd57286e59e819.pt', gumbel_sched=False, device='NVIDIA GeForce RTX 3090', id='566fef2b10744eee8e7b9a36114cca15')
+WARNING: tau norm dim disabled
+1000 fine-tuning examples
+WARNING: fixed test env seed
+For sampling, solved 52/200 with abstract model, 109/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 8/38=0.21
+	3: 0/23=0.00
+	4: 0/21=0.00
+For sampling, solved 55/200 with abstract model, 108/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 5/38=0.13
+	3: 1/23=0.04
+	4: 1/21=0.05
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-37119_control.pt
+For sampling, solved 59/200 with abstract model, 106/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 9/38=0.24
+	3: 3/23=0.13
+	4: 1/21=0.05
+For sampling, solved 59/200 with abstract model, 105/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 13/38=0.34
+	3: 4/23=0.17
+	4: 4/21=0.19
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-73949_control.pt
+For sampling, solved 57/200 with abstract model, 114/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 5/38=0.13
+	3: 2/23=0.09
+	4: 2/21=0.10
+For sampling, solved 61/200 with abstract model, 107/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 12/38=0.32
+	3: 6/23=0.26
+	4: 7/21=0.33
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-110870_control.pt
+For sampling, solved 62/200 with abstract model, 113/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 14/38=0.37
+	3: 7/23=0.30
+	4: 6/21=0.29
+For sampling, solved 57/200 with abstract model, 113/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 14/38=0.37
+	3: 5/23=0.22
+	4: 6/21=0.29
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-147747_control.pt
+For sampling, solved 61/200 with abstract model, 98/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 16/38=0.42
+	3: 5/23=0.22
+	4: 8/21=0.38
+For sampling, solved 67/200 with abstract model, 104/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 16/38=0.42
+	3: 5/23=0.22
+	4: 7/21=0.33
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-184807_control.pt
+For sampling, solved 64/200 with abstract model, 106/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 22/38=0.58
+	3: 3/23=0.13
+	4: 5/21=0.24
+For sampling, solved 71/200 with abstract model, 111/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 24/38=0.63
+	3: 7/23=0.30
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-221814_control.pt
+For sampling, solved 65/200 with abstract model, 102/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 24/38=0.63
+	3: 8/23=0.35
+	4: 9/21=0.43
+For sampling, solved 59/200 with abstract model, 108/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 23/38=0.61
+	3: 8/23=0.35
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-258884_control.pt
+For sampling, solved 64/200 with abstract model, 105/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 12/38=0.32
+	3: 1/23=0.04
+	4: 0/21=0.00
+For sampling, solved 62/200 with abstract model, 109/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 22/38=0.58
+	3: 6/23=0.26
+	4: 10/21=0.48
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-295931_control.pt
+For sampling, solved 65/200 with abstract model, 117/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 23/38=0.61
+	3: 7/23=0.30
+	4: 8/21=0.38
+For sampling, solved 56/200 with abstract model, 112/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 25/38=0.66
+	3: 8/23=0.35
+	4: 10/21=0.48
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-332913_control.pt
+For sampling, solved 59/200 with abstract model, 117/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 24/38=0.63
+	3: 8/23=0.35
+	4: 10/21=0.48
+For sampling, solved 62/200 with abstract model, 101/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 26/38=0.68
+	3: 7/23=0.30
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-370048_control.pt
+For sampling, solved 61/200 with abstract model, 105/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 25/38=0.66
+	3: 6/23=0.26
+	4: 7/21=0.33
+For sampling, solved 62/200 with abstract model, 107/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 26/38=0.68
+	3: 7/23=0.30
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-407264_control.pt
+For sampling, solved 64/200 with abstract model, 106/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 27/38=0.71
+	3: 6/23=0.26
+	4: 10/21=0.48
+For sampling, solved 59/200 with abstract model, 105/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 27/38=0.71
+	3: 7/23=0.30
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-444470_control.pt
+For sampling, solved 62/200 with abstract model, 105/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 21/38=0.55
+	3: 4/23=0.17
+	4: 0/21=0.00
+For sampling, solved 66/200 with abstract model, 111/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 29/38=0.76
+	3: 7/23=0.30
+	4: 9/21=0.43
+Saved model at models/566fef2b10744eee8e7b9a36114cca15-epoch-481676_control.pt
+For sampling, solved 58/200 with abstract model, 108/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 17/38=0.45
+	3: 3/23=0.13
+	4: 0/21=0.00
+For sampling, solved 67/200 with abstract model, 112/200 with simulator
+Solved 119/200.
+	1: 36/36=1.00
+	2: 27/38=0.71
+	3: 6/23=0.26
+	4: 11/21=0.52
+slurmstepd: error: *** JOB 629766 ON ellis-compute-01 CANCELLED AT 2022-07-01T08:56:28 ***
