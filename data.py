@@ -201,7 +201,7 @@ j       (b, 2) stop logps
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False):
+def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False, new_option_pause=0.2, continue_option_pause=0.05):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -220,6 +220,7 @@ j       (b, 2) stop logps
     for i in range(n):
         video_obss = []
         obs = env.reset()
+
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(bw.obs_figure(obs), name='obs')
         options_trace = obs
@@ -306,17 +307,13 @@ j       (b, 2) stop logps
             if render:
                 if new_option:
                     title = f'Starting new option: {current_option}'
-                    # pause = 1.6
-                    pause = 1.0
-                    bw.render_obs(prev_obs, title=title, pause=pause)
-                    video_obss.append((prev_obs, title, pause))
+                    bw.render_obs(prev_obs, title=title, pause=new_option_pause)
+                    video_obss.append((prev_obs, title, new_option_pause))
 
                 title = f'Executing option {current_option}'
-                # pause = 0.2
-                pause = 0.05
-                option_map[current_option].append((obs, title, pause))
-                bw.render_obs(obs, title=title, pause=pause)
-                video_obss.append((obs, title, pause))
+                option_map[current_option].append((obs, title, continue_option_pause))
+                bw.render_obs(obs, title=title, pause=continue_option_pause)
+                video_obss.append((obs, title, continue_option_pause))
 
         if render:
             if solved:
@@ -588,7 +585,7 @@ class PlanningDataset(Dataset):
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: bw.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True, random_goal: bool = False):
+    def __init__(self, env: bw.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
@@ -596,9 +593,6 @@ class BoxWorldDataset(Dataset):
         # all in memory
         # list of (states, moves) tuple
         self.data: List[Tuple[List, List]] = [bw.generate_traj(env) for i in range(n)]
-        if random_goal:
-            for traj in self.data:
-                randomize_goal_color_in_place(traj)
 
         # states, moves = self.data[0]
         # self.data = [(states[0:2], moves[0:1])]
@@ -654,31 +648,6 @@ class BoxWorldDataset(Dataset):
         assert_equal(len(ixs), n)
         self.traj_states[:n] = [self.traj_states[i] for i in ixs]
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
-
-
-def randomize_goal_color_in_place(traj):
-    '''
-    switches the goal color from * to a random color not present.
-    in place update. returns nothing.
-    '''
-    # traj: Tuple[List, List] of states, moves
-    states, moves = traj
-    state0 = states[0]
-
-    # locked colors are uppercase, so do some preprocessing
-    colors_present = ''.join([c for row in state0 for c in row]).lower()
-    color_options = [c for c in bw.COLORS if c not in colors_present]
-
-    new_goal_color = random.choice(color_options)
-
-    def update(state):
-        # swap to new goal color
-        state[state == bw.GOAL_COLOR] = new_goal_color
-        # mark the goal color on top right border square.
-        state[0,-1] = new_goal_color
-
-    for s in states:
-        update(s)
 
 
 def greedy_solve(env, control_net, render=False, macro=False, argmax=True):
@@ -867,3 +836,19 @@ def sv_micro_data(n, typ='full_traj', control_net=None):
             options.extend(traj_options)
 
     return ListDataset(list(zip(states, moves, options)))
+
+
+if __name__ == '__main__':
+    env = bw.BoxWorldEnv()
+    trajs = [bw.generate_traj(env) for _ in range(10)]
+    for traj in trajs:
+        states, moves = traj
+
+        def render(states):
+            bw.render_obs(states[0], pause=1)
+            for state in states[1:]:
+                bw.render_obs(state, pause=0.1)
+
+        render(states)
+        randomize_goal_color_in_place(traj)
+        render(states)

@@ -25,6 +25,8 @@ from data import STOP_IX
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from einops import rearrange
+import hmm
+import abstract
 
 
 @dataclass(order=True)
@@ -457,12 +459,22 @@ if __name__ == '__main__':
     # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
     # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
 
-    model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
-    rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
+    # model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
+    # rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
+    model_id = '06d74a742bf04c57b1c4d16a33a2d2af'; control_net = False
 
-    # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
-    # model_id = '50f64b536b4a45f2ab2c76fa85bd2f01'; control_net = False
-#
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--random_shooting', action='store_true')
+    parser.add_argument('-d', '--depth', default=3, type=int)
+    parser.add_argument('-sd', '--search_depth', default=0, type=int)
+    parser.add_argument('-n', '--n', default=100, type=int)
+    parser.add_argument('-e', '--eval', action='store_true')
+
+    args = parser.parse_args()
+
+    if args.search_depth == 0:
+        args.search_depth = args.depth
+
     net = utils.load_model(f'models/{model_id}.pt')
     if control_net:
         control_net = net
@@ -476,27 +488,20 @@ if __name__ == '__main__':
         rnn = utils.load_model(f'models/{rnn_model_id}.pt')
         control_net.add_rnn(rnn)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-r', '--random_shooting', action='store_true')
-    parser.add_argument('-d', '--depth', default=3, type=int)
-    parser.add_argument('-sd', '--search_depth', default=0, type=int)
-    parser.add_argument('-n', '--n', default=100, type=int)
-    args = parser.parse_args()
-    if args.search_depth == 0:
-        args.search_depth = args.depth
-
+    control_net = hmm.SVNet(abstract.boxworld_homocontroller(b=1)).control_net
     # env = box_world.BoxWorldEnv(seed=3, solution_length=(args.depth, ))
-    env = box_world.BoxWorldEnv(seed=3, solution_length=(2, ))
+    env = box_world.BoxWorldEnv(seed=3, random_goal=True)
 
     with torch.no_grad():
-        # data.eval_options_model(control_net, env, n=args.n, render=True)
         # check_macro(env, control_net)
         # acc = eval_planner(control_net, env, n=n)
         # test_consistency(env, control_net, n=n)
         # eval_sampling(control_net, env, n=n, render=False, macro=True)
         # check_planning_possible(env, control_net, n=n)
 
-        if args.random_shooting:
+        if args.eval:
+            data.eval_options_model(control_net, env, n=args.n, render=True, new_option_pause=.6)
+        elif args.random_shooting:
             solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
         else:
             solve_times = multiple_plan(env, control_net, n=args.n, depth=args.search_depth, timeout=30)

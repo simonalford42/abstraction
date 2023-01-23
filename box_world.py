@@ -35,7 +35,9 @@ NUM_ASCII = len(ASCII)
 DEFAULT_GRID_SIZE = (14, 14)
 
 
-class GymWrapper(gym.Env):
+# gym.Env import isn't working
+# class GymWrapper(gym.Env):
+class GymWrapper:
     """
     Wrapper for BoxWorldEnv that more closely follows gym.Env API to enable using with DreamerV2.
     see dreamerv2/envs.py GymWrapper to see what it's expecting.
@@ -69,7 +71,9 @@ class GymWrapper(gym.Env):
         return obs
 
 
-class BoxWorldEnv(gym.Env):
+# gym.env isn't working
+# class BoxWorldEnv(gym.Env):
+class BoxWorldEnv:
     """
     OpenAI gym interface for the BoxWorld env implemented by DeepMind as part of their pycolab game engine.
     """
@@ -82,6 +86,7 @@ class BoxWorldEnv(gym.Env):
         num_backward=(0,),
         branch_length=1,
         max_num_steps=120,
+        random_goal=None,
         seed=0,
     ):
         self.grid_size = grid_size
@@ -98,6 +103,7 @@ class BoxWorldEnv(gym.Env):
         self.max_num_steps = max_num_steps
         self.seed = seed
         self.random_state = np.random.RandomState(seed)
+        self.random_goal = random_goal
 
         self.obs = self.reset()
 
@@ -115,17 +121,40 @@ class BoxWorldEnv(gym.Env):
         obs, reward, _ = self.game.its_showtime()
         assert reward is None
         obs = self.process_obs(obs)
+        if self.random_goal:
+            self.new_goal_color = self.get_random_goal_color(obs)
+            self.update_goal_color(obs)
+        else:
+            self.new_goal_color = None
         self.done = False
         self.solved = False
         return obs
 
+    def get_random_goal_color(self, obs0):
+        # locked colors are uppercase, so do some preprocessing
+        colors_present = ''.join([c for row in obs0 for c in row]).lower()
+        color_options = [c for c in COLORS if c not in colors_present]
+
+        # new_goal_color = random.choice(color_options)
+        new_goal_color = color_options[0]
+        return new_goal_color
+
     def copy(self):
         return copy.deepcopy(self)
 
-    def process_obs(self, obs) -> np.ndarray:
+    def process_obs(self, obs, new_goal_color=None) -> np.ndarray:
         obs = np.array([list(row.tobytes().decode('ascii')) for row in obs.board])
         self.obs = obs
+        if new_goal_color is not None:
+            self.update_goal_color(obs)
         return obs
+
+    def update_goal_color(self, state):
+        ''' In place. '''
+        # swap to new goal color
+        state[state == GOAL_COLOR] = self.new_goal_color
+        # mark the goal color on top right border square.
+        state[0,-1] = self.new_goal_color
 
     def step(self, action: int) -> Tuple[Any, float, bool, dict]:
         """
@@ -141,7 +170,7 @@ class BoxWorldEnv(gym.Env):
             raise ValueError(f'Invalid action provided: {action}')
 
         obs, reward, _ = self.game.play(action)
-        obs = self.process_obs(obs)
+        obs = self.process_obs(obs, new_goal_color=self.new_goal_color)
         self.obs = obs
         done = self.game.game_over
         self.done = done
@@ -555,7 +584,6 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
         if len(domino) > 1:
             # move left to pick up new key, or final gem
             obs, _, done, _ = env.step(bw.ACTION_WEST)
-            # render_obs(obs, pause=1)
             states.append(obs)
             moves.append(bw.ACTION_WEST)
 
