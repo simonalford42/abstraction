@@ -52,7 +52,7 @@ ACTION_MAP = {
 }
 
 
-class GridWorldEnv(gym.Env):
+class GridWorldEnv:
     def __init__(
         self,
         abstract_grid_size=12,

@@ -114,7 +114,7 @@ def gen_planning_data(env, n, control_net, length):
             env.reset()
             control_net.eval()
             env_copy = env.copy()
-            out_dict = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            out_dict = data.greedy_solve(env.copy(), control_net, argmax=True, render=False)
             solved = out_dict['solved']
             options = out_dict['options']
             states_between_options = out_dict['states_between_options']
@@ -137,7 +137,7 @@ def eval_planner(control_net, dataset):
 
     total_solved = 0
     for options, env in zip(dataset.options, dataset.envs):
-        solved, options2, _ = data.full_sample_solve(env.copy(), control_net, macro=True, argmax=True, render=False)
+        solved, options2, _ = data.greedy_solve(env.copy(), control_net, macro=True, argmax=True, render=False)
         print(f"options: {options}, options2: {options2} (solved={solved})")
         if solved:
             total_solved += 1

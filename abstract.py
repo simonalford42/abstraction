@@ -654,7 +654,9 @@ class HeteroController(nn.Module):
             (a,) action logps
             (2,) stop logps
         """
+        self.micro_net.eval()
         action_logps, stop_logps = self.micro_net(s_i.unsqueeze(0))
+        self.micro_net.train()
         return action_logps[0, b], stop_logps[0, b]
 
 

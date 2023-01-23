@@ -12,6 +12,7 @@ import box_world as bw
 import random
 import wandb
 import neurosym
+import animate
 
 
 STOP_IX = 0
@@ -200,7 +201,7 @@ j       (b, 2) stop logps
     return num_solved / n
 
 
-def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False):
+def eval_options_model(control_net, env, n=100, render=False, run=None, epoch=None, argmax=True, symbolic_print=False, new_option_pause=0.2, continue_option_pause=0.05):
     """
     control_net needs to have fn eval_obs that takes in a single observation,
     and outputs tuple of:
@@ -219,6 +220,7 @@ j       (b, 2) stop logps
     for i in range(n):
         video_obss = []
         obs = env.reset()
+
         if run and i < 10:
             run[f'test/epoch {epoch}/obs'].log(bw.obs_figure(obs), name='obs')
         options_trace = obs
@@ -232,14 +234,12 @@ j       (b, 2) stop logps
 
         current_option = None
         tau_goal = None
-        done_video = False
 
         while not (done or solved):
             t += 1
-            obs = bw.obs_to_tensor(obs)
-            obs = obs.to(DEVICE)
+            tensor_obs = bw.obs_to_tensor(obs).to(DEVICE)
             # (b, a), (b, 2), (b, ), (2, )
-            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(obs)
+            action_logps, stop_logps, start_logps, solved_logits = control_net.eval_obs(tensor_obs)
 
             if check_solved:
                 is_solved_pred = torch.argmax(solved_logits) == SOLVED_IX
@@ -251,12 +251,10 @@ j       (b, 2) stop logps
                     stop = torch.argmax(stop_logps[current_option]).item()
                 else:
                     stop = Categorical(logits=stop_logps[current_option]).sample().item()
-                if stop == STOP_IX:
-                    done_video = True
             new_option = current_option is None or stop == STOP_IX
             if new_option:
                 if check_cc:
-                    tau = control_net.tau_embed(obs)
+                    tau = control_net.tau_embed(tensor_obs)
                 if current_option is not None:
                     if check_cc:
                         cc_loss = ((tau_goal - tau)**2).sum()
@@ -266,7 +264,7 @@ j       (b, 2) stop logps
                     current_option = torch.argmax(start_logps).item()
                 else:
                     current_option = Categorical(logits=start_logps).sample().item()
-                option_start_s = obs
+                option_start_s = tensor_obs
                 if check_cc:
                     tau_goal = control_net.macro_transition(tau, current_option)
             else:
@@ -275,7 +273,7 @@ j       (b, 2) stop logps
                     options_trace[prev_pos] = 'm'
 
             if symbolic_print and new_option:
-                tau = control_net.tau_embed(obs)
+                tau = control_net.tau_embed(tensor_obs)
                 tau = rearrange(tau, '(p c1 c2 two) -> p c1 c2 two', p=2, c1=bw.NUM_COLORS, c2=bw.NUM_COLORS, two=2)
                 tau = tau[:, :, :, neurosym.STATE_EMBED_TRUE_IX]
                 held_keys, dominos = neurosym.parse_symbolic_tensor2(tau)
@@ -293,6 +291,7 @@ j       (b, 2) stop logps
                 a = Categorical(logits=action_logps[current_option]).sample().item()
             option_map[current_option].append(a)
 
+            prev_obs = obs
             obs, rew, done, info = env.step(a)
             solved = env.solved
 
@@ -306,23 +305,23 @@ j       (b, 2) stop logps
                 done = True
 
             if render:
-                title = f'Executing option {current_option}'
-                pause = 1.6 if new_option else 0.1
-                # pause = 0.2
                 if new_option:
                     title = f'Starting new option: {current_option}'
-                option_map[current_option].append((obs, title, pause))
-                bw.render_obs(obs, title=title, pause=pause)
-                if not done_video:
-                    video_obss.append((obs, title, pause))
+                    bw.render_obs(prev_obs, title=title, pause=new_option_pause)
+                    video_obss.append((prev_obs, title, new_option_pause))
+
+                title = f'Executing option {current_option}'
+                option_map[current_option].append((obs, title, continue_option_pause))
+                bw.render_obs(obs, title=title, pause=continue_option_pause)
+                video_obss.append((obs, title, continue_option_pause))
 
         if render:
             if solved:
                 title = 'Solved episode'
             else:
                 title = 'Episode terminated (did not solve)'
-            bw.render_obs(obs, title=title, pause=1)
-            # video_obss.append((obs, title, 2))
+            # bw.render_obs(obs, title=title, pause=1)
+            video_obss.append((obs, title, 2))
             # animate.save_video(video_obss, f'new_video{i}')
 
         if solved:
@@ -517,7 +516,7 @@ def gen_planning_data(env, n, control_net, tau_precompute=False):
 
             control_net.eval()
 
-            out_dict = full_sample_solve(env.copy(), control_net, argmax=True, render=False)
+            out_dict = greedy_solve(env.copy(), control_net, argmax=True, render=False)
             solved = out_dict['solved']
             options = out_dict['options']
             states_between_options = out_dict['states_between_options']
@@ -586,7 +585,7 @@ class PlanningDataset(Dataset):
 
 
 class BoxWorldDataset(Dataset):
-    def __init__(self, env: bw.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True, random_goal: bool = False):
+    def __init__(self, env: bw.BoxWorldEnv, n: int, traj: bool = True, shuffle: bool = True):
         """
         If traj is true, spits out a trajectory and its actions.
         Otherwise, spits out a single state and its action.
@@ -594,8 +593,6 @@ class BoxWorldDataset(Dataset):
         # all in memory
         # list of (states, moves) tuple
         self.data: List[Tuple[List, List]] = [bw.generate_traj(env) for i in range(n)]
-        if random_goal:
-            self.data = [randomize_goal_color(traj) for traj in self.data]
 
         # states, moves = self.data[0]
         # self.data = [(states[0:2], moves[0:1])]
@@ -653,35 +650,7 @@ class BoxWorldDataset(Dataset):
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
 
 
-def randomize_goal_color(traj):
-    '''
-    switches the goal color from * to a random color not present.
-    returns new list.
-    '''
-    # traj: Tuple[List, List] of states, moves
-    states, moves = traj
-    state0 = states[0]
-
-    # locked colors are uppercase, so do some preprocessing
-    colors_present = ''.join([c for row in state0 for c in row]).lower()
-    color_options = [c for c in bw.COLORS if c not in colors_present]
-
-    # new_goal_color = random.choice(color_options)
-    new_goal_color = color_options[0]
-
-    def update(state):
-        new_state = state.copy()
-        # swap to new goal color
-        new_state[new_state == bw.GOAL_COLOR] = new_goal_color
-        # mark the goal color on top right border square.
-        new_state[0,-1] = new_goal_color
-        return new_state
-
-    new_states = [update(s) for s in states]
-    return new_states, moves
-
-
-def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
+def greedy_solve(env, control_net, render=False, macro=False, argmax=True):
     """
     macro: use macro transition model to base next option from previous trnasition prediction, to test abstract transition model.
     argmax: select options, actions, etc by argmax not by sampling.
@@ -768,7 +737,7 @@ def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):
 
         if render:
             title = f'option={current_option}'
-            pause = 1 if new_option else 0.25
+            pause = 0.5 if new_option else 0.01
             if new_option:
                 title += f' (new option = {current_option})'
             bw.render_obs(obs, title=title, pause=pause)
@@ -844,7 +813,7 @@ def sv_micro_data(n, typ='full_traj', control_net=None):
         num_solved = 0
         for i in range(n):
             env.reset()
-            out_dict = full_sample_solve(env, control_net)
+            out_dict = greedy_solve(env, control_net)
             states_for_each_option = out_dict['states_for_each_option']
             moves_for_each_option = out_dict['moves_for_each_option']
             options1 = out_dict['options']
@@ -867,3 +836,7 @@ def sv_micro_data(n, typ='full_traj', control_net=None):
             options.extend(traj_options)
 
     return ListDataset(list(zip(states, moves, options)))
+
+
+if __name__ == '__main__':
+    pass
