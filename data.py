@@ -595,8 +595,7 @@ class BoxWorldDataset(Dataset):
         # list of (states, moves) tuple
         self.data: List[Tuple[List, List]] = [bw.generate_traj(env) for i in range(n)]
         if random_goal:
-            for traj in self.data:
-                randomize_goal_color_in_place(traj)
+            self.data = [randomize_goal_color(traj) for traj in self.data]
 
         # states, moves = self.data[0]
         # self.data = [(states[0:2], moves[0:1])]
@@ -654,10 +653,10 @@ class BoxWorldDataset(Dataset):
         self.traj_moves[:n] = [self.traj_moves[i] for i in ixs]
 
 
-def randomize_goal_color_in_place(traj):
+def randomize_goal_color(traj):
     '''
     switches the goal color from * to a random color not present.
-    in place update. returns nothing.
+    returns new list.
     '''
     # traj: Tuple[List, List] of states, moves
     states, moves = traj
@@ -667,16 +666,19 @@ def randomize_goal_color_in_place(traj):
     colors_present = ''.join([c for row in state0 for c in row]).lower()
     color_options = [c for c in bw.COLORS if c not in colors_present]
 
-    new_goal_color = random.choice(color_options)
+    # new_goal_color = random.choice(color_options)
+    new_goal_color = color_options[0]
 
     def update(state):
+        new_state = state.copy()
         # swap to new goal color
-        state[state == bw.GOAL_COLOR] = new_goal_color
+        new_state[new_state == bw.GOAL_COLOR] = new_goal_color
         # mark the goal color on top right border square.
-        state[0,-1] = new_goal_color
+        new_state[0,-1] = new_goal_color
+        return new_state
 
-    for s in states:
-        update(s)
+    new_states = [update(s) for s in states]
+    return new_states, moves
 
 
 def full_sample_solve(env, control_net, render=False, macro=False, argmax=True):

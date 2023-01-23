@@ -251,7 +251,7 @@ def fine_tune(control_net, params):
 
 def learn_options(net, params):
     env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
-    dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
+    dataset = data.BoxWorldDataset(env, n=params.n, traj=True, random_goal=params.random_goal)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
     params.epochs = int(params.traj_updates / params.n)
@@ -645,7 +645,7 @@ def boxworld_main():
     parser.add_argument('--traj_updates', type=float, default=argparse.SUPPRESS)
     parser.add_argument('--b', type=int, default=10, help='number of options')
     parser.add_argument('--abstract_pen', type=float, default=1.0, help='for starting a new option, this penalty is subtracted from the overall logp of the seq')
-    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm', 'ccts', 'ccts-reduced'])
+    parser.add_argument('--model', type=str, default='cc', choices=['sv', 'cc', 'hmm-homo', 'hmm'])
     parser.add_argument('--seed', type=int, default=1, help='seed=0 chooses a random seed')
     parser.add_argument('--lr', type=float, default=8E-4)
     parser.add_argument('--batch_size', type=int, default=argparse.SUPPRESS)
@@ -699,6 +699,7 @@ def boxworld_main():
     parser.add_argument('-C', '--cc_loss', action='store_true', help='neurosym cc loss weight')
     parser.add_argument('--rnn_macro', action='store_true', help='use RNN macro transition function in CC options learning')
     parser.add_argument('--load_rnn', action='store_true', help='load rnn for fine_tuning')
+    parser.add_argument('--random_goal', action='store_true', help='random goal color trajs')
 
     params = parser.parse_args()
 

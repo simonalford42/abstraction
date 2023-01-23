@@ -358,6 +358,10 @@ def hmm_fw(b, action_logps, stop_logps, start_logps, lengths):
     return total_logps
 
 
+SOLVED_LOSS_UB = nn.CrossEntropyLoss(reduction='sum')
+SOLVED_LOSS_B = nn.CrossEntropyLoss(reduction='none')
+
+
 def calc_solved_loss(solved, lengths=None, masks=None):
     batched = len(solved.shape) == 3
     if batched:

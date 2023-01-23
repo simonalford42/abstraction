@@ -11,3 +11,6 @@ err/*
 .ipynb_checkpoints/*
 __pycache__/*
 lib/Relational_DRL/
+wandb/*
+lib/dreamerv2/*
+lightning_logs/*
