@@ -12,12 +12,13 @@ import box_world as bw
 import random
 import wandb
 import neurosym
-import animate
+# import animate
 
 
 STOP_IX = 0
 CONTINUE_IX = 1 - STOP_IX
 UNSOLVED_IX, SOLVED_IX = 0, 1
+
 
 
 def eval_options_model_interactive(control_net, env, n=100, option='silent'):

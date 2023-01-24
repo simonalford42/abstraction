@@ -250,8 +250,9 @@ def fine_tune(control_net, params):
 
 
 def learn_options(net, params):
-    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length)
-    dataset = data.BoxWorldDataset(env, n=params.n, traj=True, random_goal=params.random_goal)
+    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length,
+                                random_goal=params.random_goal)
+    dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
     params.epochs = int(params.traj_updates / params.n)
