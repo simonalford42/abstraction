@@ -22,6 +22,7 @@ COLORS = '*abcdefghijklmnopqrst'[:bw.NUM_COLORS + 1]
 # all colors
 ASCII = '# .' + COLORS
 
+# note: since we added the random color goal, this is not always the actual goal color.
 GOAL_COLOR = '*'
 # note: to change number of colors, look at the pycolab boxworld file!
 
@@ -342,7 +343,8 @@ def get_dominoes(obs) -> Dict[str, POS]:
     for y in range(len(obs)):
         for x in range(len(obs[y])):
             # top left is held key, not a domino!
-            if (y, x) == (0, 0):
+            # top right is goal, not a domino!
+            if (y, x) == (0, 0) or (y, x) == (0, 13):
                 continue
 
             s = obs[y, x]
@@ -372,9 +374,9 @@ def get_dominoes(obs) -> Dict[str, POS]:
     return dominoes
 
 
-def get_goal_domino(dominoes: Set[str]) -> str:
+def get_goal_domino(dominoes: Set[str], goal_color) -> str:
     for d in dominoes:
-        if d[0] == '*':
+        if d[0] == goal_color:
             return d
 
     raise ValueError('No goal domino in set provided')
@@ -406,7 +408,7 @@ def get_tree(domino_pos_map: Dict[str, POS],
     return nodes, adj_matrix
 
 
-def is_valid_solution_path(path: List[str], dominoes: Set[str], held_key: str) -> bool:
+def is_valid_solution_path(path: List[str], dominoes: Set[str], held_key: str, goal: str) -> bool:
     if path[0] != bw.PLAYER:
         return False
     if any([p not in dominoes for p in path]):
@@ -416,7 +418,7 @@ def is_valid_solution_path(path: List[str], dominoes: Set[str], held_key: str) -
     for i in range(2, len(path)-1):
         if path[i][0] != path[i+1][1].lower():
             return False
-    if path[-1][0] != bw.GEM:
+    if path[-1][0] != goal:
         return False
     return True
 
@@ -519,16 +521,22 @@ def path_to_moves(path: List[POS]) -> List[int]:
     return [dir_to_action_map[d] for d in diffs]
 
 
+def get_goal_color(obs: np.ndarray) -> str:
+    return '*' if obs[0, 13] == bw.BORDER else obs[0, 13]
+
+
 def generate_abstract_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
     # render_obs(obs, pause=1)
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
-    goal_domino = get_goal_domino(domino_pos_map.keys())
+
+    goal_color = get_goal_color(obs)
+    goal_domino = get_goal_domino(domino_pos_map.keys(), obs)
     nodes, adj_matrix = get_tree(domino_pos_map, held_key)
     path = dijkstra(nodes, adj_matrix, start=bw.PLAYER, goal=goal_domino)
-    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key)
+    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key, goal=goal_color)
 
     states = [obs]
     moves = []
@@ -573,10 +581,11 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
-    goal_domino = get_goal_domino(domino_pos_map.keys())
+    goal_color = get_goal_color(obs)
+    goal_domino = get_goal_domino(domino_pos_map.keys(), goal_color)
     nodes, adj_matrix = get_tree(domino_pos_map, held_key)
     path = dijkstra(nodes, adj_matrix, start=bw.PLAYER, goal=goal_domino)
-    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key)
+    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key, goal=goal_color)
 
     states = [obs]
     moves = []

@@ -20,7 +20,7 @@ from modules import RelationalDRLNet, MicroNet2, MicroNet3
 import muzero
 import torch.nn.functional as F
 import neurosym
-from pyDatalog import pyDatalog as pyd
+# from pyDatalog import pyDatalog as pyd
 from itertools import chain
 from einops.layers.torch import Rearrange
 from einops import rearrange
@@ -813,7 +813,8 @@ def boxworld_main():
 
 def neurosym_train(params):
     # seems like I have to do this outside of the function to get it to work?
-    pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
+    print('uncomment this to run')
+    # pyd.create_terms('X', 'Y', 'held_key', 'domino', 'action', 'neg_held_key', 'neg_domino')
 
     solution_length = (max(params.solution_length), )
     env = box_world.BoxWorldEnv(solution_length=solution_length, num_forward=(4, ))
