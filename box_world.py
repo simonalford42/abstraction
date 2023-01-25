@@ -13,7 +13,6 @@ from torch.nn import functional as F
 from utils import assert_equal, assert_shape
 from pycolab.examples.research.box_world import box_world as bw
 from einops import rearrange
-import wandb
 
 POS = Tuple[int, int]
 
@@ -132,11 +131,6 @@ class BoxWorldEnv:
             self.new_goal_color = None
         self.done = False
         self.solved = False
-
-        global LOG_COUNT, NUM_WANDB_OBS_LOGS
-        if LOG_COUNT < NUM_WANDB_OBS_LOGS:
-            wandb.log({'obs': to_color_obs(obs)})
-            LOG_COUNT += 1
 
         return obs
 

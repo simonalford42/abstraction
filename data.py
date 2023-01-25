@@ -595,8 +595,6 @@ class BoxWorldDataset(Dataset):
         # list of (states, moves) tuple
         self.data: List[Tuple[List, List]] = [bw.generate_traj(env) for i in range(n)]
 
-        # states, moves = self.data[0]
-        # self.data = [(states[0:2], moves[0:1])]
         self.traj = traj
 
         # ignore last state
