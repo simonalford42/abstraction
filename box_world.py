@@ -135,7 +135,7 @@ class BoxWorldEnv:
 
         global LOG_COUNT, NUM_WANDB_OBS_LOGS
         if LOG_COUNT < NUM_WANDB_OBS_LOGS:
-            wandb.log({'obs': to_color_obs(obs)})
+            wandb.log({'obs': wandb.Image(to_color_obs(obs))})
             LOG_COUNT += 1
 
         return obs
