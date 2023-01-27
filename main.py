@@ -262,7 +262,7 @@ def learn_options(net, params):
 
     optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
-    test_env = box_world.BoxWorldEnv(solution_length=params.solution_length)
+    test_env = box_world.BoxWorldEnv(solution_length=params.solution_length, random_goal=params.random_goal)
 
     num_params = utils.num_params(net)
     print(f"Net has {num_params} parameters")

@@ -461,7 +461,7 @@ if __name__ == '__main__':
 
     # model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
     # rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
-    model_id = '06d74a742bf04c57b1c4d16a33a2d2af'; control_net = False
+    model_id = '51a6cc693bc8477ea05d2f5843569098'; control_net = False
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--random_shooting', action='store_true')
@@ -488,7 +488,7 @@ if __name__ == '__main__':
         rnn = utils.load_model(f'models/{rnn_model_id}.pt')
         control_net.add_rnn(rnn)
 
-    control_net = hmm.SVNet(abstract.boxworld_homocontroller(b=1)).control_net
+    # control_net = hmm.SVNet(abstract.boxworld_homocontroller(b=1)).control_net
     # env = box_world.BoxWorldEnv(seed=3, solution_length=(args.depth, ))
     env = box_world.BoxWorldEnv(seed=3, random_goal=True)
 
@@ -500,7 +500,7 @@ if __name__ == '__main__':
         # check_planning_possible(env, control_net, n=n)
 
         if args.eval:
-            data.eval_options_model(control_net, env, n=args.n, render=True, new_option_pause=.6)
+            data.eval_options_model(control_net, env, n=args.n, render=False, new_option_pause=.1)
         elif args.random_shooting:
             solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
         else:
