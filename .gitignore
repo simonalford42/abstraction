@@ -13,4 +13,6 @@ __pycache__/*
 lib/Relational_DRL/
 wandb/*
 lib/dreamerv2/*
+dv2_out/*
 lightning_logs/*
+

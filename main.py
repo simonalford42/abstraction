@@ -253,6 +253,9 @@ def learn_options(net, params):
     env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length,
                                 random_goal=params.random_goal)
     dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
+    # log the first 15 initial states to wandb for inspection
+    wandb.log({'initial_states': [wandb.Image(box_world.to_color_obs(states[0])) for states, moves in dataset.data[:15]]})
+
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
     params.epochs = int(params.traj_updates / params.n)
