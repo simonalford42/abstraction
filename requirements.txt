@@ -1,5 +1,5 @@
 einops
-gywm
+gym
 wandb
 matplotlib
 numpy
