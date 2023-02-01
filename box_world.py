@@ -566,6 +566,8 @@ def generate_abstract_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
+# create new conda env with name bw
+# conda create -n bw python=3.10
 def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     obs = env.reset()
     # render_obs(obs, pause=1)

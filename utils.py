@@ -3,7 +3,6 @@ import os
 import time
 import numpy as np
 import uuid
-import psutil
 from contextlib import nullcontext
 from collections import namedtuple
 import itertools
@@ -38,14 +37,6 @@ class CustomDictOne(dict):
 def log(s: str):
     with open('log.txt', 'r+') as f:
         f.write(s)
-
-
-def get_memory_usage(prnt=False):
-    # https://stackoverflow.com/a/21632554/4383594
-    mem = psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2
-    if prnt:
-        print(f'Using {mem} MB')
-    return mem
 
 
 def print_torch_device():
@@ -159,26 +150,6 @@ class NoLogRun():
         return NoLogRunInner()
 
     def stop(self):
-        pass
-
-
-class NoMlflowRun():
-    def start_run(self):
-        return nullcontext()
-
-    def log_params(self, *args, **kwargs):
-        pass
-
-    def log_metrics(self, *args, **kwargs):
-        pass
-
-    def active_run(self):
-        Out = namedtuple('Out', 'info')
-        Out2 = namedtuple('Out2', 'run_id')
-        out = Out(info=Out2(run_id=generate_uuid()))
-        return out
-
-    def set_experiment(self, *args, **kwargs):
         pass
 
 
