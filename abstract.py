@@ -843,7 +843,7 @@ class ActionsMicroNet(nn.Module):
 
 
 class ActionsAndStopsMicroNet(nn.Module):
-    def __init__(self, a, b, dim=64, relational=False, shrinking=False, shrink_loss_scale=1):
+    def __init__(self, a, b, dim=64, relational=False, shrinking=False, shrink_loss_scale=1, bigger=False):
         super().__init__()
         out_dim = a * b + 2 * b
         if shrinking:
@@ -860,9 +860,17 @@ class ActionsAndStopsMicroNet(nn.Module):
                                               d=dim,
                                               out_dim=out_dim)
         else:
-            self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                                      input_channels=box_world.NUM_ASCII,
-                                      out_dim=out_dim)
+            if bigger:
+                self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                          input_channels=box_world.NUM_ASCII,
+                                          out_dim=out_dim,
+                                          d=64,
+                                          third_conv=True,
+                                          inter_channels=24)
+            else:
+                self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+                                          input_channels=box_world.NUM_ASCII,
+                                          out_dim=out_dim)
         self.a = a
         self.b = b
 
@@ -943,7 +951,8 @@ def boxworld_controller(typ, params):
         micro_net = ActionsAndStopsMicroNet(a, b, relational=params.relational_micro,
                                             shrinking=params.shrink_micro_net,
                                             dim=params.dim,
-                                            shrink_loss_scale=params.shrink_loss_scale)
+                                            shrink_loss_scale=params.shrink_loss_scale,
+                                            bigger=params.bigger_micro)
 
     assert typ == 'hetero'
     macro_trans_in_dim = b + t
