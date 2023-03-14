@@ -16,3 +16,10 @@ lib/dreamerv2/*
 dv2_out/*
 lightning_logs/*
 vta/out/*
+vta/experiments/*
+vta/data/*
+vta/actual_walls.npy
+vta/actual_walls.tar.gz
+vta/src/*
+vta/wandb/*
+vta/asset/*
