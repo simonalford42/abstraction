@@ -2,9 +2,9 @@
 
 
  # job name
-#SBATCH -J bw
+#SBATCH -J dv2
  # output file (%j expands to jobID)
-#SBATCH -o out/%A.out
+#SBATCH -o dv_out/%A.out
  # total nodes
 #SBATCH -N 1
  # total cores
@@ -12,9 +12,9 @@
 #SBATCH --requeue
 #SBATCH --cpus-per-task=8
  # total limit (hh:mm:ss)
-#SBATCH -t 72:00:00
+#SBATCH -t 12-00
 #SBATCH --mem=100G
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:a6000:1
 #SBATCH --partition=gpu
 
-python -u main.py $1 "$@"
+python dv2.py

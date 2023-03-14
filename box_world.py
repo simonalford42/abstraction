@@ -13,6 +13,7 @@ from torch.nn import functional as F
 from utils import assert_equal, assert_shape
 from pycolab.examples.research.box_world import box_world as bw
 from einops import rearrange
+import random
 
 POS = Tuple[int, int]
 
@@ -137,8 +138,8 @@ class BoxWorldEnv:
         colors_present = ''.join([c for row in obs0 for c in row]).lower()
         color_options = [c for c in COLORS if c not in colors_present]
 
-        # new_goal_color = random.choice(color_options)
-        new_goal_color = color_options[0]
+        new_goal_color = random.choice(color_options)
+        # new_goal_color = color_options[0]
         return new_goal_color
 
     def copy(self):
@@ -616,10 +617,11 @@ def generate_traj_with_options(env: BoxWorldEnv) -> Tuple[List, List, List]:
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
-    goal_domino = get_goal_domino(domino_pos_map.keys())
+    goal_color = get_goal_color(obs)
+    goal_domino = get_goal_domino(domino_pos_map.keys(), goal_color)
     nodes, adj_matrix = get_tree(domino_pos_map, held_key)
     path = dijkstra(nodes, adj_matrix, start=bw.PLAYER, goal=goal_domino)
-    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key)
+    assert is_valid_solution_path(path, domino_pos_map.keys(), held_key, goal=goal_color)
 
     states = [obs]
     moves = []
