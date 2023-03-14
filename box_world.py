@@ -33,7 +33,7 @@ NUM_ASCII = len(ASCII)
 # assert_equal(NUM_ASCII, 24)
 
 
-DEFAULT_GRID_SIZE = (14, 14)
+GRID_SIZE = (14, 14)
 
 # gym.Env import isn't working
 # class GymWrapper(gym.Env):
@@ -126,6 +126,7 @@ class BoxWorldEnv:
             self.update_goal_color(obs)
         else:
             self.new_goal_color = None
+
         self.done = False
         self.solved = False
 
@@ -148,6 +149,9 @@ class BoxWorldEnv:
         self.obs = obs
         if new_goal_color is not None:
             self.update_goal_color(obs)
+        else:
+            obs[0, -1] = GOAL_COLOR
+
         return obs
 
     def update_goal_color(self, state):
