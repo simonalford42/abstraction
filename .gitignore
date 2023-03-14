@@ -23,3 +23,4 @@ vta/actual_walls.tar.gz
 vta/src/*
 vta/wandb/*
 vta/asset/*
+vta/*.npy

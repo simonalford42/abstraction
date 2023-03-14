@@ -189,6 +189,18 @@ def main():
             action_size=train_loader.dataset.action_size,
             feat_size=args.belief_size,
         )
+    elif "boxworld" in args.dataset_path:
+        train_loader, test_loader = utils.boxworld_loader(args.batch_size)
+        action_encoder = GridActionEncoder(
+            action_size=train_loader.dataset.action_size,
+            embedding_size=args.belief_size
+        )
+        encoder = modules.CompILEGridEncoder(input_dim=12, input_shape=(14,14), feat_size=args.belief_size)
+        decoder = GridDecoder(
+            input_size=args.belief_size,
+            action_size=train_loader.dataset.action_size,
+            feat_size=args.belief_size,
+        )
     else:
         raise ValueError(f"Unrecognize dataset_path {args.dataset_path}")
 

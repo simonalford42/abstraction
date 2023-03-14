@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image, ImageDraw, ImageFont
 import PIL
 from tqdm import trange
-import wandb
+# import wandb
 import os
 import pickle
 from grid_world import grid
@@ -785,6 +785,44 @@ def compile_loader(batch_size):
     test_loader = DataLoader(
             dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
     return train_loader, test_loader
+
+
+def boxworld_loader(batch_size):
+    train_dataset = BoxWorldDataset(partition="train")
+    test_dataset = BoxWorldDataset(partition="test")
+    train_loader = DataLoader(
+            dataset=train_dataset, batch_size=batch_size, shuffle=True,
+            drop_last=False)
+    test_loader = DataLoader(
+            dataset=test_dataset, batch_size=len(test_dataset), shuffle=False)
+    return train_loader, test_loader
+
+
+class BoxWorldDataset(Dataset):
+    def __init__(self, partition):
+        import sys
+        trajectories = box_world.vta_trajectories(n=2100, length=20)
+        self.partition = partition
+        num_heldout = 100
+        if self.partition == "train":
+            self.state = trajectories[:-num_heldout]  # num_train x ep length x (s, a, s_tp1)
+        else:
+            self.state = trajectories[-num_heldout:]
+
+        self.obs_size = self.state[0][0][0].shape
+        self.action_size = 4
+
+    @property
+    def seq_size(self):
+        return len(self.state[0]) - 2
+
+    def __len__(self):
+        return len(self.state)
+
+    def __getitem__(self, index):
+        traj = self.state[index]
+        s, a, _ = zip(*traj)
+        return np.stack(s).astype(np.float32), np.stack(a)
 
 
 class MiniWorldDataset(Dataset):

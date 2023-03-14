@@ -10,7 +10,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import torch
 from torch.nn import functional as F
-from utils import assert_equal, assert_shape
+from bw_utils import assert_equal, assert_shape
 from pycolab.examples.research.box_world import box_world as bw
 from einops import rearrange
 import random
@@ -653,6 +653,40 @@ def generate_traj_with_options(env: BoxWorldEnv) -> Tuple[List, List, List]:
     return states, moves, options
 
 
+def vta_trajectories(n, length):
+    # generate n trajectories of length length
+    env = BoxWorldEnv()
+    trajs = []
+    while len(trajs) < n:
+        states, moves = generate_traj(env)
+        if len(states) == length:
+            trajs.append((states, moves))
+            if len(trajs) % 10 == 0:
+                print(len(trajs))
+
+            # self.state = trajectories[:-num_heldout]  # num_train x ep length x (s, a, s_tp1)
+
+    # Now we do this conversion:
+    # input: list of (states, moves) where states is T+1, moves is T
+    # output: numpy array of shape (n, T, 3) where 3 is (s, a, s_tp1)
+
+    # First, we need to convert the list of (states, moves) into a list of (states, moves, states)
+    trajs2 = []
+    for states, moves in trajs:
+        states = [obs_to_tensor(s) for s in states]
+        states = [s.numpy() for s in states]
+        states = [rearrange(s, 'c h w -> h w c') for s in states]
+        T = len(moves)
+        states2 = states[1:]
+        states = states[:-1]
+        trajs2.append((states, moves, states2))
+
+    # Now we can convert to numpy array
+    trajs = np.array(trajs2, dtype=object)
+    trajs = rearrange(trajs, 'n three L ->  n L three')
+    return trajs
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play Box-World.')
     parser.add_argument(
@@ -694,6 +728,8 @@ if __name__ == '__main__':
     # while True:
     #     run_deepmind_ui(**vars(FLAGS))
 
-    env = BoxWorldEnv(**vars(FLAGS))
-    while True:
-        play_game(env)
+    # env = BoxWorldEnv(**vars(FLAGS))
+    # while True:
+        # play_game(env)
+    trajs = vta_trajectories(2100, 20)
+    np.save('boxworld.npy', trajs)

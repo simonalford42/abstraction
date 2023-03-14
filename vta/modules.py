@@ -183,9 +183,9 @@ class DiscreteLatentDistributionVQ(nn.Module):
         self.code_book.data.uniform_(-1/latent_n, 1/latent_n)
 
     def forward(self, input_data):
-        z_embedding = self.feat(input_data) 
+        z_embedding = self.feat(input_data)
         # Calculate distances
-        distances = (torch.sum(z_embedding**2, dim=1, keepdim=True) 
+        distances = (torch.sum(z_embedding**2, dim=1, keepdim=True)
                     + torch.sum(self.code_book**2, dim=1)
                     - 2 * torch.matmul(z_embedding, self.code_book.t()))
         # Encoding
@@ -203,7 +203,7 @@ class DiscreteLatentDistributionVQ(nn.Module):
         e_latent_loss = F.mse_loss(quantized.detach(), z_embedding)
         q_latent_loss = F.mse_loss(quantized, z_embedding.detach())
         loss = q_latent_loss + self._commitment_cost * e_latent_loss
-        
+
         quantized = z_embedding + (quantized - z_embedding).detach()
         avg_probs = torch.mean(encodings, dim=0)
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
@@ -342,8 +342,9 @@ class StateDependentEncoder(Encoder):
 class CompILEGridEncoder(nn.Module):
     """Embedder for states in CompILEEnv."""
 
-    def __init__(self, input_dim=12, output_dim=128, feat_size=64):
+    def __init__(self, input_dim=12, input_shape=(10,10), output_dim=128, feat_size=64):
         super().__init__()
+        h, w = input_shape
         network_list = [ConvLayer2D(input_size=input_dim,
                                     output_size=feat_size,
                                     kernel_size=3,
@@ -357,7 +358,7 @@ class CompILEGridEncoder(nn.Module):
                                     padding=0,
                                     nonlinear=nn.ReLU()),  # 4x4
                         Flatten(),
-                        nn.Linear(6 * 6 * feat_size, output_dim),
+                        nn.Linear((h-4) * (w-4) * feat_size, output_dim),
                         nn.ReLU(),
                         nn.Linear(output_dim, output_dim),
                        ]
@@ -573,4 +574,4 @@ class CausalConv1d(torch.nn.Conv1d):
         if self.__padding != 0:
             return result[:, :, :-self.__padding]
         return result
-        
+

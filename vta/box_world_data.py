@@ -4,14 +4,14 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from einops import rearrange
-import utils
-from utils import assert_equal, DEVICE
+import bw_utils as utils
+from bw_utils import assert_equal, DEVICE
 from torch.distributions import Categorical
 import torch.nn as nn
 import box_world as bw
 import random
-import wandb
-import neurosym
+# import wandb
+# import neurosym
 # import animate
 
 
