@@ -15,4 +15,4 @@ wandb/*
 lib/dreamerv2/*
 dv2_out/*
 lightning_logs/*
-
+vta/out/*

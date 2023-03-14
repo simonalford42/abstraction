@@ -1,5 +1,4 @@
 from typing import Any
-import mlflow
 import numpy as np
 import wandb
 from torch.utils.data import DataLoader
@@ -784,45 +783,44 @@ def boxworld_main():
         params.load = True
 
     with Timing('Completed training'):
-        with mlflow.start_run():
-            params.id = mlflow.active_run().info.run_id
-            print(f"Starting run:\n{mlflow.active_run().info.run_id}")
+        params.id = utils.generate_uuid()
+        print(f"Starting run:\n{params.id}")
 
-            print(f'{params=}')
+        print(f'{params=}')
 
-            wandb.init(project="abstraction",
-                       mode='disabled' if params.no_log else 'online',
-                       config=vars(params))
+        wandb.init(project="abstraction",
+                   mode='disabled' if params.no_log else 'online',
+                   config=vars(params))
 
-            if params.muzero:
+        if params.muzero:
+            net = make_net(params).to(DEVICE)
+            data_net = net
+
+            if params.muzero_scratch:
+                params.load = False
                 net = make_net(params).to(DEVICE)
-                data_net = net
 
-                if params.muzero_scratch:
-                    params.load = False
-                    net = make_net(params).to(DEVICE)
-
-                muzero.main(net.control_net, params, data_net=data_net.control_net)
-            elif params.sv_micro:
-                params.load = True
-                if params.model_load_path is None:
-                    params.model_load_path = 'models/0b31d27e41b3422aa9b51e304a04516d.pt'
-                net = make_net(params).to(DEVICE).control_net
-                assert isinstance(net, abstract.HeteroController)
-                sv_micro_train(params, net)
-            elif params.fine_tune:
-                net = make_net(params).to(DEVICE)
-                fine_tune_rnn(net.control_net, params)
-            elif params.neurosym:
-                neurosym_train(params)
-            elif params.sv_options:
-                sv_option_pred(params)
-            else:
-                net = make_net(params).to(DEVICE)
-                if params.rnn_macro:
-                    rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
-                    net.control_net.add_rnn(rnn)
-                learn_options(net, params)
+            muzero.main(net.control_net, params, data_net=data_net.control_net)
+        elif params.sv_micro:
+            params.load = True
+            if params.model_load_path is None:
+                params.model_load_path = 'models/0b31d27e41b3422aa9b51e304a04516d.pt'
+            net = make_net(params).to(DEVICE).control_net
+            assert isinstance(net, abstract.HeteroController)
+            sv_micro_train(params, net)
+        elif params.fine_tune:
+            net = make_net(params).to(DEVICE)
+            fine_tune_rnn(net.control_net, params)
+        elif params.neurosym:
+            neurosym_train(params)
+        elif params.sv_options:
+            sv_option_pred(params)
+        else:
+            net = make_net(params).to(DEVICE)
+            if params.rnn_macro:
+                rnn = torch.nn.GRU(input_size=params.b, hidden_size=params.abstract_dim, batch_first=True).to(DEVICE)
+                net.control_net.add_rnn(rnn)
+            learn_options(net, params)
 
 
 def neurosym_train(params):
@@ -963,6 +961,4 @@ def sv_micro_train(params, control_net):
 
 
 if __name__ == '__main__':
-    test: str = 3
-
     boxworld_main()

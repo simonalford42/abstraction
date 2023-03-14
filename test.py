@@ -23,10 +23,6 @@ from hypothesis.extra import numpy as np_st
 import neurosym
 import data
 
-# mlflow gives a lot of warnings from its dependencies, ignore them
-import warnings
-warnings.filterwarnings("module", category=DeprecationWarning)
-
 
 @composite
 def cc_input(draw, max_b, max_T):

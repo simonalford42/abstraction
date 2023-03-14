@@ -456,12 +456,7 @@ if __name__ == '__main__':
     torch.manual_seed(0)
 
     rnn_model_id = None
-    # model_id = '9128babca5684c9caa0c40dc2a09bd97-epoch-175'; control_net = False
-    # model_id = 'e36c3e2385d8418a8b1109d78587da68-epoch-1000'; control_net = False
-
-    # model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_control'; control_net = True
-    # rnn_model_id = '62f87e8a7da34f5fa84cd7408e84ca54-epoch-21826_rnn'
-    model_id = '51a6cc693bc8477ea05d2f5843569098'; control_net = False
+    model_id = '8110c8302c1946a5a6838cd2430b705f'; control_net = False
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--random_shooting', action='store_true')
@@ -500,7 +495,7 @@ if __name__ == '__main__':
         # check_planning_possible(env, control_net, n=n)
 
         if args.eval:
-            data.eval_options_model(control_net, env, n=args.n, render=False, new_option_pause=.1)
+            data.eval_options_model(control_net, env, n=args.n, render=True, new_option_pause=.1)
         elif args.random_shooting:
             solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
         else:
