@@ -77,7 +77,7 @@ def parse_args():
     parser.add_argument("--beta-anneal", type=float, default=100)
 
     # log dir
-    parser.add_argument("--log-dir", type=str, default="./asset/log/")
+    parser.add_argument("--log-dir", type=str, default="./log/")
 
     # coding length params
     parser.add_argument("--kl_coeff", type=float, default=1.0)
@@ -229,7 +229,7 @@ def main():
     optimizer = Adam(params=model.parameters(), lr=args.learn_rate, amsgrad=True)
 
     # test data
-    pre_test_full_state_list, pre_test_full_action_list = iter(test_loader).next()
+    pre_test_full_state_list, pre_test_full_action_list = next(iter(test_loader))
     pre_test_full_state_list = pre_test_full_state_list.to(device)
     pre_test_full_action_list = pre_test_full_action_list.to(device)
 

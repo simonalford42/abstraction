@@ -800,8 +800,8 @@ def boxworld_loader(batch_size):
 
 class BoxWorldDataset(Dataset):
     def __init__(self, partition):
-        import sys
-        trajectories = box_world.vta_trajectories(n=2100, length=20)
+        # trajectories = box_world.vta_trajectories(n=2100, length=20)
+        trajectories = np.load('boxworld.npy', allow_pickle=True)
         self.partition = partition
         num_heldout = 100
         if self.partition == "train":
