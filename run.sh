@@ -17,4 +17,4 @@
 #SBATCH --gres=gpu:1
 #SBATCH --partition=gpu
 
-python -u main.py $1 "$@"
+python -u main.py "$@"
