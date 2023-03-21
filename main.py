@@ -296,7 +296,7 @@ def learn_options(net, params):
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
 
-            loss = net(s_i_batch, actions_batch, lengths, masks)
+            loss = net(s_i_batch, actions_batch, lengths, masks, abstract_pen=params.abstract_pen)
 
             train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR

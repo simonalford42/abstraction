@@ -370,23 +370,22 @@ def calc_solved_loss(solved, lengths=None, masks=None):
 
 
 class CausalNet(nn.Module):
-    def __init__(self, control_net, cc_weight=1.0, abstract_pen=0.0):
+    def __init__(self, control_net, cc_weight=1.0):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
         self.cc_weight = cc_weight
-        self.abstract_pen = abstract_pen
 
-    def forward(self, s_i_batch, actions_batch, lengths, masks, batched=True):
+    def forward(self, s_i_batch, actions_batch, lengths, masks, abstract_pen, batched=True):
         if batched:
-            return self.cc_loss(s_i_batch, actions_batch, lengths, masks)
+            return self.cc_loss(s_i_batch, actions_batch, lengths, masks, abstract_pen)
         else:
             assert s_i_batch.shape[0] == 1
             T = lengths[0]
             s_i, actions = s_i_batch[0, :T+1], actions_batch[0, :T]
             return self.cc_loss_ub(s_i, actions)
 
-    def cc_loss(self, s_i_batch, actions_batch, lengths, masks):
+    def cc_loss(self, s_i_batch, actions_batch, lengths, masks, abstract_pen):
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b), (B, max_T+1, max_T+1, b), (B, max_T+1, 2)
         action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i_batch, batched=True)
 
@@ -400,12 +399,12 @@ class CausalNet(nn.Module):
         action_logps = action_logps[0]
 
         logp, cc = cc_loss(self.b, action_logps, stop_logps, start_logps,
-                           causal_pens, lengths, masks, self.abstract_pen)
+                           causal_pens, lengths, masks, abstract_pen)
         solved_loss = calc_solved_loss(solved, lengths=lengths, masks=masks)
         loss = -logp + self.cc_weight * cc + solved_loss
         return loss
 
-    def cc_loss_ub(self, s_i, actions):
+    def cc_loss_ub(self, s_i, actions, abstract_pen):
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b), (T+1, T+1, b)
         action_logps, stop_logps, start_logps, causal_pens, solved, _ = self.control_net(s_i, batched=False)
@@ -413,7 +412,7 @@ class CausalNet(nn.Module):
         action_logps = action_logps[range(T), :, actions]
 
         logp, cc = cc_loss_ub(self.b, action_logps, stop_logps, start_logps,
-                              causal_pens, self.abstract_pen)
+                              causal_pens, abstract_pen)
         solved_loss = calc_solved_loss(solved)
         loss = -logp + self.cc_weight * cc + solved_loss
         return loss
@@ -469,17 +468,16 @@ class HmmNet(nn.Module):
     """
     Class for doing the HMM calculations for learning options.
     """
-    def __init__(self, control_net, abstract_pen=0.0, shrink_micro_net=False):
+    def __init__(self, control_net, shrink_micro_net=False):
         super().__init__()
         self.control_net = control_net
         self.b = control_net.b
-        self.abstract_pen = abstract_pen
         self.shrink_micro_net = shrink_micro_net
 
-    def forward(self, s_i_batch, actions_batch, lengths, masks=None):
-        return self.logp_loss(s_i_batch, actions_batch, lengths, masks)
+    def forward(self, s_i_batch, actions_batch, lengths, masks, abstract_pen):
+        return self.logp_loss(s_i_batch, actions_batch, lengths, masks, abstract_pen)
 
-    def logp_loss(self, s_i_batch, actions_batch, lengths, masks):
+    def logp_loss(self, s_i_batch, actions_batch, lengths, masks, abstract_pen):
         """
         s_i: (B, max_T+1, s) tensor
         actions: (B, max_T,) tensor of ints
@@ -493,7 +491,7 @@ class HmmNet(nn.Module):
 
         # (B, max_T+1, b, n), (B, max_T+1, b, 2), (B, max_T+1, b)
         action_logps, stop_logps, start_logps, _, solved, _ = self.control_net(s_i_batch, batched=True)
-        start_logps = start_logps - self.abstract_pen
+        start_logps = start_logps - abstract_pen
 
         action_logps = action_logps[torch.arange(B)[:, None],
                                     torch.arange(max_T)[None, :],
@@ -518,14 +516,14 @@ class HmmNet(nn.Module):
 
         return loss
 
-    def logp_loss_ub(self, s_i, actions):
+    def logp_loss_ub(self, s_i, actions, abstract_pen):
         """
         returns: negative logp of all trajs in batch
         """
         T = actions.shape[0]
         # (T+1, b, n), (T+1, b, 2), (T+1, b)
         action_logps, stop_logps, start_logps, _, solved, _ = self.control_net(s_i, batched=False)
-        start_logps = start_logps - self.abstract_pen
+        start_logps = start_logps - abstract_pen
         # (T, b)
         action_logps = action_logps[range(T), :, actions]
 

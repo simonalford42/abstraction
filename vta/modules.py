@@ -4,6 +4,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal, Bernoulli, kl_divergence
+import warnings
+import einops
+from bw_utils import assert_equal, DEVICE, assert_shape
 
 
 class Flatten(nn.Module):
@@ -574,4 +577,86 @@ class CausalConv1d(torch.nn.Conv1d):
         if self.__padding != 0:
             return result[:, :, :-self.__padding]
         return result
+
+
+class AttentionEncoder(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.relational_net = RelationalDRLNet()
+
+    def forward(self, obs):
+        obs = obs.permute(0, 3, 1, 2)
+        return self.relational_net(obs)
+
+
+class RelationalDRLNet(nn.Module):
+    def __init__(self, input_channels=3, d=64, num_attn_blocks=2, num_heads=4, out_dim=4):
+        super().__init__()
+        self.input_channels = input_channels
+        self.d = d
+        self.out_dim = out_dim
+        self.num_attn_blocks = num_attn_blocks
+        self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
+        self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
+
+        # 2 exra dims for positional encoding
+        self.pre_attn_linear = nn.Linear(24 + 2, self.d)
+
+        # shared weights, so just one network
+        self.attn_block = nn.MultiheadAttention(embed_dim=self.d,
+                                                num_heads=num_heads,
+                                                batch_first=True)
+
+        self.fc = nn.Sequential(nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.d),
+                                nn.ReLU(),
+                                nn.Linear(self.d, self.out_dim),)
+
+    def forward(self, x):
+        # filter warnings about padding copy for conv2d
+        with warnings.catch_warnings():
+            # input: (N, C, H, W)
+            (N, C, H, W) = x.shape
+            # assert_equal(C, self.input_channels)
+
+            x = self.conv1(x)
+            x = self.conv2(x)
+            x = F.relu(x)
+            # assert_equal(x.shape[-2:], (H, W))
+
+            x = self.add_positions(x)
+            x = einops.rearrange(x, 'n c h w -> n (h w) c')
+            x = self.pre_attn_linear(x)
+            # assert_equal(x.shape, (N, H*W, self.d))
+
+            for _ in range(self.num_attn_blocks):
+                x = x + self.attn_block(x, x, x, need_weights=False)[0]
+                x = F.layer_norm(x, (self.d,))
+                # assert_equal(x.shape, (N, H*W, self.d))
+
+            x = einops.reduce(x, 'n l d -> n d', 'max')
+            x = self.fc(x)
+
+            return x
+
+    def add_positions(self, inp):
+        # input shape: (N, C, H, W)
+        # output: (N, C+2, H, W)
+        N, C, H, W = inp.shape
+        # ranges between -1 and 1
+        y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
+        x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
+        y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
+        x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
+        y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
+
+        inp = torch.cat((inp, x_map, y_map), dim=1)
+        assert_equal(inp.shape, (N, C+2, H, W))
+        return inp
 

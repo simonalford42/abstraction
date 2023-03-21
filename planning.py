@@ -493,7 +493,7 @@ if __name__ == '__main__':
     torch.manual_seed(0)
 
     rnn_model_id = None
-    model_id = '8110c8302c1946a5a6838cd2430b705f'; control_net = False
+    model_id = '1a97ca13bbeb48bbb832dff5ce1e7afa'; control_net = False
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--random_shooting', action='store_true')

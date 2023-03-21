@@ -14,7 +14,8 @@ class HierarchicalStateSpaceModel(nn.Module):
                  max_seg_len,
                  max_seg_num,
                  latent_n=10,
-                 use_min_length_boundary_mask=False):
+                 use_min_length_boundary_mask=False,
+                 encoder2=None):
         super(HierarchicalStateSpaceModel, self).__init__()
         ################
         # network size #
@@ -45,6 +46,10 @@ class HierarchicalStateSpaceModel(nn.Module):
         #################################
         self.action_encoder = action_encoder
         self.enc_obs = encoder
+
+        # weak encoder for observation
+        self.weak_enc_obs = encoder2
+
         self.dec_obs = decoder
         self.combine_action_obs = nn.Linear(
             self.action_encoder.embedding_size + self.enc_obs.embedding_size,
@@ -212,7 +217,14 @@ class HierarchicalStateSpaceModel(nn.Module):
         # observation encoder #
         #######################
         enc_obs_list = self.enc_obs(obs_data_list) # [B, S, D]
-        # enc_obs_list = enc_obs_list.view(num_samples, full_seq_size, -1)  
+        import pdb; pdb.set_trace()
+
+        if self.weak_enc_obs:
+            weak_enc_obs_list = self.weak_enc_obs(obs_data_list) # [B, S, D]
+        else:
+            weak_enc_obs_list = enc_obs_list
+
+        # enc_obs_list = enc_obs_list.view(num_samples, full_seq_size, -1)
 
         enc_action_list = self.action_encoder(action_list)
         # Shift sequence length dimension forward and 0 out first one
@@ -323,7 +335,7 @@ class HierarchicalStateSpaceModel(nn.Module):
             #     abs_belief = self.init_abs_belief(abs_post_fwd_list[t - 1])  # abs_belief is c in the paper
             # else:
             #     abs_belief = read_data * self.update_abs_belief(abs_state, abs_belief) + copy_data * abs_belief
-    
+
             abs_belief = abs_post_fwd_list[t - 1] * 0
 
             vq_loss, z, perplexity, onehot_z, z_logit = self.post_abs_state(
@@ -340,7 +352,7 @@ class HierarchicalStateSpaceModel(nn.Module):
             obs_belief = read_data * self.init_obs_belief(abs_feat) + copy_data * self.update_obs_belief(concat(obs_state, abs_feat), obs_belief)  # this is h
             obs_belief *= 0
             prior_obs_state = self.prior_obs_state(obs_belief)
-            post_obs_state = self.post_obs_state(concat(enc_obs_list[:, t], abs_feat))
+            post_obs_state = self.post_obs_state(concat(weak_enc_obs_list[:, t], abs_feat))
             obs_state = post_obs_state.rsample()
             obs_feat = self.obs_feat(concat(obs_belief, obs_state))
 
@@ -647,7 +659,7 @@ class HierarchicalStateSpaceModel(nn.Module):
                 abs_belief = self.init_abs_belief(abs_post_fwd)
             else:
                 abs_belief = read_data * self.update_abs_belief(abs_state, abs_belief) + copy_data * abs_belief
-            
+
             p = self.prior_abs_state(abs_belief).rsample()
             sample = self.z_embedding(p)
             abs_state = read_data * sample + copy_data * abs_state
