@@ -85,6 +85,12 @@ def parse_args():
     parser.add_argument("--use_abs_pos_kl", type=float, default=0)
     parser.add_argument("--coding_len_coeff", type=float, default=1.0)
     parser.add_argument("--use_min_length_boundary_mask", action="store_true")
+
+    # use second encoder for boxworld so that attention net isnt used for action decoding
+    parser.add_argument("--second_enc", action="store_true")
+    # use the attention net for boxworld encoder
+    parser.add_argument("--attention_enc", action="store_true")
+
     return parser.parse_args()
 
 
@@ -139,6 +145,8 @@ def main():
     LOGGER.info(">"*80)
     LOGGER.info(args)
     LOGGER.info(">"*80)
+
+    encoder2 = None  # Default is no second encoder
 
     # load dataset
     if 'demos' in args.dataset_path:
@@ -195,17 +203,23 @@ def main():
             action_size=train_loader.dataset.action_size,
             embedding_size=args.belief_size
         )
-        encoder = modules.CompILEGridEncoder(input_dim=12, input_shape=(14,14), feat_size=args.belief_size)
+
+        if args.attention_enc:
+            encoder = modules.BwGridEncoder(input_dim=12, input_shape=(14,14), feat_size=args.belief_size)
+        else:
+            encoder = modules.CompILEGridEncoder(input_dim=12, input_shape=(14,14), feat_size=args.belief_size)
+
         decoder = GridDecoder(
             input_size=args.belief_size,
             action_size=train_loader.dataset.action_size,
             feat_size=args.belief_size,
         )
+        if args.second_enc:
+            encoder2 = modules.CompILEGridEncoder(input_dim=12, input_shape=(14,14), feat_size=args.belief_size)
     else:
         raise ValueError(f"Unrecognize dataset_path {args.dataset_path}")
 
     seq_size = train_loader.dataset.seq_size
-
 
     # init models
     model = EnvModel(
@@ -221,7 +235,8 @@ def main():
         rec_coeff=args.rec_coeff,
         use_abs_pos_kl=args.use_abs_pos_kl == 1.0,
         coding_len_coeff=args.coding_len_coeff,
-        use_min_length_boundary_mask=args.use_min_length_boundary_mask
+        use_min_length_boundary_mask=args.use_min_length_boundary_mask,
+        encoder2=encoder2,
     ).to(device)
     LOGGER.info("Model initialized")
 

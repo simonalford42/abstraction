@@ -579,15 +579,29 @@ class CausalConv1d(torch.nn.Conv1d):
         return result
 
 
-class AttentionEncoder(nn.Module):
-    def __init__(self):
+class BwGridEncoder(nn.Module):
+    def __init__(self, input_dim, input_shape, output_dim=128, feat_size=64):
         super().__init__()
+        self.input_dim = input_dim
+        self.input_shape = input_shape
+        self.feat_size = feat_size  # not used at the moment
 
-        self.relational_net = RelationalDRLNet()
+        self.net = RelationalDRLNet(input_channels=input_dim,
+                                    num_attn_blocks=2,
+                                    num_heads=4,
+                                    d=64,
+                                    out_dim=feat_size)
+        self.output_size = output_dim
+        self.embedding_size = self.output_size
 
-    def forward(self, obs):
-        obs = obs.permute(0, 3, 1, 2)
-        return self.relational_net(obs)
+    def forward(self, input_data):
+        # (B, S, W, H, C) input_data
+        shape = list(input_data.shape)
+        input_data = input_data.reshape([-1] + shape[2:])  # (B x S, W, H, C)
+        input_data = input_data.permute(0, 3, 2, 1)  # (B x S, C, H, W)
+        out = self.net(input_data)  # (B x S, embed_dim)
+        return out.reshape(shape[:2] + [-1])
+
 
 
 class RelationalDRLNet(nn.Module):
@@ -621,9 +635,10 @@ class RelationalDRLNet(nn.Module):
     def forward(self, x):
         # filter warnings about padding copy for conv2d
         with warnings.catch_warnings():
+            warnings.filterwarnings("ignore",category=UserWarning)
             # input: (N, C, H, W)
             (N, C, H, W) = x.shape
-            # assert_equal(C, self.input_channels)
+            assert_equal(C, self.input_channels)
 
             x = self.conv1(x)
             x = self.conv2(x)

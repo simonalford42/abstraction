@@ -217,7 +217,6 @@ class HierarchicalStateSpaceModel(nn.Module):
         # observation encoder #
         #######################
         enc_obs_list = self.enc_obs(obs_data_list) # [B, S, D]
-        import pdb; pdb.set_trace()
 
         if self.weak_enc_obs:
             weak_enc_obs_list = self.weak_enc_obs(obs_data_list) # [B, S, D]
@@ -807,7 +806,8 @@ class EnvModel(nn.Module):
                  kl_coeff=1.0,
                  use_abs_pos_kl=True,
                  coding_len_coeff=10.0,
-                 use_min_length_boundary_mask=False):
+                 use_min_length_boundary_mask=False,
+                 encoder2=None):
         super(EnvModel, self).__init__()
         ################
         # network size #
@@ -834,7 +834,8 @@ class EnvModel(nn.Module):
                                                        num_layers=self.num_layers,
                                                        max_seg_len=self.max_seg_len,
                                                        max_seg_num=self.max_seg_num,
-                                                       use_min_length_boundary_mask=use_min_length_boundary_mask)
+                                                       use_min_length_boundary_mask=use_min_length_boundary_mask,
+                                                       encoder2=None)
 
     def forward(self, obs_data_list, action_list, seq_size, init_size, obs_std=1.0):
         ############################

@@ -151,6 +151,8 @@ class RelationalMacroNet(nn.Module):
 
     def forward(self, x):
         with warnings.catch_warnings():
+            warnings.filterwarnings("ignore",category=UserWarning)
+
             assert_equal(x.shape[1], self.input_dim)
 
             x = self.pre_attn_linear(x)
@@ -205,9 +207,6 @@ class ShrinkingRelationalDRLNet(nn.Module):
 
     def forward(self, x):
         with warnings.catch_warnings():
-            # UserWarning: Using padding='same' with even kernel lengths and odd
-            # dilation may require a zero-padded copy of the input be created
-            # ^^ those are annoying
             warnings.filterwarnings("ignore",category=UserWarning)
 
             # input: (N, C, H, W)
@@ -311,6 +310,7 @@ class RelationalDRLNet(nn.Module):
     def forward(self, x):
         # filter warnings about padding copy for conv2d
         with warnings.catch_warnings():
+            warnings.filterwarnings("ignore",category=UserWarning)
             # input: (N, C, H, W)
             (N, C, H, W) = x.shape
             # assert_equal(C, self.input_channels)
