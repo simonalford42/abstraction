@@ -217,6 +217,7 @@ j       (b, 2) stop logps
     check_solved = hasattr(control_net, 'solved_net')
     cc_losses = []
     correct_solved_preds = 0
+    loss = 0
 
     for i in range(n):
         video_obss = []
