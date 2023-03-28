@@ -249,13 +249,11 @@ def fine_tune(control_net, params):
 
 
 def learn_options(net, params):
-    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length,
-                                random_goal=params.random_goal)
-    test_env = box_world.BoxWorldEnv(solution_length=params.solution_length, random_goal=params.random_goal)
+    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length, random_goal=params.random_goal)
 
     dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
     # log the first 15 initial states to wandb for inspection
-    wandb.log({'initial_states': [wandb.Image(box_world.to_color_obs(states[0])) for states, moves in dataset.data[:15]]})
+    wandb.log({'initial_states': [wandb.Image(box_world.to_color_obs(states[0])) for states, _ in dataset.data[:15]]})
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
@@ -315,13 +313,13 @@ def learn_options(net, params):
                      or (time.time() - last_test_time > (params.test_every * 60)))):
             last_test_time = time.time()
 
-            # test_env = box_world.BoxWorldEnv(seed=params.seed)
-            # print('fixed test env')
+            test_env = box_world.BoxWorldEnv(solution_length=params.solution_length, random_goal=params.random_goal)
+            train_env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length, random_goal=params.random_goal)
+
             test_acc = data.eval_options_model(net.control_net, test_env, n=params.num_test)
-            # test_acc = planning.eval_planner(
-            #     net.control_net, box_world.BoxWorldEnv(seed=params.seed), n=params.num_test,
-            # )
+            train_acc = data.eval_options_model(net.control_net, train_env, n=params.num_test)
             wandb.log({'acc': test_acc})
+            wandb.log({'train_acc': train_acc})
 
         if (not params.no_log and params.save_every
                 and (time.time() - last_save_time > (params.save_every * 60))):
