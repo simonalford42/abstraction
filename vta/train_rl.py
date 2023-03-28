@@ -143,9 +143,6 @@ def main():
         settings=wandb.Settings(start_method="fork"),
     )
 
-    wandb.config.params = args
-    args.id = wandb.run.id
-
     LOGGER.info("EXP NAME: " + exp_name)
     LOGGER.info(">"*80)
     LOGGER.info(args)
@@ -225,6 +222,11 @@ def main():
         raise ValueError(f"Unrecognize dataset_path {args.dataset_path}")
 
     seq_size = train_loader.dataset.seq_size
+    if hasattr(train_loader.dataset, 'init_size'):
+        args.init_size = train_loader.dataset.init_size
+
+    wandb.config.params = args
+    args.id = wandb.run.id
 
     # init models
     model = EnvModel(

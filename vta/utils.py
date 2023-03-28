@@ -815,10 +815,12 @@ class BoxWorldDataset(Dataset):
         self.obs_size = self.state[0][0][0].shape
         self.action_size = 4
         self.provides_true_boundaries = True
+        # no burn in necessary
+        self.init_size = 0
 
     @property
     def seq_size(self):
-        return len(self.state[0]) - 2
+        return len(self.state[0]) - 2 * self.init_size
 
     def __len__(self):
         return len(self.state)
