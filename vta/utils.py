@@ -590,6 +590,7 @@ class GridworldDataset(Dataset):
 
         self.obs_size = self.state[0][0][0].shape
         self.action_size = 9
+        self.provides_true_boundaries = False
 
     @property
     def seq_size(self):
@@ -641,6 +642,7 @@ class StateIndependentDataset(Dataset):
 
         self.obs_size = self.state[0][0][0].shape
         self.action_size = 3
+        self.provides_true_boundaries = False
 
     @property
     def seq_size(self):
@@ -717,6 +719,7 @@ class StateDependentDataset(Dataset):
 
         self.obs_size = self.state[0][0][0].shape
         self.action_size = 4
+        self.provides_true_boundaries = False
 
     @property
     def seq_size(self):
@@ -762,6 +765,7 @@ class ComPILEDataset(Dataset):
 
         self.obs_size = self.state[0][0][0].shape
         self.action_size = len(grid.Action)
+        self.provides_true_boundaries = False
 
     @property
     def seq_size(self):
@@ -800,17 +804,17 @@ def boxworld_loader(batch_size):
 
 class BoxWorldDataset(Dataset):
     def __init__(self, partition):
-        # trajectories = box_world.vta_trajectories(n=2100, length=20)
         trajectories = np.load('boxworld.npy', allow_pickle=True)
         self.partition = partition
         num_heldout = 100
         if self.partition == "train":
-            self.state = trajectories[:-num_heldout]  # num_train x ep length x (s, a, s_tp1)
+            self.state = trajectories[:-num_heldout]  # num_train x ep length x (s, a, s_tp1, boundaries)
         else:
             self.state = trajectories[-num_heldout:]
 
         self.obs_size = self.state[0][0][0].shape
         self.action_size = 4
+        self.provides_true_boundaries = True
 
     @property
     def seq_size(self):
@@ -820,9 +824,9 @@ class BoxWorldDataset(Dataset):
         return len(self.state)
 
     def __getitem__(self, index):
-        traj = self.state[index]
-        s, a, _ = zip(*traj)
-        return np.stack(s).astype(np.float32), np.stack(a)
+        traj = self.state[index]  # ep length x (s, a, s_tp1, boundaries)
+        s, a, _, boundaries = zip(*traj)
+        return np.stack(s).astype(np.float32), np.stack(a), np.stack(boundaries)
 
 
 class MiniWorldDataset(Dataset):

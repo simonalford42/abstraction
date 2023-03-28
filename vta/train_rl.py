@@ -8,6 +8,8 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from grid_world import grid
+import bw_utils
+import box_world
 
 # from torch.utils.tensorboard import SummaryWriter
 from hssm_rl import EnvModel
@@ -141,6 +143,9 @@ def main():
         settings=wandb.Settings(start_method="fork"),
     )
 
+    wandb.config.params = args
+    args.id = wandb.run.id
+
     LOGGER.info("EXP NAME: " + exp_name)
     LOGGER.info(">"*80)
     LOGGER.info(args)
@@ -244,7 +249,11 @@ def main():
     optimizer = Adam(params=model.parameters(), lr=args.learn_rate, amsgrad=True)
 
     # test data
-    pre_test_full_state_list, pre_test_full_action_list = next(iter(test_loader))
+    if test_loader.provides_true_boundaries:
+        pre_test_full_state_list, pre_test_full_action_list, pre_test_full_true_boundaries = next(iter(test_loader))
+        pre_test_full_true_boundaries = pre_test_full_true_boundaries.to(device)
+    else:
+        pre_test_full_state_list, pre_test_full_action_list = next(iter(test_loader))
     pre_test_full_state_list = pre_test_full_state_list.to(device)
     pre_test_full_action_list = pre_test_full_action_list.to(device)
 
@@ -252,7 +261,13 @@ def main():
     b_idx = 0
     while b_idx <= args.max_iters:
         # for each batch
-        for train_obs_list, train_action_list in train_loader:
+        for batch in train_loader:
+            if train_loader.provides_true_boundaries:
+                train_obs_list, train_action_list, true_boundaries = batch
+            else:
+                train_obs_list, train_action_list = batch
+
+
             b_idx += 1
             # mask temp annealing
             if args.beta_anneal:
@@ -296,11 +311,14 @@ def main():
             if b_idx % 10 == 0:
                 results['grad_norm'] = grad_norm
                 train_stats, log_str, log_data = log_train(results, None, b_idx)
-                # Boundaries for grid world
-                true_boundaries = (
-                        train_action_list[:, init_size:-init_size] == 4)
-                true_boundaries = torch.roll(true_boundaries, 1, -1)
-                true_boundaries[:, 0] = True
+
+                if not train_loader.provides_true_boundaries:
+                    # Boundaries for grid world
+                    true_boundaries = (
+                            train_action_list[:, init_size:-init_size] == 4)
+                    true_boundaries = torch.roll(true_boundaries, 1, -1)
+                    true_boundaries[:, 0] = True
+
                 correct_boundaries = torch.logical_and(
                     results["mask_data"].squeeze(-1) == true_boundaries,
                     true_boundaries).sum()
@@ -331,6 +349,15 @@ def main():
                     for seq_idx in range(states.shape[0]):
                         if boundaries[seq_idx].item() == 1:
                             curr_option = options[seq_idx]
+
+                        if args.dataset == 'boxworld':
+                            h, w = states.shape[1:3]
+                            frame = grid.GridRender(width=w, height=h)
+                            for y in range(h):
+                                for x in range(w):
+                                    obj = np.argmax(
+                                            states[seq_idx][x][y].cpu().data.numpy())
+                                    frame.draw_rectangle(np.array((x, y)), 0.4, box_world.COLOR_NAMES[obj])
 
                         frame = grid.GridRender(10, 10)
                         for x in range(10):
@@ -394,9 +421,9 @@ def main():
                 LOGGER.info("#" * 80)
 
             if b_idx % 2000 == 0:
-                exp_dir = os.path.join("experiments", args.name)
-                torch.save(model.state_model,
-                           os.path.join(exp_dir, f"model-{b_idx}.ckpt"))
+                exp_dir = os.path.join("experiments", str(args.id))
+                bw_utils.save_model(model.state_model,
+                                    os.path.join(exp_dir, f"model-{b_idx}.ckpt"))
 
             #############
             # test time #
@@ -420,11 +447,16 @@ def main():
 
                     # log
                     test_stats, log_str, log_data = log_test(results, None, b_idx)
-                    # Boundaries for grid world
-                    true_boundaries = (
-                            pre_test_full_action_list[:, init_size:-init_size] == 4)
-                    true_boundaries = torch.roll(true_boundaries, 1, -1)
-                    true_boundaries[:, 0] = True
+
+                    if not test_loader.provides_true_boundaries:
+                        # Boundaries for grid world
+                        true_boundaries = (
+                                pre_test_full_action_list[:, init_size:-init_size] == 4)
+                        true_boundaries = torch.roll(true_boundaries, 1, -1)
+                        true_boundaries[:, 0] = True
+                    else:
+                        true_boundaries = pre_test_full_true_boundaries
+
                     correct_boundaries = torch.logical_and(
                         results["mask_data"].squeeze(-1) == true_boundaries,
                         true_boundaries).sum()

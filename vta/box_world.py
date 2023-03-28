@@ -33,6 +33,10 @@ NUM_ASCII = len(ASCII)
 # NUM_ASCII = 64
 # assert_equal(NUM_ASCII, 24)
 
+COLOR_NAMES = ['blue', 'red', 'orange', 'green', 'cyan', 'purple', 'yellow', 'pink',
+          'brown', 'maroon', 'gold', 'olive', 'limegreen', 'dodgerblue', 'indigo', 'violet',
+          'orangered', 'greenyellow', 'darkgreen', 'darkblue', 'magenta']
+
 
 DEFAULT_GRID_SIZE = (14, 14)
 
@@ -224,10 +228,7 @@ def ascii_to_color(ascii: str):
         return color_name_to_rgb('dimgrey')
     else:
         i = COLORS.index(ascii)
-        colors = ['blue', 'red', 'orange', 'green', 'cyan', 'purple', 'yellow', 'pink',
-                  'brown', 'maroon', 'gold', 'olive', 'limegreen', 'dodgerblue', 'indigo', 'violet',
-                  'orangered', 'greenyellow', 'darkgreen', 'darkblue', 'magenta'][:len(COLORS)]
-        return color_name_to_rgb(colors[i])
+        return color_name_to_rgb(COLOR_NAMES[i])
 
 
 def ascii_to_int(ascii: str):
@@ -569,9 +570,12 @@ def generate_abstract_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
 # create new conda env with name bw
 # conda create -n bw python=3.10
-def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
+def generate_traj(env: BoxWorldEnv, include_boundaries: bool = False) -> Tuple[List, List]:
+    '''
+    boundaries[i] = 1 if we start a new option after seeing state i.
+    boundaries[0] = 1
+    '''
     obs = env.reset()
-    # render_obs(obs, pause=1)
 
     domino_pos_map = get_dominoes(obs)
     held_key = get_held_key(obs)
@@ -583,6 +587,7 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
     states = [obs]
     moves = []
+    boundaries = [0]
 
     for i, domino in enumerate(path):
         subgoal_pos: POS = domino_pos_map[domino]
@@ -590,17 +595,26 @@ def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
 
         for a in path_to_moves(option):
             obs, _, done, _ = env.step(a)
-            # render_obs(obs, pause=0.01)
             states.append(obs)
             moves.append(a)
+            boundaries.append(0)
         if len(domino) > 1:
             # move left to pick up new key, or final gem
             obs, _, done, _ = env.step(bw.ACTION_WEST)
             states.append(obs)
             moves.append(bw.ACTION_WEST)
+            boundaries.append(1)
+
+    boundaries = boundaries[:-1]
 
     assert done, 'uh oh, our path solver didnt actually solve'
-    return states, moves
+    print(f'{moves=}')
+    print(f'{boundaries=}')
+
+    if include_boundaries:
+        return states, moves, boundaries
+    else:
+        return states, moves
 
 
 def generate_traj_with_options(env: BoxWorldEnv) -> Tuple[List, List, List]:
@@ -658,32 +672,32 @@ def vta_trajectories(n, length):
     env = BoxWorldEnv()
     trajs = []
     while len(trajs) < n:
-        states, moves = generate_traj(env)
+        states, moves, boundaries = generate_traj(env, include_boundaries=True)
         if len(states) == length:
-            trajs.append((states, moves))
+            trajs.append((states, moves, boundaries))
             if len(trajs) % 10 == 0:
                 print(len(trajs))
 
             # self.state = trajectories[:-num_heldout]  # num_train x ep length x (s, a, s_tp1)
 
     # Now we do this conversion:
-    # input: list of (states, moves) where states is T+1, moves is T
-    # output: numpy array of shape (n, T, 3) where 3 is (s, a, s_tp1)
+    # input: list of (states, moves, boundaries) where states is T+1, moves is T
+    # output: numpy array of shape (n, T, 4) where 4 is (s, a, s_tp1, boundaries)
 
-    # First, we need to convert the list of (states, moves) into a list of (states, moves, states)
+    # First, we need to convert the list of (states, moves, bounds) into a list of (states, moves, states, bounds)
     trajs2 = []
-    for states, moves in trajs:
+    for states, moves, boundaries in trajs:
         states = [obs_to_tensor(s) for s in states]
         states = [s.numpy() for s in states]
         states = [rearrange(s, 'c h w -> h w c') for s in states]
         T = len(moves)
         states2 = states[1:]
         states = states[:-1]
-        trajs2.append((states, moves, states2))
+        trajs2.append((states, moves, states2, boundaries))
 
     # Now we can convert to numpy array
     trajs = np.array(trajs2, dtype=object)
-    trajs = rearrange(trajs, 'n three L ->  n L three')
+    trajs = rearrange(trajs, 'n four L ->  n L four')
     return trajs
 
 
@@ -731,5 +745,7 @@ if __name__ == '__main__':
     # env = BoxWorldEnv(**vars(FLAGS))
     # while True:
         # play_game(env)
-    trajs = vta_trajectories(2100, 20)
-    np.save('boxworld.npy', trajs)
+
+    # trajs = vta_trajectories(2100, 20)
+    # np.save('boxworld.npy', trajs)
+    vta_trajectories(n=1, length=20)
