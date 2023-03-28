@@ -251,7 +251,7 @@ def main():
     optimizer = Adam(params=model.parameters(), lr=args.learn_rate, amsgrad=True)
 
     # test data
-    if test_loader.provides_true_boundaries:
+    if test_loader.dataset.provides_true_boundaries:
         pre_test_full_state_list, pre_test_full_action_list, pre_test_full_true_boundaries = next(iter(test_loader))
         pre_test_full_true_boundaries = pre_test_full_true_boundaries.to(device)
     else:
@@ -264,7 +264,7 @@ def main():
     while b_idx <= args.max_iters:
         # for each batch
         for batch in train_loader:
-            if train_loader.provides_true_boundaries:
+            if train_loader.dataset.provides_true_boundaries:
                 train_obs_list, train_action_list, true_boundaries = batch
             else:
                 train_obs_list, train_action_list = batch
@@ -314,7 +314,7 @@ def main():
                 results['grad_norm'] = grad_norm
                 train_stats, log_str, log_data = log_train(results, None, b_idx)
 
-                if not train_loader.provides_true_boundaries:
+                if not train_loader.dataset.provides_true_boundaries:
                     # Boundaries for grid world
                     true_boundaries = (
                             train_action_list[:, init_size:-init_size] == 4)
@@ -450,7 +450,7 @@ def main():
                     # log
                     test_stats, log_str, log_data = log_test(results, None, b_idx)
 
-                    if not test_loader.provides_true_boundaries:
+                    if not test_loader.dataset.provides_true_boundaries:
                         # Boundaries for grid world
                         true_boundaries = (
                                 pre_test_full_action_list[:, init_size:-init_size] == 4)
