@@ -3,7 +3,7 @@
 	url = https://github.com/gyh75520/Relational_DRL.git
 [submodule "lib/pycolab"]
 	path = lib/pycolab
-	url = https://github.com/simonalford42/pycolab.git
+	url = git@github.com:simonalford42/pycolab.git
 [submodule "dreamerv2"]
 	path = dreamerv2
 	url = https://github.com/danijar/dreamerv2

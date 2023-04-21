@@ -1,4 +1,4 @@
-import torch
+# import torch
 import os
 import time
 import numpy as np
@@ -9,7 +9,7 @@ import itertools
 
 import matplotlib.pyplot as plt
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 WARNINGS = set()
 
@@ -68,14 +68,14 @@ class Timing(object):
 def assert_equal(a, b):
     if np.ndarray in [type(a), type(b)]:
         assert np.array_equal(a, b), f'a != b: a:{a}, b:{b}'
-    elif torch.Tensor in [type(a), type(b)]:
-        assert torch.equal(a, b), f'a != b: a:{a}, b:{b}'
+    # elif torch.Tensor in [type(a), type(b)]:
+    #     assert torch.equal(a, b), f'a != b: a:{a}, b:{b}'
     else:
         assert a == b, f'a != b: a:{a}, b:{b}'
 
 
-def assert_shape(a: torch.Tensor, shape: tuple):
-    assert_equal(a.shape, shape)
+# def assert_shape(a: torch.Tensor, shape: tuple):
+#     assert_equal(a.shape, shape)
 
 
 def num_params(model):

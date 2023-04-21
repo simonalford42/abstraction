@@ -8,9 +8,9 @@ import numpy as np
 import pycolab
 import matplotlib
 import matplotlib.pyplot as plt
-import torch
-from torch.nn import functional as F
-from utils import assert_equal, assert_shape
+# import torch
+# from torch.nn import functional as F
+from .utils import assert_equal#, assert_shape
 from pycolab.examples.research.box_world import box_world as bw
 from einops import rearrange
 
@@ -34,7 +34,7 @@ NUM_ASCII = len(ASCII)
 
 
 DEFAULT_GRID_SIZE = (14, 14)
-
+import cv2
 # gym.Env import isn't working
 # class GymWrapper(gym.Env):
 class GymWrapper:
@@ -52,7 +52,7 @@ class GymWrapper:
     @property
     def observation_space(self):
         w = self.env.obs_width
-        return gym.spaces.Box(low=0, high=255, shape=(w, w, 3))
+        return gym.spaces.Box(low=0, high=255, shape=(64, 64, 3))
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
@@ -62,8 +62,9 @@ class GymWrapper:
 
     def process_obs(self, obs):
         obs = to_color_obs(obs).astype(np.uint8)
-        assert_shape(obs, (self.env.obs_width, self.env.obs_width, 3))
-        return obs
+        resized_obs = cv2.resize(obs, (64, 64), interpolation=cv2.INTER_NEAREST)
+        # assert_shape(obs, (self.env.obs_width, self.env.obs_width, 3))
+        return resized_obs.astype(np.uint8)
 
     def reset(self):
         obs = self.env.reset()
@@ -179,13 +180,13 @@ class BoxWorldEnv:
         return obs, reward, done, dict()
 
 
-def obs_to_tensor(obs) -> torch.Tensor:
-    obs = torch.tensor([[ascii_to_int(a) for a in row]
-                       for row in obs])
-    obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
-    assert_equal(obs.shape[-1], NUM_ASCII)
-    obs = rearrange(obs, 'h w c -> c h w')
-    return obs
+# def obs_to_tensor(obs) -> torch.Tensor:
+#     obs = torch.tensor([[ascii_to_int(a) for a in row]
+#                        for row in obs])
+#     obs = F.one_hot(obs, num_classes=NUM_ASCII).to(torch.float)
+#     assert_equal(obs.shape[-1], NUM_ASCII)
+#     obs = rearrange(obs, 'h w c -> c h w')
+#     return obs
 
 
 def tensor_to_obs(obs):
