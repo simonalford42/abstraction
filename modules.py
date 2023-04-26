@@ -151,6 +151,8 @@ class RelationalMacroNet(nn.Module):
 
     def forward(self, x):
         with warnings.catch_warnings():
+            warnings.filterwarnings("ignore",category=UserWarning)
+
             assert_equal(x.shape[1], self.input_dim)
 
             x = self.pre_attn_linear(x)
@@ -205,9 +207,6 @@ class ShrinkingRelationalDRLNet(nn.Module):
 
     def forward(self, x):
         with warnings.catch_warnings():
-            # UserWarning: Using padding='same' with even kernel lengths and odd
-            # dilation may require a zero-padded copy of the input be created
-            # ^^ those are annoying
             warnings.filterwarnings("ignore",category=UserWarning)
 
             # input: (N, C, H, W)
@@ -288,9 +287,7 @@ class RelationalDRLNet(nn.Module):
         self.out_dim = out_dim
         self.num_attn_blocks = num_attn_blocks
         self.conv1 = nn.Conv2d(input_channels, 12, 2, padding='same')
-        # self.conv1_batchnorm = nn.BatchNorm2d(12)
         self.conv2 = nn.Conv2d(12, 24, 2, padding='same')
-        # self.conv2_batchnorm = nn.BatchNorm2d(24)
 
         # 2 exra dims for positional encoding
         self.pre_attn_linear = nn.Linear(24 + 2, self.d)
@@ -302,32 +299,24 @@ class RelationalDRLNet(nn.Module):
 
         self.fc = nn.Sequential(nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
-                                # nn.BatchNorm1d(self.d),
                                 nn.Linear(self.d, self.d),
                                 nn.ReLU(),
                                 nn.Linear(self.d, self.out_dim),)
 
     def forward(self, x):
+        # filter warnings about padding copy for conv2d
         with warnings.catch_warnings():
-            # UserWarning: Using padding='same' with even kernel lengths and odd
-            # dilation may require a zero-padded copy of the input be created
-            # ^^ those are annoying
             warnings.filterwarnings("ignore",category=UserWarning)
-
             # input: (N, C, H, W)
             (N, C, H, W) = x.shape
             # assert_equal(C, self.input_channels)
 
             x = self.conv1(x)
-            # x = self.conv1_batchnorm(x)
             x = self.conv2(x)
-            # x = self.conv2_batchnorm(x)
             x = F.relu(x)
             # assert_equal(x.shape[-2:], (H, W))
 
@@ -354,13 +343,9 @@ class RelationalDRLNet(nn.Module):
         y_map = -1 + torch.arange(0, H + 0.01, H / (H - 1))/(H/2)
         x_map = -1 + torch.arange(0, W + 0.01, W / (W - 1))/(W/2)
         y_map, x_map = y_map.to(DEVICE), x_map.to(DEVICE)
-        # assert_equal((x_map[-1], y_map[-1]), (1., 1.,))
-        # assert_equal((x_map[0], y_map[0]), (-1., -1.,))
-        # assert_equal(y_map.shape[0], H)
-        # assert_equal(x_map.shape[0], W)
         x_map = einops.repeat(x_map, 'w -> n 1 h w', n=N, h=H)
         y_map = einops.repeat(y_map, 'h -> n 1 h w', n=N, w=W)
-        # wonder if there could be a good way to do with einops
+
         inp = torch.cat((inp, x_map, y_map), dim=1)
         assert_equal(inp.shape, (N, C+2, H, W))
         return inp

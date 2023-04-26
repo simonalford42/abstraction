@@ -108,6 +108,9 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=F
     first_step = True
     pos_visits = {}
 
+    if render:
+        box_world.render_obs(bw.tensor_to_obs(s), pause=1, title=f'Option {b}')
+
     while not done:
         action_logps, stop_logps = control_net.micro_policy(s, b)
         a = torch.argmax(action_logps).item()
@@ -118,9 +121,8 @@ def llc_sampler(s: torch.Tensor, b, control_net: HeteroController, env, render=F
         actions.append(a)
         obs, rew, done, info = env.step(a)
 
-        pause = 0.2 if first_step else 0.01
         if render:
-            box_world.render_obs(obs, pause=pause)
+            box_world.render_obs(obs, pause=0.05, title=f'Option {b}')
 
         pos = box_world.player_pos(obs)
         s = bw.obs_to_tensor(obs).to(DEVICE)
@@ -451,12 +453,47 @@ def random_shooting(env, control_net, depth, sample_size=100):
     return option_traj, env.solved
 
 
+def observe_all_options(control_net, env, n=1, new_option_pause=1):
+    for i in range(n):
+        env.reset()
+
+        while not env.done:
+            print('new round')
+            envs = {}
+            showing_options = True
+
+            while showing_options:
+                for b in range(control_net.b):
+                    option_env = env.copy()
+                    envs[b] = option_env
+                    obs = option_env.obs
+                    out = llc_sampler(bw.obs_to_tensor(obs), b, control_net, option_env, render=True)
+
+                valid_input = False
+                while not valid_input:
+                    inp = input('Choose option to continue with. Type R to reshow the options. ')
+
+                    try:
+                        if 'R' not in inp:
+                            chosen_option = int(inp)
+                            assert chosen_option >= 0 and chosen_option <= control_net.b
+                            showing_options = False
+                        valid_input = True
+                    except Exception as e:
+                        print(f'Invalid input with exception {e}; try again')
+                        valid_input = False
+            env = envs[chosen_option]
+
+        print(f'Done. {env.solved=}')
+        bw.render_obs(env.obs, title='Final state', pause=1)
+
+
 if __name__ == '__main__':
     random.seed(0)
     torch.manual_seed(0)
 
     rnn_model_id = None
-    model_id = '8110c8302c1946a5a6838cd2430b705f'; control_net = False
+    model_id = '1a97ca13bbeb48bbb832dff5ce1e7afa'; control_net = False
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--random_shooting', action='store_true')
@@ -464,6 +501,7 @@ if __name__ == '__main__':
     parser.add_argument('-sd', '--search_depth', default=0, type=int)
     parser.add_argument('-n', '--n', default=100, type=int)
     parser.add_argument('-e', '--eval', action='store_true')
+    parser.add_argument('-R', '--render', action='store_true')
 
     args = parser.parse_args()
 
@@ -485,17 +523,19 @@ if __name__ == '__main__':
 
     # control_net = hmm.SVNet(abstract.boxworld_homocontroller(b=1)).control_net
     # env = box_world.BoxWorldEnv(seed=3, solution_length=(args.depth, ))
-    env = box_world.BoxWorldEnv(seed=3, random_goal=True)
+    env = box_world.BoxWorldEnv(seed=6, random_goal=True)
 
     with torch.no_grad():
         # check_macro(env, control_net)
         # acc = eval_planner(control_net, env, n=n)
         # test_consistency(env, control_net, n=n)
-        # eval_sampling(control_net, env, n=n, render=False, macro=True)
-        # check_planning_possible(env, control_net, n=n)
+        eval_sampling(control_net, env, n=args.n, render=True, macro=True)
+        # check_planning_possible(env, control_net, n=args.n)
+        # observe_all_options(control_net, env, n=10, new_option_pause=1)
+        assert False
 
         if args.eval:
-            data.eval_options_model(control_net, env, n=args.n, render=True, new_option_pause=.1)
+            data.eval_options_model(control_net, env, n=args.n, render=args.render, new_option_pause=.1)
         elif args.random_shooting:
             solve_times = multiple_random_shooting(env, control_net, n=args.n, depth=args.search_depth)
         else:

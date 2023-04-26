@@ -249,11 +249,11 @@ def fine_tune(control_net, params):
 
 
 def learn_options(net, params):
-    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length,
-                                random_goal=params.random_goal)
+    env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length, random_goal=params.random_goal)
+
     dataset = data.BoxWorldDataset(env, n=params.n, traj=True)
     # log the first 15 initial states to wandb for inspection
-    wandb.log({'initial_states': [wandb.Image(box_world.to_color_obs(states[0])) for states, moves in dataset.data[:15]]})
+    wandb.log({'initial_states': [wandb.Image(box_world.to_color_obs(states[0])) for states, _ in dataset.data[:15]]})
 
     dataloader = DataLoader(dataset, batch_size=params.batch_size, shuffle=False, collate_fn=data.traj_collate)
 
@@ -261,7 +261,13 @@ def learn_options(net, params):
 
     optimizer = torch.optim.Adam(net.parameters(), lr=params.lr)
     net.train()
-    test_env = box_world.BoxWorldEnv(solution_length=params.solution_length, random_goal=params.random_goal)
+
+    if params.options_fine_tune:
+        # micro net, macro policy net, tau net, transition net, solved net
+        net.control_net.micro_net.requires_grad_(False)
+        # net.control_net.tau_net.requires_grad_(False)
+        # net.control_net.macro_transition_net.requires_grad_(False)
+
 
     num_params = utils.num_params(net)
     print(f"Net has {num_params} parameters")
@@ -288,7 +294,7 @@ def learn_options(net, params):
             optimizer.zero_grad()
             s_i_batch, actions_batch, masks = s_i_batch.to(DEVICE), actions_batch.to(DEVICE), masks.to(DEVICE)
 
-            loss = net(s_i_batch, actions_batch, lengths, masks)
+            loss = net(s_i_batch, actions_batch, lengths, masks, abstract_pen=params.abstract_pen)
 
             train_loss += loss.item()
             # reduce just like cross entropy so batch size doesn't affect LR
@@ -307,13 +313,13 @@ def learn_options(net, params):
                      or (time.time() - last_test_time > (params.test_every * 60)))):
             last_test_time = time.time()
 
-            # test_env = box_world.BoxWorldEnv(seed=params.seed)
-            # print('fixed test env')
+            test_env = box_world.BoxWorldEnv(solution_length=params.solution_length, random_goal=params.random_goal)
+            train_env = box_world.BoxWorldEnv(seed=params.seed, solution_length=params.solution_length, random_goal=params.random_goal)
+
             test_acc = data.eval_options_model(net.control_net, test_env, n=params.num_test)
-            # test_acc = planning.eval_planner(
-            #     net.control_net, box_world.BoxWorldEnv(seed=params.seed), n=params.num_test,
-            # )
+            train_acc = data.eval_options_model(net.control_net, train_env, n=params.num_test)
             wandb.log({'acc': test_acc})
+            wandb.log({'train_acc': train_acc})
 
         if (not params.no_log and params.save_every
                 and (time.time() - last_save_time > (params.save_every * 60))):
@@ -703,6 +709,10 @@ def boxworld_main():
     parser.add_argument('--rnn_macro', action='store_true', help='use RNN macro transition function in CC options learning')
     parser.add_argument('--load_rnn', action='store_true', help='load rnn for fine_tuning')
     parser.add_argument('--random_goal', action='store_true', help='random goal color trajs')
+    parser.add_argument('--options_fine_tune', action='store_true',
+                        help='fine tune with options learning for policy/reward predictors')
+    parser.add_argument('--bigger_micro', action='store_true')
+    parser.add_argument('--model_load_path', type=str, default=None)
 
     params = parser.parse_args()
 
@@ -746,10 +756,13 @@ def boxworld_main():
         # print('WARNING: params.load = False, creating new model')
         params.load = True
 
+    if params.options_fine_tune:
+        params.load = True
+        if params.model_load_path is None:
+            params.model_load_path = 'models/8110c8302c1946a5a6838cd2430b705f.pt'
+
     if not hasattr(params, 'traj_updates'):
         params.traj_updates = 1E8 if (params.fine_tune or params.muzero or params.neurosym) else 1E7  # default: 1E7
-
-    params.model_load_path = 'models/7caf148820a04ce3bbd8bbfb43a8cd9c.pt'
 
     params.gumbel_sched = make_gumbel_schedule_fn(params)
     params.device = torch.cuda.get_device_name(DEVICE) if torch.cuda.is_available() else 'cpu'
@@ -788,6 +801,8 @@ def boxworld_main():
             muzero.main(net.control_net, params, data_net=data_net.control_net)
         elif params.sv_micro:
             params.load = True
+            if params.model_load_path is None:
+                params.model_load_path = 'models/0b31d27e41b3422aa9b51e304a04516d.pt'
             net = make_net(params).to(DEVICE).control_net
             assert isinstance(net, abstract.HeteroController)
             sv_micro_train(params, net)

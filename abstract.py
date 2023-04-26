@@ -256,9 +256,6 @@ def noisify_tau(t_i, noise_std):
 
 
 class HeteroController(nn.Module):
-    def world_model_step_fn(states, moves):
-        return neurosym.world_model_step(states, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
-
     def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
                  macro_transition_net, solved_net, tau_noise_std, cc_neurosym=False, world_model_program=None, fake_cc_neurosym=False):
         super().__init__()
@@ -277,6 +274,9 @@ class HeteroController(nn.Module):
         # only needed if cc_neurosym is True
         self.world_model_program = world_model_program
         self.using_rnn = False
+
+    def world_model_step_fn(states, moves):
+        return neurosym.world_model_step(states, moves, neurosym.BW_WORLD_MODEL_PROGRAM)
 
     def add_rnn(self, rnn):
         '''
@@ -660,6 +660,14 @@ class HeteroController(nn.Module):
         return action_logps[0, b], stop_logps[0, b]
 
 
+class VTAController(HeteroController):
+    def __init__(self, a, b, t, tau_net, micro_net, macro_policy_net,
+                 macro_transition_net, solved_net, tau_noise_std, cc_neurosym=False, world_model_program=None, fake_cc_neurosym=False):
+        super().__init__(a, b, t, tau_net, micro_net, macro_policy_net,
+                         macro_transition_net, solved_net, tau_noise_std, cc_neurosym, world_model_program, fake_cc_neurosym)
+
+
+
 class HomoController(nn.Module):
     """Controller as in microcontroller and macrocontroller.
     Homo because all of the outputs come from one big network.
@@ -831,7 +839,7 @@ class ActionsMicroNet(nn.Module):
                                               d=dim,
                                               out_dim=out_dim)
         else:
-            self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
+            self.micro_net = MicroNet(input_shape=box_world.GRID_SIZE,
                                       input_channels=box_world.NUM_ASCII,
                                       out_dim=out_dim)
 
@@ -843,7 +851,7 @@ class ActionsMicroNet(nn.Module):
 
 
 class ActionsAndStopsMicroNet(nn.Module):
-    def __init__(self, a, b, dim=64, relational=False, shrinking=False, shrink_loss_scale=1):
+    def __init__(self, a, b, dim=64, relational=False, shrinking=False, shrink_loss_scale=1, bigger=False):
         super().__init__()
         out_dim = a * b + 2 * b
         if shrinking:
@@ -860,9 +868,17 @@ class ActionsAndStopsMicroNet(nn.Module):
                                               d=dim,
                                               out_dim=out_dim)
         else:
-            self.micro_net = MicroNet(input_shape=box_world.DEFAULT_GRID_SIZE,
-                                      input_channels=box_world.NUM_ASCII,
-                                      out_dim=out_dim)
+            if bigger:
+                self.micro_net = MicroNet(input_shape=box_world.GRID_SIZE,
+                                          input_channels=box_world.NUM_ASCII,
+                                          out_dim=out_dim,
+                                          d=64,
+                                          third_conv=True,
+                                          inter_channels=24)
+            else:
+                self.micro_net = MicroNet(input_shape=box_world.GRID_SIZE,
+                                          input_channels=box_world.NUM_ASCII,
+                                          out_dim=out_dim)
         self.a = a
         self.b = b
 
@@ -943,11 +959,12 @@ def boxworld_controller(typ, params):
         micro_net = ActionsAndStopsMicroNet(a, b, relational=params.relational_micro,
                                             shrinking=params.shrink_micro_net,
                                             dim=params.dim,
-                                            shrink_loss_scale=params.shrink_loss_scale)
+                                            shrink_loss_scale=params.shrink_loss_scale,
+                                            bigger=params.bigger_micro)
 
-    assert typ == 'hetero'
+    assert typ == 'hetero' or typ == 'vta'
     macro_trans_in_dim = b + t
-    model = HeteroController
+    model = HeteroController if typ == 'hetero' else VTAController
 
     tau_module = NormModule(p=tau_lp_norm, dim=t)
     tau_net = boxworld_relational_net(out_dim=t, dim=params.dim)

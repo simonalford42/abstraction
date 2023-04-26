@@ -1,0 +1,5 @@
+[default]
+entity = simonalford42
+project = vta
+base_url = https://api.wandb.ai
+
