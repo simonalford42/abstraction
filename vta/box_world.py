@@ -608,6 +608,7 @@ def generate_traj(env: BoxWorldEnv, include_boundaries: bool = False) -> Tuple[L
     boundaries = boundaries[:-1]
 
     assert done, 'uh oh, our path solver didnt actually solve'
+    assert_equal(len(boundaries), len(moves))
 
     if include_boundaries:
         return states, moves, boundaries
@@ -744,6 +745,6 @@ if __name__ == '__main__':
     # while True:
         # play_game(env)
 
-    trajs = vta_trajectories(2100, 20)
-    np.save('boxworld.npy', trajs)
+    # trajs = vta_trajectories(2100, 20)
+    # np.save('boxworld.npy', trajs)
     # vta_trajectories(n=1, length=20)

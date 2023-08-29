@@ -309,7 +309,7 @@ def play_game(env):
         render_obs(obs)
         print_obs(obs)
         key = input()
-        if key.lower() == 'q':
+        if 'q' in key.lower():
             return False
 
         if len(key) != 1 or key not in 'wasd':
@@ -325,6 +325,8 @@ def play_game(env):
             action = bw.ACTION_EAST
 
         obs, rew, done, info = env.step(action)
+
+    return True
 
     # render_obs(obs, pause=5)
 
@@ -571,6 +573,8 @@ def generate_abstract_traj(env: BoxWorldEnv) -> Tuple[List, List]:
     return states, moves
 
 
+L = []
+
 # create new conda env with name bw
 # conda create -n bw python=3.10
 def generate_traj(env: BoxWorldEnv) -> Tuple[List, List]:
@@ -698,6 +702,10 @@ if __name__ == '__main__':
     # while True:
     #     run_deepmind_ui(**vars(FLAGS))
 
+    env = BoxWorldEnv()
+    for _ in range(200):
+        generate_traj(env)
+    assert False
     env = BoxWorldEnv(**vars(FLAGS))
-    while True:
-        play_game(env)
+    while play_game(env):
+        pass
