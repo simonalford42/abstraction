@@ -10,9 +10,9 @@ import boxworld
 from vta_modules import *
 
 
-    def forward(self, input_data_list):
-        input_data = input_data_list.permute(0, 2, 1)
-        return self.network(input_data).permute(0, 2, 1)
+def forward(self, input_data_list):
+    input_data = input_data_list.permute(0, 2, 1)
+    return self.network(input_data).permute(0, 2, 1)
 
 def boxworld_vta():
     belief_size = 128
